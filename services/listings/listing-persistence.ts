@@ -212,7 +212,7 @@ export async function deleteListingRow(id: string): Promise<boolean> {
     const pool = await getOptionalPostgresPool();
     if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
     const result = await pool.query(`DELETE FROM ${TABLE} WHERE id = $1`, [id]);
-    return (result.rowCount ?? 0) > 0;
+    return Boolean((result as { rowCount?: number }).rowCount);
   }
 
   const stored = (await readJsonFile()) ?? [];
