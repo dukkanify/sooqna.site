@@ -2,7 +2,6 @@ import type { Order } from "@/types/domain/order";
 import { findUserById } from "@/services/auth/user-store";
 import { sendTransactionalEmail } from "@/services/email/transactional-email";
 import {
-  EMAIL_SITE_URL,
   emailSiteUrl,
   escapeEmailHtml,
 } from "@/services/email/sooqna-email-template";
@@ -49,9 +48,13 @@ export async function queueOrderConfirmationEmail(input: {
   hasExistingAccount: boolean;
 }): Promise<void> {
   try {
-    const orderTrackingLink = `${EMAIL_SITE_URL}/order-status?token=${encodeURIComponent(input.guestAccessToken)}`;
+    const orderTrackingLink = emailSiteUrl(
+      `/order-status?token=${encodeURIComponent(input.guestAccessToken)}`,
+    );
     const setPasswordLink = input.accountSetupToken
-      ? `${EMAIL_SITE_URL}/complete-account?token=${encodeURIComponent(input.accountSetupToken)}`
+      ? emailSiteUrl(
+          `/complete-account?token=${encodeURIComponent(input.accountSetupToken)}`,
+        )
       : undefined;
 
     const locale = await resolveEmailLocale({

@@ -7,7 +7,6 @@ type BadgeVariant =
   | "escrow"
   | "featured"
   | "new"
-  | "urgent"
   | "sold"
   | "pending"
   | "rejected"
@@ -24,7 +23,6 @@ const variantClasses: Record<BadgeVariant, string> = {
   escrow: "border-success/20 bg-success-soft text-success",
   featured: "border-[#c9a45c]/35 bg-[#c9a45c] text-[#0b1628]",
   new: "border-sky-500/25 bg-sky-50 text-sky-700",
-  urgent: "border-rose-600/30 bg-rose-600 text-white",
   sold: "border-border bg-surface-muted text-muted",
   pending: "border-amber-500/25 bg-amber-50 text-amber-800",
   rejected: "border-rose-500/20 bg-rose-50 text-rose-700",

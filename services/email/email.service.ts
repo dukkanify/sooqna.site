@@ -19,7 +19,13 @@ type SendEmailInput = {
   to: string;
 };
 
-const EMAIL_TIMEOUT_MS = 8_000;
+const EMAIL_TIMEOUT_MS = 15_000;
+const EMAIL_RETRY_MAX = 2;
+
+function recipientDomain(email: string): string {
+  const at = email.lastIndexOf("@");
+  return at >= 0 ? email.slice(at + 1).toLowerCase() : "unknown";
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -99,6 +105,7 @@ function emailLogBase(input: SendEmailInput, from: string) {
     eventType: input.eventType,
     provider: "resend",
     to: maskEmail(input.to),
+    recipientDomain: recipientDomain(input.to),
     subject: input.subject,
     from,
   };
@@ -135,36 +142,50 @@ async function sendWithResend(input: SendEmailInput): Promise<boolean> {
     return false;
   }
 
-  try {
-    const first = await postResend(primaryFrom, input, apiKey);
-    const providerResult = parseResendProviderResult(first.body);
-    if (first.ok) {
-      console.info("[Sooqna Email] Resend accepted", {
+  let lastError: string | undefined;
+  for (let attempt = 1; attempt <= EMAIL_RETRY_MAX; attempt += 1) {
+    try {
+      const first = await postResend(primaryFrom, input, apiKey);
+      const providerResult = parseResendProviderResult(first.body);
+      if (first.ok) {
+        console.info("[Sooqna Email] Resend accepted", {
+          ...emailLogBase(input, primaryFrom),
+          status: first.status,
+          resendId: providerResult.id,
+          resendKeySource: source,
+          attempt,
+        });
+        return true;
+      }
+
+      const retryable = first.status >= 500 || first.status === 429;
+      console.error("[Sooqna Email] Resend rejected", {
         ...emailLogBase(input, primaryFrom),
         status: first.status,
         resendId: providerResult.id,
+        providerErrorName: providerResult.name,
+        providerErrorMessage: providerResult.message,
         resendKeySource: source,
+        attempt,
       });
-      return true;
+      if (!retryable || attempt === EMAIL_RETRY_MAX) {
+        return false;
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : "unknown";
+      console.error("[Sooqna Email] Resend request failed", {
+        ...emailLogBase(input, primaryFrom),
+        error: lastError,
+        resendKeySource: source,
+        attempt,
+      });
+      if (attempt === EMAIL_RETRY_MAX) {
+        return false;
+      }
     }
-
-    console.error("[Sooqna Email] Resend rejected", {
-      ...emailLogBase(input, primaryFrom),
-      status: first.status,
-      resendId: providerResult.id,
-      providerErrorName: providerResult.name,
-      providerErrorMessage: providerResult.message,
-      resendKeySource: source,
-    });
-    return false;
-  } catch (error) {
-    console.error("[Sooqna Email] Resend request failed", {
-      ...emailLogBase(input, primaryFrom),
-      error: error instanceof Error ? error.message : "unknown",
-      resendKeySource: source,
-    });
-    return false;
   }
+
+  return false;
 }
 
 async function deliverEmail(input: SendEmailInput): Promise<boolean> {

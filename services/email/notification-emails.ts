@@ -1,7 +1,6 @@
 import { findUserById } from "@/services/auth/user-store";
 import { sendTransactionalEmail } from "@/services/email/transactional-email";
 import {
-  EMAIL_SITE_URL,
   emailSiteUrl,
   escapeEmailHtml,
 } from "@/services/email/sooqna-email-template";
@@ -331,7 +330,9 @@ export async function emailPasswordResetLink(input: {
 }): Promise<void> {
   const locale = await resolveEmailLocale({ email: input.email });
   const english = locale === "en";
-  const href = `${EMAIL_SITE_URL}/reset-password?token=${encodeURIComponent(input.token)}`;
+  const href = emailSiteUrl(
+    `/reset-password?token=${encodeURIComponent(input.token)}`,
+  );
   const name = input.name || (english ? "Sooqna customer" : "عميل سوقنا");
   await sendTransactionalEmail({
     type: "password_reset",

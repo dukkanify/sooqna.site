@@ -361,7 +361,7 @@ export function AdminOpsCockpit() {
           {critical.length === 0 ? (
             <div className="admin-ops__queue-item">
               <p className="admin-ops__queue-meta">
-                لا توجد عناصر عاجلة حالياً.
+                لا توجد عناصر تحتاج متابعة حالياً.
               </p>
             </div>
           ) : (

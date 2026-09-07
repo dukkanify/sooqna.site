@@ -9,12 +9,15 @@ import {
   expireStaleListings,
 } from "@/services/listings/listing-expiry";
 import {
+  deleteMockSeedListings as deletePersistedMockSeedListings,
   loadPersistedListings,
   persistAllListings,
   seedListings,
   upsertListingRow,
 } from "@/services/listings/listing-persistence";
-import { isProductionLike } from "@/services/payments/payment-config";
+import {
+  allowMockCatalogSeed,
+} from "@/services/listings/mock-catalog-policy";
 import type { Listing } from "@/types";
 import type {
   AdminListingCreateInput,
@@ -25,13 +28,6 @@ import type {
 let cacheRows: Listing[] | null = null;
 let inflight: Promise<Listing[]> | null = null;
 let expiryApplied = false;
-
-/** Production must not auto-inject mock catalog unless explicitly allowed. */
-function allowMockCatalogSeed(): boolean {
-  if (process.env.ALLOW_MOCK_CATALOG === "true") return true;
-  if (isProductionLike()) return false;
-  return true;
-}
 
 function hydrateCatalogPhones(listings: Listing[]): Listing[] {
   if (!allowMockCatalogSeed()) return listings;
@@ -346,6 +342,21 @@ export async function deleteListingById(
   await persistAllListings(listings);
   setCache(listings);
   return true;
+}
+
+export async function purgeMockSeedListings(): Promise<{
+  removed: number;
+  remainingSeed: number;
+  removedIds: string[];
+}> {
+  const result = await deletePersistedMockSeedListings();
+  cacheRows = null;
+  inflight = null;
+  return {
+    removed: result.removedIds.length,
+    remainingSeed: result.remainingSeed,
+    removedIds: result.removedIds,
+  };
 }
 
 export async function renewListing(id: string): Promise<Listing | undefined> {

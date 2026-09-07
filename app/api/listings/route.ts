@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     });
 
     if (!existing && listing.status === "pending_review") {
-      void notifyListingSubmitted(listing);
+      await notifyListingSubmitted(listing);
     }
 
     return NextResponse.json({ listing }, { status: 201 });

@@ -1,8 +1,18 @@
 const PRODUCTION_SITE_URL = "https://sooqna.site";
 const DEVELOPMENT_SITE_URL = "http://localhost:3000";
 
-/** Canonical public site URL — never localhost in production builds. */
+function vercelPreviewUrl(): string | null {
+  if (process.env.VERCEL_ENV !== "preview") return null;
+  const host = process.env.VERCEL_URL?.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
+  if (!host) return null;
+  return `https://${host}`;
+}
+
+/** Canonical public site URL — Preview uses the deployment host so auth emails stay off Production. */
 export function getAppUrl(): string {
+  const previewUrl = vercelPreviewUrl();
+  if (previewUrl) return previewUrl;
+
   const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (configured) {
     return configured.replace(/\/$/, "");

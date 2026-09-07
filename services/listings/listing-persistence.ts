@@ -6,19 +6,16 @@ import {
 } from "@/mock/listings.mock";
 import { getDurableAuthDir } from "@/services/auth/user-persistence";
 import { getOptionalPostgresPool } from "@/services/db/postgres";
-import { isProductionLike } from "@/services/payments/payment-config";
+import {
+  allowMockCatalogSeed,
+  isMockSeedListingId,
+} from "@/services/listings/mock-catalog-policy";
 import type { Listing } from "@/types";
 
 const TABLE = "marketplace_listings";
 const FILE = "sooqna-listings.json";
 
 let postgresReady = false;
-
-function allowMockCatalogSeed(): boolean {
-  if (process.env.ALLOW_MOCK_CATALOG === "true") return true;
-  if (isProductionLike()) return false;
-  return true;
-}
 
 export async function ensureListingsTable(): Promise<boolean> {
   const pool = await getOptionalPostgresPool();
@@ -212,6 +209,50 @@ export async function loadPersistedListings(): Promise<Listing[]> {
     return seeded;
   }
   return stored;
+}
+
+export async function deleteMockSeedListings(): Promise<{
+  removedIds: string[];
+  remainingSeed: number;
+}> {
+  const removedIds: string[] = [];
+
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) {
+      return { removedIds, remainingSeed: 0 };
+    }
+    const existing = await pool.query(`SELECT id FROM ${TABLE}`);
+    const seedIds = existing.rows
+      .map((row) => String(row.id))
+      .filter((id) => isMockSeedListingId(id));
+    if (seedIds.length > 0) {
+      await pool.query(`DELETE FROM ${TABLE} WHERE id = ANY($1::text[])`, [
+        seedIds,
+      ]);
+      removedIds.push(...seedIds);
+    }
+    const leftover = await pool.query(`SELECT id FROM ${TABLE}`);
+    const remainingSeed = leftover.rows.filter((row) =>
+      isMockSeedListingId(String(row.id)),
+    ).length;
+    return { removedIds, remainingSeed };
+  }
+
+  const stored = (await readJsonFile()) ?? [];
+  const kept: Listing[] = [];
+  for (const listing of stored) {
+    if (isMockSeedListingId(listing.id)) {
+      removedIds.push(listing.id);
+    } else {
+      kept.push(listing);
+    }
+  }
+  await writeJsonFile(kept);
+  return {
+    removedIds,
+    remainingSeed: kept.filter((item) => isMockSeedListingId(item.id)).length,
+  };
 }
 
 export { seedListings };

@@ -8,11 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --test scripts/auth-regression.test.mjs"
+    "test": "node --test scripts/auth-regression.test.mjs",
+    "verify:isolation": "node scripts/verify-isolation.mjs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dukkanify/UAE-Sales.git"
+    "url": "git+https://github.com/dukkanify/sooqna.site.git"
   },
   "keywords": [
     "sooqna",
@@ -25,9 +26,9 @@
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dukkanify/UAE-Sales/issues"
+    "url": "https://github.com/dukkanify/sooqna.site/issues"
   },
-  "homepage": "https://github.com/dukkanify/UAE-Sales#readme",
+  "homepage": "https://github.com/dukkanify/sooqna.site#readme",
   "dependencies": {
     "next": "^16.2.9",
     "pg": "^8.23.0",

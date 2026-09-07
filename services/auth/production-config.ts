@@ -1,3 +1,4 @@
+import { getAppUrl } from "@/shared/constants/site";
 import {
   ensureStripeConfigLoaded,
   getStripePublishableKey,
@@ -94,7 +95,7 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
   const emailProvider = (process.env.EMAIL_PROVIDER ?? "resend").trim().toLowerCase();
   const emailFromAddress = process.env.EMAIL_FROM_ADDRESS?.trim() || null;
   const emailFromName = process.env.EMAIL_FROM_NAME?.trim() || null;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || null;
+  const appUrl = getAppUrl();
   const demoOtpServerEnabled = process.env.ENABLE_DEMO_OTP === "true";
   const demoOtpClientEnabled = process.env.NEXT_PUBLIC_ENABLE_DEMO_OTP === "true";
   const stripeConfigured = isStripeConfigured();

@@ -1,10 +1,14 @@
 import { BRAND, BRAND_COLORS } from "@/shared/constants/brand";
+import { getAppUrl } from "@/shared/constants/site";
 
-export const EMAIL_SITE_URL = "https://sooqna.site";
+/** Canonical site URL in emails. Preview uses the deployment host so reset/OTP links stay off Production. */
+export function getEmailSiteUrl(): string {
+  return getAppUrl();
+}
 
 export function emailSiteUrl(path = "/"): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${EMAIL_SITE_URL}${normalized}`;
+  return `${getEmailSiteUrl()}${normalized}`;
 }
 
 export function escapeEmailHtml(value: string): string {
@@ -28,7 +32,7 @@ export function buildSooqnaEmailHtml(input: {
   const cream = BRAND_COLORS.white;
   // Hosted JPEG (not /apple-icon, not SVG) — Gmail blocks SVG and 404s break the logo.
   // Cache-bust query helps clients that cached a prior broken image URL.
-  const logoSrc = `${EMAIL_SITE_URL}/brand/email-logo.jpg?v=20260820`;
+  const logoSrc = `${getEmailSiteUrl()}/brand/email-logo.jpg?v=20260820`;
   const english = input.locale === "en";
   const dir = english ? "ltr" : "rtl";
   const align = english ? "left" : "right";
@@ -60,7 +64,7 @@ export function buildSooqnaEmailHtml(input: {
         <h1 style="margin:0 0 14px;font-size:20px;line-height:1.5;color:${navy};">${escapeEmailHtml(input.title)}</h1>
         ${input.bodyHtml}
         ${cta}
-        <p style="font-size:13px;line-height:1.8;margin-top:28px;color:#6b6560;">${teamLine}<br/>${EMAIL_SITE_URL}</p>
+        <p style="font-size:13px;line-height:1.8;margin-top:28px;color:#6b6560;">${teamLine}<br/>${getEmailSiteUrl()}</p>
       </div>
     </div>
   `.trim();
@@ -78,7 +82,7 @@ export function buildSooqnaEmailText(input: {
   if (input.ctaHref) {
     lines.push("", input.ctaLabel ? `${input.ctaLabel}: ${input.ctaHref}` : input.ctaHref);
   }
-  lines.push("", english ? `The ${BRAND.nameEn} team` : `فريق ${BRAND.nameAr}`, EMAIL_SITE_URL);
+  lines.push("", english ? `The ${BRAND.nameEn} team` : `فريق ${BRAND.nameAr}`, getEmailSiteUrl());
   return lines.join("\n");
 }
 
