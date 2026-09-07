@@ -4,6 +4,8 @@ import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { getCategories } from "@/services/categories";
 import { getFeaturedListings } from "@/services/listings";
 
+export const dynamic = "force-dynamic";
+
 export default async function FeaturedPage() {
   const [categories, listings] = await Promise.all([
     getCategories(),

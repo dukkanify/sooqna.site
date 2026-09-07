@@ -136,8 +136,8 @@ export async function persistAllListings(listings: Listing[]): Promise<void> {
     const pool = await getOptionalPostgresPool();
     if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
 
-    // Upsert each row; delete removed ids in a second pass for admin deletes.
-    const ids = listings.map((item) => item.id);
+    // Upsert each row. Removals go through deleteListingRow so a stale
+    // snapshot cannot wipe listings created by another instance.
     for (const listing of listings) {
       await pool.query(
         `INSERT INTO ${TABLE} (
@@ -171,18 +171,55 @@ export async function persistAllListings(listings: Listing[]): Promise<void> {
       );
     }
 
-    if (ids.length > 0) {
-      await pool.query(
-        `DELETE FROM ${TABLE} WHERE NOT (id = ANY($1::text[]))`,
-        [ids],
-      );
-    } else {
-      await pool.query(`DELETE FROM ${TABLE}`);
-    }
     return;
   }
 
   await writeJsonFile(listings);
+}
+
+export async function loadListingBySlug(slug: string): Promise<Listing | null> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) return null;
+    const result = await pool.query(
+      `SELECT payload FROM ${TABLE} WHERE slug = $1 LIMIT 1`,
+      [slug],
+    );
+    return (result.rows[0]?.payload as Listing) ?? null;
+  }
+
+  const stored = await readJsonFile();
+  return stored?.find((item) => item.slug === slug) ?? null;
+}
+
+export async function loadListingById(id: string): Promise<Listing | null> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) return null;
+    const result = await pool.query(
+      `SELECT payload FROM ${TABLE} WHERE id = $1 OR slug = $1 LIMIT 1`,
+      [id],
+    );
+    return (result.rows[0]?.payload as Listing) ?? null;
+  }
+
+  const stored = await readJsonFile();
+  return stored?.find((item) => item.id === id || item.slug === id) ?? null;
+}
+
+export async function deleteListingRow(id: string): Promise<boolean> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
+    const result = await pool.query(`DELETE FROM ${TABLE} WHERE id = $1`, [id]);
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  const stored = (await readJsonFile()) ?? [];
+  const next = stored.filter((item) => item.id !== id);
+  if (next.length === stored.length) return false;
+  await writeJsonFile(next);
+  return true;
 }
 
 export async function loadPersistedListings(): Promise<Listing[]> {

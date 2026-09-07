@@ -18,6 +18,9 @@ type ListingPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const { getListings, getMyListings } = await import("@/services/listings");
   const [listings, userListings] = await Promise.all([

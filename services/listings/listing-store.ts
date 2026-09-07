@@ -9,7 +9,10 @@ import {
   expireStaleListings,
 } from "@/services/listings/listing-expiry";
 import {
+  deleteListingRow,
   deleteMockSeedListings as deletePersistedMockSeedListings,
+  loadListingById,
+  loadListingBySlug,
   loadPersistedListings,
   persistAllListings,
   seedListings,
@@ -89,6 +92,11 @@ async function applyListingExpiry(listings: Listing[]): Promise<Listing[]> {
 }
 
 async function loadListingsUncached(): Promise<Listing[]> {
+  // Vercel instances keep module state. Reusing cacheRows hides listings
+  // created/approved by another instance and can 404 published pages.
+  if (process.env.VERCEL) {
+    cacheRows = null;
+  }
   if (cacheRows) {
     await applyListingExpiry(cacheRows);
     return cacheRows;
@@ -142,11 +150,15 @@ export function getListingSync(idOrSlug: string): Listing | undefined {
 }
 
 export async function getListingById(id: string): Promise<Listing | undefined> {
+  const persisted = await loadListingById(id).catch(() => null);
+  if (persisted) return persisted;
   const listings = await getAllListings();
   return listings.find((listing) => listing.id === id || listing.slug === id);
 }
 
 export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
+  const persisted = await loadListingBySlug(slug).catch(() => null);
+  if (persisted) return persisted;
   const listings = await getAllListings();
   return listings.find((listing) => listing.slug === slug);
 }
@@ -339,8 +351,9 @@ export async function deleteListingById(
     return false;
   }
   listings.splice(index, 1);
-  await persistAllListings(listings);
-  setCache(listings);
+  await deleteListingRow(id);
+  cacheRows = null;
+  inflight = null;
   return true;
 }
 
