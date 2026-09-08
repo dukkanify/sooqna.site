@@ -220,7 +220,7 @@ export function SearchFilters({
               label="الإمارة"
               name="city"
               options={[
-                { label: "كل الإمارات", value: "" },
+                { label: "جميع الإمارات", value: "" },
                 ...cities.map((city) => ({ label: city.name, value: city.name })),
               ]}
             />

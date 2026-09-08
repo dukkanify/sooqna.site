@@ -35,7 +35,7 @@ export const mockHomeCategorySections = [
   },
   {
     categoryId: "electronics",
-    description: "إلكترونيات حديثة مع ضمان مالي وتوثيق للبائعين.",
+    description: "إلكترونيات حديثة مع توثيق للبائعين وأسعار واضحة.",
     eyebrow: "Electronics",
     title: "إلكترونيات موثوقة",
     variant: "white" as const,

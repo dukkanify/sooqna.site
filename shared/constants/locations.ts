@@ -16,3 +16,11 @@ export const cities: City[] = [
   { id: "ras-al-khaimah", name: "رأس الخيمة" },
   { id: "fujairah", name: "الفجيرة" },
 ];
+
+/** Header/search All-Emirates option. Legacy stored value "كل الإمارات" is still accepted. */
+export const ALL_EMIRATES_NAME = "جميع الإمارات";
+export const ALL_EMIRATES_LEGACY_NAME = "كل الإمارات";
+
+export function isAllEmiratesSelection(value: string | null | undefined): boolean {
+  return value === ALL_EMIRATES_NAME || value === ALL_EMIRATES_LEGACY_NAME || !value;
+}
