@@ -1,0 +1,3 @@
+IBM Plex Sans Arabic — SIL Open Font License 1.1 (IBM / Google Fonts).
+Inter Bold (latin) — SIL Open Font License 1.1 (rsms / Inter).
+Vendored woff2 files are the Regular/Bold Arabic cuts plus Inter Bold latin only.

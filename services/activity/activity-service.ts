@@ -1,5 +1,6 @@
 import { getAdminDisputes } from "@/services/admin/dispute-store";
 import { getJobApplicationsForEmployer, getJobApplicationsForUser } from "@/services/job-applications/job-application-store";
+import { queryListings } from "@/services/listings/listing-queries";
 import { getAllListings } from "@/services/listings/listing-store";
 import { getOrdersForUser } from "@/services/payments/order-store";
 import { getQuoteRequestsForProvider, getQuoteRequestsForUser } from "@/services/quote-requests/quote-request-store";
@@ -264,7 +265,7 @@ export async function getActivitiesForUser(
     getQuoteRequestsForUser(userId),
     getQuoteRequestsForProvider(userId),
     getOrdersForUser(userId),
-    getAllListings(),
+    queryListings({ sellerId: userId, slim: "card", sort: "newest" }),
     getAdminDisputes(),
   ]);
 

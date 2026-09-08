@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Listing, ListingSearchFilters } from "@/types";
 import { listingMatchesQuery } from "@/shared/listings/listing-specs";
 import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
+import { queryListings } from "@/services/listings/listing-queries";
 import {
   getAllListings,
   getListingBySlug as getStoredListingBySlug,
@@ -9,14 +10,24 @@ import {
 
 export type { ListingSearchFilters };
 
+const SEARCH_FETCH_LIMIT = 60;
+const SEARCH_RESULT_LIMIT = 48;
+const RELATED_LIMIT = 3;
+
 export const getListings = cache(async (): Promise<Listing[]> => {
   return getAllListings();
 });
 
 export async function getMyListings(userId?: string): Promise<Listing[]> {
-  const listings = await getAllListings();
-  if (!userId) return listings.filter((listing) => listing.id.startsWith("local-"));
-  return listings.filter((listing) => listing.seller.id === userId);
+  if (!userId) {
+    const listings = await getAllListings();
+    return listings.filter((listing) => listing.id.startsWith("local-"));
+  }
+  return queryListings({
+    sellerId: userId,
+    slim: "full",
+    sort: "newest",
+  });
 }
 
 export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
@@ -24,22 +35,28 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
 }
 
 export const getFeaturedListings = cache(async (): Promise<Listing[]> => {
-  const listings = await getAllListings();
-  return listings.filter(
-    (listing) => isListingFeaturedActive(listing) && listing.status === "active",
-  );
+  const listings = await queryListings({
+    featured: true,
+    limit: 24,
+    slim: "card",
+    sort: "newest",
+    status: "active",
+  });
+  return listings.filter((listing) => isListingFeaturedActive(listing));
 });
 
 export async function getRelatedListings(
   categoryId: string,
   excludedId: string,
 ): Promise<Listing[]> {
-  const listings = await getAllListings();
-  return listings
-    .filter((listing) => listing.status === "active")
-    .filter((listing) => listing.categoryId === categoryId)
-    .filter((listing) => listing.id !== excludedId)
-    .slice(0, 3);
+  return queryListings({
+    categoryId,
+    excludeId: excludedId,
+    limit: RELATED_LIMIT,
+    slim: "card",
+    sort: "newest",
+    status: "active",
+  });
 }
 
 function matchesQuery(listing: Listing, query: string): boolean {
@@ -49,60 +66,31 @@ function matchesQuery(listing: Listing, query: string): boolean {
 export async function searchListings(
   filters: ListingSearchFilters = {},
 ): Promise<Listing[]> {
-  const normalizedQuery = filters.query?.trim().toLowerCase();
-  const emirateFilter = filters.emirate ?? filters.city;
-  const listings = await getAllListings();
+  const normalizedQuery = filters.query?.trim();
+  const rows = await queryListings({
+    area: filters.area,
+    categoryId: filters.categoryId,
+    city: filters.emirate ?? filters.city,
+    condition: filters.condition,
+    country: filters.country,
+    emirate: filters.emirate ?? filters.city,
+    featured: filters.featured || undefined,
+    limit: SEARCH_FETCH_LIMIT,
+    maxPrice: filters.maxPrice,
+    minPrice: filters.minPrice,
+    query: normalizedQuery,
+    slim: "card",
+    sort: filters.sort ?? "newest",
+    status: "active",
+  });
 
-  const results = listings
-    .filter((listing) => listing.status === "active")
+  const results = rows
     .filter((listing) =>
       normalizedQuery ? matchesQuery(listing, normalizedQuery) : true,
-    )
-    .filter((listing) =>
-      filters.categoryId ? listing.categoryId === filters.categoryId : true,
-    )
-    .filter((listing) =>
-      emirateFilter
-        ? listing.emirate === emirateFilter || listing.city === emirateFilter
-        : true,
-    )
-    .filter((listing) =>
-      filters.area ? listing.area === filters.area : true,
-    )
-    .filter((listing) =>
-      filters.condition ? listing.condition === filters.condition : true,
-    )
-    .filter((listing) =>
-      filters.country ? listing.country === filters.country : true,
-    )
-    .filter((listing) =>
-      typeof filters.minPrice === "number"
-        ? listing.price >= filters.minPrice
-        : true,
-    )
-    .filter((listing) =>
-      typeof filters.maxPrice === "number"
-        ? listing.price <= filters.maxPrice
-        : true,
-    )
-    .filter((listing) =>
-      filters.featured ? isListingFeaturedActive(listing) : true,
     )
     .filter((listing) =>
       filters.premium ? listing.isPremium === true : true,
     );
 
-  return [...results].sort((first, second) => {
-    if (filters.sort === "price_asc") {
-      return first.price - second.price;
-    }
-
-    if (filters.sort === "price_desc") {
-      return second.price - first.price;
-    }
-
-    const firstDate = first.postedAt ?? first.id;
-    const secondDate = second.postedAt ?? second.id;
-    return secondDate.localeCompare(firstDate);
-  });
+  return results.slice(0, SEARCH_RESULT_LIMIT);
 }

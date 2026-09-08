@@ -22,14 +22,7 @@ export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const { getListings, getMyListings } = await import("@/services/listings");
-  const [listings, userListings] = await Promise.all([
-    getListings(),
-    getMyListings(),
-  ]);
-  return [...listings, ...userListings]
-    .filter((listing) => listing.status === "active")
-    .map((listing) => ({ slug: listing.slug }));
+  return [];
 }
 
 export async function generateMetadata({

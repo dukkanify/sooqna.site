@@ -1,4 +1,4 @@
-import { AppImage } from "@/shared/components/AppImage";
+import Image from "next/image";
 import { getMarketHeroBackground } from "@/services/content/homepage-marketplace.content";
 import {
   MarketHeroBadge,
@@ -12,12 +12,13 @@ export async function MobileHeroSection() {
     <section className="mobile-home-hero">
       <div className="mobile-home-hero__media">
         <div className="mobile-home-hero__bg">
-          <AppImage
+          <Image
             alt="أفق أبوظبي — أبراج الاتحاد والكورنيش"
             className="object-cover"
             fill
             priority
-            sizes="(max-width: 768px) calc(100vw - 2 * var(--mh-page-x, 1rem)), 480px"
+            quality={72}
+            sizes="(max-width: 430px) 100vw, 480px"
             src={backgroundUrl}
           />
         </div>

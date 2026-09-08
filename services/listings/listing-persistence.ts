@@ -44,6 +44,19 @@ export async function ensureListingsTable(): Promise<boolean> {
   await pool.query(
     `CREATE INDEX IF NOT EXISTS marketplace_listings_category_idx ON ${TABLE} (category_id)`,
   );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS marketplace_listings_status_posted_idx
+     ON ${TABLE} (status, posted_at DESC NULLS LAST)`,
+  );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS marketplace_listings_status_featured_idx
+     ON ${TABLE} (status, is_featured)
+     WHERE status = 'active'`,
+  );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS marketplace_listings_status_category_posted_idx
+     ON ${TABLE} (status, category_id, posted_at DESC NULLS LAST)`,
+  );
   postgresReady = true;
   return true;
 }

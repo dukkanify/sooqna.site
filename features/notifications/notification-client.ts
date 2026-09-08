@@ -10,6 +10,15 @@ export function emitNotificationsChanged() {
   window.dispatchEvent(new Event(STORAGE_EVENTS.notificationsChange));
 }
 
+export async function fetchUnreadCount(): Promise<number> {
+  const response = await fetch("/api/notifications?view=count", {
+    credentials: "include",
+  });
+  if (!response.ok) return 0;
+  const data = (await response.json()) as { unread?: number };
+  return typeof data.unread === "number" ? data.unread : 0;
+}
+
 export async function fetchNotifications(): Promise<NotificationsPayload> {
   const response = await fetch("/api/notifications", { credentials: "include" });
   if (!response.ok) {

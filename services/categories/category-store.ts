@@ -7,7 +7,12 @@ import type {
   AdminCategoryPatch,
   AdminCategoryRecord,
 } from "@/types/domain/admin";
-import { getAllListings } from "@/services/listings/listing-store";
+import {
+  countListingsByCategory,
+  countActiveListingsByCategory,
+} from "@/services/listings/listing-queries";
+import { LISTINGS_CACHE_TAG, CATEGORY_COUNTS_REVALIDATE_SECONDS } from "@/services/listings/listings-cache";
+import { unstable_cache } from "next/cache";
 
 const FILE = "categories.json";
 
@@ -68,17 +73,21 @@ export const getAllCategoryRecords = cache(async (): Promise<StoredCategory[]> =
   return loadCategoryRecordsUncached();
 });
 
-export const getEnabledCategories = cache(async (): Promise<Category[]> => {
-  const [categories, listings] = await Promise.all([
-    getAllCategoryRecords(),
-    getAllListings(),
-  ]);
+const getActiveListingCountsCached = unstable_cache(
+  async () => {
+    const counts = await countActiveListingsByCategory();
+    return Object.fromEntries(counts.entries());
+  },
+  ["sooqna-category-counts-v1"],
+  { revalidate: CATEGORY_COUNTS_REVALIDATE_SECONDS, tags: [LISTINGS_CACHE_TAG] },
+);
 
-  const counts = new Map<string, number>();
-  for (const listing of listings) {
-    if (listing.status !== "active") continue;
-    counts.set(listing.categoryId, (counts.get(listing.categoryId) ?? 0) + 1);
-  }
+export const getEnabledCategories = cache(async (): Promise<Category[]> => {
+  const [categories, countRecord] = await Promise.all([
+    getAllCategoryRecords(),
+    getActiveListingCountsCached(),
+  ]);
+  const counts = new Map(Object.entries(countRecord));
 
   return categories
     .filter((category) => category.enabled)
@@ -101,14 +110,10 @@ export async function getCategoryBySlug(
 }
 
 export async function getAdminCategoryRecords(): Promise<AdminCategoryRecord[]> {
-  const [categories, listings] = await Promise.all([
+  const [categories, counts] = await Promise.all([
     getAllCategoryRecords(),
-    getAllListings(),
+    countListingsByCategory(),
   ]);
-  const counts = new Map<string, number>();
-  for (const listing of listings) {
-    counts.set(listing.categoryId, (counts.get(listing.categoryId) ?? 0) + 1);
-  }
 
   return categories
     .slice()

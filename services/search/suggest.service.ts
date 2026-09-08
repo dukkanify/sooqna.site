@@ -1,5 +1,5 @@
 import { getEnabledCategories } from "@/services/categories/category-store";
-import { getAllListings } from "@/services/listings/listing-store";
+import { queryListings } from "@/services/listings/listing-queries";
 import { getListingPath } from "@/shared/listings/listing-url";
 import {
   CATEGORY_SEARCH_KEYWORDS,
@@ -392,7 +392,12 @@ function buildDocs(listings: Listing[], categories: Category[]): SuggestDoc[] {
 
 async function getSuggestIndex(): Promise<SuggestDoc[]> {
   const [listings, categories] = await Promise.all([
-    getAllListings(),
+    queryListings({
+      limit: 400,
+      slim: "suggest",
+      sort: "newest",
+      status: "active",
+    }),
     getEnabledCategories(),
   ]);
   const key = catalogKey(listings, categories);

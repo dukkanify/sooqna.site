@@ -7,6 +7,7 @@ import { getSessionSnapshot, subscribeSession } from "@/services/storage/externa
 import { Icon } from "@/shared/ui/Icon";
 import {
   fetchNotifications,
+  fetchUnreadCount,
   formatNotificationTime,
   markNotificationsRead,
 } from "@/features/notifications/notification-client";
@@ -24,7 +25,7 @@ type NotificationBellProps = {
   iconSize?: number;
 };
 
-const POLL_MS = 20_000;
+const POLL_MS = 45_000;
 
 function readPushUi() {
   const permission =
@@ -58,29 +59,34 @@ export function NotificationBell({
   const [pushUi, setPushUi] = useState({ iosHint: false, prompt: false, ready: false });
   const lastUnread = useRef(0);
 
-  const refresh = useCallback(async (opts?: { announce?: boolean }) => {
-    const data = await fetchNotifications();
-    setItems(data.notifications);
-    setUnread(data.unread);
-
-    if (
-      opts?.announce &&
-      data.unread > lastUnread.current &&
-      document.hidden &&
-      "Notification" in window &&
-      Notification.permission === "granted"
-    ) {
-      const newest = data.notifications.find((item) => !item.read);
-      if (newest) {
-        new Notification(newest.title, {
-          body: newest.body,
-          icon: "/brand/app-icon.svg",
-          tag: newest.id,
-        });
+  const refresh = useCallback(async (opts?: { announce?: boolean; full?: boolean }) => {
+    if (opts?.full) {
+      const data = await fetchNotifications();
+      setItems(data.notifications);
+      setUnread(data.unread);
+      if (
+        opts.announce &&
+        data.unread > lastUnread.current &&
+        document.hidden &&
+        "Notification" in window &&
+        Notification.permission === "granted"
+      ) {
+        const newest = data.notifications.find((item) => !item.read);
+        if (newest) {
+          new Notification(newest.title, {
+            body: newest.body,
+            icon: "/brand/app-icon.svg",
+            tag: newest.id,
+          });
+        }
       }
+      lastUnread.current = data.unread;
+      return;
     }
 
-    lastUnread.current = data.unread;
+    const unreadCount = await fetchUnreadCount();
+    setUnread(unreadCount);
+    lastUnread.current = unreadCount;
   }, []);
 
   useEffect(() => {
@@ -96,6 +102,7 @@ export function NotificationBell({
       if (document.visibilityState === "visible") void refresh();
     };
     const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
       void refresh({ announce: true });
     }, POLL_MS);
 

@@ -43,7 +43,7 @@ export function ListingLocationMap({ listing }: ListingLocationMapProps) {
         <iframe
           allowFullScreen
           className="block h-[16rem] w-full border-0 sm:h-[18rem]"
-          loading="eager"
+          loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           src={embedUrl}
           title={`خريطة موقع ${point.label}`}
