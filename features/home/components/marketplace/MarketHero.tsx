@@ -1,6 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Category } from "@/types";
-import { AppImage } from "@/shared/components/AppImage";
 import {
   getMarketHeroBackground,
   getMarketQuickSearches,
@@ -26,12 +26,13 @@ export async function MarketHero({ categories }: MarketHeroProps) {
         <span className="market-hero__orb market-hero__orb--navy" />
         <span className="market-hero__orb market-hero__orb--mist" />
         <div className="market-hero__photo">
-          <AppImage
+          <Image
             alt="أفق أبوظبي — أبراج الاتحاد والكورنيش"
             className="object-cover"
             fill
             priority
-            sizes="100vw"
+            quality={72}
+            sizes="(max-width: 640px) 100vw, (max-width: 1080px) 100vw, 1400px"
             src={backgroundUrl}
           />
         </div>

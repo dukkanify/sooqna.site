@@ -5,7 +5,7 @@ import { EscrowProtectionCard } from "@/features/listings/components/EscrowProte
 import { ListingPlatformNotice } from "@/features/listings/components/ListingPlatformNotice";
 import { ListingDetailToolbar } from "@/features/listings/components/ListingDetailToolbar";
 import { ListingGallery } from "@/features/listings/components/ListingGallery";
-import { ListingLocationMap } from "@/features/listings/components/ListingLocationMap";
+import dynamic from "next/dynamic";
 import { ListingSafetyTips } from "@/features/listings/components/ListingSafetyTips";
 import { ListingSpecifications } from "@/features/listings/components/ListingSpecifications";
 import {
@@ -26,6 +26,21 @@ import { Badge } from "@/shared/ui/Badge";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { Icon } from "@/shared/ui/Icon";
 import { SectionHeader } from "@/shared/ui/SectionHeader";
+
+const ListingLocationMap = dynamic(
+  () =>
+    import("@/features/listings/components/ListingLocationMap").then(
+      (mod) => mod.ListingLocationMap,
+    ),
+  {
+    loading: () => (
+      <div
+        aria-hidden
+        className="mt-8 min-h-[16rem] rounded-[var(--radius-2xl)] bg-[#e8eef5] sm:min-h-[18rem]"
+      />
+    ),
+  },
+);
 
 type ListingDetailsViewProps = {
   breadcrumbs: { href?: string; label: string }[];

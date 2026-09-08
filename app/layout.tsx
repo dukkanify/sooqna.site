@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { BrandJsonLd } from "@/shared/components/BrandJsonLd";
 import { DeferredOfflineBanner } from "@/shared/components/DeferredOfflineBanner";
 import { NotificationPushRegistrar } from "@/features/notifications/NotificationPushRegistrar";
@@ -13,19 +13,37 @@ import { getRequestLocale, LOCALE_BOOT_SCRIPT } from "@/shared/i18n/locale";
 import { THEME_BOOT_SCRIPT } from "@/shared/theme/theme";
 import "./globals.css";
 
-const ibmPlexArabic = IBM_Plex_Sans_Arabic({
-  subsets: ["arabic"],
+const ibmPlexArabic = localFont({
+  src: [
+    {
+      path: "../fonts/IBMPlexSansArabic-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/IBMPlexSansArabic-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  adjustFontFallback: "Arial",
   display: "swap",
+  preload: true,
   variable: "--font-ibm-plex-arabic",
-  weight: ["400", "700"],
 });
 
-const inter = Inter({
-  subsets: ["latin"],
+const inter = localFont({
+  src: [
+    {
+      path: "../fonts/Inter-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  adjustFontFallback: "Arial",
   display: "swap",
   preload: false,
   variable: "--font-inter",
-  weight: ["700"],
 });
 
 const siteUrl = getAppUrl();

@@ -6,6 +6,7 @@ import {
 import {
   getNotificationsForUser,
   markNotificationsRead,
+  countUnreadNotifications,
 } from "@/services/payments/notification-store";
 
 export async function GET(request: Request) {
@@ -14,11 +15,19 @@ export async function GET(request: Request) {
     return user;
   }
 
-  const limit = Number(new URL(request.url).searchParams.get("limit") ?? "20");
+  const params = new URL(request.url).searchParams;
+  const view = params.get("view");
+  if (view === "count") {
+    const unread = await countUnreadNotifications(user.id);
+    return NextResponse.json({ unread, notifications: [] });
+  }
+
+  const limit = Number(params.get("limit") ?? "20");
   const notifications = await getNotificationsForUser(user.id);
   const capped = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 200) : 20;
+  const unread = await countUnreadNotifications(user.id);
   return NextResponse.json({
-    unread: notifications.filter((item) => !item.read).length,
+    unread,
     notifications: notifications.slice(0, capped),
   });
 }

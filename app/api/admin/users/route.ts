@@ -4,7 +4,7 @@ import {
 import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import { getAllUsers, toAdminUserRecord } from "@/services/auth/user-store";
-import { getAllListings } from "@/services/listings/listing-store";
+import { countListingsBySeller } from "@/services/listings/listing-queries";
 
 export async function GET() {
   const admin = await requireAdminPermission("users");
@@ -12,17 +12,10 @@ export async function GET() {
     return admin;
   }
 
-  const [users, listings] = await Promise.all([
+  const [users, listingCounts] = await Promise.all([
     getAllUsers(),
-    getAllListings(),
+    countListingsBySeller(),
   ]);
-  const listingCounts = new Map<string, number>();
-  for (const listing of listings) {
-    listingCounts.set(
-      listing.seller.id,
-      (listingCounts.get(listing.seller.id) ?? 0) + 1,
-    );
-  }
 
   return NextResponse.json({
     users: users.map((user) =>

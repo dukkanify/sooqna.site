@@ -95,6 +95,7 @@ export function LiveLocalizer() {
   const locale = useLocale();
 
   useLayoutEffect(() => {
+    if (locale !== "en") return undefined;
     walk(document.body, locale);
     let queued = false;
     const observer = new MutationObserver(() => {

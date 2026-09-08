@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSearchSuggestions } from "@/services/search/suggest.service";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const query = params.get("q") ?? "";
@@ -12,6 +10,10 @@ export async function GET(request: Request) {
   });
   return NextResponse.json(
     { items },
-    { headers: { "Cache-Control": "private, no-store" } },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=15, stale-while-revalidate=45",
+      },
+    },
   );
 }

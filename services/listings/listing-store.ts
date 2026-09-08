@@ -21,6 +21,8 @@ import {
 import {
   allowMockCatalogSeed,
 } from "@/services/listings/mock-catalog-policy";
+import { loadAdminListingRecords } from "@/services/listings/listing-queries";
+import { bumpListingsCache } from "@/services/listings/listings-cache";
 import type { Listing } from "@/types";
 import type {
   AdminListingCreateInput,
@@ -203,6 +205,7 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
   else listings.unshift(next);
   await upsertListingRow(next);
   cacheRows = null;
+  bumpListingsCache();
   return { ...next };
 }
 
@@ -305,6 +308,7 @@ export async function patchListingRecord(
   };
   await upsertListingRow(listings[index]);
   cacheRows = null;
+  bumpListingsCache();
   return { ...listings[index] };
 }
 
@@ -337,6 +341,7 @@ export async function setListingFeatured(
   };
   await upsertListingRow(listings[index]);
   cacheRows = null;
+  bumpListingsCache();
   return { ...listings[index] };
 }
 
@@ -354,6 +359,7 @@ export async function deleteListingById(
   await deleteListingRow(id);
   cacheRows = null;
   inflight = null;
+  bumpListingsCache();
   return true;
 }
 
@@ -365,6 +371,7 @@ export async function purgeMockSeedListings(): Promise<{
   const result = await deletePersistedMockSeedListings();
   cacheRows = null;
   inflight = null;
+  bumpListingsCache();
   return {
     removed: result.removedIds.length,
     remainingSeed: result.remainingSeed,
@@ -387,6 +394,7 @@ export async function renewListing(id: string): Promise<Listing | undefined> {
   };
   await upsertListingRow(listings[index]);
   cacheRows = null;
+  bumpListingsCache();
   return { ...listings[index] };
 }
 
@@ -416,6 +424,7 @@ export async function updateSellerListingRating(
     await upsertListingRow(listing);
   }
   cacheRows = null;
+  bumpListingsCache();
 }
 
 export function toAdminListingRecord(listing: Listing): AdminListingRecord {
@@ -436,8 +445,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
 }
 
 export async function getAdminListingRecords(): Promise<AdminListingRecord[]> {
-  const listings = await getAllListings();
-  return listings.map(toAdminListingRecord);
+  return loadAdminListingRecords();
 }
 
 export async function getListingsModerationSummary() {

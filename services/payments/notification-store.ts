@@ -41,6 +41,11 @@ async function ensurePostgres(): Promise<boolean> {
      ON ${TABLE} (user_id, dedupe_key)
      WHERE dedupe_key IS NOT NULL`,
   );
+  await pool.query(
+    `CREATE INDEX IF NOT EXISTS app_notifications_user_unread_idx
+     ON ${TABLE} (user_id, created_at DESC)
+     WHERE read = FALSE`,
+  );
   postgresReady = true;
   return true;
 }
@@ -204,6 +209,20 @@ export async function createNotification(
     });
     return notification;
   });
+}
+
+export async function countUnreadNotifications(userId: string): Promise<number> {
+  if (await ensurePostgres()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) return 0;
+    const result = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM ${TABLE} WHERE user_id = $1 AND read = false`,
+      [userId],
+    );
+    return Number(result.rows[0]?.c ?? 0);
+  }
+  const rows = await readJson();
+  return rows.filter((item) => item.userId === userId && !item.read).length;
 }
 
 export async function getNotificationsForUser(
