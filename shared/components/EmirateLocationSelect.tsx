@@ -2,14 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useSyncExternalStore } from "react";
-import { cities } from "@/shared/constants/locations";
+import { cities, ALL_EMIRATES_NAME, ALL_EMIRATES_LEGACY_NAME, isAllEmiratesSelection } from "@/shared/constants/locations";
 import { Icon } from "@/shared/ui/Icon";
 
 type LocationOption = { id: string; name: string };
 
 const EMIRATE_STORAGE_KEY = "sooqna_emirate";
 const EMIRATE_CHANGE_EVENT = "sooqna-emirate-change";
-const ALL_EMIRATES_NAME = "كل الإمارات";
 const DEFAULT_EMIRATE = "أبوظبي";
 
 function buildEmirateOptions(): LocationOption[] {
@@ -27,6 +26,7 @@ function readStoredEmirate(): string {
   if (typeof window === "undefined") return DEFAULT_EMIRATE;
   try {
     const stored = localStorage.getItem(EMIRATE_STORAGE_KEY);
+    if (stored === ALL_EMIRATES_LEGACY_NAME) return ALL_EMIRATES_NAME;
     if (stored) return stored;
   } catch {
     /* ignore storage errors */
@@ -79,7 +79,7 @@ export function EmirateLocationSelect({
       /* ignore storage errors */
     }
     router.push(
-      next === ALL_EMIRATES_NAME ? "/search" : `/search?city=${encodeURIComponent(next)}`,
+      isAllEmiratesSelection(next) ? "/search" : `/search?city=${encodeURIComponent(next)}`,
     );
   }
 
