@@ -25,8 +25,6 @@ const QA_SELLER_NAMES = new Set(["Preview E2E User", "QA26 User"]);
 function isConfirmedFixtureListing(listing) {
   const id = listing.id?.trim() ?? "";
   const slug = listing.slug?.trim() || id;
-  const title = listing.title?.trim() ?? "";
-  const sellerName = listing.seller?.name?.trim() ?? "";
 
   if (id && isMockSeedListingId(id)) return true;
   if (slug && isMockSeedListingId(slug)) return true;
@@ -34,10 +32,18 @@ function isConfirmedFixtureListing(listing) {
   if (/^e2e-preview-[a-f0-9]+$/i.test(slug)) return true;
   if (/^e2e-[a-f0-9]{8}$/i.test(slug)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(slug)) return true;
-  if (/^إعلان تجريبي\b/.test(title)) return true;
-  if (/^E2E Preview Test Listing$/i.test(title)) return true;
-  if (QA_SELLER_NAMES.has(sellerName)) return true;
   return false;
+}
+
+function needsManualReviewListing(listing) {
+  if (isConfirmedFixtureListing(listing)) return false;
+  const title = listing.title?.trim() ?? "";
+  const sellerName = listing.seller?.name?.trim() ?? "";
+  return (
+    /^إعلان تجريبي\b/.test(title) ||
+    /^E2E Preview Test Listing$/i.test(title) ||
+    QA_SELLER_NAMES.has(sellerName)
+  );
 }
 
 test("policy file still encodes fixture and no-seed-on-vercel rules", () => {
@@ -49,12 +55,15 @@ test("policy file still encodes fixture and no-seed-on-vercel rules", () => {
   assert.match(src, /ALLOW_MOCK_CATALOG/);
   assert.match(src, /office-business-bay/);
   assert.match(src, /qa26-\[a-z\]\+-\[a-f0-9\]\+/);
-  assert.match(src, /إعلان تجريبي/);
-  assert.match(src, /Preview E2E User/);
+  assert.match(src, /needsManualReviewListing/);
   assert.match(src, /FIXTURE_LISTING_SQL/);
+  assert.doesNotMatch(
+    src,
+    /OR COALESCE\(payload->>'title', ''\) LIKE 'إعلان تجريبي%'/,
+  );
 });
 
-test("confirmed mock/QA listings are fixtures", () => {
+test("confirmed mock/QA listings are fixtures by id or slug only", () => {
   assert.equal(
     isConfirmedFixtureListing({ id: "listing-car-001", slug: "mercedes-amg-g63-2024" }),
     true,
@@ -90,9 +99,39 @@ test("confirmed mock/QA listings are fixtures", () => {
   );
 });
 
+test("title or seller name alone never marks a listing confirmed fake", () => {
+  assert.equal(
+    isConfirmedFixtureListing({
+      id: "admin-9001",
+      slug: "used-sofa-dubai",
+      title: "إعلان تجريبي",
+      seller: { name: "QA26 User" },
+    }),
+    false,
+  );
+  assert.equal(
+    needsManualReviewListing({
+      id: "admin-9001",
+      slug: "used-sofa-dubai",
+      title: "إعلان تجريبي",
+      seller: { name: "QA26 User" },
+    }),
+    true,
+  );
+});
+
 test("genuine-looking user listings are not auto-deleted as fixtures", () => {
   assert.equal(
     isConfirmedFixtureListing({
+      id: "admin-171000",
+      slug: "toyota-land-cruiser-dubai",
+      title: "تويوتا لاند كروزر",
+      seller: { name: "أحمد المنصوري" },
+    }),
+    false,
+  );
+  assert.equal(
+    needsManualReviewListing({
       id: "admin-171000",
       slug: "toyota-land-cruiser-dubai",
       title: "تويوتا لاند كروزر",
@@ -134,4 +173,15 @@ test("emirate cards never fall back to a fake 500 count", () => {
     "utf8",
   );
   assert.doesNotMatch(src, /\?\? 500/);
+});
+
+test("sitemap and category directory do not hardcode listing slugs", () => {
+  const sitemap = readFileSync(path.join(root, "app/sitemap.ts"), "utf8");
+  assert.match(sitemap, /searchListings/);
+  assert.doesNotMatch(sitemap, /getListings\(\)/);
+  const directory = readFileSync(
+    path.join(root, "features/categories/components/CategoryDirectory.tsx"),
+    "utf8",
+  );
+  assert.doesNotMatch(directory, /featuredListingSlug/);
 });

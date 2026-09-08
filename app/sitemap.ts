@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
 import { getAppUrl } from "@/shared/constants/site";
 import { getCategories } from "@/services/categories";
-import { getListings } from "@/services/listings";
+import { searchListings } from "@/services/listings";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getAppUrl();
   const [categories, listings] = await Promise.all([
     getCategories(),
-    getListings(),
+    searchListings({ sort: "newest" }),
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [

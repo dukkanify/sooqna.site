@@ -48,14 +48,6 @@ export function CategoryDirectory({ categories }: CategoryDirectoryProps) {
                     {listingCountLabel(category.listingCount, locale)}
                   </span>
                 </div>
-                {category.featuredListingSlug ? (
-                  <Link
-                    className="mt-2 inline-block text-xs font-semibold text-primary"
-                    href={`/listings/${category.featuredListingSlug}`}
-                  >
-                    إعلان مميز في هذا القسم ←
-                  </Link>
-                ) : null}
                 <div className="mt-4 flex flex-wrap gap-2">
                   {category.subcategories.slice(0, 4).map((subcategory) => (
                     <Link

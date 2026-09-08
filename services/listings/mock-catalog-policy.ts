@@ -30,16 +30,25 @@ export type FixtureListingRef = {
   seller?: { name?: string };
 };
 
+export type ListingIntegrityClass = "CONFIRMED_FAKE" | "MANUAL_REVIEW" | "REAL";
+
+function looksLikeQaTitleOrName(listing: FixtureListingRef): boolean {
+  const title = listing.title?.trim() ?? "";
+  const sellerName = listing.seller?.name?.trim() ?? "";
+  return (
+    /^إعلان تجريبي\b/.test(title) ||
+    /^E2E Preview Test Listing$/i.test(title) ||
+    QA_SELLER_NAMES.has(sellerName)
+  );
+}
+
 /**
- * Confirmed fixture/demo marketplace rows — seed catalog, E2E preview ads,
- * and 26/26 QA listings. Evidence: mock ids, known QA slug prefixes, titles
- * "إعلان تجريبي…", and dedicated QA seller display names.
+ * Confirmed fixture rows only — seed catalog ids and known QA/E2E slugs.
+ * Never classify from title or seller name alone.
  */
 export function isConfirmedFixtureListing(listing: FixtureListingRef): boolean {
   const id = listing.id?.trim() ?? "";
   const slug = listing.slug?.trim() || id;
-  const title = listing.title?.trim() ?? "";
-  const sellerName = listing.seller?.name?.trim() ?? "";
 
   if (id && isMockSeedListingId(id)) return true;
   if (slug && isMockSeedListingId(slug)) return true;
@@ -47,13 +56,27 @@ export function isConfirmedFixtureListing(listing: FixtureListingRef): boolean {
   if (/^e2e-preview-[a-f0-9]+$/i.test(slug)) return true;
   if (/^e2e-[a-f0-9]{8}$/i.test(slug)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(slug)) return true;
-  if (/^إعلان تجريبي\b/.test(title)) return true;
-  if (/^E2E Preview Test Listing$/i.test(title)) return true;
-  if (QA_SELLER_NAMES.has(sellerName)) return true;
   return false;
 }
 
-/** SQL predicate matching isConfirmedFixtureListing — AND NOT (this). */
+/**
+ * Title/name looks like QA but id/slug are not proven fixtures.
+ * Do not auto-hide or delete — report for human review.
+ */
+export function needsManualReviewListing(listing: FixtureListingRef): boolean {
+  if (isConfirmedFixtureListing(listing)) return false;
+  return looksLikeQaTitleOrName(listing);
+}
+
+export function classifyListingIntegrity(
+  listing: FixtureListingRef,
+): ListingIntegrityClass {
+  if (isConfirmedFixtureListing(listing)) return "CONFIRMED_FAKE";
+  if (needsManualReviewListing(listing)) return "MANUAL_REVIEW";
+  return "REAL";
+}
+
+/** SQL predicate matching isConfirmedFixtureListing (id/slug evidence only). */
 export const FIXTURE_LISTING_SQL = `(
   id ~ '^listing-(car|re|mob|elec|furn|svc|job|fashion|pets|kids|books|sports|food)-[0-9]{3}$'
   OR id ~ '^listing-extra-[0-9]+$'
@@ -62,7 +85,4 @@ export const FIXTURE_LISTING_SQL = `(
   OR slug ~ '^e2e-[a-f0-9]{8}$'
   OR slug ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR slug = 'office-business-bay'
-  OR COALESCE(payload->>'title', '') LIKE 'إعلان تجريبي%'
-  OR COALESCE(payload->>'title', '') ILIKE 'E2E Preview Test Listing'
-  OR COALESCE(payload->'seller'->>'name', '') IN ('Preview E2E User', 'QA26 User')
 )`;
