@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import { listingMatchesEmirate } from "@/shared/listings/listing-ownership";
 import { listingMatchesQuery } from "@/shared/listings/listing-specs";
+import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import type { Category, Listing } from "@/types";
 import { ListingCard } from "@/features/listings/components/ListingCard";
 import { SearchResultsToolbar } from "@/features/search/components/SearchResultsToolbar";
@@ -65,6 +66,7 @@ export function SearchResultsList({
 
     const matchingLocalListings = localListings
       .filter((listing) => listing.status === "active")
+      .filter((listing) => !isConfirmedFixtureListing(listing))
       .filter((listing) =>
         filterCategory ? listing.categoryId === filterCategory : true,
       )
@@ -123,6 +125,15 @@ export function SearchResultsList({
   }, []);
 
   if (visibleListings.length === 0) {
+    const hasActiveFilters = Boolean(
+      selectedFilters.query?.trim() ||
+        selectedFilters.city ||
+        selectedFilters.condition ||
+        selectedFilters.country ||
+        selectedFilters.minPrice ||
+        selectedFilters.maxPrice ||
+        selectedFilters.category,
+    );
     return (
       <>
         <SearchResultsToolbar
@@ -131,12 +142,20 @@ export function SearchResultsList({
           selectedFilters={selectedFilters}
         />
         <EmptyState
-          actionHref="/search"
-          actionLabel="عرض كل الإعلانات"
-          description="جرّب تعديل الفلاتر أو البحث بكلمات مختلفة. يمكنك أيضاً حفظ البحث للمرة القادمة."
+          actionHref={hasActiveFilters ? "/search" : "/listings/new"}
+          actionLabel={hasActiveFilters ? "عرض كل الإعلانات" : "أضف إعلاناً"}
+          description={
+            hasActiveFilters
+              ? "جرّب تعديل الفلاتر أو البحث بكلمات مختلفة."
+              : "لا نعرض بيانات تجريبية لملء السوق. ستظهر الإعلانات الحقيقية هنا عند نشرها."
+          }
           eyebrow="لا نتائج"
           icon="search"
-          title="لم نجد إعلانات مطابقة"
+          title={
+            hasActiveFilters
+              ? "لم نجد إعلانات مطابقة"
+              : "لا توجد إعلانات متاحة حالياً."
+          }
         />
       </>
     );

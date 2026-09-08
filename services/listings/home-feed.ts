@@ -75,7 +75,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
   return { featured, nearbySource, preview, sections };
 }
 
-const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v2"], {
+const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v3"], {
   revalidate: HOME_FEED_REVALIDATE_SECONDS,
   tags: [LISTINGS_CACHE_TAG],
 });

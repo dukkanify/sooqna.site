@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --test scripts/auth-regression.test.mjs",
+    "test": "node --test scripts/auth-regression.test.mjs scripts/data-integrity.test.mjs",
     "verify:isolation": "node scripts/verify-isolation.mjs"
   },
   "repository": {

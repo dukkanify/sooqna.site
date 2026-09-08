@@ -29,7 +29,6 @@ export function slimListingForCard(listing: Listing): Listing {
       id: listing.seller.id,
       name: listing.seller.name,
       nameEnglish: listing.seller.nameEnglish,
-      rating: listing.seller.rating,
       avatarUrl: listing.seller.avatarUrl,
       isVerified: listing.seller.isVerified,
       sellerType: listing.seller.sellerType,

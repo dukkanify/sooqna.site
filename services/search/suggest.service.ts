@@ -9,7 +9,7 @@ import type { Category, Listing } from "@/types";
 import type { SearchSuggestion, SearchSuggestionKind } from "@/features/search/types";
 import { buildSearchUrl } from "@/features/search/components/search-url";
 
-const INDEX_VERSION = 4;
+const INDEX_VERSION = 5;
 const MAX_RESULTS = 8;
 const MAX_LISTING_RESULTS = 5;
 const PRODUCT_CATEGORY_IDS = new Set(["cars", "mobiles", "electronics"]);

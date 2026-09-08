@@ -154,12 +154,6 @@ export const PremiumListingCard = memo(function PremiumListingCard({
               />
             ) : null}
           </p>
-          {listing.seller.rating ? (
-            <p className="inline-flex items-center gap-0.5 text-[0.65rem] font-medium text-muted">
-              <Icon className="text-secondary" name="star" size={10} />
-              {listing.seller.rating}
-            </p>
-          ) : null}
         </div>
       </div>
 
@@ -173,10 +167,12 @@ export const PremiumListingCard = memo(function PremiumListingCard({
           <Icon className="marketplace-card-meta-icon" name="clock" size={13} />
           {formatPostedTime(listing.postedAt)}
         </span>
-        <span className="inline-flex items-center gap-1">
-          <Icon className="marketplace-card-meta-icon" name="eye" size={13} />
-          {formatViews(listing.views)} مشاهدة
-        </span>
+        {(listing.views ?? 0) > 0 ? (
+          <span className="inline-flex items-center gap-1">
+            <Icon className="marketplace-card-meta-icon" name="eye" size={13} />
+            {formatViews(listing.views)} مشاهدة
+          </span>
+        ) : null}
         {showStatus && listing.status !== "active" ? (
           <span>{listing.status}</span>
         ) : null}

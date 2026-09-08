@@ -1,3 +1,4 @@
+import { MarketCatalogEmpty } from "@/features/home/components/marketplace/MarketCatalogEmpty";
 import {
   MobileAppDownload,
   MobileCategoryGrid,
@@ -49,19 +50,27 @@ export function MobileHomePage({
             <MobileHeroBlock categories={categories} />
             <MobileCategoryGrid categories={categories} />
             <MobilePromoBanner />
-            <MobilePreviewStrip listings={featuredListings} />
-            <MobileFeaturedRail listings={featuredListings} />
-            <MobileNearbyRail listings={nearbyListings} />
             <MobileEmiratesSection />
-            {sectionListings.map((section) => (
-              <MobileCategoryRail
-                key={section.categoryId}
-                categorySlug={categoryById(section.categoryId)}
-                listings={section.items}
-                title={section.title}
-              />
-            ))}
-            <MobileAppDownload previewListings={appPreviewListings} />
+            {featuredListings.length === 0 &&
+            nearbyListings.length === 0 &&
+            sectionListings.every((section) => section.items.length === 0) ? (
+              <MarketCatalogEmpty />
+            ) : (
+              <>
+                <MobilePreviewStrip listings={featuredListings} />
+                <MobileFeaturedRail listings={featuredListings} />
+                <MobileNearbyRail listings={nearbyListings} />
+                {sectionListings.map((section) => (
+                  <MobileCategoryRail
+                    key={section.categoryId}
+                    categorySlug={categoryById(section.categoryId)}
+                    listings={section.items}
+                    title={section.title}
+                  />
+                ))}
+                <MobileAppDownload previewListings={appPreviewListings} />
+              </>
+            )}
           </main>
         </LocalizedTree>
       </MobileHomeShell>

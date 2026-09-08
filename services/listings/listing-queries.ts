@@ -10,6 +10,10 @@ import {
   slimListingForCard,
   slimListingForSuggest,
 } from "@/services/listings/listing-card-model";
+import {
+  FIXTURE_LISTING_SQL,
+  isConfirmedFixtureListing,
+} from "@/services/listings/mock-catalog-policy";
 
 const TABLE = "marketplace_listings";
 
@@ -24,6 +28,8 @@ export type ListingQuery = {
   emirate?: string;
   excludeId?: string;
   featured?: boolean;
+  /** Owner/admin reads. Public catalog defaults to excluding confirmed fixtures. */
+  includeFixtures?: boolean;
   limit?: number;
   minPrice?: number;
   maxPrice?: number;
@@ -35,10 +41,20 @@ export type ListingQuery = {
   status?: Listing["status"];
 };
 
+function omitUrgent(listing: Listing): Listing {
+  const copy = { ...listing };
+  delete copy.isUrgent;
+  return copy;
+}
+
 function applySlim(listing: Listing, slim: ListingQuerySlim | undefined): Listing {
-  if (slim === "card") return slimListingForCard(listing);
-  if (slim === "suggest") return slimListingForSuggest(listing);
-  return listing;
+  const next =
+    slim === "card"
+      ? slimListingForCard(listing)
+      : slim === "suggest"
+        ? slimListingForSuggest(listing)
+        : listing;
+  return omitUrgent(next);
 }
 
 function likePattern(raw: string): string {
@@ -81,9 +97,18 @@ function matchesStructured(listing: Listing, query: ListingQuery): boolean {
   return true;
 }
 
+function shouldExcludeFixtures(query: ListingQuery): boolean {
+  return query.includeFixtures !== true;
+}
+
 async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
   const stored = await loadPersistedListings();
-  const matched = stored.filter((listing) => matchesStructured(listing, query));
+  const matched = stored.filter((listing) => {
+    if (shouldExcludeFixtures(query) && isConfirmedFixtureListing(listing)) {
+      return false;
+    }
+    return matchesStructured(listing, query);
+  });
   const sorted = sortListings(matched, query.sort);
   const offset = query.offset ?? 0;
   const limited =
@@ -127,6 +152,10 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
   if (typeof query.maxPrice === "number") {
     add("(payload->>'price')::numeric <= ?", query.maxPrice);
   }
+  if (shouldExcludeFixtures(query)) {
+    where.push(`NOT ${FIXTURE_LISTING_SQL}`);
+  }
+
   if (query.query?.trim()) {
     const pattern = likePattern(query.query);
     values.push(pattern);
@@ -163,30 +192,50 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
   }
 
   const result = await pool.query(sql, values);
-  const rows = result.rows.map((row) => row.payload as Listing);
+  const rows = result.rows
+    .map((row) => row.payload as Listing)
+    .filter(
+      (listing) =>
+        !shouldExcludeFixtures(query) || !isConfirmedFixtureListing(listing),
+    );
   return rows.map((listing) => applySlim(listing, query.slim));
+}
+
+function countWhere(
+  status?: Listing["status"],
+  includeFixtures?: boolean,
+): { sql: string; values: unknown[] } {
+  const where: string[] = [];
+  const values: unknown[] = [];
+  if (status) {
+    values.push(status);
+    where.push(`status = $${values.length}`);
+  }
+  if (includeFixtures !== true) {
+    where.push(`NOT ${FIXTURE_LISTING_SQL}`);
+  }
+  return {
+    sql: where.length > 0 ? ` WHERE ${where.join(" AND ")}` : "",
+    values,
+  };
 }
 
 export async function countListingsByCategory(
   status?: Listing["status"],
+  options?: { includeFixtures?: boolean },
 ): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
+  const includeFixtures = options?.includeFixtures === true;
   if (await ensureListingsTable()) {
     const pool = await getOptionalPostgresPool();
     if (pool) {
-      const result = status
-        ? await pool.query(
-            `SELECT category_id, COUNT(*)::int AS c
-             FROM ${TABLE}
-             WHERE status = $1
-             GROUP BY category_id`,
-            [status],
-          )
-        : await pool.query(
-            `SELECT category_id, COUNT(*)::int AS c
-             FROM ${TABLE}
-             GROUP BY category_id`,
-          );
+      const { sql, values } = countWhere(status, includeFixtures);
+      const result = await pool.query(
+        `SELECT category_id, COUNT(*)::int AS c
+         FROM ${TABLE}${sql}
+         GROUP BY category_id`,
+        values,
+      );
       for (const row of result.rows) {
         counts.set(String(row.category_id), Number(row.c) || 0);
       }
@@ -197,6 +246,7 @@ export async function countListingsByCategory(
   const stored = await loadPersistedListings();
   for (const listing of stored) {
     if (status && listing.status !== status) continue;
+    if (!includeFixtures && isConfirmedFixtureListing(listing)) continue;
     counts.set(listing.categoryId, (counts.get(listing.categoryId) ?? 0) + 1);
   }
   return counts;
@@ -204,6 +254,74 @@ export async function countListingsByCategory(
 
 export async function countActiveListingsByCategory(): Promise<Map<string, number>> {
   return countListingsByCategory("active");
+}
+
+const EMIRATE_NAME_TO_CITY_ID: Record<string, string> = {
+  دبي: "dubai",
+  "أبوظبي": "abu-dhabi",
+  الشارقة: "sharjah",
+  عجمان: "ajman",
+  "أم القيوين": "umm-al-quwain",
+  "رأس الخيمة": "ras-al-khaimah",
+  الفجيرة: "fujairah",
+  dubai: "dubai",
+  "abu-dhabi": "abu-dhabi",
+  sharjah: "sharjah",
+  ajman: "ajman",
+  "umm-al-quwain": "umm-al-quwain",
+  rak: "ras-al-khaimah",
+  "ras-al-khaimah": "ras-al-khaimah",
+  fujairah: "fujairah",
+};
+
+export async function countActiveListingsByEmirate(): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  const add = (emirate: string) => {
+    const cityId = EMIRATE_NAME_TO_CITY_ID[emirate.trim()];
+    if (!cityId) return;
+    counts.set(cityId, (counts.get(cityId) ?? 0) + 1);
+  };
+
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (pool) {
+      const result = await pool.query(
+        `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
+         FROM ${TABLE}
+         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL}`,
+      );
+      for (const row of result.rows) {
+        if (typeof row.emirate === "string") add(row.emirate);
+      }
+      return counts;
+    }
+  }
+
+  const stored = await loadPersistedListings();
+  for (const listing of stored) {
+    if (listing.status !== "active") continue;
+    if (isConfirmedFixtureListing(listing)) continue;
+    add(listing.emirate ?? listing.city);
+  }
+  return counts;
+}
+
+export async function countActivePublicListings(): Promise<number> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (pool) {
+      const result = await pool.query(
+        `SELECT COUNT(*)::int AS c FROM ${TABLE}
+         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL}`,
+      );
+      return Number(result.rows[0]?.c) || 0;
+    }
+  }
+  const stored = await loadPersistedListings();
+  return stored.filter(
+    (listing) =>
+      listing.status === "active" && !isConfirmedFixtureListing(listing),
+  ).length;
 }
 
 export async function countListingsBySeller(): Promise<Map<string, number>> {

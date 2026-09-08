@@ -13,7 +13,7 @@ type EditListingPageProps = {
 
 export default async function EditListingPage({ params }: EditListingPageProps) {
   const { slug } = await params;
-  const listing = await getListingBySlug(slug);
+  const listing = await getListingBySlug(slug, { includeFixtures: true });
 
   return (
     <>

@@ -36,7 +36,7 @@ export async function getUaeEmiratesCards(): Promise<UaeEmirateCard[]> {
       href: `/search?city=${encodeURIComponent(city.name)}`,
       imageUrl: images[city.id],
       landmark: emirateLandmarkLabels[city.id as EmirateImageKey] ?? city.name,
-      count: countMap.get(countKey) ?? 500,
+      count: countMap.get(countKey) ?? countMap.get(city.id) ?? 0,
     };
   });
 }

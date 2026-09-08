@@ -265,7 +265,12 @@ export async function getActivitiesForUser(
     getQuoteRequestsForUser(userId),
     getQuoteRequestsForProvider(userId),
     getOrdersForUser(userId),
-    queryListings({ sellerId: userId, slim: "card", sort: "newest" }),
+    queryListings({
+      includeFixtures: true,
+      sellerId: userId,
+      slim: "card",
+      sort: "newest",
+    }),
     getAdminDisputes(),
   ]);
 

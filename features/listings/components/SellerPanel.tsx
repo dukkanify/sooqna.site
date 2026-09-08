@@ -10,6 +10,7 @@ import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { SellerName } from "@/shared/i18n/SellerName";
 import { sellerName } from "@/shared/i18n/listing-copy";
 import { useLocale } from "@/shared/i18n/useLocale";
+import { isListingVerified } from "./listing-card-badges";
 
 type SellerPanelProps = {
   listing: Listing;
@@ -20,21 +21,10 @@ function formatJoinedDate(joinedAt: string): string {
   return Number.isFinite(year) ? String(year) : joinedAt;
 }
 
-function isUserCreatedListing(listing: Listing): boolean {
-  return listing.id.startsWith("local-");
-}
-
 export function SellerPanel({ listing }: SellerPanelProps) {
   const locale = useLocale();
   const displaySeller = sellerName(listing.seller, locale);
-  const isUserListing = isUserCreatedListing(listing);
-  const isVerified = isUserListing
-    ? Boolean(listing.seller.isVerified || listing.verifiedSeller)
-    : Boolean(
-        listing.verifiedSeller ??
-          listing.seller.isVerified ??
-          listing.seller.rating,
-      );
+  const isVerified = isListingVerified(listing);
 
   const [storeAverage, setStoreAverage] = useState<number | null>(null);
   const [storeCount, setStoreCount] = useState<number | null>(null);
@@ -56,22 +46,17 @@ export function SellerPanel({ listing }: SellerPanelProps) {
     };
   }, [listing.seller.id]);
 
-  const rating =
-    storeAverage ??
-    (typeof listing.seller.rating === "number" ? listing.seller.rating : null);
-  const reviewCount =
-    storeCount ??
-    (typeof listing.seller.reviewCount === "number"
-      ? listing.seller.reviewCount
-      : null);
+  const rating = storeAverage;
+  const reviewCount = storeCount;
 
-  const showRating = typeof rating === "number" && rating > 0;
+  const showRating = typeof rating === "number" && rating > 0 && (storeCount ?? 0) > 0;
   const showReviews = typeof reviewCount === "number" && reviewCount > 0;
   const showCompany = listing.seller.sellerType === "business";
   const showResponseTime = Boolean(listing.seller.responseTime?.trim());
   const showJoinedAt = Boolean(listing.seller.joinedAt?.trim());
   const showTransactions =
-    typeof listing.seller.completedTransactions === "number";
+    typeof listing.seller.completedTransactions === "number" &&
+    listing.seller.completedTransactions > 0;
 
   return (
     <LocalizedTree>

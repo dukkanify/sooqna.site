@@ -62,7 +62,6 @@ export function GenericListingFields({ errors, listing }: GenericListingFieldsPr
             options={[
               { label: "جديد", value: "new" },
               { label: "مستعمل", value: "used" },
-              { label: "ممتاز", value: "excellent" },
             ]}
           />
           <Select

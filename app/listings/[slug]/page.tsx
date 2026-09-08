@@ -57,10 +57,18 @@ export async function generateMetadata({
 
 export default async function ListingDetailsPage({ params }: ListingPageProps) {
   const { slug } = await params;
-  const listing = await getListingBySlug(slug);
-  if (!listing) notFound();
-
   const session = await getValidSessionUser();
+  let listing = await getListingBySlug(slug);
+  if (!listing && (session?.role === "admin" || session)) {
+    const owned = await getListingBySlug(slug, { includeFixtures: true });
+    if (
+      owned &&
+      (session.role === "admin" || owned.seller.id === session.id)
+    ) {
+      listing = owned;
+    }
+  }
+  if (!listing) notFound();
   const isOwner = Boolean(session && listing.seller.id === session.id);
   const isAdmin = session?.role === "admin";
   if (listing.status !== "active" && !isOwner && !isAdmin) {

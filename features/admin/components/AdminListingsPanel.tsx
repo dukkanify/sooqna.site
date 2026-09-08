@@ -42,7 +42,6 @@ const statusFilterOptions: { label: string; value: string }[] = [
 const conditionOptions = [
   { label: "مستعمل", value: "used" },
   { label: "جديد", value: "new" },
-  { label: "ممتاز", value: "excellent" },
 ];
 
 const publishStatusOptions = [

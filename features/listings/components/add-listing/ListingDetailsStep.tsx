@@ -94,7 +94,6 @@ export function ListingDetailsStep({
             options={[
               { label: "جديد", value: "new" },
               { label: "مستعمل", value: "used" },
-              { label: "ممتاز", value: "excellent" },
             ]}
           />
           <div className="col-span-2 md:col-span-1">

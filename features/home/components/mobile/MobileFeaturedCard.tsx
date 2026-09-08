@@ -99,10 +99,12 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
           ) : (
             <span />
           )}
-          <span className="mobile-home-featured-card__views">
-            <Icon name="eye" size={12} />
-            {formatViews(listing.views ?? 0)}
-          </span>
+          {(listing.views ?? 0) > 0 ? (
+            <span className="mobile-home-featured-card__views">
+              <Icon name="eye" size={12} />
+              {formatViews(listing.views ?? 0)}
+            </span>
+          ) : null}
         </div>
       </div>
     </article>

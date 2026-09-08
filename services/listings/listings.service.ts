@@ -3,6 +3,7 @@ import type { Listing, ListingSearchFilters } from "@/types";
 import { listingMatchesQuery } from "@/shared/listings/listing-specs";
 import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { queryListings } from "@/services/listings/listing-queries";
+import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import {
   getAllListings,
   getListingBySlug as getStoredListingBySlug,
@@ -24,14 +25,25 @@ export async function getMyListings(userId?: string): Promise<Listing[]> {
     return listings.filter((listing) => listing.id.startsWith("local-"));
   }
   return queryListings({
+    includeFixtures: true,
     sellerId: userId,
     slim: "full",
     sort: "newest",
   });
 }
 
-export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
-  return getStoredListingBySlug(slug);
+export async function getListingBySlug(
+  slug: string,
+  options?: { includeFixtures?: boolean },
+): Promise<Listing | undefined> {
+  const listing = await getStoredListingBySlug(slug);
+  if (!listing) return undefined;
+  if (options?.includeFixtures !== true && isConfirmedFixtureListing(listing)) {
+    return undefined;
+  }
+  const copy = { ...listing };
+  delete copy.isUrgent;
+  return copy;
 }
 
 export const getFeaturedListings = cache(async (): Promise<Listing[]> => {

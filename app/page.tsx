@@ -1,4 +1,5 @@
 import {
+  MarketCatalogEmpty,
   MarketCategoryGrid,
   MarketCategorySection,
   MarketFeatured,
@@ -64,6 +65,10 @@ export default async function Home() {
     );
   }
 
+  const hasPublicListings =
+    feed.featured.length > 0 ||
+    feed.nearbySource.length > 0 ||
+    feed.sections.some((section) => section.items.length > 0);
   const aboveFoldSections = sectionListings.slice(0, 2);
   const belowFoldSections = sectionListings.slice(2);
 
@@ -75,25 +80,31 @@ export default async function Home() {
           <MarketHero categories={categories} />
           <MarketCategoryGrid categories={categories} />
           <MarketPromoBanner />
-          <MarketPreviewStrip categories={categoryMeta} listings={feed.preview} />
-          <MarketFeatured categories={categoryMeta} listings={feed.featured} />
-          <MarketNearbySection listings={feed.nearbySource} />
-          {aboveFoldSections.map((section) => (
-            <MarketCategorySection
-              key={section.categoryId}
-              categoryId={section.categoryId}
-              categorySlug={section.categorySlug}
-              description={section.description}
-              eyebrow={section.eyebrow}
-              listings={section.listings}
-              title={section.title}
-              variant={section.variant}
-            />
-          ))}
-          <DeferredHomeBelowFold
-            appPreviewListings={appPreviewListings}
-            sections={belowFoldSections}
-          />
+          {hasPublicListings ? (
+            <>
+              <MarketPreviewStrip categories={categoryMeta} listings={feed.preview} />
+              <MarketFeatured categories={categoryMeta} listings={feed.featured} />
+              <MarketNearbySection listings={feed.nearbySource} />
+              {aboveFoldSections.map((section) => (
+                <MarketCategorySection
+                  key={section.categoryId}
+                  categoryId={section.categoryId}
+                  categorySlug={section.categorySlug}
+                  description={section.description}
+                  eyebrow={section.eyebrow}
+                  listings={section.listings}
+                  title={section.title}
+                  variant={section.variant}
+                />
+              ))}
+              <DeferredHomeBelowFold
+                appPreviewListings={appPreviewListings}
+                sections={belowFoldSections}
+              />
+            </>
+          ) : (
+            <MarketCatalogEmpty />
+          )}
         </main>
       </LocalizedTree>
       <SiteFooter />

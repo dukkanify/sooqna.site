@@ -8,7 +8,7 @@ import { getDurableAuthDir } from "@/services/auth/user-persistence";
 import { getOptionalPostgresPool } from "@/services/db/postgres";
 import {
   allowMockCatalogSeed,
-  isMockSeedListingId,
+  isConfirmedFixtureListing,
 } from "@/services/listings/mock-catalog-policy";
 import type { Listing } from "@/types";
 
@@ -272,27 +272,43 @@ export async function deleteMockSeedListings(): Promise<{
     if (!pool) {
       return { removedIds, remainingSeed: 0 };
     }
-    const existing = await pool.query(`SELECT id FROM ${TABLE}`);
+    const existing = await pool.query(
+      `SELECT id, slug, payload FROM ${TABLE}`,
+    );
     const seedIds = existing.rows
-      .map((row) => String(row.id))
-      .filter((id) => isMockSeedListingId(id));
+      .filter((row) => {
+        const payload = (row.payload ?? {}) as Listing;
+        return isConfirmedFixtureListing({
+          id: String(row.id),
+          slug: String(row.slug || payload.slug || ""),
+          title: payload.title,
+          seller: payload.seller,
+        });
+      })
+      .map((row) => String(row.id));
     if (seedIds.length > 0) {
       await pool.query(`DELETE FROM ${TABLE} WHERE id = ANY($1::text[])`, [
         seedIds,
       ]);
       removedIds.push(...seedIds);
     }
-    const leftover = await pool.query(`SELECT id FROM ${TABLE}`);
-    const remainingSeed = leftover.rows.filter((row) =>
-      isMockSeedListingId(String(row.id)),
-    ).length;
+    const leftover = await pool.query(`SELECT id, slug, payload FROM ${TABLE}`);
+    const remainingSeed = leftover.rows.filter((row) => {
+      const payload = (row.payload ?? {}) as Listing;
+      return isConfirmedFixtureListing({
+        id: String(row.id),
+        slug: String(row.slug || payload.slug || ""),
+        title: payload.title,
+        seller: payload.seller,
+      });
+    }).length;
     return { removedIds, remainingSeed };
   }
 
   const stored = (await readJsonFile()) ?? [];
   const kept: Listing[] = [];
   for (const listing of stored) {
-    if (isMockSeedListingId(listing.id)) {
+    if (isConfirmedFixtureListing(listing)) {
       removedIds.push(listing.id);
     } else {
       kept.push(listing);
@@ -301,7 +317,7 @@ export async function deleteMockSeedListings(): Promise<{
   await writeJsonFile(kept);
   return {
     removedIds,
-    remainingSeed: kept.filter((item) => isMockSeedListingId(item.id)).length,
+    remainingSeed: kept.filter((item) => isConfirmedFixtureListing(item)).length,
   };
 }
 

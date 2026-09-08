@@ -1,4 +1,5 @@
 export { MarketAppDownload } from "./components/marketplace/MarketAppDownload";
+export { MarketCatalogEmpty } from "./components/marketplace/MarketCatalogEmpty";
 export { MarketCategoryGrid } from "./components/marketplace/MarketCategoryGrid";
 export { MarketCategorySection } from "./components/marketplace/MarketCategorySection";
 export { MarketEmirates } from "./components/marketplace/MarketEmirates";

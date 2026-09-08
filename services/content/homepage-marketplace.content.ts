@@ -1,6 +1,4 @@
 import { BRAND } from "@/shared/constants/brand";
-import { getActiveListingCount, getEmirateListingHighlights } from "@/mock/catalog-metrics";
-import type { HomeCityHighlight } from "@/types";
 import { getEmirateImageUrl, heroBackgroundUrl } from "@/shared/constants/image-fallbacks";
 
 export type MarketEscrowStep = {
@@ -22,7 +20,7 @@ export async function getMarketQuickSearches() {
     { href: "/search?q=شقة", label: "Apartment" },
     { href: "/search?q=فيلا", label: "Villa" },
     { href: "/search?q=iPhone", label: "iPhone" },
-    { href: "/listings/office-business-bay", label: "Office" },
+    { href: "/search?q=مكتب", label: "Office" },
     { href: "/search?q=MacBook", label: "MacBook" },
     { href: "/search?q=Land+Cruiser", label: "Land Cruiser" },
   ];
@@ -91,22 +89,4 @@ export async function getMarketEmirateImages(): Promise<Record<string, string>> 
     "ras-al-khaimah": getEmirateImageUrl("ras-al-khaimah"),
     fujairah: getEmirateImageUrl("fujairah"),
   };
-}
-
-export async function getHomeCityHighlights(): Promise<HomeCityHighlight[]> {
-  return getEmirateListingHighlights();
-}
-
-export async function getAuthTrustPoints() {
-  const { getRequestLocale } = await import("@/shared/i18n/locale");
-  const { uaeActiveListingsLabel } = await import("@/shared/i18n/count-labels");
-  const locale = await getRequestLocale();
-  const activeListings = getActiveListingCount();
-
-  return [
-    "منصة موثوقة للبيع والشراء في الإمارات",
-    "توثيق البائعين والمشترين",
-    "دعم بالعربية على مدار الساعة",
-    uaeActiveListingsLabel(activeListings, locale),
-  ];
 }

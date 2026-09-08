@@ -251,11 +251,9 @@ export async function createListingFromAdmin(
     seller: {
       id: "seller-admin-ops",
       name: sellerName,
-      rating: 5,
-      isVerified: true,
-      sellerType: "business",
+      sellerType: "individual",
     },
-    verifiedSeller: true,
+    verifiedSeller: false,
     escrowAvailable: true,
     postedAt,
     expiresAt: computeExpiresAt(postedAt, settings.listingActiveDays),

@@ -7,8 +7,8 @@ import { logAdminAction } from "@/services/admin/admin-audit-store";
 import { purgeMockSeedListings } from "@/services/listings/listing-store";
 
 /**
- * Removes confirmed mock/seed catalog rows (listing-* / user-listing-* from mock files).
- * Never deletes local-*, admin-*, or other user-created ids.
+ * Removes confirmed fixture catalog rows (mock seed ids, QA26/E2E preview
+ * listings, and known demo slugs). Never deletes unrelated user-created ids.
  */
 export async function POST() {
   const admin = await requireAdminPermission("listings");
