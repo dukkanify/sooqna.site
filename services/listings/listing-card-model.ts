@@ -44,6 +44,8 @@ export function slimListingForCard(listing: Listing): Listing {
     verifiedSeller: listing.verifiedSeller,
     postedAt: listing.postedAt,
     featuredUntil: listing.featuredUntil,
+    isDemo: listing.isDemo,
+    source: listing.source,
   };
 }
 

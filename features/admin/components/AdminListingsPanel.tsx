@@ -37,6 +37,7 @@ const statusFilterOptions: { label: string; value: string }[] = [
   { label: listingStatusLabels.rejected, value: "rejected" },
   { label: listingStatusLabels.draft, value: "draft" },
   { label: listingStatusLabels.expired, value: "expired" },
+  { label: "تجريبي", value: "demo" },
 ];
 
 const conditionOptions = [
@@ -91,6 +92,8 @@ export function AdminListingsPanel() {
   const [fieldErrors, setFieldErrors] = useState<CategoryFieldErrors>({});
   const [form, setForm] = useState(emptyForm);
   const [formKey, setFormKey] = useState(0);
+  const [showcaseBusy, setShowcaseBusy] = useState<string | null>(null);
+  const [showcaseMessage, setShowcaseMessage] = useState("");
 
   useEffect(() => {
     const user = getSessionUser();
@@ -138,9 +141,12 @@ export function AdminListingsPanel() {
     const q = searchQuery.trim().toLowerCase();
 
     return listings
-      .filter((listing) =>
-        statusFilter === "all" ? true : listing.status === statusFilter,
-      )
+      .filter((listing) => {
+        if (statusFilter === "demo") {
+          return listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE";
+        }
+        return statusFilter === "all" ? true : listing.status === statusFilter;
+      })
       .filter((listing) =>
         categoryFilter === "all" ? true : listing.categoryId === categoryFilter,
       )
@@ -350,8 +356,85 @@ export function AdminListingsPanel() {
     }
   }
 
+  async function handleShowcaseAction(action: "publish" | "hide" | "remove") {
+    const session = getSessionUser();
+    if (!session) return;
+    if (action === "remove") {
+      const confirmed = window.confirm(
+        "حذف كل إعلانات المعرض التجريبي؟ الإعلانات الحقيقية لن تُمس.",
+      );
+      if (!confirmed) return;
+    }
+    setShowcaseBusy(action);
+    setShowcaseMessage("");
+    try {
+      const response = await adminFetch("/api/admin/listings/showcase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setShowcaseMessage("تعذر تنفيذ العملية.");
+        return;
+      }
+      if (Array.isArray(data.listings)) setListings(data.listings);
+      setShowcaseMessage(
+        action === "publish"
+          ? "تم نشر المعرض التجريبي."
+          : action === "hide"
+            ? "تم إخفاء المعرض التجريبي."
+            : "تم حذف المعرض التجريبي.",
+      );
+    } catch {
+      setShowcaseMessage("تعذر الاتصال بالخادم.");
+    } finally {
+      setShowcaseBusy(null);
+    }
+  }
+
   return (
     <div className="grid gap-4">
+      <Card className="p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">معرض سوقنا التجريبي</h2>
+        <p className="mt-2 text-xs leading-6 text-muted">
+          إعلانات مُعلَّمة كتجريبية (isDemo / SOOQNA_SHOWCASE). ليست إعلانات بائعين
+          مستقلين. يمكن إخفاؤها أو حذفها دون تعديل الشيفرة.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            loading={showcaseBusy === "publish"}
+            onClick={() => void handleShowcaseAction("publish")}
+            size="sm"
+            type="button"
+            variant="primary"
+          >
+            نشر / تحديث المعرض
+          </Button>
+          <Button
+            loading={showcaseBusy === "hide"}
+            onClick={() => void handleShowcaseAction("hide")}
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            إخفاء المعرض
+          </Button>
+          <Button
+            loading={showcaseBusy === "remove"}
+            onClick={() => void handleShowcaseAction("remove")}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            حذف المعرض
+          </Button>
+        </div>
+        {showcaseMessage ? (
+          <p className="mt-3 text-xs font-medium text-muted">{showcaseMessage}</p>
+        ) : null}
+      </Card>
+
       <Card className="p-5" variant="flat">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
@@ -591,6 +674,9 @@ export function AdminListingsPanel() {
                   </Badge>
                   {listing.isFeatured ? (
                     <Badge variant="featured">مميّز</Badge>
+                  ) : null}
+                  {listing.isDemo || listing.source === "SOOQNA_SHOWCASE" ? (
+                    <Badge variant="demo">إعلان تجريبي</Badge>
                   ) : null}
                 </div>
               </div>

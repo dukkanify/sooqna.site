@@ -11,6 +11,7 @@ import { SellerName } from "@/shared/i18n/SellerName";
 import { sellerName } from "@/shared/i18n/listing-copy";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { isListingVerified } from "./listing-card-badges";
+import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 
 type SellerPanelProps = {
   listing: Listing;
@@ -30,6 +31,7 @@ export function SellerPanel({ listing }: SellerPanelProps) {
   const [storeCount, setStoreCount] = useState<number | null>(null);
 
   useEffect(() => {
+    if (isShowcaseListing(listing)) return;
     let cancelled = false;
     fetch(`/api/sellers/${encodeURIComponent(listing.seller.id)}/ratings`)
       .then((res) => res.json())
@@ -44,7 +46,7 @@ export function SellerPanel({ listing }: SellerPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [listing.seller.id]);
+  }, [listing]);
 
   const rating = storeAverage;
   const reviewCount = storeCount;

@@ -10,10 +10,17 @@ import {
   allowMockCatalogSeed,
   isConfirmedFixtureListing,
 } from "@/services/listings/mock-catalog-policy";
+import {
+  SHOWCASE_FLAG_KEY,
+  SHOWCASE_SOURCE,
+  type ShowcaseCatalogFlag,
+} from "@/shared/listings/showcase-listing";
 import type { Listing } from "@/types";
 
 const TABLE = "marketplace_listings";
+const FLAGS_TABLE = "marketplace_flags";
 const FILE = "sooqna-listings.json";
+const FLAGS_FILE = "sooqna-marketplace-flags.json";
 
 let postgresReady = false;
 
@@ -57,6 +64,13 @@ export async function ensureListingsTable(): Promise<boolean> {
     `CREATE INDEX IF NOT EXISTS marketplace_listings_status_category_posted_idx
      ON ${TABLE} (status, category_id, posted_at DESC NULLS LAST)`,
   );
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ${FLAGS_TABLE} (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
   postgresReady = true;
   return true;
 }
@@ -319,6 +333,163 @@ export async function deleteMockSeedListings(): Promise<{
     removedIds,
     remainingSeed: kept.filter((item) => isConfirmedFixtureListing(item)).length,
   };
+}
+
+const SHOWCASE_WHERE = `(payload->>'source' = '${SHOWCASE_SOURCE}' OR id LIKE 'showcase-%')`;
+
+function listingRowValues(listing: Listing): unknown[] {
+  return [
+    listing.id,
+    listing.slug,
+    listing.seller.id,
+    listing.categoryId,
+    listing.status,
+    Boolean(listing.isFeatured),
+    listing.postedAt ?? null,
+    listing.expiresAt ?? null,
+    JSON.stringify(listing),
+  ];
+}
+
+async function readFlagsFile(): Promise<Record<string, string>> {
+  try {
+    const raw = await readFile(path.join(getDurableAuthDir(), FLAGS_FILE), "utf8");
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+async function writeFlagsFile(flags: Record<string, string>): Promise<void> {
+  const target = path.join(getDurableAuthDir(), FLAGS_FILE);
+  await mkdir(path.dirname(target), { recursive: true });
+  const tempPath = `${target}.${process.pid}.${Date.now()}.tmp`;
+  await writeFile(tempPath, JSON.stringify(flags, null, 2));
+  await rename(tempPath, target);
+}
+
+export async function getMarketplaceFlag(key: string): Promise<string | null> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (pool) {
+      const result = await pool.query(
+        `SELECT value FROM ${FLAGS_TABLE} WHERE key = $1 LIMIT 1`,
+        [key],
+      );
+      return typeof result.rows[0]?.value === "string" ? result.rows[0].value : null;
+    }
+  }
+  const flags = await readFlagsFile();
+  return flags[key] ?? null;
+}
+
+export async function setMarketplaceFlag(key: string, value: string): Promise<void> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (pool) {
+      await pool.query(
+        `INSERT INTO ${FLAGS_TABLE} (key, value, updated_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+        [key, value],
+      );
+      return;
+    }
+  }
+  const flags = await readFlagsFile();
+  flags[key] = value;
+  await writeFlagsFile(flags);
+}
+
+export async function getShowcaseCatalogFlag(): Promise<ShowcaseCatalogFlag | null> {
+  const value = await getMarketplaceFlag(SHOWCASE_FLAG_KEY);
+  if (value === "published" || value === "hidden" || value === "removed") {
+    return value;
+  }
+  return null;
+}
+
+export async function setShowcaseCatalogFlag(value: ShowcaseCatalogFlag): Promise<void> {
+  await setMarketplaceFlag(SHOWCASE_FLAG_KEY, value);
+}
+
+export async function insertListingsIfMissing(listings: Listing[]): Promise<number> {
+  let inserted = 0;
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
+    for (const listing of listings) {
+      const result = await pool.query(
+        `INSERT INTO ${TABLE} (
+            id, slug, seller_id, category_id, status, is_featured,
+            posted_at, expires_at, updated_at, payload
+          ) VALUES (
+            $1,$2,$3,$4,$5,$6,
+            $7::timestamptz,$8::timestamptz,NOW(),$9::jsonb
+          )
+          ON CONFLICT (id) DO NOTHING`,
+        listingRowValues(listing),
+      );
+      if ((result as { rowCount?: number }).rowCount) inserted += 1;
+    }
+    return inserted;
+  }
+
+  const stored = (await readJsonFile()) ?? [];
+  const ids = new Set(stored.map((item) => item.id));
+  for (const listing of listings) {
+    if (ids.has(listing.id)) continue;
+    stored.unshift(listing);
+    ids.add(listing.id);
+    inserted += 1;
+  }
+  if (inserted > 0) await writeJsonFile(stored);
+  return inserted;
+}
+
+export async function hideShowcaseListings(): Promise<number> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
+    const result = await pool.query(
+      `UPDATE ${TABLE}
+       SET status = 'draft',
+           payload = jsonb_set(payload, '{status}', '"draft"'),
+           updated_at = NOW()
+       WHERE ${SHOWCASE_WHERE}`,
+    );
+    return Number((result as { rowCount?: number }).rowCount) || 0;
+  }
+
+  const stored = (await readJsonFile()) ?? [];
+  let changed = 0;
+  const next = stored.map((listing) => {
+    if (listing.source !== SHOWCASE_SOURCE && !listing.id.startsWith("showcase-")) {
+      return listing;
+    }
+    changed += 1;
+    return { ...listing, status: "draft" as const };
+  });
+  if (changed > 0) await writeJsonFile(next);
+  return changed;
+}
+
+export async function deleteShowcaseListings(): Promise<number> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
+    const result = await pool.query(`DELETE FROM ${TABLE} WHERE ${SHOWCASE_WHERE}`);
+    return Number((result as { rowCount?: number }).rowCount) || 0;
+  }
+
+  const stored = (await readJsonFile()) ?? [];
+  const next = stored.filter(
+    (listing) => listing.source !== SHOWCASE_SOURCE && !listing.id.startsWith("showcase-"),
+  );
+  const removed = stored.length - next.length;
+  if (removed > 0) await writeJsonFile(next);
+  return removed;
 }
 
 export { seedListings };

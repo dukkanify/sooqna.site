@@ -7,6 +7,7 @@ import { ListingDetailToolbar } from "@/features/listings/components/ListingDeta
 import { ListingGallery } from "@/features/listings/components/ListingGallery";
 import dynamic from "next/dynamic";
 import { ListingSafetyTips } from "@/features/listings/components/ListingSafetyTips";
+import { ShowcaseListingNotice } from "@/features/listings/components/ShowcaseListingNotice";
 import { ListingSpecifications } from "@/features/listings/components/ListingSpecifications";
 import {
   ListingStickyPanel,
@@ -106,6 +107,9 @@ export function ListingDetailsView({
             </div>
 
             <ListingDetailToolbar listing={listing} />
+            <div className="mt-6 lg:hidden">
+              <ShowcaseListingNotice listing={listing} />
+            </div>
             <ListingLocationMap listing={listing} />
 
             <div className="marketplace-panel mt-6 p-6">
@@ -139,6 +143,7 @@ export function ListingDetailsView({
               </section>
 
               <section aria-label="الضمان والحماية" className="flex flex-col gap-6">
+                <ShowcaseListingNotice listing={listing} />
                 <EscrowProtectionCard listing={listing} />
                 <ListingPlatformNotice listing={listing} />
               </section>

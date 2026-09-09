@@ -14,6 +14,10 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import {
+  isShowcaseListing,
+  showsListingCondition,
+} from "@/shared/listings/showcase-listing";
 
 type ListingSummaryProps = {
   category?: Category;
@@ -43,10 +47,15 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
     <LocalizedTree>
     <Card className="marketplace-panel p-6 lg:sticky lg:top-24 lg:self-start">
       <div className="flex flex-wrap items-center gap-2">
+        {isShowcaseListing(listing) ? (
+          <Badge variant="demo">إعلان تجريبي</Badge>
+        ) : null}
         {category ? <Badge variant="muted">{category.name}</Badge> : null}
-        <Badge variant={conditionVariants[listing.condition]}>
-          {conditionLabels[listing.condition]}
-        </Badge>
+        {showsListingCondition(listing) ? (
+          <Badge variant={conditionVariants[listing.condition]}>
+            {conditionLabels[listing.condition]}
+          </Badge>
+        ) : null}
         {showsEscrowProtection(listing) ? (
           <Badge variant="escrow">ضمان مالي — دفع عبر المنصة</Badge>
         ) : null}
@@ -89,14 +98,16 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
       </div>
 
       <div className="mt-6 grid gap-2">
-        <Button
-          fullWidth
-          href={`/checkout?listing=${getCheckoutListingParam(listing)}`}
-          size="lg"
-          variant="accent"
-        >
-          شراء الآن
-        </Button>
+        {isShowcaseListing(listing) ? null : (
+          <Button
+            fullWidth
+            href={`/checkout?listing=${getCheckoutListingParam(listing)}`}
+            size="lg"
+            variant="accent"
+          >
+            شراء الآن
+          </Button>
+        )}
         <StartChatButton fullWidth listing={listing} size="lg" />
       </div>
 

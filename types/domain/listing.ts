@@ -113,6 +113,10 @@ export type Listing = {
   /** User-entered dynamic fields (local / new listings) */
   categorySpecs?: CategorySpecs;
   contactPhone?: string;
+  /** Platform-owned showcase listing — never a real independent seller ad. */
+  isDemo?: boolean;
+  /** Provenance. Showcase catalog uses SOOQNA_SHOWCASE. */
+  source?: string;
   /** Shown to the seller when status is rejected. */
   rejectionReason?: string;
   /** Append-only status transitions for audit. */

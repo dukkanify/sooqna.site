@@ -27,7 +27,7 @@ export type HomeFeed = {
   }>;
 };
 
-const HOME_SECTION_LIMIT = 6;
+const HOME_SECTION_LIMIT = 13;
 const FEATURED_FETCH = 8;
 const FEATURED_SHOW = 6;
 const NEARBY_FETCH = 12;
@@ -75,7 +75,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
   return { featured, nearbySource, preview, sections };
 }
 
-const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v3"], {
+const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v4"], {
   revalidate: HOME_FEED_REVALIDATE_SECONDS,
   tags: [LISTINGS_CACHE_TAG],
 });

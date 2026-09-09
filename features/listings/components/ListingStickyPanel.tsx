@@ -25,6 +25,10 @@ import {
   getTelHref,
   getWhatsAppHref,
 } from "@/shared/listings/listing-contact";
+import {
+  isShowcaseListing,
+  showsListingCondition,
+} from "@/shared/listings/showcase-listing";
 import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
 import { Badge } from "@/shared/ui/Badge";
 import { Card } from "@/shared/ui/Card";
@@ -66,10 +70,15 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
     <LocalizedTree>
     <Card className="marketplace-panel w-full min-w-0 p-6">
         <div className="flex flex-wrap items-center gap-2">
+        {isShowcaseListing(listing) ? (
+          <Badge variant="demo">إعلان تجريبي</Badge>
+        ) : null}
         {category ? <Badge variant="muted">{category.name}</Badge> : null}
-        <Badge variant={conditionVariants[listing.condition]}>
-          {conditionLabels[listing.condition]}
-        </Badge>
+        {showsListingCondition(listing) ? (
+          <Badge variant={conditionVariants[listing.condition]}>
+            {conditionLabels[listing.condition]}
+          </Badge>
+        ) : null}
         {showsEscrowProtection(listing) ? (
           <Badge variant="escrow">ضمان مالي — دفع عبر المنصة</Badge>
         ) : null}

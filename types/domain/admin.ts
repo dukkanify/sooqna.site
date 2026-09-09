@@ -55,6 +55,8 @@ export type AdminListingRecord = {
   isFeatured: boolean;
   postedAt: string;
   city: string;
+  isDemo?: boolean;
+  source?: string;
 };
 
 export type AdminListingCreateInput = {

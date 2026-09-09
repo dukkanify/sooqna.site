@@ -10,7 +10,8 @@ type BadgeVariant =
   | "sold"
   | "pending"
   | "rejected"
-  | "muted";
+  | "muted"
+  | "demo";
 
 type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   children: ReactNode;
@@ -27,6 +28,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   pending: "border-amber-500/25 bg-amber-50 text-amber-800",
   rejected: "border-rose-500/20 bg-rose-50 text-rose-700",
   muted: "border-border bg-surface-muted text-muted",
+  demo: "border-slate-400/40 bg-slate-100 text-slate-700",
 };
 
 export function Badge({

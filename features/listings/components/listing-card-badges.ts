@@ -1,6 +1,7 @@
 import type { Listing } from "@/types";
+import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 
-export type ListingCardBadgeKey = "featured" | "verified" | "new";
+export type ListingCardBadgeKey = "demo" | "featured" | "verified" | "new";
 
 export type ListingCardBadge = {
   key: ListingCardBadgeKey;
@@ -23,6 +24,7 @@ export function isListingVerified(listing: Listing): boolean {
 }
 
 export function isListingFresh(listing: Listing): boolean {
+  if (listing.categoryId === "jobs" || listing.categoryId === "food") return false;
   // Only use stable listing fields — Date.now() age checks cause SSR/client hydration mismatches.
   return listing.condition === "new";
 }
@@ -31,6 +33,9 @@ export function isListingFresh(listing: Listing): boolean {
 export function getListingCardBadges(listing: Listing): ListingCardBadge[] {
   const badges: ListingCardBadge[] = [];
 
+  if (isShowcaseListing(listing)) {
+    badges.push({ key: "demo", label: "إعلان تجريبي", variant: "demo" });
+  }
   if (isListingFeaturedActive(listing)) {
     badges.push({ key: "featured", label: "مميز", variant: "featured" });
   }

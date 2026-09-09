@@ -185,3 +185,84 @@ test("sitemap and category directory do not hardcode listing slugs", () => {
   );
   assert.doesNotMatch(directory, /featuredListingSlug/);
 });
+
+test("showcase catalog is demo-marked and covers all 13 mock categories", () => {
+  const src = readFileSync(
+    path.join(root, "services/listings/showcase-catalog.ts"),
+    "utf8",
+  );
+  const policy = readFileSync(
+    path.join(root, "shared/listings/showcase-listing.ts"),
+    "utf8",
+  );
+  const categories = [
+    "cars",
+    "real-estate",
+    "electronics",
+    "mobiles",
+    "furniture",
+    "jobs",
+    "fashion",
+    "services",
+    "pets",
+    "kids",
+    "books",
+    "sports",
+    "food",
+  ];
+  for (const id of categories) {
+    assert.match(src, new RegExp(`categoryId: "${id}"`));
+  }
+  assert.match(src, /isDemo: true/);
+  assert.match(src, /SHOWCASE_SOURCE/);
+  assert.match(src, /SHOWCASE_SELLER_ID/);
+  assert.match(policy, /SOOQNA_SHOWCASE/);
+  assert.match(policy, /seller-sooqna-showcase/);
+  assert.doesNotMatch(src, /listing-car-001/);
+  assert.doesNotMatch(src, /qa26-/);
+  assert.doesNotMatch(src, /e2e-preview-/);
+  assert.doesNotMatch(src, /slug: "office-business-bay"/);
+});
+
+test("showcase ids and slugs are never confirmed fixtures", () => {
+  assert.equal(
+    isConfirmedFixtureListing({
+      id: "showcase-cars-01",
+      slug: "showcase-toyota-land-cruiser-2022",
+      title: "تويوتا لاند كروزر 2022 — معرض تجريبي",
+      seller: { name: "سوقنا — معرض تجريبي" },
+    }),
+    false,
+  );
+  assert.equal(
+    isConfirmedFixtureListing({
+      id: "showcase-real-estate-08",
+      slug: "showcase-office-business-bay-showcase",
+    }),
+    false,
+  );
+});
+
+test("public listing queries rank showcase after real listings", () => {
+  const src = readFileSync(
+    path.join(root, "services/listings/listing-queries.ts"),
+    "utf8",
+  );
+  assert.match(src, /SHOWCASE_SOURCE/);
+  assert.match(src, /ensureShowcaseCatalogPublished/);
+});
+
+test("admin can hide or remove the showcase catalog without a code change", () => {
+  const api = readFileSync(
+    path.join(root, "app/api/admin/listings/showcase/route.ts"),
+    "utf8",
+  );
+  assert.match(api, /publish/);
+  assert.match(api, /hide/);
+  assert.match(api, /remove/);
+  const panel = readFileSync(
+    path.join(root, "features/admin/components/AdminListingsPanel.tsx"),
+    "utf8",
+  );
+  assert.match(panel, /\/api\/admin\/listings\/showcase/);
+});

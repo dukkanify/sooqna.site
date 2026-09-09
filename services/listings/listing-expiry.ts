@@ -1,4 +1,5 @@
 import type { Listing } from "@/types";
+import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 
 function addDaysIso(iso: string, days: number): string {
   const date = new Date(iso);
@@ -16,6 +17,7 @@ export function expireStaleListings(listings: Listing[], days: number): number {
 
   for (const listing of listings) {
     if (listing.status !== "active") continue;
+    if (isShowcaseListing(listing)) continue;
     const postedAt = listing.postedAt;
     if (!postedAt) continue;
     const postedMs = new Date(postedAt).getTime();

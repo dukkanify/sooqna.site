@@ -14,6 +14,8 @@ import {
   FIXTURE_LISTING_SQL,
   isConfirmedFixtureListing,
 } from "@/services/listings/mock-catalog-policy";
+import { ensureShowcaseCatalogPublished } from "@/services/listings/showcase-catalog.service";
+import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
 
 const TABLE = "marketplace_listings";
 
@@ -64,6 +66,9 @@ function likePattern(raw: string): string {
 
 function sortListings(listings: Listing[], sort?: ListingSearchFilters["sort"]) {
   return [...listings].sort((first, second) => {
+    const firstDemo = first.source === SHOWCASE_SOURCE || first.isDemo === true ? 1 : 0;
+    const secondDemo = second.source === SHOWCASE_SOURCE || second.isDemo === true ? 1 : 0;
+    if (firstDemo !== secondDemo) return firstDemo - secondDemo;
     if (sort === "price_asc") return first.price - second.price;
     if (sort === "price_desc") return second.price - first.price;
     const firstDate = first.postedAt ?? first.id;
@@ -119,6 +124,7 @@ async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
 }
 
 export async function queryListings(query: ListingQuery = {}): Promise<Listing[]> {
+  await ensureShowcaseCatalogPublished();
   if (!(await ensureListingsTable())) {
     return queryFromFile(query);
   }
@@ -172,12 +178,13 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
     )`);
   }
 
+  const showcaseLast = `(CASE WHEN COALESCE(payload->>'source','') = '${SHOWCASE_SOURCE}' THEN 1 ELSE 0 END) ASC`;
   const order =
     query.sort === "price_asc"
-      ? "(payload->>'price')::numeric ASC NULLS LAST"
+      ? `${showcaseLast}, (payload->>'price')::numeric ASC NULLS LAST`
       : query.sort === "price_desc"
-        ? "(payload->>'price')::numeric DESC NULLS LAST"
-        : "COALESCE(posted_at, updated_at) DESC NULLS LAST";
+        ? `${showcaseLast}, (payload->>'price')::numeric DESC NULLS LAST`
+        : `${showcaseLast}, COALESCE(posted_at, updated_at) DESC NULLS LAST`;
 
   let sql = `SELECT payload FROM ${TABLE}`;
   if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
@@ -224,6 +231,7 @@ export async function countListingsByCategory(
   status?: Listing["status"],
   options?: { includeFixtures?: boolean },
 ): Promise<Map<string, number>> {
+  await ensureShowcaseCatalogPublished();
   const counts = new Map<string, number>();
   const includeFixtures = options?.includeFixtures === true;
   if (await ensureListingsTable()) {
@@ -275,6 +283,7 @@ const EMIRATE_NAME_TO_CITY_ID: Record<string, string> = {
 };
 
 export async function countActiveListingsByEmirate(): Promise<Map<string, number>> {
+  await ensureShowcaseCatalogPublished();
   const counts = new Map<string, number>();
   const add = (emirate: string) => {
     const cityId = EMIRATE_NAME_TO_CITY_ID[emirate.trim()];
@@ -307,6 +316,7 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
 }
 
 export async function countActivePublicListings(): Promise<number> {
+  await ensureShowcaseCatalogPublished();
   if (await ensureListingsTable()) {
     const pool = await getOptionalPostgresPool();
     if (pool) {
@@ -346,6 +356,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
 }
 
 export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
+  await ensureShowcaseCatalogPublished();
   if (await ensureListingsTable()) {
     const pool = await getOptionalPostgresPool();
     if (pool) {
@@ -362,7 +373,9 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             payload->>'city' AS city,
             COALESCE((payload->>'price')::numeric, 0) AS price,
             COALESCE(payload->>'currency', 'AED') AS currency,
-            payload->'seller'->>'name' AS seller_name
+            payload->'seller'->>'name' AS seller_name,
+            COALESCE((payload->>'isDemo')::boolean, false) AS is_demo,
+            payload->>'source' AS source
          FROM ${TABLE}
          ORDER BY COALESCE(posted_at, updated_at) DESC NULLS LAST`,
       );
@@ -382,6 +395,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             ? row.posted_at.toISOString()
             : String(row.posted_at ?? ""),
         city: String(row.city ?? ""),
+        isDemo: Boolean(row.is_demo) || String(row.source ?? "") === SHOWCASE_SOURCE,
+        source: row.source ? String(row.source) : undefined,
       }));
     }
   }
@@ -400,5 +415,7 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
     isFeatured: listing.isFeatured,
     postedAt: listing.postedAt ?? "",
     city: listing.city,
+    isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
+    source: listing.source,
   }));
 }

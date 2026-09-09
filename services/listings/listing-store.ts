@@ -29,6 +29,7 @@ import type {
   AdminListingPatch,
   AdminListingRecord,
 } from "@/types/domain/admin";
+import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
 
 let cacheRows: Listing[] | null = null;
 let inflight: Promise<Listing[]> | null = null;
@@ -159,6 +160,10 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
 }
 
 export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
+  const { ensureShowcaseCatalogPublished } = await import(
+    "@/services/listings/showcase-catalog.service"
+  );
+  await ensureShowcaseCatalogPublished();
   const persisted = await loadListingBySlug(slug).catch(() => null);
   if (persisted) return persisted;
   const listings = await getAllListings();
@@ -439,6 +444,8 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     isFeatured: listing.isFeatured,
     postedAt: listing.postedAt ?? "",
     city: listing.city,
+    isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
+    source: listing.source,
   };
 }
 

@@ -1,4 +1,5 @@
 import type { Listing } from "@/types";
+import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 
 export type ListingActionType =
   | "BUY_NOW"
@@ -51,6 +52,18 @@ function isCarPurchasable(listing: Listing): boolean {
 }
 
 export function getListingActionConfig(listing: Listing): ListingActionConfig {
+  if (isShowcaseListing(listing)) {
+    return {
+      primaryAction: "SEND_MESSAGE",
+      secondaryActions: [],
+      mobileBarActions: ["SEND_MESSAGE"],
+      checkoutEnabled: false,
+      shippingEnabled: false,
+      showBuyNow: false,
+      showEscrowBadge: false,
+    };
+  }
+
   const { categoryId } = listing;
 
   if (categoryId === "jobs") {

@@ -78,7 +78,7 @@ const getActiveListingCountsCached = unstable_cache(
     const counts = await countActiveListingsByCategory();
     return Object.fromEntries(counts.entries());
   },
-  ["sooqna-category-counts-v2"],
+  ["sooqna-category-counts-v3"],
   { revalidate: CATEGORY_COUNTS_REVALIDATE_SECONDS, tags: [LISTINGS_CACHE_TAG] },
 );
 
