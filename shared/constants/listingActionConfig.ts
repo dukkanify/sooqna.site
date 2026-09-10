@@ -42,14 +42,6 @@ export function getJobListingKind(
   return listing.categorySpecs?.listingType === "seeker" ? "seeker" : "vacancy";
 }
 
-function hasListingPhone(listing: Listing): boolean {
-  return Boolean(listing.contactPhone?.trim());
-}
-
-function sellerContactAction(listing: Listing): ListingActionType {
-  return hasListingPhone(listing) ? "CONTACT_SELLER" : "SEND_MESSAGE";
-}
-
 function isPurchasableProduct(listing: Listing): boolean {
   if (listing.status !== "active") return false;
   if (isShowcaseListing(listing)) return false;
@@ -126,7 +118,7 @@ export function getListingActionConfig(listing: Listing): ListingActionConfig {
 
   if (categoryId === "cars") {
     const purchasable = isCarPurchasable(listing);
-    const contact = sellerContactAction(listing);
+    const contact = "CONTACT_SELLER" as const;
     return {
       primaryAction: purchasable ? "RESERVE" : contact,
       secondaryActions: ["SEND_MESSAGE"],
@@ -150,7 +142,7 @@ export function getListingActionConfig(listing: Listing): ListingActionConfig {
     };
   }
 
-  const contact = sellerContactAction(listing);
+  const contact: ListingActionType = "CONTACT_SELLER";
   return {
     primaryAction: contact,
     secondaryActions: ["SEND_MESSAGE"],
