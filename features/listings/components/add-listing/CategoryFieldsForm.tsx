@@ -337,11 +337,14 @@ export function CategoryFieldsForm({
               <Input
                 compact
                 defaultValue={defaults?.contactPhone}
-                label="رقم التواصل"
+                label="رقم التواصل (اختياري — يظهر للمهتمين فقط إذا أضفته)"
                 name="contact"
                 placeholder="05xxxxxxxx"
                 type="tel"
               />
+              <p className="mt-1 text-xs text-muted">
+                يُستخدم للاتصال وواتساب. اتركه فارغاً لإخفاء الرقم.
+              </p>
               {errors.contact ? (
                 <FormMessage variant="error">{errors.contact}</FormMessage>
               ) : null}

@@ -1,5 +1,8 @@
 import type { Listing } from "@/types";
-import { isShowcaseListing } from "@/shared/listings/showcase-listing";
+import {
+  isPurchasableListing,
+  isWholesaleFoodListing,
+} from "@/shared/listings/purchase-eligibility";
 
 export type ListingActionType =
   | "BUY_NOW"
@@ -21,20 +24,6 @@ export type ListingActionConfig = {
   showEscrowBadge: boolean;
 };
 
-const PRODUCT_CATEGORIES = new Set([
-  "mobiles",
-  "electronics",
-  "furniture",
-  "fashion",
-  "kids",
-  "sports",
-  "books",
-  "pets",
-  "food",
-]);
-
-const CONTACT_ONLY_CATEGORIES = new Set(["pets"]);
-
 export function getJobListingKind(
   listing: Listing,
 ): "vacancy" | "seeker" | null {
@@ -42,98 +31,62 @@ export function getJobListingKind(
   return listing.categorySpecs?.listingType === "seeker" ? "seeker" : "vacancy";
 }
 
-function isPurchasableProduct(listing: Listing): boolean {
-  if (listing.status !== "active") return false;
-  if (isShowcaseListing(listing)) return false;
-  if (!PRODUCT_CATEGORIES.has(listing.categoryId)) return false;
-  if (CONTACT_ONLY_CATEGORIES.has(listing.categoryId)) return false;
-  return Boolean(listing.escrowAvailable);
-}
-
-function isCarPurchasable(listing: Listing): boolean {
-  if (isShowcaseListing(listing)) return false;
-  return (
-    listing.categoryId === "cars" &&
-    listing.status === "active" &&
-    Boolean(listing.escrowAvailable) &&
-    !listing.negotiable
-  );
+function contactConfig(
+  primary: ListingActionType,
+  extras: Partial<ListingActionConfig> = {},
+): ListingActionConfig {
+  return {
+    primaryAction: primary,
+    secondaryActions: ["SEND_MESSAGE"],
+    mobileBarActions: ["SEND_MESSAGE", primary],
+    checkoutEnabled: false,
+    shippingEnabled: false,
+    showBuyNow: false,
+    showEscrowBadge: false,
+    ...extras,
+  };
 }
 
 /**
  * Single source of truth for listing intent → primary CTA.
- * Showcase listings keep the category CTA but never enable checkout.
+ * Buy Now is never shown unless isPurchasableListing() is true (Stripe + category rules).
  */
 export function getListingActionConfig(listing: Listing): ListingActionConfig {
   const { categoryId } = listing;
   const jobKind = getJobListingKind(listing);
 
   if (jobKind === "seeker") {
-    return {
-      primaryAction: "SEND_MESSAGE",
-      secondaryActions: [],
-      mobileBarActions: ["SEND_MESSAGE"],
-      checkoutEnabled: false,
-      shippingEnabled: false,
-      showBuyNow: false,
-      showEscrowBadge: false,
-    };
+    return contactConfig("SEND_MESSAGE", { secondaryActions: [], mobileBarActions: ["SEND_MESSAGE"] });
   }
 
   if (jobKind === "vacancy") {
-    return {
-      primaryAction: "APPLY_JOB",
+    return contactConfig("APPLY_JOB", {
       secondaryActions: ["SEND_MESSAGE"],
       mobileBarActions: ["SEND_MESSAGE", "APPLY_JOB"],
-      checkoutEnabled: false,
-      shippingEnabled: false,
-      showBuyNow: false,
-      showEscrowBadge: false,
-    };
+    });
   }
 
   if (categoryId === "real-estate") {
-    return {
-      primaryAction: "BOOK_VIEWING",
-      secondaryActions: ["SEND_MESSAGE"],
+    return contactConfig("BOOK_VIEWING", {
       mobileBarActions: ["SEND_MESSAGE", "BOOK_VIEWING"],
-      checkoutEnabled: false,
-      shippingEnabled: false,
-      showBuyNow: false,
-      showEscrowBadge: false,
-    };
+    });
   }
 
-  if (categoryId === "services") {
-    return {
-      primaryAction: "REQUEST_QUOTE",
+  if (categoryId === "services" || isWholesaleFoodListing(listing)) {
+    return contactConfig("REQUEST_QUOTE", {
       secondaryActions: ["BOOK_SERVICE", "SEND_MESSAGE"],
       mobileBarActions: ["SEND_MESSAGE", "REQUEST_QUOTE"],
-      checkoutEnabled: false,
-      shippingEnabled: false,
-      showBuyNow: false,
-      showEscrowBadge: false,
-    };
+    });
   }
 
   if (categoryId === "cars") {
-    const purchasable = isCarPurchasable(listing);
-    const contact = "CONTACT_SELLER" as const;
-    return {
-      primaryAction: purchasable ? "RESERVE" : contact,
-      secondaryActions: ["SEND_MESSAGE"],
-      mobileBarActions: ["SEND_MESSAGE", purchasable ? "RESERVE" : contact],
-      checkoutEnabled: purchasable,
-      shippingEnabled: false,
-      showBuyNow: purchasable,
-      showEscrowBadge: purchasable,
-    };
+    return contactConfig("CONTACT_SELLER");
   }
 
-  if (isPurchasableProduct(listing)) {
+  if (isPurchasableListing(listing)) {
     return {
       primaryAction: "BUY_NOW",
-      secondaryActions: ["SEND_MESSAGE"],
+      secondaryActions: ["CONTACT_SELLER", "SEND_MESSAGE"],
       mobileBarActions: ["SEND_MESSAGE", "BUY_NOW"],
       checkoutEnabled: true,
       shippingEnabled: true,
@@ -142,16 +95,7 @@ export function getListingActionConfig(listing: Listing): ListingActionConfig {
     };
   }
 
-  const contact: ListingActionType = "CONTACT_SELLER";
-  return {
-    primaryAction: contact,
-    secondaryActions: ["SEND_MESSAGE"],
-    mobileBarActions: ["SEND_MESSAGE", contact],
-    checkoutEnabled: false,
-    shippingEnabled: false,
-    showBuyNow: false,
-    showEscrowBadge: false,
-  };
+  return contactConfig("CONTACT_SELLER");
 }
 
 export const ACTION_LABELS: Record<ListingActionType, string> = {

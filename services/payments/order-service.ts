@@ -42,6 +42,7 @@ import { addWalletTransaction } from "@/services/payments/wallet-ledger";
 import type { ListingSnapshot } from "@/services/payments/listing-resolver";
 import { hydrateListingCatalog } from "@/services/payments/listing-resolver";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
+import { listingMeetsPurchaseRules } from "@/shared/listings/purchase-eligibility";
 import { formatCurrencyLabel } from "@/shared/utils/currency";
 import { normalizeUaePhone } from "@/shared/utils/phone";
 
@@ -98,6 +99,9 @@ export async function initiateCheckout(
   }
 
   const listing = context.snapshot;
+  if (!listingMeetsPurchaseRules(listing)) {
+    throw new Error("LISTING_NOT_PURCHASABLE");
+  }
   const guest = isGuestCheckout(input);
   const buyerEmail = normalizeEmail(input.buyer.email);
   const buyerName = input.buyer.fullName.trim();
