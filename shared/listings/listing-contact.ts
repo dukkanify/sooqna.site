@@ -1,7 +1,5 @@
 import type { Listing } from "@/types";
 
-const FALLBACK_UAE_MOBILE = "971500000001";
-
 /** Digits-only E.164 without plus, e.g. 971501234567 */
 export function toE164Digits(phone: string): string | null {
   const digits = phone.replace(/\D/g, "");
@@ -21,24 +19,28 @@ export function toE164Digits(phone: string): string | null {
   return null;
 }
 
-export function getListingContactPhone(listing: Listing): string {
+/** Real listing phone only — never invent a placeholder number. */
+export function getListingContactPhone(listing: Listing): string | null {
   const raw = listing.contactPhone?.trim();
-  return (raw ? toE164Digits(raw) : null) ?? FALLBACK_UAE_MOBILE;
+  return raw ? toE164Digits(raw) : null;
 }
 
-export function getMaskedPhone(listing: Listing): string {
+export function getMaskedPhone(listing: Listing): string | null {
   const phone = getListingContactPhone(listing);
+  if (!phone) return null;
   const local = phone.startsWith("971") ? `0${phone.slice(3)}` : phone;
   if (local.length < 6) return local;
   return `${local.slice(0, 3)} *** ${local.slice(-2)}`;
 }
 
-export function getTelHref(listing: Listing): string {
-  return `tel:+${getListingContactPhone(listing)}`;
+export function getTelHref(listing: Listing): string | null {
+  const phone = getListingContactPhone(listing);
+  return phone ? `tel:+${phone}` : null;
 }
 
-export function getWhatsAppHref(listing: Listing, listingUrl: string): string {
+export function getWhatsAppHref(listing: Listing, listingUrl: string): string | null {
   const phone = getListingContactPhone(listing);
+  if (!phone) return null;
   const message = `مرحباً، أتواصل معك بخصوص إعلان "${listing.title}" على سوقنا.\nرابط الإعلان: ${listingUrl}`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }

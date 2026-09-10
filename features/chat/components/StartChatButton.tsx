@@ -22,6 +22,7 @@ type StartChatButtonProps = {
   iconOnly?: boolean;
   layout?: "default" | "icon" | "stacked";
   listing: Listing;
+  label?: string;
   size?: "sm" | "md" | "lg";
   variant?: "primary" | "secondary" | "ghost" | "accent";
 };
@@ -32,6 +33,7 @@ export function StartChatButton({
   iconOnly = false,
   layout = "default",
   listing,
+  label,
   size = "md",
   variant = "secondary",
 }: StartChatButtonProps) {
@@ -92,13 +94,14 @@ export function StartChatButton({
   }
 
   const resolvedLayout = layout === "default" && iconOnly ? "icon" : layout;
+  const chatLabel = label?.trim() || "محادثة البائع";
 
   if (resolvedLayout === "icon") {
     return (
       <LocalizedTree>
       <button
         aria-busy={isLoading}
-        aria-label="محادثة البائع"
+        aria-label={chatLabel}
         className={`focus-ring ${className ?? ""}`.trim()}
         disabled={isLoading}
         onClick={handleClick}
@@ -127,12 +130,12 @@ export function StartChatButton({
             <span className="grid size-8 place-items-center rounded-full bg-primary/8 text-primary">
               <Icon name="message" size={17} />
             </span>
-            <span className="text-[0.625rem] font-bold leading-none text-ink">محادثة</span>
+            <span className="text-[0.625rem] font-bold leading-none text-ink">{chatLabel}</span>
           </>
         ) : (
           <>
             <Icon className="shrink-0" name="message" size={16} />
-            محادثة البائع
+            {chatLabel}
           </>
         )}
       </Button>

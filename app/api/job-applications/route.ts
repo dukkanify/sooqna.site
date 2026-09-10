@@ -46,8 +46,13 @@ export async function POST(request: Request) {
   }
 
   const listing = resolveServerListing(parsed.data.listingId);
-  if (listing && listing.categoryId !== "jobs") {
-    return NextResponse.json({ error: "INVALID_LISTING_TYPE" }, { status: 400 });
+  if (listing) {
+    if (listing.categoryId !== "jobs") {
+      return NextResponse.json({ error: "INVALID_LISTING_TYPE" }, { status: 400 });
+    }
+    if (listing.categorySpecs?.listingType === "seeker") {
+      return NextResponse.json({ error: "INVALID_LISTING_TYPE" }, { status: 400 });
+    }
   }
 
   const ownError = assertNotOwnListing(

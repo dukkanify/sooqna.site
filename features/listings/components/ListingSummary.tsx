@@ -1,8 +1,8 @@
 "use client";
 
 import type { Category, Listing } from "@/types";
-import { getCheckoutListingParam } from "@/shared/listings/listing-ownership";
-import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
+import { ListingPrimaryAction } from "@/features/listings/components/ListingPrimaryAction";
+import { getListingActionConfig } from "@/shared/constants/listingActionConfig";
 import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
 import { StartChatButton } from "@/features/chat/components/StartChatButton";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
@@ -10,10 +10,10 @@ import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ShareButton } from "@/shared/components/ShareButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { Badge } from "@/shared/ui/Badge";
-import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import {
   isShowcaseListing,
   showsListingCondition,
@@ -37,6 +37,7 @@ const conditionLabels: Record<Listing["condition"], string> = {
 };
 
 export function ListingSummary({ category, listing }: ListingSummaryProps) {
+  const config = getListingActionConfig(listing);
   const locationLabel = listing.area
     ? `${listing.area}، ${listing.emirate ?? listing.city}`
     : listing.emirate
@@ -98,17 +99,10 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
       </div>
 
       <div className="mt-6 grid gap-2">
-        {isShowcaseListing(listing) ? null : (
-          <Button
-            fullWidth
-            href={`/checkout?listing=${getCheckoutListingParam(listing)}`}
-            size="lg"
-            variant="accent"
-          >
-            شراء الآن
-          </Button>
+        <ListingPrimaryAction action={config.primaryAction} listing={listing} />
+        {config.primaryAction === "SEND_MESSAGE" ? null : (
+          <StartChatButton fullWidth listing={listing} size="lg" />
         )}
-        <StartChatButton fullWidth listing={listing} size="lg" />
       </div>
 
       <div className="mt-2 grid gap-2 sm:grid-cols-2">

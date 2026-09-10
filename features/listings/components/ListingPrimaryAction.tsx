@@ -3,8 +3,8 @@
 import type { Listing } from "@/types";
 import { StartChatButton } from "@/features/chat/components/StartChatButton";
 import {
-  ACTION_LABELS,
   getListingActionConfig,
+  getListingActionLabel,
   type ListingActionType,
 } from "@/shared/constants/listingActionConfig";
 import { LISTING_ERRORS } from "@/shared/constants/listing-errors";
@@ -81,22 +81,33 @@ export function ListingPrimaryAction({
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
   if (action === "SEND_MESSAGE") {
-    return <StartChatButton fullWidth={fullWidth} listing={listing} size={size} />;
+    return (
+      <StartChatButton
+        fullWidth={fullWidth}
+        label={getListingActionLabel(listing, action)}
+        listing={listing}
+        size={size}
+      />
+    );
   }
 
   if (action === "CONTACT_SELLER") {
+    const tel = getTelHref(listing);
+    if (!tel) {
+      return <StartChatButton fullWidth={fullWidth} label={getListingActionLabel(listing, "CONTACT_SELLER")} listing={listing} size={size} />;
+    }
     return (
       <LocalizedTree>
       <Button
         className={className}
         fullWidth={fullWidth}
-        href={getTelHref(listing)}
+        href={tel}
         size={size}
         variant={variant}
       >
         <span className="inline-flex items-center justify-center gap-2">
           <Icon name="phone-call" size={16} />
-          {ACTION_LABELS.CONTACT_SELLER}
+          {getListingActionLabel(listing, action)}
         </span>
       </Button>
       </LocalizedTree>
@@ -175,10 +186,10 @@ export function ListingPrimaryAction({
         {PRIMARY_ACTION_ICONS[action] ? (
           <span className="inline-flex items-center justify-center gap-2">
             <Icon name={PRIMARY_ACTION_ICONS[action]} size={16} />
-            {ACTION_LABELS[action]}
+            {getListingActionLabel(listing, action)}
           </span>
         ) : (
-          ACTION_LABELS[action]
+          getListingActionLabel(listing, action)
         )}
       </Button>
 
@@ -262,12 +273,13 @@ export function SellerContactActions({
   return (
     <LocalizedTree>
     <div className={gridClass}>
-      {hidePhone ? null : (
+      {hidePhone || !tel ? null : (
         <Button href={tel} variant="secondary">
           <Icon className="shrink-0" name="phone-call" size={16} />
           اتصال
         </Button>
       )}
+      {whatsapp ? (
       <a
         className="focus-ring interactive-lift inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-[#25D366]/25 bg-gradient-to-br from-[#25D366]/10 to-[#128C7E]/10 px-5 text-sm font-semibold text-[#128C7E] shadow-[var(--shadow-xs)] transition duration-200 hover:border-[#25D366]/45"
         href={whatsapp}
@@ -277,6 +289,7 @@ export function SellerContactActions({
         <Icon name="whatsapp" size={18} />
         واتساب
       </a>
+      ) : null}
       <StartChatButton listing={listing} variant="secondary" />
     </div>
     </LocalizedTree>

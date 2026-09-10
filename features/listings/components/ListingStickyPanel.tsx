@@ -13,8 +13,8 @@ import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useToast } from "@/shared/components/ToastProvider";
 import {
-  ACTION_LABELS,
   getListingActionConfig,
+  getListingActionLabel,
 } from "@/shared/constants/listingActionConfig";
 import { isGuestCheckoutEnabled } from "@/shared/constants/feature-flags";
 import { LISTING_ERRORS } from "@/shared/constants/listing-errors";
@@ -188,7 +188,7 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const whatsapp = getWhatsAppHref(listing, getListingCanonicalUrl(listing));
   const showContactRail = Boolean(tel || whatsapp);
   const showPhoneInRail = Boolean(tel && config.primaryAction !== "CONTACT_SELLER");
-  const primaryLabel = ACTION_LABELS[config.primaryAction];
+  const primaryLabel = getListingActionLabel(listing, config.primaryAction);
 
   function handleBuyNow() {
     if (listing.status !== "active") {

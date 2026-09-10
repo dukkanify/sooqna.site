@@ -252,6 +252,30 @@ test("public listing queries rank showcase after real listings", () => {
   assert.match(src, /ensureShowcaseCatalogPublished/);
 });
 
+test("category CTAs are centralized and job seeker is not apply-job", () => {
+  const src = readFileSync(
+    path.join(root, "shared/constants/listingActionConfig.ts"),
+    "utf8",
+  );
+  assert.match(src, /getJobListingKind/);
+  assert.match(src, /تقديم على الوظيفة/);
+  assert.match(src, /استفسر عن العقار/);
+  assert.match(src, /طلب عرض سعر/);
+  assert.match(src, /تواصل مع البائع/);
+  assert.match(src, /تواصل مع الباحث عن عمل/);
+  assert.match(src, /listingType === "seeker"/);
+  const jobsApi = readFileSync(
+    path.join(root, "app/api/job-applications/route.ts"),
+    "utf8",
+  );
+  assert.match(jobsApi, /listingType === "seeker"/);
+  const contact = readFileSync(
+    path.join(root, "shared/listings/listing-contact.ts"),
+    "utf8",
+  );
+  assert.doesNotMatch(contact, /971500000001/);
+});
+
 test("admin can hide or remove the showcase catalog without a code change", () => {
   const api = readFileSync(
     path.join(root, "app/api/admin/listings/showcase/route.ts"),
