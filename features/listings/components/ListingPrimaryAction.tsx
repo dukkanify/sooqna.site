@@ -10,6 +10,7 @@ import {
 import { LISTING_ERRORS } from "@/shared/constants/listing-errors";
 import { isOwnListing } from "@/shared/listings/listing-ownership";
 import {
+  getDisplayPhone,
   getTelHref,
   getWhatsAppHref,
 } from "@/shared/listings/listing-contact";
@@ -92,25 +93,13 @@ export function ListingPrimaryAction({
   }
 
   if (action === "CONTACT_SELLER") {
-    const tel = getTelHref(listing);
-    if (!tel) {
-      return <StartChatButton fullWidth={fullWidth} label={getListingActionLabel(listing, "CONTACT_SELLER")} listing={listing} size={size} />;
-    }
     return (
-      <LocalizedTree>
-      <Button
-        className={className}
+      <StartChatButton
         fullWidth={fullWidth}
-        href={tel}
+        label={getListingActionLabel(listing, "CONTACT_SELLER")}
+        listing={listing}
         size={size}
-        variant={variant}
-      >
-        <span className="inline-flex items-center justify-center gap-2">
-          <Icon name="phone-call" size={16} />
-          {getListingActionLabel(listing, action)}
-        </span>
-      </Button>
-      </LocalizedTree>
+      />
     );
   }
 
@@ -256,27 +245,40 @@ export function ListingPrimaryAction({
 }
 
 type SellerContactActionsProps = {
+  hideChat?: boolean;
   hidePhone?: boolean;
   listing: Listing;
   stacked?: boolean;
 };
 
 export function SellerContactActions({
+  hideChat = false,
   hidePhone = false,
   listing,
   stacked = false,
 }: SellerContactActionsProps) {
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const tel = getTelHref(listing);
+  const displayPhone = getDisplayPhone(listing);
   const whatsapp = getWhatsAppHref(listing, getListingCanonicalUrl(listing));
   const gridClass = stacked ? "grid gap-2" : "grid gap-2 sm:grid-cols-2";
 
   return (
     <LocalizedTree>
     <div className={gridClass}>
-      {hidePhone || !tel ? null : (
+      {hidePhone || !tel ? null : phoneRevealed ? (
         <Button href={tel} variant="secondary">
           <Icon className="shrink-0" name="phone-call" size={16} />
-          اتصال
+          اتصال{displayPhone ? ` — ${displayPhone}` : ""}
+        </Button>
+      ) : (
+        <Button
+          onClick={() => setPhoneRevealed(true)}
+          type="button"
+          variant="secondary"
+        >
+          <Icon className="shrink-0" name="phone-call" size={16} />
+          إظهار رقم الهاتف
         </Button>
       )}
       {whatsapp ? (
@@ -290,7 +292,7 @@ export function SellerContactActions({
         واتساب
       </a>
       ) : null}
-      <StartChatButton listing={listing} variant="secondary" />
+      {hideChat ? null : <StartChatButton listing={listing} variant="secondary" />}
     </div>
     </LocalizedTree>
   );

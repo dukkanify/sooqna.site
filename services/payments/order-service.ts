@@ -42,6 +42,7 @@ import { addWalletTransaction } from "@/services/payments/wallet-ledger";
 import type { ListingSnapshot } from "@/services/payments/listing-resolver";
 import { hydrateListingCatalog } from "@/services/payments/listing-resolver";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
+import { listingMeetsPurchaseRules } from "@/shared/listings/purchase-eligibility";
 import { formatCurrencyLabel } from "@/shared/utils/currency";
 import { normalizeUaePhone } from "@/shared/utils/phone";
 
@@ -49,6 +50,7 @@ type ListingCheckoutContext = {
   snapshot: ListingSnapshot;
   categoryId: string;
   sellerEmirate?: string;
+  listing?: import("@/types").Listing;
 };
 
 function resolveListingCheckoutContext(
@@ -63,6 +65,7 @@ function resolveListingCheckoutContext(
       snapshot: toListingSnapshot(catalog),
       categoryId: catalog.categoryId,
       sellerEmirate: catalog.emirate ?? catalog.city,
+      listing: catalog,
     };
   }
 
@@ -98,6 +101,15 @@ export async function initiateCheckout(
   }
 
   const listing = context.snapshot;
+  const eligibilitySource = context.listing ?? {
+    id: listing.id,
+    categoryId: context.categoryId,
+    price: listing.price,
+    status: "active" as const,
+  };
+  if (!listingMeetsPurchaseRules(eligibilitySource)) {
+    throw new Error("LISTING_NOT_PURCHASABLE");
+  }
   const guest = isGuestCheckout(input);
   const buyerEmail = normalizeEmail(input.buyer.email);
   const buyerName = input.buyer.fullName.trim();

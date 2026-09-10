@@ -122,7 +122,10 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
           <ListingPrimaryAction action={config.primaryAction} listing={listing} />
         ) : null}
         <SellerContactActions
-          hidePhone={config.primaryAction === "CONTACT_SELLER"}
+          hideChat={
+            config.primaryAction === "CONTACT_SELLER" ||
+            config.primaryAction === "SEND_MESSAGE"
+          }
           listing={listing}
           stacked
         />
@@ -187,7 +190,7 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const tel = getTelHref(listing);
   const whatsapp = getWhatsAppHref(listing, getListingCanonicalUrl(listing));
   const showContactRail = Boolean(tel || whatsapp);
-  const showPhoneInRail = Boolean(tel && config.primaryAction !== "CONTACT_SELLER");
+  const showPhoneInRail = Boolean(tel);
   const primaryLabel = getListingActionLabel(listing, config.primaryAction);
 
   function handleBuyNow() {

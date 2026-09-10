@@ -24,6 +24,7 @@ import {
 import { loadAdminListingRecords } from "@/services/listings/listing-queries";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
 import type { Listing } from "@/types";
+import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 import type {
   AdminListingCreateInput,
   AdminListingPatch,
@@ -259,7 +260,7 @@ export async function createListingFromAdmin(
       sellerType: "individual",
     },
     verifiedSeller: false,
-    escrowAvailable: true,
+    escrowAvailable: isPurchasableCategory(input.categoryId),
     postedAt,
     expiresAt: computeExpiresAt(postedAt, settings.listingActiveDays),
     contactMethod: "both",

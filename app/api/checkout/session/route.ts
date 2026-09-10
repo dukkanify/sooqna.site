@@ -66,6 +66,8 @@ export async function POST(request: Request) {
           ? 403
           : message === "STRIPE_NOT_CONFIGURED"
             ? 503
+            : message === "LISTING_NOT_PURCHASABLE"
+              ? 400
             : message === "SHIPPING_UNAVAILABLE"
               ? 400
               : 500;

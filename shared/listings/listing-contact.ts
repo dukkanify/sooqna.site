@@ -38,9 +38,22 @@ export function getTelHref(listing: Listing): string | null {
   return phone ? `tel:+${phone}` : null;
 }
 
+export function getDisplayPhone(listing: Listing): string | null {
+  const phone = getListingContactPhone(listing);
+  if (!phone) return null;
+  if (phone.startsWith("971") && phone.length >= 11) {
+    const local = `0${phone.slice(3)}`;
+    if (local.length === 10) {
+      return `${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
+    }
+    return local;
+  }
+  return phone;
+}
+
 export function getWhatsAppHref(listing: Listing, listingUrl: string): string | null {
   const phone = getListingContactPhone(listing);
   if (!phone) return null;
-  const message = `مرحباً، أتواصل معك بخصوص إعلان "${listing.title}" على سوقنا.\nرابط الإعلان: ${listingUrl}`;
+  const message = `مرحباً، أتواصل معك بخصوص إعلان:\n${listing.title}\nعلى منصة سوقنا.\n${listingUrl}`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }

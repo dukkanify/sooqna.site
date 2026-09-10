@@ -274,6 +274,27 @@ test("category CTAs are centralized and job seeker is not apply-job", () => {
     "utf8",
   );
   assert.doesNotMatch(contact, /971500000001/);
+  const purchase = readFileSync(
+    path.join(root, "shared/listings/purchase-eligibility.ts"),
+    "utf8",
+  );
+  assert.match(purchase, /isPurchasableListing/);
+  assert.match(purchase, /isCheckoutOperational/);
+  assert.match(purchase, /NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY/);
+  const actions = readFileSync(
+    path.join(root, "shared/constants/listingActionConfig.ts"),
+    "utf8",
+  );
+  assert.match(actions, /isPurchasableListing/);
+  assert.match(
+    actions,
+    /categoryId === "cars"\) \{\s*return contactConfig\("CONTACT_SELLER"\);/,
+  );
+  const primary = readFileSync(
+    path.join(root, "features/listings/components/ListingPrimaryAction.tsx"),
+    "utf8",
+  );
+  assert.match(primary, /إظهار رقم الهاتف/);
 });
 
 test("admin can hide or remove the showcase catalog without a code change", () => {
