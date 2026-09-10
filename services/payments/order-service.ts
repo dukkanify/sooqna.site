@@ -50,6 +50,7 @@ type ListingCheckoutContext = {
   snapshot: ListingSnapshot;
   categoryId: string;
   sellerEmirate?: string;
+  listing?: import("@/types").Listing;
 };
 
 function resolveListingCheckoutContext(
@@ -64,6 +65,7 @@ function resolveListingCheckoutContext(
       snapshot: toListingSnapshot(catalog),
       categoryId: catalog.categoryId,
       sellerEmirate: catalog.emirate ?? catalog.city,
+      listing: catalog,
     };
   }
 
@@ -99,7 +101,13 @@ export async function initiateCheckout(
   }
 
   const listing = context.snapshot;
-  if (!listingMeetsPurchaseRules(listing)) {
+  const eligibilitySource = context.listing ?? {
+    id: listing.id,
+    categoryId: context.categoryId,
+    price: listing.price,
+    status: "active" as const,
+  };
+  if (!listingMeetsPurchaseRules(eligibilitySource)) {
     throw new Error("LISTING_NOT_PURCHASABLE");
   }
   const guest = isGuestCheckout(input);

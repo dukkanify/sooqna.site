@@ -1,5 +1,12 @@
-import type { Listing } from "@/types";
-import { isShowcaseListing } from "@/shared/listings/showcase-listing";
+import { isShowcaseListing, type ShowcaseListingRef } from "@/shared/listings/showcase-listing";
+
+export type PurchaseEligibilityInput = ShowcaseListingRef & {
+  categoryId: string;
+  status?: string;
+  price: number;
+  currency?: string;
+  categorySpecs?: { saleType?: string };
+};
 
 /**
  * Categories that MAY support direct online purchase when checkout is operational.
@@ -28,7 +35,7 @@ export function isPurchasableCategory(categoryId: string): boolean {
   return PURCHASABLE_CATEGORY_IDS.has(categoryId);
 }
 
-export function isWholesaleFoodListing(listing: Listing): boolean {
+export function isWholesaleFoodListing(listing: PurchaseEligibilityInput): boolean {
   return (
     listing.categoryId === "food" &&
     listing.categorySpecs?.saleType === "wholesale"
@@ -39,9 +46,9 @@ export function isWholesaleFoodListing(listing: Listing): boolean {
  * Listing could be sold online if Stripe/checkout were operational.
  * Does not inspect button copy — category, type, status, price, and provenance only.
  */
-export function listingMeetsPurchaseRules(listing: Listing): boolean {
+export function listingMeetsPurchaseRules(listing: PurchaseEligibilityInput): boolean {
   if (!isPurchasableCategory(listing.categoryId)) return false;
-  if (listing.status !== "active") return false;
+  if (listing.status && listing.status !== "active") return false;
   if (isShowcaseListing(listing)) return false;
   if (!Number.isFinite(listing.price) || listing.price <= 0) return false;
   if (listing.currency && listing.currency !== "AED") return false;
@@ -52,6 +59,6 @@ export function listingMeetsPurchaseRules(listing: Listing): boolean {
 /**
  * Central source of truth: this listing may use Buy Now / Stripe Checkout now.
  */
-export function isPurchasableListing(listing: Listing): boolean {
+export function isPurchasableListing(listing: PurchaseEligibilityInput): boolean {
   return listingMeetsPurchaseRules(listing) && isCheckoutOperational();
 }
