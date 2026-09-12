@@ -94,7 +94,6 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1700884520248-92092bd21e63",
     "photo-1693532331766-bfcec4163ce4",
     "photo-1676611383818-25139c3d429a",
-    "photo-1568605117036-5fe5e7bab0b7",
   ],
   nissan_suv: [
     "photo-1519641471654-76ce0107ad1b",
