@@ -13,6 +13,9 @@ import { searchTextMatches } from "@/shared/listings/search-text";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { buildSearchUrl, type SearchFilterState } from "./search-url";
+import {
+  SMART_SEARCH_FOCUS_EVENT,
+} from "@/features/search/focus-smart-search";
 import type { SearchSuggestion } from "@/features/search/types";
 
 export type { SearchSuggestion };
@@ -20,6 +23,13 @@ export type { SearchSuggestion };
 type SearchTypeaheadProps = {
   compact?: boolean;
   defaultValue?: string;
+  /** Extra class on the outer wrapper. */
+  className?: string;
+  /** Extra class on the text input (overrides default chrome when set with bare). */
+  inputClassName?: string;
+  /** When true, drop default border/shadow so parent styles the field. */
+  bare?: boolean;
+  inputId?: string;
   label?: string;
   name?: string;
   placeholder?: string;
@@ -41,6 +51,10 @@ function kindLabel(kind: SearchSuggestion["kind"]) {
 export function SearchTypeahead({
   compact = false,
   defaultValue = "",
+  className = "",
+  inputClassName,
+  bare = false,
+  inputId,
   label = "كلمة البحث",
   name = "q",
   placeholder = "سيارة، هاتف، عقار...",
@@ -49,6 +63,7 @@ export function SearchTypeahead({
 }: SearchTypeaheadProps) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue);
   const [syncedDefault, setSyncedDefault] = useState(defaultValue);
   const [open, setOpen] = useState(false);
@@ -76,6 +91,16 @@ export function SearchTypeahead({
       window.removeEventListener(STORAGE_EVENTS.savedSearchesChange, sync);
       window.removeEventListener("storage", sync);
     };
+  }, []);
+
+  useEffect(() => {
+    const onFocusRequest = () => {
+      setOpen(true);
+      setActiveIndex(-1);
+      inputRef.current?.focus({ preventScroll: true });
+    };
+    window.addEventListener(SMART_SEARCH_FOCUS_EVENT, onFocusRequest);
+    return () => window.removeEventListener(SMART_SEARCH_FOCUS_EVENT, onFocusRequest);
   }, []);
 
   useEffect(() => {
@@ -183,9 +208,20 @@ export function SearchTypeahead({
     }
   }
 
+  const defaultInputClass = bare
+    ? "w-full min-w-0 border-0 bg-transparent outline-none placeholder:text-muted/70"
+    : `focus-ring w-full min-w-0 rounded-[var(--radius-xl)] border border-border bg-surface text-ink shadow-[var(--shadow-xs)] placeholder:text-muted/70 transition ${
+        compact
+          ? "min-h-10 rounded-lg px-3 pe-9 py-2 text-xs font-medium leading-normal"
+          : "min-h-11 px-4 pe-10 py-2.5 text-sm font-medium leading-normal"
+      }`;
+
   return (
     <LocalizedTree>
-    <div ref={rootRef} className="relative grid min-w-0 gap-1.5">
+    <div
+      ref={rootRef}
+      className={`relative grid min-w-0 gap-1.5${className ? ` ${className}` : ""}`}
+    >
       {label ? (
         <span
           className={
@@ -197,15 +233,13 @@ export function SearchTypeahead({
       ) : null}
       <div className="relative">
         <input
+          ref={inputRef}
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={open && items.length > 0}
           autoComplete="off"
-          className={`focus-ring w-full min-w-0 rounded-[var(--radius-xl)] border border-border bg-surface text-ink shadow-[var(--shadow-xs)] placeholder:text-muted/70 transition ${
-            compact
-              ? "min-h-10 rounded-lg px-3 pe-9 py-2 text-xs font-medium leading-normal"
-              : "min-h-11 px-4 pe-10 py-2.5 text-sm font-medium leading-normal"
-          }`}
+          className={inputClassName ?? defaultInputClass}
+          id={inputId}
           name={name}
           onChange={(event) => {
             setValue(event.target.value);
@@ -234,11 +268,13 @@ export function SearchTypeahead({
           type="search"
           value={value}
         />
-        <Icon
-          className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted"
-          name="search"
-          size={compact ? 14 : 16}
-        />
+        {!bare ? (
+          <Icon
+            className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted"
+            name="search"
+            size={compact ? 14 : 16}
+          />
+        ) : null}
       </div>
 
       {open && items.length > 0 ? (

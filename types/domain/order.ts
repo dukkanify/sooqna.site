@@ -43,6 +43,13 @@ export type CustomerType = "registered" | "guest" | "guest_converted";
 
 export type EmailDeliveryStatus = "pending" | "sent" | "failed" | "skipped";
 
+/** Soft Madmoon product-condition verification stage (maps onto escrow statuses). */
+export type ProductVerificationStatus =
+  | "awaiting_seller"
+  | "awaiting_buyer"
+  | "match_confirmed"
+  | "mismatch_reported";
+
 export type Order = {
   id: string;
   listingId: string;
@@ -99,5 +106,10 @@ export type Order = {
   sellerProofNote?: string;
   sellerProofAt?: string;
   buyerMatchConfirmedAt?: string;
+  /** Listing category at order time — used for product-condition eligibility. */
+  listingCategoryId?: string;
+  /** Increments each time seller completes a documentation set. */
+  productVerificationVersion?: number;
+  productVerificationStatus?: ProductVerificationStatus;
   auditLog: OrderAuditEvent[];
 };

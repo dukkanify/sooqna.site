@@ -69,6 +69,7 @@ export type {
   OrderFeeBreakdown,
   OrderStatus,
   PaymentStatus,
+  ProductVerificationStatus,
 } from "./domain/order";
 
 export type {

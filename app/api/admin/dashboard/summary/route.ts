@@ -5,23 +5,24 @@ import {
 import { NextResponse } from "next/server";
 import { buildAdminDashboard } from "@/services/admin/admin-dashboard.service";
 
-/** Legacy endpoint — same payload as /api/admin/dashboard/summary for compatibility. */
 export async function GET(request: Request) {
   const admin = await requireAdminUser();
   if (!isSessionUser(admin)) {
     return admin;
   }
 
-  const range = new URL(request.url).searchParams.get("range");
+  const { searchParams } = new URL(request.url);
+  const range = searchParams.get("range");
+
   try {
     const dashboard = await buildAdminDashboard(admin, range);
     return NextResponse.json(dashboard, {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
-    console.error("[admin/summary]", error);
+    console.error("[admin/dashboard/summary]", error);
     return NextResponse.json(
-      { error: "SUMMARY_LOAD_FAILED", message: "تعذر تحميل لوحة التحكم." },
+      { error: "DASHBOARD_LOAD_FAILED", message: "تعذر تحميل لوحة التحكم." },
       { status: 500 },
     );
   }

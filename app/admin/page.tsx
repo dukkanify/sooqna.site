@@ -5,7 +5,7 @@ export default function AdminPage() {
   return (
     <AdminShell
       activePath="/admin"
-      description="نظرة تشغيلية شاملة على المدفوعات، الإشراف، والوارد — مع وصول مباشر لكل وحدة."
+      description="ملخص تشغيلي حي: أداء المنصة، المالية، طوابير المراجعة، والنزاعات — مع إجراءات فورية."
       title="لوحة التحكم"
     >
       <AdminOpsCockpit />

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/shared/components/BrandLogo";
 import { EmirateLocationSelect } from "@/shared/components/EmirateLocationSelect";
@@ -43,6 +43,7 @@ function isActivePath(pathname: string, href: string) {
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const copy = useLocaleMessages();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -85,9 +86,11 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-xl">
       <VerifyAccountBanner />
       <div className="sooqna-header-accent h-0.5" />
-      <div className="app-container">
-        <div className="flex min-h-[4rem] items-center justify-between gap-4">
-          <BrandLogo showTagline={false} size="sm" />
+      <div className="app-container min-w-0">
+        <div className="flex min-h-[4rem] min-w-0 items-center justify-between gap-2 sm:gap-3">
+          <div className="min-w-0 shrink">
+            <BrandLogo showTagline={false} size="sm" />
+          </div>
 
           <nav className="hidden items-center gap-0.5 lg:flex">
             {nav.map((item) => {
@@ -120,9 +123,12 @@ export function SiteHeader() {
             />
           </form>
 
-          <EmirateLocationSelect className="hidden lg:inline-flex" variant="desktop" />
+          {/* Wrapper avoids Tailwind conflict: component uses inline-flex which beats `hidden`. */}
+          <div className="hidden lg:block">
+            <EmirateLocationSelect variant="desktop" />
+          </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <div className="hidden items-center gap-2 lg:flex">
               <LanguageSwitch variant="compact" />
               <ThemeToggle className="shrink-0" />
@@ -148,15 +154,17 @@ export function SiteHeader() {
               </Link>
             )}
             {!isComposeListing ? (
-              <Button
-                className="sooqna-gold-gradient hidden rounded-full sm:inline-flex"
-                href="/listings/new"
-                size="md"
-                variant="accent"
-              >
-                <Icon className="shrink-0" name="plus" size={16} />
-                {copy.addListing}
-              </Button>
+              <div className="hidden sm:block">
+                <Button
+                  className="sooqna-gold-gradient rounded-full"
+                  href="/listings/new"
+                  size="md"
+                  variant="accent"
+                >
+                  <Icon className="shrink-0" name="plus" size={16} />
+                  {copy.addListing}
+                </Button>
+              </div>
             ) : null}
             <button
               aria-expanded={menuOpen}
@@ -211,6 +219,12 @@ export function SiteHeader() {
               })}
 
               <div className="mt-1 rounded-[1.1rem] border border-border bg-surface-muted/60 px-3 py-3">
+                <div className="mb-3">
+                  <p className="mb-2 text-xs font-bold text-muted">الإمارة</p>
+                  <div className="w-full [&_label]:w-full [&_label]:max-w-none">
+                    <EmirateLocationSelect variant="desktop" />
+                  </div>
+                </div>
                 <LanguageSwitch />
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold text-ink">{copy.nightMode}</span>
@@ -258,6 +272,7 @@ export function SiteHeader() {
                       clearSessionUser();
                       void removeSessionCookie();
                       setMenuOpen(false);
+                      router.replace("/login");
                     }}
                     type="button"
                     variant="ghost"

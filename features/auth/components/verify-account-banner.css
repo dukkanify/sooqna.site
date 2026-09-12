@@ -47,6 +47,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem 1.35rem;
+  min-width: 0;
   min-height: 3.05rem;
   padding-block: 0.55rem;
 }
@@ -168,8 +169,11 @@
 
   .verify-account-banner__action {
     min-height: 1.9rem;
-    padding-inline: 0.8rem;
-    font-size: 0.7rem;
+    max-width: 42%;
+    padding-inline: 0.65rem;
+    font-size: 0.68rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

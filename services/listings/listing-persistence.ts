@@ -414,12 +414,44 @@ export async function setShowcaseCatalogFlag(value: ShowcaseCatalogFlag): Promis
   await setMarketplaceFlag(SHOWCASE_FLAG_KEY, value);
 }
 
+const DELETED_LISTING_IDS_KEY = "deleted_listing_ids";
+
+export async function getDeletedListingIds(): Promise<Set<string>> {
+  const raw = await getMarketplaceFlag(DELETED_LISTING_IDS_KEY);
+  if (!raw) return new Set();
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(
+      parsed
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter(Boolean),
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+export async function rememberDeletedListingId(id: string): Promise<void> {
+  const trimmed = id.trim();
+  if (!trimmed) return;
+  const ids = await getDeletedListingIds();
+  if (ids.has(trimmed)) return;
+  ids.add(trimmed);
+  // Cap growth — keep the most recent ~2k ids.
+  const list = Array.from(ids);
+  const clipped = list.length > 2000 ? list.slice(list.length - 2000) : list;
+  await setMarketplaceFlag(DELETED_LISTING_IDS_KEY, JSON.stringify(clipped));
+}
+
 export async function insertListingsIfMissing(listings: Listing[]): Promise<number> {
+  const deletedIds = await getDeletedListingIds();
+  const eligible = listings.filter((listing) => !deletedIds.has(listing.id));
   let inserted = 0;
   if (await ensureListingsTable()) {
     const pool = await getOptionalPostgresPool();
     if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
-    for (const listing of listings) {
+    for (const listing of eligible) {
       const result = await pool.query(
         `INSERT INTO ${TABLE} (
             id, slug, seller_id, category_id, status, is_featured,
@@ -438,7 +470,7 @@ export async function insertListingsIfMissing(listings: Listing[]): Promise<numb
 
   const stored = (await readJsonFile()) ?? [];
   const ids = new Set(stored.map((item) => item.id));
-  for (const listing of listings) {
+  for (const listing of eligible) {
     if (ids.has(listing.id)) continue;
     stored.unshift(listing);
     ids.add(listing.id);

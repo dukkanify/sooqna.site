@@ -123,10 +123,12 @@ export function MarketHeader() {
               </Link>
             )}
 
-            <Link className="market-header__cta hidden sm:inline-flex" href="/listings/new">
-              <Icon name="plus" size={15} />
-              <span>{copy.addListing}</span>
-            </Link>
+            <div className="hidden sm:block">
+              <Link className="market-header__cta inline-flex" href="/listings/new">
+                <Icon name="plus" size={15} />
+                <span>{copy.addListing}</span>
+              </Link>
+            </div>
 
             <button
               aria-expanded={menuOpen}

@@ -71,10 +71,10 @@ export function ListingDetailsView({
         <Breadcrumbs items={breadcrumbs} />
 
         <div className="listing-details-grid grid w-full min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start lg:gap-x-8">
-          <div className="min-w-0 lg:col-start-1">
+          <div className="min-w-0 overflow-x-clip lg:col-start-1">
             <ListingGallery listing={listing} />
 
-            <div className="mt-4 lg:hidden">
+            <div className="mt-4 min-w-0 lg:hidden">
               <div className="flex flex-wrap items-center gap-2">
                 {getListingCardBadges(listing).map((badge) => (
                   <Badge key={badge.key} variant={badge.variant}>
@@ -86,19 +86,19 @@ export function ListingDetailsView({
                   <Badge variant="escrow">ضمان مالي — دفع عبر المنصة</Badge>
                 ) : null}
               </div>
-              <h1 className="mt-3 text-2xl font-black leading-tight text-ink">
+              <h1 className="mt-3 break-words text-xl font-black leading-tight text-ink sm:text-2xl">
                 <ListingTitle listing={listing} />
               </h1>
-              <div className="mt-2">
+              <div className="mt-2 min-w-0 overflow-x-auto">
                 <CurrencyAmount amount={listing.price} size="lg" />
               </div>
-              <div className="mt-3 flex flex-wrap gap-3 text-sm text-muted">
-                <span className="inline-flex items-center gap-1">
-                  <Icon name="map" size={14} />
-                  {locationLabel}
+              <div className="mt-3 flex min-w-0 flex-wrap gap-3 text-sm text-muted">
+                <span className="inline-flex min-w-0 max-w-full items-center gap-1">
+                  <Icon className="shrink-0" name="map" size={14} />
+                  <span className="min-w-0 break-words">{locationLabel}</span>
                 </span>
                 {listing.postedAt ? (
-                  <span className="inline-flex items-center gap-1">
+                  <span className="inline-flex shrink-0 items-center gap-1">
                     <Icon name="clock" size={14} />
                     {formatPostedTime(listing.postedAt)}
                   </span>
