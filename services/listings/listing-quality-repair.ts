@@ -42,7 +42,6 @@ export function repairPoorQualityListing(listing: Listing): Listing | null {
     area: "الخليج التجاري",
     country: "الإمارات العربية المتحدة",
     images,
-    coverImage: images[0],
     features: [
       "خليجي",
       "فل أوبشن",
