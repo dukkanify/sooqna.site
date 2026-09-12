@@ -51,7 +51,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   const imageArea = (
     <div
-      className={`marketplace-card-media relative overflow-hidden ${layout === "row" ? "h-full min-h-full w-full" : "aspect-[4/3]"}`}
+      className={`marketplace-card-media relative overflow-hidden ${layout === "row" ? "h-full min-h-full w-full" : "aspect-[3/2]"}`}
     >
       {imageUrl ? (
         <Link aria-hidden className="absolute inset-0" href={href} tabIndex={-1}>
@@ -103,40 +103,40 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   const bodyBlock = (
     <div
-      className={`flex min-w-0 flex-1 flex-col ${layout === "card" ? "min-h-[11rem] p-4" : "justify-center p-4 md:p-5"}`}
+      className={`flex min-w-0 flex-1 flex-col ${layout === "card" ? "gap-1.5 p-3" : "justify-center p-3 md:p-4"}`}
     >
       {categoryName ? (
-        <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[#B8955F] sm:text-xs">
+        <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[#B8955F]">
           {categoryName}
         </p>
       ) : null}
 
       <Link className="min-w-0" href={href}>
         <h3
-          className={`line-clamp-2 break-words font-bold leading-snug text-ink transition group-hover:text-secondary ${layout === "card" ? "mt-1 min-h-[2.75rem] text-sm sm:text-base" : "text-sm md:text-base"}`}
+          className={`line-clamp-2 break-words text-sm font-bold leading-snug text-ink transition group-hover:text-secondary`}
         >
           <ListingTitle listing={listing} />
         </h3>
       </Link>
 
-      <div className="mt-2">
+      <div>
         <CurrencyAmount amount={listing.price} size="md" />
       </div>
 
-      <div className="mt-2 flex items-center gap-2">
+      <div className="hidden items-center gap-2 sm:flex">
         {listing.seller.avatarUrl ? (
-          <span className="relative size-7 shrink-0 overflow-hidden rounded-full ring-2 ring-surface">
+          <span className="relative size-6 shrink-0 overflow-hidden rounded-full ring-2 ring-surface">
             <AppImage
               alt={displaySeller}
               className="object-cover"
               fallback="avatar"
               fill
-              sizes="28px"
+              sizes="24px"
               src={listing.seller.avatarUrl}
             />
           </span>
         ) : (
-          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-secondary-soft text-[0.6rem] font-bold text-[#8a7040]">
+          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-secondary-soft text-[0.55rem] font-bold text-[#8a7040]">
             {displaySeller.slice(0, 2)}
           </span>
         )}
@@ -147,19 +147,19 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </div>
       </div>
 
-      <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted">
+      <p className="inline-flex items-center gap-1 text-[0.7rem] font-medium text-muted sm:text-xs">
         <Icon name="map" size={12} />
         <span className="truncate">{location}</span>
       </p>
 
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/80 pt-2.5 text-[0.65rem] font-medium text-muted sm:text-xs">
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/80 pt-2 text-[0.65rem] font-medium text-muted">
         <span className="inline-flex items-center gap-1">
-          <Icon className="marketplace-card-meta-icon" name="clock" size={13} />
+          <Icon className="marketplace-card-meta-icon" name="clock" size={12} />
           {formatPostedTime(listing.postedAt)}
         </span>
         {(listing.views ?? 0) > 0 ? (
           <span className="inline-flex items-center gap-1">
-            <Icon className="marketplace-card-meta-icon" name="eye" size={13} />
+            <Icon className="marketplace-card-meta-icon" name="eye" size={12} />
             {formatViews(listing.views)} مشاهدة
           </span>
         ) : null}

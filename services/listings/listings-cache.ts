@@ -1,7 +1,7 @@
 import { revalidateTag } from "next/cache";
 
 export const LISTINGS_CACHE_TAG = "listings";
-export const HOME_FEED_REVALIDATE_SECONDS = 30;
+export const HOME_FEED_REVALIDATE_SECONDS = 90;
 export const CATEGORY_COUNTS_REVALIDATE_SECONDS = 60;
 
 export function bumpListingsCache() {

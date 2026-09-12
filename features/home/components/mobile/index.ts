@@ -10,7 +10,6 @@ export { MobileHeroBlock } from "./MobileHeroBlock";
 export { MobileHeroSection } from "./MobileHeroSection";
 export { MobileHomeHeader } from "./MobileHomeHeader";
 export { MobileHomeShell } from "./MobileHomeShell";
-export { MobileNearbyCard } from "./MobileNearbyCard";
 export { MobileNearbyRail } from "./MobileNearbyRail";
 export { MobilePreviewStrip } from "./MobilePreviewStrip";
 export { MobilePromoBanner } from "./MobilePromoBanner";

@@ -31,8 +31,9 @@ const HOME_SECTION_LIMIT = 13;
 const FEATURED_FETCH = 16;
 const PREVIEW_SHOW = 4;
 const FEATURED_SHOW = 6;
-const NEARBY_FETCH = 18;
-const SECTION_FETCH = 8;
+const CATALOG_FETCH = 96;
+const NEARBY_SHOW = 12;
+const SECTION_SHOW = 4;
 
 function takeUnique(
   listings: Listing[],
@@ -52,7 +53,8 @@ function takeUnique(
 async function buildHomeFeed(): Promise<HomeFeed> {
   const sectionDefs = mockHomeCategorySections.slice(0, HOME_SECTION_LIMIT);
 
-  const [featuredRows, nearbyRows, ...sectionRows] = await Promise.all([
+  // Two round-trips instead of 1 + N category queries — much faster under Postgres quota.
+  const [featuredRows, catalogRows] = await Promise.all([
     queryListings({
       featured: true,
       limit: FEATURED_FETCH,
@@ -61,20 +63,11 @@ async function buildHomeFeed(): Promise<HomeFeed> {
       status: "active",
     }),
     queryListings({
-      limit: NEARBY_FETCH,
+      limit: CATALOG_FETCH,
       slim: "card",
       sort: "newest",
       status: "active",
     }),
-    ...sectionDefs.map((section) =>
-      queryListings({
-        categoryId: section.categoryId,
-        limit: SECTION_FETCH,
-        slim: "card",
-        sort: "newest",
-        status: "active",
-      }),
-    ),
   ]);
 
   const usedIds = new Set<string>();
@@ -82,20 +75,23 @@ async function buildHomeFeed(): Promise<HomeFeed> {
     isListingFeaturedActive(listing),
   );
 
-  // Preview + Featured share the featured pool but never repeat an id on the page.
   const preview = takeUnique(activeFeatured, PREVIEW_SHOW, usedIds);
   const featured = takeUnique(activeFeatured, FEATURED_SHOW, usedIds);
-  const nearbySource = takeUnique(nearbyRows, 12, usedIds);
+  const nearbySource = takeUnique(catalogRows, NEARBY_SHOW, usedIds);
 
-  const sections = sectionDefs.map((section, index) => ({
+  const sections = sectionDefs.map((section) => ({
     ...section,
-    items: takeUnique(sectionRows[index] ?? [], 4, usedIds),
+    items: takeUnique(
+      catalogRows.filter((listing) => listing.categoryId === section.categoryId),
+      SECTION_SHOW,
+      usedIds,
+    ),
   }));
 
   return { featured, nearbySource, preview, sections };
 }
 
-const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v5-dedupe"], {
+const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v6-fast"], {
   revalidate: HOME_FEED_REVALIDATE_SECONDS,
   tags: [LISTINGS_CACHE_TAG],
 });

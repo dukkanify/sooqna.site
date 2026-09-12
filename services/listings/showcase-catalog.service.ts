@@ -12,6 +12,7 @@ import {
   upsertListingRow,
 } from "@/services/listings/listing-persistence";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
+import { isPostgresTemporarilyUnavailable } from "@/services/db/postgres";
 
 export type ShowcaseCatalogAction = "publish" | "hide" | "remove";
 
@@ -81,6 +82,7 @@ export async function listingsForEnabledCategories(
 
 async function runEnsure(): Promise<void> {
   if (showcaseDisabledByEnv()) return;
+  if (isPostgresTemporarilyUnavailable()) return;
   const flag = await getShowcaseCatalogFlag();
   if (flag === "removed" || flag === "hidden") return;
   const listings = await listingsForEnabledCategories();
@@ -92,6 +94,7 @@ async function runEnsure(): Promise<void> {
 /** Insert missing showcase rows only. Never un-hides drafts or restores a removed catalog. */
 export async function ensureShowcaseCatalogPublished(): Promise<void> {
   if (showcaseDisabledByEnv()) return;
+  if (isPostgresTemporarilyUnavailable()) return;
   if (!ensureInflight) {
     ensureInflight = runEnsure().catch((error) => {
       ensureInflight = null;
