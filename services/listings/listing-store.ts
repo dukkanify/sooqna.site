@@ -15,9 +15,11 @@ import {
   loadListingBySlug,
   loadPersistedListings,
   persistAllListings,
+  rememberDeletedListingId,
   seedListings,
   upsertListingRow,
 } from "@/services/listings/listing-persistence";
+import { repairPoorQualityListings } from "@/services/listings/listing-quality-repair";
 import {
   allowMockCatalogSeed,
 } from "@/services/listings/mock-catalog-policy";
@@ -119,15 +121,23 @@ async function loadListingsUncached(): Promise<Listing[]> {
         return setCache(seeded);
       }
       const merged = hydrateCatalogPhones(await mergeMissingSeedListings(stored));
-      const phonesAdded = merged.some((listing) => {
+      const { listings: repairedRows, repaired } = repairPoorQualityListings(merged);
+      const phonesAdded = repairedRows.some((listing) => {
         const before = stored.find((item) => item.id === listing.id);
         return Boolean(listing.contactPhone) && !before?.contactPhone;
       });
-      if (phonesAdded) {
-        await persistAllListings(merged);
+      if (phonesAdded || repaired.length > 0) {
+        if (repaired.length > 0) {
+          for (const listing of repaired) {
+            await upsertListingRow(listing);
+          }
+          await bumpListingsCache();
+        } else {
+          await persistAllListings(repairedRows);
+        }
       }
-      await applyListingExpiry(merged);
-      return setCache(merged);
+      await applyListingExpiry(repairedRows);
+      return setCache(repairedRows);
     })().finally(() => {
       inflight = null;
     });
@@ -164,7 +174,13 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
   const { ensureShowcaseCatalogPublished } = await import(
     "@/services/listings/showcase-catalog.service"
   );
-  await ensureShowcaseCatalogPublished();
+  const { ensureLiveMarketplaceCatalogPublished } = await import(
+    "@/services/listings/live-marketplace-catalog.service"
+  );
+  await Promise.all([
+    ensureShowcaseCatalogPublished(),
+    ensureLiveMarketplaceCatalogPublished(),
+  ]);
   const persisted = await loadListingBySlug(slug).catch(() => null);
   if (persisted) return persisted;
   const listings = await getAllListings();
@@ -355,12 +371,21 @@ export async function deleteListingById(
 ): Promise<boolean> {
   const listings = await loadListingsUncached();
   const index = listings.findIndex((item) => item.id === id);
-  if (index < 0) return false;
+  if (index < 0) {
+    // Tombstone + best-effort row delete so showcase cannot resurrect it.
+    await rememberDeletedListingId(id);
+    const removed = await deleteListingRow(id).catch(() => false);
+    cacheRows = null;
+    inflight = null;
+    bumpListingsCache();
+    return Boolean(removed);
+  }
   if (sellerId && listings[index].seller.id !== sellerId) {
     return false;
   }
   listings.splice(index, 1);
   await deleteListingRow(id);
+  await rememberDeletedListingId(id);
   cacheRows = null;
   inflight = null;
   bumpListingsCache();

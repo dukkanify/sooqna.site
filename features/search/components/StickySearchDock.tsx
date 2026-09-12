@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/shared/ui/Icon";
+import { SearchTypeahead } from "@/features/search/components/SearchTypeahead";
+import { focusSmartSearch } from "@/features/search/focus-smart-search";
 
 /**
  * Pins a compact search control while scrolling once the hero search
@@ -10,9 +12,12 @@ import { Icon } from "@/shared/ui/Icon";
  */
 export function StickySearchDock() {
   const pathname = usePathname();
-  const hideDock =
-    pathname === "/search" ||
-    pathname.startsWith("/listings/");
+  // Only show on browse surfaces — never on listing detail, checkout, auth, admin, etc.
+  const allowDock =
+    pathname === "/" ||
+    pathname.startsWith("/categories") ||
+    pathname === "/featured";
+  const hideDock = !allowDock;
   const [visible, setVisible] = useState(false);
   const [footerInView, setFooterInView] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -71,13 +76,13 @@ export function StickySearchDock() {
       {expanded ? (
         <form action="/search" className="sticky-search-dock__form motion-rise">
           <Icon className="sticky-search-dock__icon" name="search" size={18} />
-          <input
-            autoFocus
-            aria-label="كلمة البحث"
-            className="sticky-search-dock__input"
-            name="q"
+          <SearchTypeahead
+            bare
+            className="min-w-0 flex-1"
+            compact
+            inputClassName="sticky-search-dock__input"
+            label=""
             placeholder="ابحث في سوقنا..."
-            type="search"
           />
           <button className="sticky-search-dock__submit motion-press" type="submit">
             بحث
@@ -95,7 +100,13 @@ export function StickySearchDock() {
         <button
           aria-label="فتح البحث"
           className="sticky-search-dock__fab motion-press"
-          onClick={() => setExpanded(true)}
+          onClick={() => {
+            if (pathname === "/" && document.querySelector("[data-search-anchor]")) {
+              focusSmartSearch();
+              return;
+            }
+            setExpanded(true);
+          }}
           type="button"
         >
           <Icon name="search" size={20} />

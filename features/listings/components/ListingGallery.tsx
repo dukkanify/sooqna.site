@@ -158,8 +158,8 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
   return (
     <LocalizedTree>
     <>
-      <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-2">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-2xl)] border border-border shadow-[var(--shadow-lg)]">
+      <div className="grid w-full min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-2">
+        <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden rounded-[var(--radius-2xl)] border border-border shadow-[var(--shadow-lg)]">
           <button
             aria-label="عرض جميع الوسائط"
             className="relative block size-full"
