@@ -21,7 +21,10 @@ import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
-import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
+import {
+  formatPostedTime,
+  MARKETPLACE_LISTING_GRID_CLASS,
+} from "@/features/listings/components/listing-card.utils";
 import { getListingCardBadges } from "@/features/listings/components/listing-card-badges";
 import { Badge } from "@/shared/ui/Badge";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
@@ -159,7 +162,7 @@ export function ListingDetailsView({
             eyebrow="مشابه"
             title="قد يعجبك أيضاً"
           />
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className={MARKETPLACE_LISTING_GRID_CLASS}>
             {relatedListings.map((relatedListing) => (
               <ListingCard
                 key={relatedListing.id}

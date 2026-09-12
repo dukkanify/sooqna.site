@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Listing } from "@/types";
 import { PremiumListingCard } from "@/features/listings/components/PremiumListingCard";
+import { MARKETPLACE_LISTING_GRID_CLASS } from "@/features/listings/components/listing-card.utils";
 
 type MarketPreviewStripProps = {
   categories: { id: string; name: string }[];
@@ -34,7 +35,7 @@ export function MarketPreviewStrip({
           </Link>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={MARKETPLACE_LISTING_GRID_CLASS}>
           {previews.map((listing) => (
             <PremiumListingCard
               key={listing.id}

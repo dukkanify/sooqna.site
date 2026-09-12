@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Listing } from "@/types";
 import { ListingCard } from "@/features/listings/components/ListingCard";
+import { MARKETPLACE_LISTING_GRID_CLASS } from "@/features/listings/components/listing-card.utils";
 import { STORAGE_EVENTS, STORAGE_KEYS } from "@/shared/constants/brand";
 import { SectionHeader } from "@/shared/ui/SectionHeader";
 import { getLocalListings } from "@/services/storage";
@@ -97,7 +98,7 @@ export function RecentlyViewedSection({
         eyebrow="سجل التصفح"
         title="شاهدت مؤخراً"
       />
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className={MARKETPLACE_LISTING_GRID_CLASS}>
         {recentListings.map((listing) => (
           <ListingCard
             key={listing.id}

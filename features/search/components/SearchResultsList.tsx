@@ -7,6 +7,7 @@ import { listingMatchesQuery } from "@/shared/listings/listing-specs";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import type { Category, Listing } from "@/types";
 import { ListingCard } from "@/features/listings/components/ListingCard";
+import { MARKETPLACE_LISTING_GRID_CLASS } from "@/features/listings/components/listing-card.utils";
 import { SearchResultsToolbar } from "@/features/search/components/SearchResultsToolbar";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { Button } from "@/shared/ui/Button";
@@ -171,7 +172,7 @@ export function SearchResultsList({
         resultCount={visibleListings.length}
         selectedFilters={selectedFilters}
       />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 page-enter">
+      <div className={`${MARKETPLACE_LISTING_GRID_CLASS} page-enter`}>
         {pageItems.map((listing) => (
           <ListingCard
             key={listing.id}

@@ -66,7 +66,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
             sizes={
               layout === "row"
                 ? "144px"
-                : "(max-width: 768px) 80vw, (max-width: 1280px) 33vw, 25vw"
+                : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             }
             src={imageUrl}
           />
