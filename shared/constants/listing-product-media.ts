@@ -83,10 +83,55 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1504674900247-0877df9cc836",
     "photo-1546069901-ba9599a7e63c",
   ],
+  // Brand-first car pools — avoid Lexus titles getting Porsche covers.
+  toyota_suv: [
+    "photo-1621007947382-bb3c3994e3fb",
+    "photo-1559416523-140ddc3d238c",
+    "photo-1606664515524-ed2f786a0bd6",
+    "photo-1549317661-bd32c8ce0db2",
+  ],
+  lexus_suv: [
+    "photo-1606664515524-ed2f786a0bd6",
+    "photo-1519641471654-76ce0107ad1b",
+    "photo-1533473359331-0135ef1b58bf",
+    "photo-1549317661-bd32c8ce0db2",
+  ],
+  nissan_suv: [
+    "photo-1519641471654-76ce0107ad1b",
+    "photo-1533473359331-0135ef1b58bf",
+    "photo-1494976388531-d1058494cdd8",
+    "photo-1549317661-bd32c8ce0db2",
+  ],
+  honda_sedan: [
+    "photo-1617531653332-bd46c24f2068",
+    "photo-1609521263047-f8f205293f24",
+    "photo-1552519507-da3b142c6e3d",
+    "photo-1492144534655-ae79c964c9d7",
+  ],
+  mercedes_suv: [
+    "photo-1618843479313-40f8afb4b4d8",
+    "photo-1606664515524-ed2f786a0bd6",
+    "photo-1617531653332-bd46c24f2068",
+  ],
+  porsche: [
+    "photo-1503376780353-7e6692767b70",
+    "photo-1614162692292-7ac56d7f7f1e",
+    "photo-1614200187524-dc4b892acf16",
+  ],
+  bmw: [
+    "photo-1555215695-3004980ad54e",
+    "photo-1617531653332-bd46c24f2068",
+    "photo-1556189250-72ba954cfc2b",
+  ],
+  sedan: [
+    "photo-1492144534655-ae79c964c9d7",
+    "photo-1552519507-da3b142c6e3d",
+    "photo-1609521263047-f8f205293f24",
+    "photo-1617531653332-bd46c24f2068",
+  ],
   suv: [
     "photo-1519641471654-76ce0107ad1b",
     "photo-1533473359331-0135ef1b58bf",
-    "photo-1503376780353-7e6692767b70",
     "photo-1494976388531-d1058494cdd8",
     "photo-1549317661-bd32c8ce0db2",
     "photo-1606664515524-ed2f786a0bd6",
@@ -99,9 +144,43 @@ const PRODUCT_HINTS: Array<{ kind: ProductKind; pattern: RegExp }> = [
   { kind: "honey", pattern: /\b(honey|sidr|عسل)\b/i },
   { kind: "dates", pattern: /\b(khalas|medjool|ajwa|تمر|تمور|خلاص)\b/i },
   {
+    kind: "porsche",
+    pattern: /\b(porsche|بورش|cayenne|macan|panamera|911|taycan)\b/i,
+  },
+  {
+    kind: "bmw",
+    pattern: /\b(bmw|بي\s*ام\s*دبليو|بي ام|x5|x7|x3|m3|m5)\b/i,
+  },
+  {
+    kind: "mercedes_suv",
+    pattern:
+      /\b(mercedes|مرسيدس|g[- ]?class|g[- ]?wagon|g63|gle|gls|glc)\b/i,
+  },
+  {
+    kind: "lexus_suv",
+    pattern: /\b(lexus|لكزس|lx|gx|rx|nx)\b/i,
+  },
+  {
+    kind: "toyota_suv",
+    pattern:
+      /\b(toyota|تويوتا|land\s*cruiser|prado|fortuner|لاندكروزر|برادو)\b/i,
+  },
+  {
+    kind: "nissan_suv",
+    pattern: /\b(nissan|نيسان|patrol|باترول|armada|pathfinder)\b/i,
+  },
+  {
+    kind: "honda_sedan",
+    pattern: /\b(honda|هوندا|civic|accord|سيفيك|أكورد|اكورد)\b/i,
+  },
+  {
     kind: "suv",
     pattern:
-      /\b(patrol|land\s*cruiser|prado|fortuner|tahoe|suburban|cayenne|x5|x7|gx|lx|باترول|لاندكروزر|برادو)\b/i,
+      /\b(tahoe|suburban|cayenne|x5|x7|gx|lx|باترول|لاندكروزر|برادو|suv|جيب)\b/i,
+  },
+  {
+    kind: "sedan",
+    pattern: /\b(sedan|كامري|camry|التيما|altima|كورولا|corolla|سيدان)\b/i,
   },
   {
     kind: "smartwatch",

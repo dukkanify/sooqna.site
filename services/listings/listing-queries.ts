@@ -20,6 +20,7 @@ import {
 } from "@/services/listings/mock-catalog-policy";
 import { ensureShowcaseCatalogPublished } from "@/services/listings/showcase-catalog.service";
 import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
+import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
 
 const TABLE = "marketplace_listings";
 
@@ -111,7 +112,7 @@ function shouldExcludeFixtures(query: ListingQuery): boolean {
 }
 
 async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
-  const stored = await loadPersistedListings();
+  const stored = syncLiveCatalogMedia(await loadPersistedListings());
   const matched = stored.filter((listing) => {
     if (shouldExcludeFixtures(query) && isConfirmedFixtureListing(listing)) {
       return false;
@@ -204,12 +205,14 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
     }
 
     const result = await pool.query(sql, values);
-    const rows = result.rows
-      .map((row) => row.payload as Listing)
-      .filter(
-        (listing) =>
-          !shouldExcludeFixtures(query) || !isConfirmedFixtureListing(listing),
-      );
+    const rows = syncLiveCatalogMedia(
+      result.rows
+        .map((row) => row.payload as Listing)
+        .filter(
+          (listing) =>
+            !shouldExcludeFixtures(query) || !isConfirmedFixtureListing(listing),
+        ),
+    );
     return rows.map((listing) => applySlim(listing, query.slim));
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {

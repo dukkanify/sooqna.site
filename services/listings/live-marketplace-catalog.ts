@@ -1738,3 +1738,32 @@ export function getLiveMarketplaceCatalogListings(): Listing[] {
   cached = SEED_DEFS.map((def, index) => buildListing(def, index));
   return cached;
 }
+
+/**
+ * Overlay fresh product-matched media onto persisted live-catalog rows
+ * so title/photo mismatches disappear without waiting for a DB rewrite.
+ */
+export function syncLiveCatalogMedia(listings: Listing[]): Listing[] {
+  const byId = new Map(
+    getLiveMarketplaceCatalogListings().map((listing) => [listing.id, listing]),
+  );
+  let changed = false;
+  const next = listings.map((listing) => {
+    if (listing.source !== LIVE_MARKETPLACE_SOURCE) return listing;
+    const fresh = byId.get(listing.id);
+    if (!fresh?.imageUrl) return listing;
+    if (
+      listing.imageUrl === fresh.imageUrl &&
+      (listing.images?.[0] ?? "") === (fresh.images?.[0] ?? "")
+    ) {
+      return listing;
+    }
+    changed = true;
+    return {
+      ...listing,
+      imageUrl: fresh.imageUrl,
+      images: fresh.images,
+    };
+  });
+  return changed ? next : listings;
+}
