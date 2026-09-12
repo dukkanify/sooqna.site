@@ -179,11 +179,17 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
 }
 
 export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
+  const { syncLiveCatalogMedia } = await import(
+    "@/services/listings/live-marketplace-catalog"
+  );
+  const withMedia = (listing: Listing | undefined | null) =>
+    listing ? syncLiveCatalogMedia([listing])[0] : undefined;
+
   // Fast path when Neon quota is exceeded — avoid write-heavy ensure* on every view.
   if (isPostgresTemporarilyUnavailable()) {
     const memory = await loadCatalogWithoutPostgres().catch(() => [] as Listing[]);
     const hit = memory.find((listing) => listing.slug === slug);
-    if (hit) return hit;
+    if (hit) return withMedia(hit);
   }
 
   try {
@@ -202,13 +208,13 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
   }
 
   const persisted = await loadListingBySlug(slug).catch(() => null);
-  if (persisted) return persisted;
+  if (persisted) return withMedia(persisted);
   const listings = await getAllListings().catch(() => [] as Listing[]);
-  return (
+  return withMedia(
     listings.find((listing) => listing.slug === slug) ??
-    (await loadCatalogWithoutPostgres().catch(() => [] as Listing[])).find(
-      (listing) => listing.slug === slug,
-    )
+      (await loadCatalogWithoutPostgres().catch(() => [] as Listing[])).find(
+        (listing) => listing.slug === slug,
+      ),
   );
 }
 
