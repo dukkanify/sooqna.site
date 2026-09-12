@@ -87,14 +87,14 @@ const PRODUCT_PHOTO_POOLS = {
   toyota_suv: [
     "photo-1621007947382-bb3c3994e3fb",
     "photo-1559416523-140ddc3d238c",
-    "photo-1606664515524-ed2f786a0bd6",
     "photo-1549317661-bd32c8ce0db2",
+    "photo-1494976388531-d1058494cdd8",
   ],
   lexus_suv: [
-    "photo-1606664515524-ed2f786a0bd6",
-    "photo-1519641471654-76ce0107ad1b",
-    "photo-1533473359331-0135ef1b58bf",
-    "photo-1549317661-bd32c8ce0db2",
+    "photo-1693532331766-bfcec4163ce4",
+    "photo-1676611383818-25139c3d429a",
+    "photo-1700884520248-92092bd21e63",
+    "photo-1568605117036-5fe5e7bab0b7",
   ],
   nissan_suv: [
     "photo-1519641471654-76ce0107ad1b",
@@ -103,15 +103,15 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1549317661-bd32c8ce0db2",
   ],
   honda_sedan: [
-    "photo-1617531653332-bd46c24f2068",
-    "photo-1609521263047-f8f205293f24",
-    "photo-1552519507-da3b142c6e3d",
+    "photo-1605816988069-b560ffffb1b2",
+    "photo-1618843479313-40f8afb4b4d8",
     "photo-1492144534655-ae79c964c9d7",
+    "photo-1552519507-da3b142c6e3d",
   ],
   mercedes_suv: [
     "photo-1618843479313-40f8afb4b4d8",
     "photo-1606664515524-ed2f786a0bd6",
-    "photo-1617531653332-bd46c24f2068",
+    "photo-1520035860732-2f6d7a0c0a0e",
   ],
   porsche: [
     "photo-1503376780353-7e6692767b70",
@@ -120,21 +120,19 @@ const PRODUCT_PHOTO_POOLS = {
   ],
   bmw: [
     "photo-1555215695-3004980ad54e",
-    "photo-1617531653332-bd46c24f2068",
     "photo-1556189250-72ba954cfc2b",
+    "photo-1617531653332-bd46c24f2068",
   ],
   sedan: [
     "photo-1492144534655-ae79c964c9d7",
-    "photo-1552519507-da3b142c6e3d",
     "photo-1609521263047-f8f205293f24",
-    "photo-1617531653332-bd46c24f2068",
+    "photo-1552519507-da3b142c6e3d",
   ],
   suv: [
     "photo-1519641471654-76ce0107ad1b",
     "photo-1533473359331-0135ef1b58bf",
     "photo-1494976388531-d1058494cdd8",
     "photo-1549317661-bd32c8ce0db2",
-    "photo-1606664515524-ed2f786a0bd6",
   ],
 } as const;
 
