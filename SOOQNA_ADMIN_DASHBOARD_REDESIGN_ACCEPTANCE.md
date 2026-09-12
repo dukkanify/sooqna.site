@@ -1,14 +1,26 @@
 # SOOQNA — Admin Dashboard Redesign Acceptance
 
 **Branch:** `feature/admin-dashboard-redesign`  
-**Scope:** Admin main dashboard (`/admin`) only — aggregation APIs + cockpit UI.  
+**Repository:** `dukkanify/sooqna.site`  
+**Scope:** Admin main dashboard (`/admin`) — aggregation APIs + cockpit UI.  
 **Date:** 2026-09-12
+
+## Preview
+
+| Field | Value |
+|-------|-------|
+| Preview URL | https://sooqna-jke8cdx9r-dukkanify-technology-llcs-projects.vercel.app |
+| Preview SHA | `016b01dda2087ec5116b65bd654da6bf2bb61824` |
+| Environment | Preview |
+| GitHub Deployment | `6405909728` |
+| PR | https://github.com/dukkanify/sooqna.site/pull/2 |
 
 ## Quality gates
 
 | Gate | Result |
 |------|--------|
-| `npm run lint` | PASS for dashboard files (repo has pre-existing errors in unrelated SearchFilters / OrderDetailContent) |
+| Dashboard-file lint (eslint on changed admin dashboard paths) | PASS |
+| Whole-project lint | FAIL (pre-existing unrelated: SearchFilters / OrderDetailContent — not introduced by this PR) |
 | `npm test` | PASS (31/31) |
 | `npm run build` | PASS |
 | `npm run verify:isolation` | PASS |
@@ -17,26 +29,27 @@
 
 | Criterion | Result | Notes |
 |-----------|--------|-------|
-| Executive KPIs | PASS | Live counts from listings/users/orders/disputes; click-through links; no hardcoded KPI values |
-| Platform Metrics | PASS | Totals, published, pending, rejected, users, new users, views, favorites; hidden when no permission |
-| Financial Metrics | PASS | Volume/revenue/held Madmoon/payments from orders; Stripe-unavailable message when not configured |
-| Operations | PASS | Review queues with count, severity, oldest age, action CTA |
-| Action Center | PASS | Priority-sorted “يتطلب إجراء” deep links only when count > 0 |
-| Disputes/Risk | PASS | Open/under review/overdue escrow/evidence/suspended; severity badges |
-| Trends | PASS | Real paid-order series; 7/30/90; weekly buckets for 90d; empty state when no data |
-| Category Performance | PASS | Ranked by listing count + view share from live listings |
-| Top Listings | PASS | Ranked by views/favorites with admin deep links |
-| Recent Activity | PASS | Compact audit + payment events (max 12) |
-| RBAC | PASS | Financial/platform/queues/shortcuts gated via `hasAdminPermission` |
-| Responsive | PASS | Stacked KPIs, Action Center first on mobile, table scroll, 768–1440 CSS |
-| Arabic RTL | PASS | Native Arabic copy + RTL table alignment |
-| English LTR | PASS | `LocalizedTree` + new `phrases.en.json` entries |
-| Performance | PASS | Single `/api/admin/dashboard/summary` aggregation; no client full-table dump; manual refresh |
-| Security | PASS | `requireAdminUser` on summary/trends/actions (+ legacy `/api/admin/summary`) |
+| Executive KPIs | PASS | Live counts; click-through hrefs; no hardcoded KPI values |
+| KPI ↔ DB | PASS | Preview live: listings 243/active 216/pending 0/rejected 0 match admin listings status counts; users 58; open disputes 0; pending payments 10 match `/api/admin/orders` `pending_payment` |
+| Action Center | PASS | “يتطلب إجراء” / Action required shows live pending payments (10) deep-linked to `/admin/orders`; empty when no actionable queues |
+| Financial | PASS | Stripe connected · AED; real zeros for volume/revenue/held; pending payments = 10; no fabricated revenue |
+| Operations | PASS | Queues with count/severity/CTA; pending orders = Action Center |
+| Disputes/Risk | PASS | Open/under review/overdue/evidence/suspended from live stores |
+| Trends | PASS | 7→7 unique days; 30→30; 90→13 weekly buckets; no negatives; no duplicate dates |
+| Category Performance | PASS | Ranked by live listing counts + view share (cars 90 / 45%) |
+| Top Listings | PASS | Rows use live-mkt IDs; admin `q=` lookup resolves; public listing slug HTTP 200 |
+| Recent Activity | PASS | Real payment events with timestamps + deep links; actor “system” |
+| RBAC | PASS | Guest: `/admin` → login redirect; APIs 401 `UNAUTHORIZED`. Super Admin: full permissions payload. Non-admin API path returns 403 `FORBIDDEN` (`requireAdminUser`). Financial/platform sections gated via `hasAdminPermission` |
+| Responsive | PASS | 390–1440: no horizontal overflow; Action Center prioritized above executive on narrow viewports; KPI grid stacks |
+| Arabic RTL | PASS | `dir=rtl` shell; native Arabic copy |
+| English LTR | PASS | `dir=ltr` `lang=en`; Executive / Action required / Financial metrics; no Arabic bleed in chrome |
+| Performance | PASS | Aggregate summary/trends/actions endpoints; no client full-table dump; manual refresh |
+| Security | PASS | `requireAdminUser` on summary/trends/actions; guest 401; no secrets in dashboard JSON |
+| Component failure | PASS | Cockpit shows `تعذر تحميل هذه البيانات` when summary fails and no cached data |
 
 ## Architecture
 
-- `services/admin/admin-dashboard.service.ts` — server aggregation
+- `services/admin/admin-dashboard.service.ts` — server aggregation + RBAC shaping
 - `GET /api/admin/dashboard/summary?range=`
 - `GET /api/admin/dashboard/trends?range=`
 - `GET /api/admin/dashboard/actions?range=`
@@ -47,31 +60,15 @@
 
 | Target | Result |
 |--------|--------|
-| SOOQNA ADMIN DASHBOARD | PASS |
-| OPERATIONAL VISIBILITY | PASS |
-| ACTIONABILITY | PASS |
-| RESPONSIVE | PASS |
-| PERFORMANCE | PASS |
-| PRODUCTION READY | PASS (code) — preview/production deploy IDs below |
+| Preview QA | PASS |
+| KPI ↔ DB | PASS |
+| Action Center | PASS |
+| RBAC | PASS |
+| Security | PASS |
+| Responsive | PASS |
+| Build / tests / isolation | PASS |
+| Production promote | READY after merge (not promoted in this document until merge completes) |
 
-## Deployment
+## Merge gate
 
-| Field | Value |
-|-------|-------|
-| Branch | `feature/admin-dashboard-redesign` |
-| Commit SHA | `9bf29186974b5566cb1ad8967efe3902829af2d4` |
-| Remote | https://github.com/dukkanify/sooqna.site/tree/feature/admin-dashboard-redesign |
-| PR draft link | https://github.com/dukkanify/sooqna.site/pull/new/feature/admin-dashboard-redesign |
-| Production SHA | _not promoted — preview-first_ |
-| Deployment ID | _pending Vercel team auth / auto-preview from branch push_ |
-| Domain | sooqna.site (production unchanged); preview URL appears on the branch after Vercel builds |
-
-Branch pushed to `origin`. Open the PR link above (or Vercel dashboard) to grab the preview Deployment ID once the build finishes.
-
-1. Sign in as Super Admin → `/admin` shows all sections with live numbers.
-2. Payments-only admin → financial visible; listings queues hidden as per permissions.
-3. Content moderator → listings/users queues; no financial block.
-4. Guest → redirected / 401 on APIs.
-5. Pending listings KPI equals `/admin/listings?status=pending_review` count.
-6. Open disputes KPI equals disputes open count.
-7. With Stripe off and mock off → financial unavailable message (no fake zeros).
+All critical Preview gates PASS. Safe to merge `feature/admin-dashboard-redesign` → `main` (no force-push).
