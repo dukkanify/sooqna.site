@@ -29,6 +29,7 @@ type MobileHomePageProps = {
   categoryById: (id: string) => string;
   featuredListings: Listing[];
   nearbyListings: Listing[];
+  previewListings: Listing[];
   sectionListings: HomeSection[];
 };
 
@@ -39,6 +40,7 @@ export function MobileHomePage({
   categoryById,
   featuredListings,
   nearbyListings,
+  previewListings,
   sectionListings,
 }: MobileHomePageProps) {
   return (
@@ -51,13 +53,14 @@ export function MobileHomePage({
             <MobileCategoryGrid categories={categories} />
             <MobilePromoBanner />
             <MobileEmiratesSection />
-            {featuredListings.length === 0 &&
+            {previewListings.length === 0 &&
+            featuredListings.length === 0 &&
             nearbyListings.length === 0 &&
             sectionListings.every((section) => section.items.length === 0) ? (
               <MarketCatalogEmpty />
             ) : (
               <>
-                <MobilePreviewStrip listings={featuredListings} />
+                <MobilePreviewStrip listings={previewListings} />
                 <MobileFeaturedRail listings={featuredListings} />
                 <MobileNearbyRail listings={nearbyListings} />
                 {sectionListings.map((section) => (

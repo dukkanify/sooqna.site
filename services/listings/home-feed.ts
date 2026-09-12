@@ -28,9 +28,26 @@ export type HomeFeed = {
 };
 
 const HOME_SECTION_LIMIT = 13;
-const FEATURED_FETCH = 8;
+const FEATURED_FETCH = 16;
+const PREVIEW_SHOW = 4;
 const FEATURED_SHOW = 6;
-const NEARBY_FETCH = 12;
+const NEARBY_FETCH = 18;
+const SECTION_FETCH = 8;
+
+function takeUnique(
+  listings: Listing[],
+  limit: number,
+  usedIds: Set<string>,
+): Listing[] {
+  const out: Listing[] = [];
+  for (const listing of listings) {
+    if (usedIds.has(listing.id)) continue;
+    usedIds.add(listing.id);
+    out.push(listing);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
 
 async function buildHomeFeed(): Promise<HomeFeed> {
   const sectionDefs = mockHomeCategorySections.slice(0, HOME_SECTION_LIMIT);
@@ -52,7 +69,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
     ...sectionDefs.map((section) =>
       queryListings({
         categoryId: section.categoryId,
-        limit: 4,
+        limit: SECTION_FETCH,
         slim: "card",
         sort: "newest",
         status: "active",
@@ -60,27 +77,30 @@ async function buildHomeFeed(): Promise<HomeFeed> {
     ),
   ]);
 
-  const featured = featuredRows
-    .filter((listing) => isListingFeaturedActive(listing))
-    .slice(0, FEATURED_SHOW);
+  const usedIds = new Set<string>();
+  const activeFeatured = featuredRows.filter((listing) =>
+    isListingFeaturedActive(listing),
+  );
+
+  // Preview + Featured share the featured pool but never repeat an id on the page.
+  const preview = takeUnique(activeFeatured, PREVIEW_SHOW, usedIds);
+  const featured = takeUnique(activeFeatured, FEATURED_SHOW, usedIds);
+  const nearbySource = takeUnique(nearbyRows, 12, usedIds);
 
   const sections = sectionDefs.map((section, index) => ({
     ...section,
-    items: sectionRows[index] ?? [],
+    items: takeUnique(sectionRows[index] ?? [], 4, usedIds),
   }));
-
-  const nearbySource = nearbyRows;
-  const preview = featured.slice(0, 4);
 
   return { featured, nearbySource, preview, sections };
 }
 
-const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v4"], {
+const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v5-dedupe"], {
   revalidate: HOME_FEED_REVALIDATE_SECONDS,
   tags: [LISTINGS_CACHE_TAG],
 });
 
-/** Cached homepage slices — cover-only cards, capped sections. */
+/** Cached homepage slices — cover-only cards, capped sections, no cross-section duplicates. */
 export const getHomeFeed = cache(async (): Promise<HomeFeed> => {
   return getHomeFeedCached();
 });

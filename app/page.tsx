@@ -60,6 +60,7 @@ export default async function Home() {
         categoryById={categoryById}
         featuredListings={feed.featured}
         nearbyListings={feed.nearbySource}
+        previewListings={feed.preview}
         sectionListings={feed.sections}
       />
     );
