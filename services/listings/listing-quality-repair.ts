@@ -42,6 +42,7 @@ export function repairPoorQualityListing(listing: Listing): Listing | null {
     area: "الخليج التجاري",
     country: "الإمارات العربية المتحدة",
     images,
+    imageUrl: images[0],
     features: [
       "خليجي",
       "فل أوبشن",
@@ -49,8 +50,8 @@ export function repairPoorQualityListing(listing: Listing): Listing | null {
       "عداد وكالة",
       "جاهز للتسجيل",
     ],
-    categorySpecificFields: {
-      ...(listing.categorySpecificFields ?? {}),
+    categorySpecs: {
+      ...(listing.categorySpecs ?? {}),
       brand: "Nissan",
       model: "Patrol",
       year: "2026",
@@ -58,6 +59,16 @@ export function repairPoorQualityListing(listing: Listing): Listing | null {
       fuelType: "بنزين",
       mileage: "50",
       regionalSpecs: "خليجي",
+    },
+    carSpecs: {
+      mileage: "50",
+      transmission: "أوتوماتيك",
+      fuel: "بنزين",
+      warranty: "ضمان الوكالة",
+      accidentHistory: "بدون حوادث",
+      regionalSpecs: "خليجي",
+      serviceHistory: "وكالة",
+      vinAvailable: true,
     },
   };
 }
