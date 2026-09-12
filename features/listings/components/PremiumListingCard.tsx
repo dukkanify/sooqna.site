@@ -16,7 +16,6 @@ import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import { Badge } from "@/shared/ui/Badge";
 import { Icon } from "@/shared/ui/Icon";
 import { ListingCardBadges } from "./ListingCardBadges";
-import { isListingVerified } from "./listing-card-badges";
 import {
   getListingHref,
   getListingImageUrl,
@@ -48,7 +47,6 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   const displayTitle = listingTitle(listing, locale);
   const displaySeller = sellerName(listing.seller, locale);
 
-  const isVerified = isListingVerified(listing);
   const showEscrow = showsEscrowProtection(listing);
 
   const imageArea = (
@@ -145,14 +143,6 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold text-ink">
             <SellerName seller={listing.seller} />
-            {isVerified ? (
-              <Icon
-                aria-label="بائع موثق"
-                className="ms-1 inline text-success"
-                name="check"
-                size={12}
-              />
-            ) : null}
           </p>
         </div>
       </div>

@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import type { Listing } from "@/types";
 import { AppImage } from "@/shared/components/AppImage";
-import { Badge } from "@/shared/ui/Badge";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { SellerName } from "@/shared/i18n/SellerName";
 import { sellerName } from "@/shared/i18n/listing-copy";
 import { useLocale } from "@/shared/i18n/useLocale";
-import { isListingVerified } from "./listing-card-badges";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 
 type SellerPanelProps = {
@@ -25,7 +23,6 @@ function formatJoinedDate(joinedAt: string): string {
 export function SellerPanel({ listing }: SellerPanelProps) {
   const locale = useLocale();
   const displaySeller = sellerName(listing.seller, locale);
-  const isVerified = isListingVerified(listing);
 
   const [storeAverage, setStoreAverage] = useState<number | null>(null);
   const [storeCount, setStoreCount] = useState<number | null>(null);
@@ -101,7 +98,6 @@ export function SellerPanel({ listing }: SellerPanelProps) {
             <p className="mt-0.5 text-xs font-medium text-muted">شركة</p>
           ) : null}
         </div>
-        {isVerified ? <Badge variant="verified">موثق</Badge> : null}
       </div>
 
       {showResponseTime || showJoinedAt || showTransactions ? (

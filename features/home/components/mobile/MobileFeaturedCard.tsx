@@ -7,7 +7,6 @@ import { AppImage } from "@/shared/components/AppImage";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { ListingCardBadges } from "@/features/listings/components/ListingCardBadges";
-import { isListingVerified } from "@/features/listings/components/listing-card-badges";
 import { formatCurrencyDisplay } from "@/shared/utils/currency";
 import { Icon } from "@/shared/ui/Icon";
 import {
@@ -34,7 +33,6 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
   const imageUrl = getListingImageUrl(listing);
   const location = getListingLocation(listing);
   const photoCount = getListingImages(listing).length;
-  const isVerified = isListingVerified(listing);
 
   return (
     <article className="mobile-home-featured-card w-[var(--mh-card-width)] min-w-[15.5rem] max-w-[19rem] shrink-0 flex-none snap-start">
@@ -90,22 +88,14 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
           {location} • {formatPostedTime(listing.postedAt)}
         </p>
 
-        <div className="mobile-home-featured-card__footer">
-          {isVerified ? (
-            <span className="mobile-home-featured-card__verified">
-              <Icon name="check" size={12} />
-              موثق
-            </span>
-          ) : (
-            <span />
-          )}
-          {(listing.views ?? 0) > 0 ? (
+        {(listing.views ?? 0) > 0 ? (
+          <div className="mobile-home-featured-card__footer">
             <span className="mobile-home-featured-card__views">
               <Icon name="eye" size={12} />
               {formatViews(listing.views ?? 0)}
             </span>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
     </article>
   );

@@ -39,9 +39,6 @@ export function getListingCardBadges(listing: Listing): ListingCardBadge[] {
   if (isListingFeaturedActive(listing)) {
     badges.push({ key: "featured", label: "مميز", variant: "featured" });
   }
-  if (isListingVerified(listing)) {
-    badges.push({ key: "verified", label: "موثق", variant: "verified" });
-  }
   if (isListingFresh(listing)) {
     badges.push({ key: "new", label: "جديد", variant: "new" });
   }
