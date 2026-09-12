@@ -1,5 +1,9 @@
 import type { Listing } from "@/types";
 
+/** Standard marketplace card density — matches homepage «إعلانات مميزة الآن». */
+export const MARKETPLACE_LISTING_GRID_CLASS =
+  "grid gap-4 sm:grid-cols-2 lg:grid-cols-4";
+
 export const listingPriceFormatter = new Intl.NumberFormat("ar-AE", {
   maximumFractionDigits: 0,
   numberingSystem: "latn",

@@ -1,5 +1,6 @@
 import type { Listing } from "@/types";
 import { PremiumListingCard } from "@/features/listings/components/PremiumListingCard";
+import { MARKETPLACE_LISTING_GRID_CLASS } from "@/features/listings/components/listing-card.utils";
 import { MarketSectionHeader, MarketSectionShell } from "./MarketSectionHeader";
 
 type MarketFeaturedProps = {
@@ -25,7 +26,7 @@ export function MarketFeatured({ categories, listings }: MarketFeaturedProps) {
         title="إعلانات مميزة"
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={MARKETPLACE_LISTING_GRID_CLASS}>
         {featured.map((listing) => (
           <PremiumListingCard
             key={listing.id}

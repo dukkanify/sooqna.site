@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppImage } from "@/shared/components/AppImage";
+import { DragScrollRow } from "@/shared/components/DragScrollRow";
 import { Icon } from "@/shared/ui/Icon";
 import { getUaeEmiratesCards } from "@/features/home/shared/uae-emirates";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
@@ -19,11 +20,14 @@ export async function MobileEmiratesSection() {
         من دبي إلى الفجيرة — تصفح الإعلانات في إمارتك.
       </p>
 
-      <div className="mobile-home-emirates__grid">
+      <DragScrollRow
+        ariaLabel="الإمارات الأكثر شعبية"
+        className="mobile-home-emirates__track mobile-home-scroll flex w-full max-w-full flex-nowrap overflow-x-auto overscroll-x-contain"
+      >
         {emirates.map((emirate) => (
           <Link
             key={emirate.id}
-            className="mobile-home-emirates__card group"
+            className="mobile-home-emirates__card group shrink-0 snap-start"
             href={emirate.href}
           >
             <AppImage
@@ -31,7 +35,7 @@ export async function MobileEmiratesSection() {
               className="mobile-home-emirates__image transition duration-500 group-active:scale-[1.02]"
               fallback="emirates"
               fill
-              sizes="(max-width: 768px) 50vw, 33vw"
+              sizes="160px"
               src={emirate.imageUrl}
             />
             <span aria-hidden className="mobile-home-emirates__overlay" />
@@ -48,7 +52,7 @@ export async function MobileEmiratesSection() {
             </span>
           </Link>
         ))}
-      </div>
+      </DragScrollRow>
     </section>
   );
 }
