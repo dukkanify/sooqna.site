@@ -5,7 +5,11 @@ import {
   marketplaceUserListings,
 } from "@/mock/listings.mock";
 import { getDurableAuthDir } from "@/services/auth/user-persistence";
-import { getOptionalPostgresPool } from "@/services/db/postgres";
+import {
+  getOptionalPostgresPool,
+  isPostgresQuotaOrUnavailableError,
+  markPostgresUnavailable,
+} from "@/services/db/postgres";
 import {
   allowMockCatalogSeed,
   isConfirmedFixtureListing,
@@ -28,7 +32,8 @@ export async function ensureListingsTable(): Promise<boolean> {
   const pool = await getOptionalPostgresPool();
   if (!pool) return false;
   if (postgresReady) return true;
-  await pool.query(`
+  try {
+    await pool.query(`
     CREATE TABLE IF NOT EXISTS ${TABLE} (
       id TEXT PRIMARY KEY,
       slug TEXT NOT NULL UNIQUE,
@@ -42,37 +47,45 @@ export async function ensureListingsTable(): Promise<boolean> {
       payload JSONB NOT NULL
     )
   `);
-  await pool.query(
-    `CREATE INDEX IF NOT EXISTS marketplace_listings_status_idx ON ${TABLE} (status)`,
-  );
-  await pool.query(
-    `CREATE INDEX IF NOT EXISTS marketplace_listings_seller_idx ON ${TABLE} (seller_id)`,
-  );
-  await pool.query(
-    `CREATE INDEX IF NOT EXISTS marketplace_listings_category_idx ON ${TABLE} (category_id)`,
-  );
-  await pool.query(
-    `CREATE INDEX IF NOT EXISTS marketplace_listings_status_posted_idx
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS marketplace_listings_status_idx ON ${TABLE} (status)`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS marketplace_listings_seller_idx ON ${TABLE} (seller_id)`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS marketplace_listings_category_idx ON ${TABLE} (category_id)`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS marketplace_listings_status_posted_idx
      ON ${TABLE} (status, posted_at DESC NULLS LAST)`,
-  );
-  await pool.query(
-    `CREATE INDEX IF NOT EXISTS marketplace_listings_status_featured_idx
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS marketplace_listings_status_featured_idx
      ON ${TABLE} (status, is_featured)
      WHERE status = 'active'`,
-  );
-  await pool.query(
-    `CREATE INDEX IF NOT EXISTS marketplace_listings_status_category_posted_idx
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS marketplace_listings_status_category_posted_idx
      ON ${TABLE} (status, category_id, posted_at DESC NULLS LAST)`,
-  );
-  await pool.query(`
+    );
+    await pool.query(`
     CREATE TABLE IF NOT EXISTS ${FLAGS_TABLE} (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-  postgresReady = true;
-  return true;
+    postgresReady = true;
+    return true;
+  } catch (error) {
+    postgresReady = false;
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return false;
+    }
+    throw error;
+  }
 }
 
 function seedListings(): Listing[] {
@@ -250,29 +263,69 @@ export async function deleteListingRow(id: string): Promise<boolean> {
 }
 
 export async function loadPersistedListings(): Promise<Listing[]> {
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) return allowMockCatalogSeed() ? seedListings() : [];
-    const result = await pool.query(
-      `SELECT payload FROM ${TABLE} ORDER BY COALESCE(posted_at, updated_at) DESC`,
-    );
-    if (result.rows.length === 0) {
-      if (!allowMockCatalogSeed()) return [];
-      const seeded = seedListings();
-      await persistAllListings(seeded);
-      return seeded;
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (!pool) return await loadCatalogWithoutPostgres();
+      try {
+        const result = await pool.query(
+          `SELECT payload FROM ${TABLE} ORDER BY COALESCE(posted_at, updated_at) DESC`,
+        );
+        if (result.rows.length === 0) {
+          if (!allowMockCatalogSeed()) return await loadCatalogWithoutPostgres();
+          const seeded = seedListings();
+          await persistAllListings(seeded);
+          return seeded;
+        }
+        return result.rows.map((row) => row.payload as Listing);
+      } catch (error) {
+        if (isPostgresQuotaOrUnavailableError(error)) {
+          markPostgresUnavailable(error);
+          return await loadCatalogWithoutPostgres();
+        }
+        throw error;
+      }
     }
-    return result.rows.map((row) => row.payload as Listing);
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return await loadCatalogWithoutPostgres();
+    }
+    throw error;
   }
 
   const stored = await readJsonFile();
   if (!stored || stored.length === 0) {
-    if (!allowMockCatalogSeed()) return [];
-    const seeded = seedListings();
-    await writeJsonFile(seeded);
-    return seeded;
+    return await loadCatalogWithoutPostgres();
   }
   return stored;
+}
+
+/** When Postgres is down, serve the built-in live/showcase catalog so the site stays public. */
+async function loadCatalogWithoutPostgres(): Promise<Listing[]> {
+  if (allowMockCatalogSeed()) {
+    const seeded = seedListings();
+    try {
+      await writeJsonFile(seeded);
+    } catch {
+      // /tmp or durable dir may be unavailable — still return in-memory seed.
+    }
+    return seeded;
+  }
+
+  const [{ getLiveMarketplaceCatalogListings }, { getShowcaseCatalogListings }] =
+    await Promise.all([
+      import("@/services/listings/live-marketplace-catalog"),
+      import("@/services/listings/showcase-catalog"),
+    ]);
+  const byId = new Map<string, Listing>();
+  for (const listing of getLiveMarketplaceCatalogListings()) {
+    byId.set(listing.id, listing);
+  }
+  for (const listing of getShowcaseCatalogListings()) {
+    if (!byId.has(listing.id)) byId.set(listing.id, listing);
+  }
+  return Array.from(byId.values());
 }
 
 export async function deleteMockSeedListings(): Promise<{
@@ -448,12 +501,15 @@ export async function insertListingsIfMissing(listings: Listing[]): Promise<numb
   const deletedIds = await getDeletedListingIds();
   const eligible = listings.filter((listing) => !deletedIds.has(listing.id));
   let inserted = 0;
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
-    for (const listing of eligible) {
-      const result = await pool.query(
-        `INSERT INTO ${TABLE} (
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (!pool) {
+        // Fall through to file/memory path below.
+      } else {
+        for (const listing of eligible) {
+          const result = await pool.query(
+            `INSERT INTO ${TABLE} (
             id, slug, seller_id, category_id, status, is_featured,
             posted_at, expires_at, updated_at, payload
           ) VALUES (
@@ -461,11 +517,19 @@ export async function insertListingsIfMissing(listings: Listing[]): Promise<numb
             $7::timestamptz,$8::timestamptz,NOW(),$9::jsonb
           )
           ON CONFLICT (id) DO NOTHING`,
-        listingRowValues(listing),
-      );
-      if ((result as { rowCount?: number }).rowCount) inserted += 1;
+            listingRowValues(listing),
+          );
+          if ((result as { rowCount?: number }).rowCount) inserted += 1;
+        }
+        return inserted;
+      }
     }
-    return inserted;
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+    } else {
+      throw error;
+    }
   }
 
   const stored = (await readJsonFile()) ?? [];
@@ -476,7 +540,13 @@ export async function insertListingsIfMissing(listings: Listing[]): Promise<numb
     ids.add(listing.id);
     inserted += 1;
   }
-  if (inserted > 0) await writeJsonFile(stored);
+  if (inserted > 0) {
+    try {
+      await writeJsonFile(stored);
+    } catch {
+      // Durable write may fail on serverless — inserts still count for this process.
+    }
+  }
   return inserted;
 }
 

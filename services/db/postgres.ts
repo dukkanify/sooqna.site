@@ -9,6 +9,50 @@ type PostgresPool = {
 
 let pool: PostgresPool | null = null;
 let rawPool: Pool | null = null;
+/** When Neon/Vercel Postgres hits quota or connectivity failure, skip DB for this process. */
+let postgresDegradedUntil = 0;
+const POSTGRES_DEGRADED_TTL_MS = 5 * 60 * 1000;
+
+export function isPostgresQuotaOrUnavailableError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const err = error as {
+    code?: string;
+    message?: string;
+    severity?: string;
+  };
+  const message = String(err.message ?? "").toLowerCase();
+  if (err.code === "53000") return true; // Neon: data transfer / compute quota
+  if (err.code === "57P01" || err.code === "57P03") return true;
+  if (err.code === "ECONNREFUSED" || err.code === "ETIMEDOUT" || err.code === "ENOTFOUND") {
+    return true;
+  }
+  if (message.includes("exceeded the data transfer quota")) return true;
+  if (message.includes("exceeded the compute time quota")) return true;
+  if (message.includes("remaining connection slots")) return true;
+  if (message.includes("too many connections")) return true;
+  if (message.includes("connection terminated unexpectedly")) return true;
+  if (message.includes("cannot connect to")) return true;
+  return false;
+}
+
+export function markPostgresUnavailable(error?: unknown): void {
+  postgresDegradedUntil = Date.now() + POSTGRES_DEGRADED_TTL_MS;
+  pool = null;
+  const closing = rawPool;
+  rawPool = null;
+  if (closing) {
+    void closing.end().catch(() => undefined);
+  }
+  if (error && process.env.NODE_ENV !== "test") {
+    const message =
+      error instanceof Error ? error.message : String(error ?? "unknown");
+    console.error(`[postgres] degraded for ${POSTGRES_DEGRADED_TTL_MS / 1000}s: ${message}`);
+  }
+}
+
+export function isPostgresTemporarilyUnavailable(): boolean {
+  return Date.now() < postgresDegradedUntil;
+}
 
 export function getPostgresConnectionString(): string {
   const direct =
@@ -68,8 +112,9 @@ export function isServerlessRuntime(): boolean {
   );
 }
 
-/** Prefer Postgres; null when unavailable (local JSON fallback allowed). */
+/** Prefer Postgres; null when unavailable (local JSON / memory catalog fallback). */
 export async function getOptionalPostgresPool(): Promise<PostgresPool | null> {
+  if (isPostgresTemporarilyUnavailable()) return null;
   const connectionString = getPostgresConnectionString();
   if (!connectionString) return null;
   if (pool) return pool;
@@ -81,7 +126,16 @@ export async function getOptionalPostgresPool(): Promise<PostgresPool | null> {
     ssl: shouldUseSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
   });
   pool = {
-    query: (sql, params) => rawPool!.query(sql, params),
+    query: async (sql, params) => {
+      try {
+        return await rawPool!.query(sql, params);
+      } catch (error) {
+        if (isPostgresQuotaOrUnavailableError(error)) {
+          markPostgresUnavailable(error);
+        }
+        throw error;
+      }
+    },
   };
   return pool;
 }

@@ -1,7 +1,11 @@
 import type { Listing, ListingSearchFilters } from "@/types";
 import type { AdminListingRecord } from "@/types/domain/admin";
 import { listingMatchesQuery } from "@/shared/listings/listing-specs";
-import { getOptionalPostgresPool } from "@/services/db/postgres";
+import {
+  getOptionalPostgresPool,
+  isPostgresQuotaOrUnavailableError,
+  markPostgresUnavailable,
+} from "@/services/db/postgres";
 import {
   ensureListingsTable,
   loadPersistedListings,
@@ -131,42 +135,43 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
   const pool = await getOptionalPostgresPool();
   if (!pool) return queryFromFile(query);
 
-  const where: string[] = [];
-  const values: unknown[] = [];
-  const add = (sql: string, value: unknown) => {
-    values.push(value);
-    where.push(sql.replace("?", `$${values.length}`));
-  };
+  try {
+    const where: string[] = [];
+    const values: unknown[] = [];
+    const add = (sql: string, value: unknown) => {
+      values.push(value);
+      where.push(sql.replace("?", `$${values.length}`));
+    };
 
-  if (query.status) add("status = ?", query.status);
-  if (query.categoryId) add("category_id = ?", query.categoryId);
-  if (query.sellerId) add("seller_id = ?", query.sellerId);
-  if (query.excludeId) add("id <> ?", query.excludeId);
-  if (query.featured) add("is_featured = ?", true);
-  if (query.condition) add("payload->>'condition' = ?", query.condition);
-  const emirate = query.emirate ?? query.city;
-  if (emirate) {
-    values.push(emirate);
-    const idx = values.length;
-    where.push(`(payload->>'emirate' = $${idx} OR payload->>'city' = $${idx})`);
-  }
-  if (query.area) add("payload->>'area' = ?", query.area);
-  if (query.country) add("payload->>'country' = ?", query.country);
-  if (typeof query.minPrice === "number") {
-    add("(payload->>'price')::numeric >= ?", query.minPrice);
-  }
-  if (typeof query.maxPrice === "number") {
-    add("(payload->>'price')::numeric <= ?", query.maxPrice);
-  }
-  if (shouldExcludeFixtures(query)) {
-    where.push(`NOT ${FIXTURE_LISTING_SQL}`);
-  }
+    if (query.status) add("status = ?", query.status);
+    if (query.categoryId) add("category_id = ?", query.categoryId);
+    if (query.sellerId) add("seller_id = ?", query.sellerId);
+    if (query.excludeId) add("id <> ?", query.excludeId);
+    if (query.featured) add("is_featured = ?", true);
+    if (query.condition) add("payload->>'condition' = ?", query.condition);
+    const emirate = query.emirate ?? query.city;
+    if (emirate) {
+      values.push(emirate);
+      const idx = values.length;
+      where.push(`(payload->>'emirate' = $${idx} OR payload->>'city' = $${idx})`);
+    }
+    if (query.area) add("payload->>'area' = ?", query.area);
+    if (query.country) add("payload->>'country' = ?", query.country);
+    if (typeof query.minPrice === "number") {
+      add("(payload->>'price')::numeric >= ?", query.minPrice);
+    }
+    if (typeof query.maxPrice === "number") {
+      add("(payload->>'price')::numeric <= ?", query.maxPrice);
+    }
+    if (shouldExcludeFixtures(query)) {
+      where.push(`NOT ${FIXTURE_LISTING_SQL}`);
+    }
 
-  if (query.query?.trim()) {
-    const pattern = likePattern(query.query);
-    values.push(pattern);
-    const idx = values.length;
-    where.push(`(
+    if (query.query?.trim()) {
+      const pattern = likePattern(query.query);
+      values.push(pattern);
+      const idx = values.length;
+      where.push(`(
       payload->>'title' ILIKE $${idx} ESCAPE '\\'
       OR payload->>'titleEnglish' ILIKE $${idx} ESCAPE '\\'
       OR payload->>'description' ILIKE $${idx} ESCAPE '\\'
@@ -176,36 +181,43 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
       OR payload->>'area' ILIKE $${idx} ESCAPE '\\'
       OR COALESCE(payload->'categorySpecs','{}'::jsonb)::text ILIKE $${idx} ESCAPE '\\'
     )`);
-  }
+    }
 
-  const showcaseLast = `(CASE WHEN COALESCE(payload->>'source','') = '${SHOWCASE_SOURCE}' THEN 1 ELSE 0 END) ASC`;
-  const order =
-    query.sort === "price_asc"
-      ? `${showcaseLast}, (payload->>'price')::numeric ASC NULLS LAST`
-      : query.sort === "price_desc"
-        ? `${showcaseLast}, (payload->>'price')::numeric DESC NULLS LAST`
-        : `${showcaseLast}, COALESCE(posted_at, updated_at) DESC NULLS LAST`;
+    const showcaseLast = `(CASE WHEN COALESCE(payload->>'source','') = '${SHOWCASE_SOURCE}' THEN 1 ELSE 0 END) ASC`;
+    const order =
+      query.sort === "price_asc"
+        ? `${showcaseLast}, (payload->>'price')::numeric ASC NULLS LAST`
+        : query.sort === "price_desc"
+          ? `${showcaseLast}, (payload->>'price')::numeric DESC NULLS LAST`
+          : `${showcaseLast}, COALESCE(posted_at, updated_at) DESC NULLS LAST`;
 
-  let sql = `SELECT payload FROM ${TABLE}`;
-  if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
-  sql += ` ORDER BY ${order}`;
-  if (typeof query.limit === "number") {
-    values.push(query.limit);
-    sql += ` LIMIT $${values.length}`;
-  }
-  if (typeof query.offset === "number" && query.offset > 0) {
-    values.push(query.offset);
-    sql += ` OFFSET $${values.length}`;
-  }
+    let sql = `SELECT payload FROM ${TABLE}`;
+    if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
+    sql += ` ORDER BY ${order}`;
+    if (typeof query.limit === "number") {
+      values.push(query.limit);
+      sql += ` LIMIT $${values.length}`;
+    }
+    if (typeof query.offset === "number" && query.offset > 0) {
+      values.push(query.offset);
+      sql += ` OFFSET $${values.length}`;
+    }
 
-  const result = await pool.query(sql, values);
-  const rows = result.rows
-    .map((row) => row.payload as Listing)
-    .filter(
-      (listing) =>
-        !shouldExcludeFixtures(query) || !isConfirmedFixtureListing(listing),
-    );
-  return rows.map((listing) => applySlim(listing, query.slim));
+    const result = await pool.query(sql, values);
+    const rows = result.rows
+      .map((row) => row.payload as Listing)
+      .filter(
+        (listing) =>
+          !shouldExcludeFixtures(query) || !isConfirmedFixtureListing(listing),
+      );
+    return rows.map((listing) => applySlim(listing, query.slim));
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return queryFromFile(query);
+    }
+    throw error;
+  }
 }
 
 function countWhere(
@@ -234,21 +246,26 @@ export async function countListingsByCategory(
   await ensureShowcaseCatalogPublished();
   const counts = new Map<string, number>();
   const includeFixtures = options?.includeFixtures === true;
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (pool) {
-      const { sql, values } = countWhere(status, includeFixtures);
-      const result = await pool.query(
-        `SELECT category_id, COUNT(*)::int AS c
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        const { sql, values } = countWhere(status, includeFixtures);
+        const result = await pool.query(
+          `SELECT category_id, COUNT(*)::int AS c
          FROM ${TABLE}${sql}
          GROUP BY category_id`,
-        values,
-      );
-      for (const row of result.rows) {
-        counts.set(String(row.category_id), Number(row.c) || 0);
+          values,
+        );
+        for (const row of result.rows) {
+          counts.set(String(row.category_id), Number(row.c) || 0);
+        }
+        return counts;
       }
-      return counts;
     }
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) throw error;
+    markPostgresUnavailable(error);
   }
 
   const stored = await loadPersistedListings();
@@ -291,19 +308,24 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
     counts.set(cityId, (counts.get(cityId) ?? 0) + 1);
   };
 
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (pool) {
-      const result = await pool.query(
-        `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        const result = await pool.query(
+          `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
          FROM ${TABLE}
          WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL}`,
-      );
-      for (const row of result.rows) {
-        if (typeof row.emirate === "string") add(row.emirate);
+        );
+        for (const row of result.rows) {
+          if (typeof row.emirate === "string") add(row.emirate);
+        }
+        return counts;
       }
-      return counts;
     }
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) throw error;
+    markPostgresUnavailable(error);
   }
 
   const stored = await loadPersistedListings();
@@ -317,15 +339,20 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
 
 export async function countActivePublicListings(): Promise<number> {
   await ensureShowcaseCatalogPublished();
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (pool) {
-      const result = await pool.query(
-        `SELECT COUNT(*)::int AS c FROM ${TABLE}
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        const result = await pool.query(
+          `SELECT COUNT(*)::int AS c FROM ${TABLE}
          WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL}`,
-      );
-      return Number(result.rows[0]?.c) || 0;
+        );
+        return Number(result.rows[0]?.c) || 0;
+      }
     }
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) throw error;
+    markPostgresUnavailable(error);
   }
   const stored = await loadPersistedListings();
   return stored.filter(
@@ -336,17 +363,22 @@ export async function countActivePublicListings(): Promise<number> {
 
 export async function countListingsBySeller(): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (pool) {
-      const result = await pool.query(
-        `SELECT seller_id, COUNT(*)::int AS c FROM ${TABLE} GROUP BY seller_id`,
-      );
-      for (const row of result.rows) {
-        counts.set(String(row.seller_id), Number(row.c) || 0);
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        const result = await pool.query(
+          `SELECT seller_id, COUNT(*)::int AS c FROM ${TABLE} GROUP BY seller_id`,
+        );
+        for (const row of result.rows) {
+          counts.set(String(row.seller_id), Number(row.c) || 0);
+        }
+        return counts;
       }
-      return counts;
     }
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) throw error;
+    markPostgresUnavailable(error);
   }
   const stored = await loadPersistedListings();
   for (const listing of stored) {
@@ -357,11 +389,12 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
 
 export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
   await ensureShowcaseCatalogPublished();
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (pool) {
-      const result = await pool.query(
-        `SELECT
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        const result = await pool.query(
+          `SELECT
             id,
             slug,
             seller_id,
@@ -378,27 +411,31 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             payload->>'source' AS source
          FROM ${TABLE}
          ORDER BY COALESCE(posted_at, updated_at) DESC NULLS LAST`,
-      );
-      return result.rows.map((row) => ({
-        id: String(row.id),
-        slug: String(row.slug),
-        title: String(row.title ?? ""),
-        sellerName: String(row.seller_name ?? ""),
-        sellerId: String(row.seller_id),
-        categoryId: String(row.category_id),
-        price: Number(row.price) || 0,
-        currency: String(row.currency ?? "AED"),
-        status: row.status as AdminListingRecord["status"],
-        isFeatured: Boolean(row.is_featured),
-        postedAt:
-          row.posted_at instanceof Date
-            ? row.posted_at.toISOString()
-            : String(row.posted_at ?? ""),
-        city: String(row.city ?? ""),
-        isDemo: Boolean(row.is_demo) || String(row.source ?? "") === SHOWCASE_SOURCE,
-        source: row.source ? String(row.source) : undefined,
-      }));
+        );
+        return result.rows.map((row) => ({
+          id: String(row.id),
+          slug: String(row.slug),
+          title: String(row.title ?? ""),
+          sellerName: String(row.seller_name ?? ""),
+          sellerId: String(row.seller_id),
+          categoryId: String(row.category_id),
+          price: Number(row.price) || 0,
+          currency: String(row.currency ?? "AED"),
+          status: row.status as AdminListingRecord["status"],
+          isFeatured: Boolean(row.is_featured),
+          postedAt:
+            row.posted_at instanceof Date
+              ? row.posted_at.toISOString()
+              : String(row.posted_at ?? ""),
+          city: String(row.city ?? ""),
+          isDemo: Boolean(row.is_demo) || String(row.source ?? "") === SHOWCASE_SOURCE,
+          source: row.source ? String(row.source) : undefined,
+        }));
+      }
     }
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) throw error;
+    markPostgresUnavailable(error);
   }
 
   const stored = await loadPersistedListings();

@@ -38,6 +38,13 @@ export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
         await bumpListingsCache();
       }
       return inserted;
+    } catch (error) {
+      // Never take down public listing pages when Postgres quota/connectivity fails.
+      console.error(
+        "[live-catalog] ensure skipped:",
+        error instanceof Error ? error.message : error,
+      );
+      return 0;
     } finally {
       ensureInflight = null;
     }
