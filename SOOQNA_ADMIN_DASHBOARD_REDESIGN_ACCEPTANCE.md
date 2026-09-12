@@ -58,12 +58,15 @@
 
 | Field | Value |
 |-------|-------|
-| Local SHA (workspace) | `3b1a39ff0da4aa6e99a927496fc5cf4dfe973d71` (base; dashboard work uncommitted until push) |
-| Production SHA | _pending preview/production promote_ |
-| Deployment ID | _pending preview deploy_ |
-| Domain | sooqna.site / Vercel preview URL after deploy |
+| Branch | `feature/admin-dashboard-redesign` |
+| Commit SHA | `9bf29186974b5566cb1ad8967efe3902829af2d4` |
+| Remote | https://github.com/dukkanify/sooqna.site/tree/feature/admin-dashboard-redesign |
+| PR draft link | https://github.com/dukkanify/sooqna.site/pull/new/feature/admin-dashboard-redesign |
+| Production SHA | _not promoted — preview-first_ |
+| Deployment ID | _pending Vercel team auth / auto-preview from branch push_ |
+| Domain | sooqna.site (production unchanged); preview URL appears on the branch after Vercel builds |
 
-## Manual verify checklist
+Branch pushed to `origin`. Open the PR link above (or Vercel dashboard) to grab the preview Deployment ID once the build finishes.
 
 1. Sign in as Super Admin → `/admin` shows all sections with live numbers.
 2. Payments-only admin → financial visible; listings queues hidden as per permissions.
