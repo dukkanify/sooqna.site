@@ -16,30 +16,37 @@ export type StatusSlice = {
 };
 
 export function buildDailySeries(orders: Order[], days = 7): DailyPoint[] {
+  const bucketDays = days >= 90 ? 7 : 1;
+  const bucketCount = Math.ceil(days / bucketDays);
   const points: DailyPoint[] = [];
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
 
-  for (let i = days - 1; i >= 0; i -= 1) {
-    const day = new Date(now);
-    day.setHours(0, 0, 0, 0);
-    day.setDate(day.getDate() - i);
-    const key = day.toISOString().slice(0, 10);
-    const label = day.toLocaleDateString("ar-AE", {
-      weekday: "short",
-      day: "numeric",
-    });
+  for (let i = bucketCount - 1; i >= 0; i -= 1) {
+    const end = new Date(now);
+    end.setDate(end.getDate() - i * bucketDays);
+    const start = new Date(end);
+    start.setDate(start.getDate() - (bucketDays - 1));
+    const startKey = start.toISOString().slice(0, 10);
+    const endKey = end.toISOString().slice(0, 10);
+    const label =
+      bucketDays === 1
+        ? end.toLocaleDateString("ar-AE", { weekday: "short", day: "numeric" })
+        : `${start.getDate()}/${start.getMonth() + 1}`;
 
-    const dayOrders = orders.filter((order) => {
+    const bucketOrders = orders.filter((order) => {
+      if (order.paymentStatus !== "succeeded") return false;
       const created = order.createdAt?.slice(0, 10);
-      return created === key && order.paymentStatus === "succeeded";
+      if (!created) return false;
+      return created >= startKey && created <= endKey;
     });
 
     points.push({
-      date: key,
+      date: endKey,
       label,
-      orders: dayOrders.length,
-      volume: dayOrders.reduce((sum, o) => sum + o.fees.total, 0),
-      fees: dayOrders.reduce((sum, o) => sum + o.fees.platformFee, 0),
+      orders: bucketOrders.length,
+      volume: bucketOrders.reduce((sum, o) => sum + o.fees.total, 0),
+      fees: bucketOrders.reduce((sum, o) => sum + o.fees.platformFee, 0),
     });
   }
 
