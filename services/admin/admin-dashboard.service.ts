@@ -412,6 +412,16 @@ export async function buildAdminDashboard(
       meta: "وارد",
     });
   }
+  if (canPayments && pendingPayments.length > 0) {
+    actionItems.push({
+      id: "pending-payments",
+      label: "معاملات معلّقة",
+      count: pendingPayments.length,
+      href: "/admin/orders",
+      severity: severityForCount(pendingPayments.length, 10, 3),
+      meta: "بانتظار إكمال الدفع",
+    });
+  }
   if (canPayments && failedPayments.length > 0) {
     actionItems.push({
       id: "failed-payments",
