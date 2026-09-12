@@ -91,9 +91,9 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1494976388531-d1058494cdd8",
   ],
   lexus_suv: [
+    "photo-1700884520248-92092bd21e63",
     "photo-1693532331766-bfcec4163ce4",
     "photo-1676611383818-25139c3d429a",
-    "photo-1700884520248-92092bd21e63",
     "photo-1568605117036-5fe5e7bab0b7",
   ],
   nissan_suv: [
@@ -103,15 +103,15 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1549317661-bd32c8ce0db2",
   ],
   honda_sedan: [
-    "photo-1605816988069-b560ffffb1b2",
-    "photo-1618843479313-40f8afb4b4d8",
     "photo-1492144534655-ae79c964c9d7",
-    "photo-1552519507-da3b142c6e3d",
+    "photo-1609521263047-f8f205293f24",
+    "photo-1568605117036-5fe5e7bab0b7",
+    "photo-1549317661-bd32c8ce0db2",
   ],
   mercedes_suv: [
     "photo-1618843479313-40f8afb4b4d8",
     "photo-1606664515524-ed2f786a0bd6",
-    "photo-1520035860732-2f6d7a0c0a0e",
+    "photo-1609184166822-bd1f1b991a06",
   ],
   porsche: [
     "photo-1503376780353-7e6692767b70",
@@ -121,12 +121,12 @@ const PRODUCT_PHOTO_POOLS = {
   bmw: [
     "photo-1555215695-3004980ad54e",
     "photo-1556189250-72ba954cfc2b",
-    "photo-1617531653332-bd46c24f2068",
+    "photo-1609184166822-bd1f1b991a06",
   ],
   sedan: [
     "photo-1492144534655-ae79c964c9d7",
     "photo-1609521263047-f8f205293f24",
-    "photo-1552519507-da3b142c6e3d",
+    "photo-1568605117036-5fe5e7bab0b7",
   ],
   suv: [
     "photo-1519641471654-76ce0107ad1b",
@@ -152,7 +152,17 @@ const PRODUCT_HINTS: Array<{ kind: ProductKind; pattern: RegExp }> = [
   {
     kind: "mercedes_suv",
     pattern:
-      /\b(mercedes|مرسيدس|g[- ]?class|g[- ]?wagon|g63|gle|gls|glc)\b/i,
+      /\b(g[- ]?class|g[- ]?wagon|g63|gle|gls|glc|مرسيدس\s*جي)\b/i,
+  },
+  // Model-first before brand defaults — Altima must not become a Patrol cover.
+  {
+    kind: "honda_sedan",
+    pattern: /\b(civic|accord|سيفيك|أكورد|اكورد)\b/i,
+  },
+  {
+    kind: "sedan",
+    pattern:
+      /\b(altima|camry|corolla|sentra|التيما|كامري|كورولا|سيدان|sedan)\b/i,
   },
   {
     kind: "lexus_suv",
@@ -161,24 +171,31 @@ const PRODUCT_HINTS: Array<{ kind: ProductKind; pattern: RegExp }> = [
   {
     kind: "toyota_suv",
     pattern:
-      /\b(toyota|تويوتا|land\s*cruiser|prado|fortuner|لاندكروزر|برادو)\b/i,
+      /\b(land\s*cruiser|prado|fortuner|لاندكروزر|برادو)\b/i,
   },
   {
     kind: "nissan_suv",
-    pattern: /\b(nissan|نيسان|patrol|باترول|armada|pathfinder)\b/i,
+    pattern: /\b(patrol|باترول|armada|pathfinder)\b/i,
+  },
+  {
+    kind: "mercedes_suv",
+    pattern: /\b(mercedes|مرسيدس)\b/i,
+  },
+  {
+    kind: "toyota_suv",
+    pattern: /\b(toyota|تويوتا)\b/i,
   },
   {
     kind: "honda_sedan",
-    pattern: /\b(honda|هوندا|civic|accord|سيفيك|أكورد|اكورد)\b/i,
+    pattern: /\b(honda|هوندا)\b/i,
+  },
+  {
+    kind: "nissan_suv",
+    pattern: /\b(nissan|نيسان)\b/i,
   },
   {
     kind: "suv",
-    pattern:
-      /\b(tahoe|suburban|cayenne|x5|x7|gx|lx|باترول|لاندكروزر|برادو|suv|جيب)\b/i,
-  },
-  {
-    kind: "sedan",
-    pattern: /\b(sedan|كامري|camry|التيما|altima|كورولا|corolla|سيدان)\b/i,
+    pattern: /\b(tahoe|suburban|suv|جيب)\b/i,
   },
   {
     kind: "smartwatch",
