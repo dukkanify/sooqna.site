@@ -124,12 +124,14 @@ async function writeJsonFile(listings: Listing[]): Promise<void> {
 }
 
 export async function upsertListingRow(listing: Listing): Promise<void> {
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
-
-    await pool.query(
-      `INSERT INTO ${TABLE} (
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (!pool) {
+        // Fall through to file/memory path.
+      } else {
+        await pool.query(
+          `INSERT INTO ${TABLE} (
           id, slug, seller_id, category_id, status, is_featured,
           posted_at, expires_at, updated_at, payload
         ) VALUES (
@@ -146,19 +148,27 @@ export async function upsertListingRow(listing: Listing): Promise<void> {
           expires_at = EXCLUDED.expires_at,
           updated_at = NOW(),
           payload = EXCLUDED.payload`,
-      [
-        listing.id,
-        listing.slug,
-        listing.seller.id,
-        listing.categoryId,
-        listing.status,
-        Boolean(listing.isFeatured),
-        listing.postedAt ?? null,
-        listing.expiresAt ?? null,
-        JSON.stringify(listing),
-      ],
-    );
-    return;
+          [
+            listing.id,
+            listing.slug,
+            listing.seller.id,
+            listing.categoryId,
+            listing.status,
+            Boolean(listing.isFeatured),
+            listing.postedAt ?? null,
+            listing.expiresAt ?? null,
+            JSON.stringify(listing),
+          ],
+        );
+        return;
+      }
+    }
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+    } else {
+      throw error;
+    }
   }
 
   const stored = (await readJsonFile()) ?? [];
@@ -168,19 +178,23 @@ export async function upsertListingRow(listing: Listing): Promise<void> {
   } else {
     stored.unshift(listing);
   }
-  await writeJsonFile(stored);
+  try {
+    await writeJsonFile(stored);
+  } catch {
+    // Serverless may not allow durable writes — skip rather than crash reads.
+  }
 }
 
 export async function persistAllListings(listings: Listing[]): Promise<void> {
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
-
-    // Upsert each row. Removals go through deleteListingRow so a stale
-    // snapshot cannot wipe listings created by another instance.
-    for (const listing of listings) {
-      await pool.query(
-        `INSERT INTO ${TABLE} (
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        // Upsert each row. Removals go through deleteListingRow so a stale
+        // snapshot cannot wipe listings created by another instance.
+        for (const listing of listings) {
+          await pool.query(
+            `INSERT INTO ${TABLE} (
           id, slug, seller_id, category_id, status, is_featured,
           posted_at, expires_at, updated_at, payload
         ) VALUES (
@@ -197,54 +211,105 @@ export async function persistAllListings(listings: Listing[]): Promise<void> {
           expires_at = EXCLUDED.expires_at,
           updated_at = NOW(),
           payload = EXCLUDED.payload`,
-        [
-          listing.id,
-          listing.slug,
-          listing.seller.id,
-          listing.categoryId,
-          listing.status,
-          Boolean(listing.isFeatured),
-          listing.postedAt ?? null,
-          listing.expiresAt ?? null,
-          JSON.stringify(listing),
-        ],
-      );
+            [
+              listing.id,
+              listing.slug,
+              listing.seller.id,
+              listing.categoryId,
+              listing.status,
+              Boolean(listing.isFeatured),
+              listing.postedAt ?? null,
+              listing.expiresAt ?? null,
+              JSON.stringify(listing),
+            ],
+          );
+        }
+        return;
+      }
     }
-
-    return;
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+    } else {
+      throw error;
+    }
   }
 
-  await writeJsonFile(listings);
+  try {
+    await writeJsonFile(listings);
+  } catch {
+    // Serverless may not allow durable writes.
+  }
 }
 
 export async function loadListingBySlug(slug: string): Promise<Listing | null> {
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) return null;
-    const result = await pool.query(
-      `SELECT payload FROM ${TABLE} WHERE slug = $1 LIMIT 1`,
-      [slug],
-    );
-    return (result.rows[0]?.payload as Listing) ?? null;
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (!pool) return await findInMemoryCatalog(slug);
+      try {
+        const result = await pool.query(
+          `SELECT payload FROM ${TABLE} WHERE slug = $1 LIMIT 1`,
+          [slug],
+        );
+        const payload = (result.rows[0]?.payload as Listing) ?? null;
+        if (payload) return payload;
+      } catch (error) {
+        if (isPostgresQuotaOrUnavailableError(error)) {
+          markPostgresUnavailable(error);
+          return await findInMemoryCatalog(slug);
+        }
+        throw error;
+      }
+    }
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return await findInMemoryCatalog(slug);
+    }
+    throw error;
   }
 
   const stored = await readJsonFile();
-  return stored?.find((item) => item.slug === slug) ?? null;
+  return (
+    stored?.find((item) => item.slug === slug) ??
+    (await findInMemoryCatalog(slug))
+  );
 }
 
 export async function loadListingById(id: string): Promise<Listing | null> {
-  if (await ensureListingsTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) return null;
-    const result = await pool.query(
-      `SELECT payload FROM ${TABLE} WHERE id = $1 OR slug = $1 LIMIT 1`,
-      [id],
-    );
-    return (result.rows[0]?.payload as Listing) ?? null;
+  try {
+    if (await ensureListingsTable()) {
+      const pool = await getOptionalPostgresPool();
+      if (!pool) return await findInMemoryCatalog(id);
+      try {
+        const result = await pool.query(
+          `SELECT payload FROM ${TABLE} WHERE id = $1 OR slug = $1 LIMIT 1`,
+          [id],
+        );
+        const payload = (result.rows[0]?.payload as Listing) ?? null;
+        if (payload) return payload;
+      } catch (error) {
+        if (isPostgresQuotaOrUnavailableError(error)) {
+          markPostgresUnavailable(error);
+          return await findInMemoryCatalog(id);
+        }
+        throw error;
+      }
+    }
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return await findInMemoryCatalog(id);
+    }
+    throw error;
   }
 
   const stored = await readJsonFile();
-  return stored?.find((item) => item.id === id || item.slug === id) ?? null;
+  return (
+    stored?.find((item) => item.id === id || item.slug === id) ??
+    (await findInMemoryCatalog(id))
+  );
 }
 
 export async function deleteListingRow(id: string): Promise<boolean> {
@@ -302,7 +367,7 @@ export async function loadPersistedListings(): Promise<Listing[]> {
 }
 
 /** When Postgres is down, serve the built-in live/showcase catalog so the site stays public. */
-async function loadCatalogWithoutPostgres(): Promise<Listing[]> {
+export async function loadCatalogWithoutPostgres(): Promise<Listing[]> {
   if (allowMockCatalogSeed()) {
     const seeded = seedListings();
     try {
@@ -326,6 +391,17 @@ async function loadCatalogWithoutPostgres(): Promise<Listing[]> {
     if (!byId.has(listing.id)) byId.set(listing.id, listing);
   }
   return Array.from(byId.values());
+}
+
+async function findInMemoryCatalog(
+  idOrSlug: string,
+): Promise<Listing | null> {
+  const catalog = await loadCatalogWithoutPostgres();
+  return (
+    catalog.find(
+      (listing) => listing.id === idOrSlug || listing.slug === idOrSlug,
+    ) ?? null
+  );
 }
 
 export async function deleteMockSeedListings(): Promise<{

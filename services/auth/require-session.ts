@@ -8,16 +8,21 @@ function sessionVersionOf(user: { sessionVersion?: number } | null | undefined):
 }
 
 export async function getValidSessionUser(): Promise<UserProfile | null> {
-  const session = await getSessionFromCookie();
-  if (!session?.id) return null;
+  try {
+    const session = await getSessionFromCookie();
+    if (!session?.id) return null;
 
-  const stored = await findUserById(session.id);
-  if (!stored) return null;
-  if (sessionVersionOf(stored) !== sessionVersionOf(session)) {
-    await clearSessionCookie();
+    const stored = await findUserById(session.id);
+    if (!stored) return null;
+    if (sessionVersionOf(stored) !== sessionVersionOf(session)) {
+      await clearSessionCookie();
+      return null;
+    }
+    return toUserProfile(stored);
+  } catch {
+    // Auth store outages must not take down public listing pages.
     return null;
   }
-  return toUserProfile(stored);
 }
 
 export async function requireSessionUser(): Promise<UserProfile | NextResponse> {

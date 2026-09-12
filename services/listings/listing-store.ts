@@ -11,6 +11,7 @@ import {
 import {
   deleteListingRow,
   deleteMockSeedListings as deletePersistedMockSeedListings,
+  loadCatalogWithoutPostgres,
   loadListingById,
   loadListingBySlug,
   loadPersistedListings,
@@ -25,6 +26,7 @@ import {
 } from "@/services/listings/mock-catalog-policy";
 import { loadAdminListingRecords } from "@/services/listings/listing-queries";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
+import { isPostgresTemporarilyUnavailable } from "@/services/db/postgres";
 import type { Listing } from "@/types";
 import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 import type {
@@ -89,10 +91,14 @@ function setCache(listings: Listing[]) {
 async function applyListingExpiry(listings: Listing[]): Promise<Listing[]> {
   if (expiryApplied) return listings;
   expiryApplied = true;
-  const settings = await getAdminSettings();
-  const changed = expireStaleListings(listings, settings.listingActiveDays);
-  if (changed > 0) {
-    await persistAllListings(listings);
+  try {
+    const settings = await getAdminSettings();
+    const changed = expireStaleListings(listings, settings.listingActiveDays);
+    if (changed > 0) {
+      await persistAllListings(listings).catch(() => undefined);
+    }
+  } catch {
+    // Never block public catalog reads on settings/persistence failures.
   }
   return listings;
 }
@@ -110,30 +116,32 @@ async function loadListingsUncached(): Promise<Listing[]> {
 
   if (!inflight) {
     inflight = (async () => {
-      const stored = await loadPersistedListings().catch(() => [] as Listing[]);
+      let stored = await loadPersistedListings().catch(
+        () => [] as Listing[],
+      );
       if (stored.length === 0) {
-        if (!allowMockCatalogSeed()) {
-          return setCache([]);
+        stored = await loadCatalogWithoutPostgres().catch(() => [] as Listing[]);
+        if (stored.length === 0 && allowMockCatalogSeed()) {
+          stored = seedListings();
+          await persistAllListings(stored).catch(() => undefined);
         }
-        const seeded = seedListings();
-        await applyListingExpiry(seeded);
-        await persistAllListings(seeded);
-        return setCache(seeded);
+        if (stored.length === 0) return setCache([]);
       }
-      const merged = hydrateCatalogPhones(await mergeMissingSeedListings(stored));
-      const { listings: repairedRows, repaired } = repairPoorQualityListings(merged);
-      const phonesAdded = repairedRows.some((listing) => {
-        const before = stored.find((item) => item.id === listing.id);
-        return Boolean(listing.contactPhone) && !before?.contactPhone;
-      });
-      if (phonesAdded || repaired.length > 0) {
-        if (repaired.length > 0) {
-          for (const listing of repaired) {
-            await upsertListingRow(listing);
-          }
-          await bumpListingsCache();
-        } else {
-          await persistAllListings(repairedRows);
+      const merged = hydrateCatalogPhones(
+        await mergeMissingSeedListings(stored).catch(() => stored),
+      );
+      const { listings: repairedRows, repaired } =
+        repairPoorQualityListings(merged);
+      if (repaired.length > 0) {
+        await Promise.all(
+          repaired.map((listing) =>
+            upsertListingRow(listing).catch(() => undefined),
+          ),
+        ).catch(() => undefined);
+        try {
+          bumpListingsCache();
+        } catch {
+          // ignore
         }
       }
       await applyListingExpiry(repairedRows);
@@ -171,20 +179,37 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
 }
 
 export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
-  const { ensureShowcaseCatalogPublished } = await import(
-    "@/services/listings/showcase-catalog.service"
-  );
-  const { ensureLiveMarketplaceCatalogPublished } = await import(
-    "@/services/listings/live-marketplace-catalog.service"
-  );
-  await Promise.all([
-    ensureShowcaseCatalogPublished(),
-    ensureLiveMarketplaceCatalogPublished(),
-  ]);
+  // Fast path when Neon quota is exceeded — avoid write-heavy ensure* on every view.
+  if (isPostgresTemporarilyUnavailable()) {
+    const memory = await loadCatalogWithoutPostgres().catch(() => [] as Listing[]);
+    const hit = memory.find((listing) => listing.slug === slug);
+    if (hit) return hit;
+  }
+
+  try {
+    const { ensureShowcaseCatalogPublished } = await import(
+      "@/services/listings/showcase-catalog.service"
+    );
+    const { ensureLiveMarketplaceCatalogPublished } = await import(
+      "@/services/listings/live-marketplace-catalog.service"
+    );
+    await Promise.all([
+      ensureShowcaseCatalogPublished().catch(() => undefined),
+      ensureLiveMarketplaceCatalogPublished().catch(() => 0),
+    ]);
+  } catch {
+    // Catalog ensure is best-effort for public reads.
+  }
+
   const persisted = await loadListingBySlug(slug).catch(() => null);
   if (persisted) return persisted;
-  const listings = await getAllListings();
-  return listings.find((listing) => listing.slug === slug);
+  const listings = await getAllListings().catch(() => [] as Listing[]);
+  return (
+    listings.find((listing) => listing.slug === slug) ??
+    (await loadCatalogWithoutPostgres().catch(() => [] as Listing[])).find(
+      (listing) => listing.slug === slug,
+    )
+  );
 }
 
 export async function upsertListing(listing: Listing): Promise<Listing> {
