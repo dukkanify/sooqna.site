@@ -22,6 +22,8 @@ export type AuthPersistenceInfo = {
   driver: AuthDriver;
   durable: true;
   location: string;
+  /** True when serving from /tmp mirror because Postgres quota/connectivity failed. */
+  emergency?: boolean;
 };
 
 type PostgresPool = {
@@ -34,6 +36,7 @@ let jsonFilePath: string | null = null;
 let jsonCache: StoredUser[] | null = null;
 let jsonMutationChain: Promise<void> = Promise.resolve();
 let initialized = false;
+let emergencyMode = false;
 let migratedFromLegacy = false;
 let initPromise: Promise<void> | null = null;
 
@@ -335,6 +338,7 @@ async function initEmergencyMirrorStore(): Promise<void> {
     // /tmp write best-effort
   }
   driver = "json-file";
+  emergencyMode = true;
   initialized = true;
   console.error("[Sooqna Auth] using emergency mirror store (Postgres unavailable)");
 }
@@ -355,6 +359,7 @@ async function doInitAuthStore(): Promise<void> {
       await runPostgresMigration(pool);
       await importLegacyUsersIntoPostgres(pool);
       driver = "postgres";
+      emergencyMode = false;
       initialized = true;
       return;
     } catch (error) {
@@ -398,6 +403,7 @@ export async function getAuthPersistenceInfo(): Promise<AuthPersistenceInfo> {
     driver: "json-file",
     durable: true,
     location: jsonFilePath ?? path.join(resolveDurableJsonDir(), JSON_STORE_FILE),
+    emergency: emergencyMode || undefined,
   };
 }
 
