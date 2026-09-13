@@ -262,14 +262,6 @@
   color: var(--color-ink);
 }
 
-.site-footer__social-note {
-  margin: 0.75rem 0 0;
-  max-width: 14rem;
-  font-size: 0.75rem;
-  line-height: 1.7;
-  color: var(--color-muted);
-}
-
 .site-footer__bottom {
   border-top: 1px solid var(--color-border);
   background: var(--color-surface-muted);
@@ -433,7 +425,6 @@ html[data-theme="dark"] .site-footer__social-btn {
 }
 
 html[data-theme="dark"] .site-footer__copy,
-html[data-theme="dark"] .site-footer__social-note,
 html[data-theme="dark"] .site-footer__credit-ar,
 html[data-theme="dark"] .site-footer__credit-en {
   color: rgb(250 249 247 / 55%);

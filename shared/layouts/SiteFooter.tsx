@@ -106,7 +106,6 @@ function SocialColumn() {
           </span>
         ))}
       </div>
-      <p className="site-footer__social-note">حساباتنا الرسمية قريبًا — بلا روابط وهمية.</p>
     </>
   );
 }
