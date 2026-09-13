@@ -5,7 +5,7 @@ export function MobileFeaturedCardSkeleton() {
     <article
       aria-busy="true"
       aria-label="جاري تحميل الإعلان"
-      className="mobile-home-featured-card w-[var(--mh-card-width)] min-w-[11.5rem] max-w-[14.5rem] shrink-0 flex-none snap-start"
+      className="mobile-home-featured-card w-[var(--mh-card-width)] min-w-[10.75rem] max-w-[13rem] shrink-0 flex-none snap-start"
     >
       <Skeleton className="aspect-[3/2] w-full !rounded-none" />
       <div className="space-y-2 p-2.5">

@@ -170,7 +170,7 @@ export function MyListingsDashboard({
   return (
     <LocalizedTree>
     <div className="grid gap-5">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         {[
           { icon: "check" as const, label: "نشطة", value: counts.active },
           { icon: "clock" as const, label: "قيد المراجعة", value: counts.pending_review },

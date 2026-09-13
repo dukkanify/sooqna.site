@@ -1187,8 +1187,8 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   box-sizing: border-box;
   flex: none;
   width: var(--mh-card-width);
-  min-width: 11.5rem;
-  max-width: 14.5rem;
+  min-width: 10.75rem;
+  max-width: 13rem;
   overflow: hidden;
   border: 1px solid var(--mh-border);
   border-radius: var(--mh-radius-xl);
@@ -2344,7 +2344,7 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 
 @media (min-width: 390px) {
   .mobile-home-shell {
-    --mh-card-width: clamp(12rem, 52vw, 15rem);
+    --mh-card-width: clamp(11rem, 44vw, 13rem);
     --mh-category-icon: clamp(3.5rem, 11vw, 4.25rem);
   }
 }
@@ -2354,7 +2354,7 @@ html[data-theme="dark"] .mobile-home-hero__badge {
     --mh-page-max: min(100%, 36rem);
     --mh-nav-max: min(100%, 36rem);
     --mh-page-x: clamp(1rem, 4.5vw, 1.375rem);
-    --mh-card-width: clamp(12.5rem, 40vw, 15.5rem);
+    --mh-card-width: clamp(11.25rem, 38vw, 13rem);
   }
 }
 
@@ -2374,7 +2374,7 @@ html[data-theme="dark"] .mobile-home-hero__badge {
     --mh-page-x: 1.5rem;
     --mh-section-gap: 1.75rem;
     --mh-text-lg: 1.75rem;
-    --mh-card-width: 15rem;
+    --mh-card-width: 13rem;
     --mh-category-icon: 4.5rem;
   }
 

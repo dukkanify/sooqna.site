@@ -35,7 +35,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
   const photoCount = getListingImages(listing).length;
 
   return (
-    <article className="mobile-home-featured-card w-[var(--mh-card-width)] min-w-[11.5rem] max-w-[14.5rem] shrink-0 flex-none snap-start">
+    <article className="mobile-home-featured-card w-[var(--mh-card-width)] min-w-[10.75rem] max-w-[13rem] shrink-0 flex-none snap-start">
       <div className="mobile-home-featured-card__media">
         <Link aria-hidden className="absolute inset-0" href={href} tabIndex={-1}>
           {imageUrl ? (

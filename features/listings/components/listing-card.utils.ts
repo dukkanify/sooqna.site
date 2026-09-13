@@ -1,8 +1,8 @@
 import type { Listing } from "@/types";
 
-/** Standard marketplace card density — compact 4-up grid for every home rail. */
+/** Compact marketplace density — always 2-up (never full-width), 4-up on large screens. */
 export const MARKETPLACE_LISTING_GRID_CLASS =
-  "grid gap-3 sm:grid-cols-2 lg:grid-cols-4";
+  "grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4";
 
 export const listingPriceFormatter = new Intl.NumberFormat("ar-AE", {
   maximumFractionDigits: 0,
