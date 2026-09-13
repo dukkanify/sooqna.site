@@ -11,7 +11,19 @@ let pool: PostgresPool | null = null;
 let rawPool: Pool | null = null;
 /** When Neon/Vercel Postgres hits quota or connectivity failure, skip DB for this process. */
 let postgresDegradedUntil = 0;
-const POSTGRES_DEGRADED_TTL_MS = 5 * 60 * 1000;
+const POSTGRES_TRANSIENT_DEGRADED_TTL_MS = 5 * 60 * 1000;
+/** Quota outages last hours/days — do not reconnect every 5 minutes (that burns more transfer). */
+const POSTGRES_QUOTA_DEGRADED_TTL_MS = 12 * 60 * 60 * 1000;
+
+function isQuotaExceededMessage(message: string): boolean {
+  return (
+    message.includes("exceeded the data transfer quota") ||
+    message.includes("exceeded the compute time quota") ||
+    message.includes("data transfer quota") ||
+    message.includes("compute time quota") ||
+    message.includes("exceeded the storage size") 
+  );
+}
 
 export function isPostgresQuotaOrUnavailableError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
@@ -26,8 +38,7 @@ export function isPostgresQuotaOrUnavailableError(error: unknown): boolean {
   if (err.code === "ECONNREFUSED" || err.code === "ETIMEDOUT" || err.code === "ENOTFOUND") {
     return true;
   }
-  if (message.includes("exceeded the data transfer quota")) return true;
-  if (message.includes("exceeded the compute time quota")) return true;
+  if (isQuotaExceededMessage(message)) return true;
   if (message.includes("remaining connection slots")) return true;
   if (message.includes("too many connections")) return true;
   if (message.includes("connection terminated unexpectedly")) return true;
@@ -35,8 +46,19 @@ export function isPostgresQuotaOrUnavailableError(error: unknown): boolean {
   return false;
 }
 
+export function isPostgresQuotaExceededError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const err = error as { code?: string; message?: string };
+  const message = String(err.message ?? "").toLowerCase();
+  if (err.code === "53000" && isQuotaExceededMessage(message)) return true;
+  return isQuotaExceededMessage(message);
+}
+
 export function markPostgresUnavailable(error?: unknown): void {
-  postgresDegradedUntil = Date.now() + POSTGRES_DEGRADED_TTL_MS;
+  const ttl = isPostgresQuotaExceededError(error)
+    ? POSTGRES_QUOTA_DEGRADED_TTL_MS
+    : POSTGRES_TRANSIENT_DEGRADED_TTL_MS;
+  postgresDegradedUntil = Date.now() + ttl;
   pool = null;
   const closing = rawPool;
   rawPool = null;
@@ -46,7 +68,7 @@ export function markPostgresUnavailable(error?: unknown): void {
   if (error && process.env.NODE_ENV !== "test") {
     const message =
       error instanceof Error ? error.message : String(error ?? "unknown");
-    console.error(`[postgres] degraded for ${POSTGRES_DEGRADED_TTL_MS / 1000}s: ${message}`);
+    console.error(`[postgres] degraded for ${ttl / 1000}s: ${message}`);
   }
 }
 

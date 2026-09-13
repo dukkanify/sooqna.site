@@ -86,6 +86,17 @@ export async function POST(request: Request) {
     return tokenErrorResponse("invalid");
   }
 
+  // Reject reused/stale links after the password already changed.
+  const { passwordFingerprint } = await import(
+    "@/services/auth/password-reset-token"
+  );
+  if (
+    consumed.passwordFingerprint &&
+    passwordFingerprint(user.passwordHash) !== consumed.passwordFingerprint
+  ) {
+    return tokenErrorResponse("invalid");
+  }
+
   await setUserPassword(user.id, hashPassword(newPassword));
   await clearSessionCookie();
 

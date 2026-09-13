@@ -134,6 +134,7 @@ export async function POST(request: Request) {
       const rawToken = await issuePasswordResetToken({
         email: stored.email,
         userId: stored.id,
+        passwordHash: stored.passwordHash,
       });
       void emailPasswordResetLink({
         email: stored.email,

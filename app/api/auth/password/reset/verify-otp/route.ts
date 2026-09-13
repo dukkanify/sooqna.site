@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     const rawToken = await issuePasswordResetToken({
       email: user.email,
       userId: user.id,
+      passwordHash: user.passwordHash,
     });
     void emailPasswordResetLink({
       email: user.email,

@@ -1,277 +1,218 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { loadCollection, saveCollection } from "@/services/payments/data-store";
+import {
+  isPostgresQuotaOrUnavailableError,
+  markPostgresUnavailable,
+} from "@/services/db/postgres";
 import {
   getAuthStoreDriver,
-  getDurableAuthDir,
   queryAuthPostgres,
 } from "@/services/auth/user-persistence";
 
 export const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
-const TOKEN_FILE = "sooqna-password-reset-tokens.json";
+const CONSUMED_FILE = "password-reset-consumed.json";
+const TOKEN_PREFIX = "pwr1";
 
 export type PasswordResetTokenStatus = "valid" | "expired" | "invalid";
 
-type StoredResetToken = {
-  consumedAt?: string | null;
-  createdAt: string;
-  expiresAt: string;
-  id: string;
-  normalizedEmail: string;
-  tokenHash: string;
-  userId: string;
+type SignedResetPayload = {
+  /** user id */
+  uid: string;
+  /** normalized email */
+  em: string;
+  /** password fingerprint — changes when password changes (single-use) */
+  pv: string;
+  /** expiry unix ms */
+  exp: number;
+  /** unique id for optional consume ledger */
+  jti: string;
 };
 
-let jsonCache: StoredResetToken[] | null = null;
-let jsonPath: string | null = null;
-let jsonChain: Promise<void> = Promise.resolve();
-let postgresReady = false;
+type ConsumedEntry = {
+  jti: string;
+  consumedAt: string;
+};
 
-function resetPepper(): string {
-  return process.env.PASSWORD_PEPPER ?? "sooqna-password-pepper";
-}
-
-export function hashPasswordResetToken(rawToken: string): string {
-  return createHash("sha256")
-    .update(`reset:${resetPepper()}:${rawToken}`)
-    .digest("hex");
-}
-
-function hashesMatch(left: string, right: string): boolean {
-  const a = Buffer.from(left, "hex");
-  const b = Buffer.from(right, "hex");
-  if (a.length !== b.length || a.length === 0) return false;
-  return timingSafeEqual(a, b);
-}
-
-function generateRawToken(): string {
-  return randomBytes(32).toString("base64url");
-}
-
-async function ensurePostgresTable(): Promise<void> {
-  if (postgresReady) return;
-  await queryAuthPostgres(`
-    CREATE TABLE IF NOT EXISTS password_reset_tokens (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      normalized_email TEXT NOT NULL,
-      token_hash TEXT NOT NULL UNIQUE,
-      expires_at TIMESTAMPTZ NOT NULL,
-      consumed_at TIMESTAMPTZ,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-  await queryAuthPostgres(
-    `CREATE INDEX IF NOT EXISTS password_reset_tokens_user_idx ON password_reset_tokens (user_id)`,
+function resetSecret(): string {
+  return (
+    process.env.PASSWORD_PEPPER?.trim() ||
+    process.env.SESSION_SECRET?.trim() ||
+    process.env.NEXTAUTH_SECRET?.trim() ||
+    "sooqna-password-pepper"
   );
-  await queryAuthPostgres(
-    `CREATE INDEX IF NOT EXISTS password_reset_tokens_hash_idx ON password_reset_tokens (token_hash)`,
-  );
-  postgresReady = true;
 }
 
-function tokenFilePath(): string {
-  if (jsonPath) return jsonPath;
-  jsonPath = path.join(getDurableAuthDir(), TOKEN_FILE);
-  return jsonPath;
+export function passwordFingerprint(passwordHash: string | null | undefined): string {
+  const raw = (passwordHash ?? "").trim() || "nopw";
+  return createHash("sha256").update(`pv:${raw}`).digest("hex").slice(0, 24);
 }
 
-async function readJsonTokens(): Promise<StoredResetToken[]> {
+function signBody(body: string): string {
+  return createHmac("sha256", resetSecret()).update(`${TOKEN_PREFIX}.${body}`).digest("base64url");
+}
+
+function encodePayload(payload: SignedResetPayload): string {
+  const body = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  return `${TOKEN_PREFIX}.${body}.${signBody(body)}`;
+}
+
+function decodePayload(rawToken: string): SignedResetPayload | null {
+  if (!rawToken.startsWith(`${TOKEN_PREFIX}.`)) return null;
+  const parts = rawToken.split(".");
+  if (parts.length !== 3) return null;
+  const [, body, signature] = parts;
+  const expected = signBody(body);
   try {
-    const raw = await readFile(tokenFilePath(), "utf8");
-    const parsed = JSON.parse(raw) as unknown;
-    jsonCache = Array.isArray(parsed) ? (parsed as StoredResetToken[]) : [];
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   } catch {
-    jsonCache = jsonCache ?? [];
+    return null;
   }
-  return jsonCache;
-}
-
-async function writeJsonTokens(tokens: StoredResetToken[]): Promise<void> {
-  const filePath = tokenFilePath();
-  await mkdir(path.dirname(filePath), { recursive: true });
-  const payload = JSON.stringify(tokens, null, 2);
-  const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
-  await writeFile(tempPath, payload, "utf8");
-  await rename(tempPath, filePath);
-  jsonCache = tokens;
-}
-
-function enqueueJson<T>(fn: () => Promise<T>): Promise<T> {
-  const run = jsonChain.then(fn, fn);
-  jsonChain = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  return run;
-}
-
-function rowToToken(row: Record<string, unknown>): StoredResetToken {
-  const expiresAt =
-    row.expires_at instanceof Date
-      ? row.expires_at.toISOString()
-      : String(row.expires_at);
-  const createdAt =
-    row.created_at instanceof Date
-      ? row.created_at.toISOString()
-      : String(row.created_at ?? "");
-  const consumedAt =
-    row.consumed_at instanceof Date
-      ? row.consumed_at.toISOString()
-      : row.consumed_at
-        ? String(row.consumed_at)
-        : null;
-  return {
-    id: String(row.id),
-    userId: String(row.user_id),
-    normalizedEmail: String(row.normalized_email),
-    tokenHash: String(row.token_hash),
-    expiresAt,
-    createdAt,
-    consumedAt,
-  };
-}
-
-function classifyToken(record: StoredResetToken | null): {
-  record: StoredResetToken | null;
-  status: PasswordResetTokenStatus;
-} {
-  if (!record) return { record: null, status: "invalid" };
-  if (record.consumedAt) return { record, status: "invalid" };
-  if (new Date(record.expiresAt).getTime() <= Date.now()) {
-    return { record, status: "expired" };
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(body.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"),
+    ) as SignedResetPayload;
+    if (
+      !parsed ||
+      typeof parsed.uid !== "string" ||
+      typeof parsed.em !== "string" ||
+      typeof parsed.pv !== "string" ||
+      typeof parsed.exp !== "number" ||
+      typeof parsed.jti !== "string"
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
   }
-  return { record, status: "valid" };
 }
 
-async function findByHash(tokenHash: string): Promise<StoredResetToken | null> {
-  const driver = await getAuthStoreDriver();
-  if (driver === "postgres") {
-    await ensurePostgresTable();
-    const result = await queryAuthPostgres(
-      `SELECT id, user_id, normalized_email, token_hash, expires_at, consumed_at, created_at
-       FROM password_reset_tokens
-       WHERE token_hash = $1
-       LIMIT 1`,
-      [tokenHash],
-    );
-    return result.rows[0] ? rowToToken(result.rows[0]) : null;
+async function wasConsumed(jti: string): Promise<boolean> {
+  try {
+    const rows = await loadCollection<ConsumedEntry>(CONSUMED_FILE);
+    return rows.some((row) => row.jti === jti);
+  } catch {
+    return false;
   }
-
-  const tokens = await readJsonTokens();
-  return tokens.find((item) => hashesMatch(item.tokenHash, tokenHash)) ?? null;
 }
 
-/** Issue a one-time token. Returns the raw token only for the email body — never put it in an API JSON response. */
-export async function issuePasswordResetToken(input: {
-  email: string;
-  userId: string;
-}): Promise<string> {
-  const rawToken = generateRawToken();
-  const tokenHash = hashPasswordResetToken(rawToken);
-  const now = new Date();
-  const record: StoredResetToken = {
-    id: `pwr-${now.getTime()}-${randomBytes(4).toString("hex")}`,
-    userId: input.userId,
-    normalizedEmail: input.email.trim().toLowerCase(),
-    tokenHash,
-    createdAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + PASSWORD_RESET_TTL_MS).toISOString(),
-    consumedAt: null,
-  };
+async function markConsumed(jti: string): Promise<void> {
+  try {
+    const rows = await loadCollection<ConsumedEntry>(CONSUMED_FILE);
+    if (rows.some((row) => row.jti === jti)) return;
+    rows.unshift({ jti, consumedAt: new Date().toISOString() });
+    await saveCollection(CONSUMED_FILE, rows.slice(0, 500));
+  } catch (error) {
+    console.error("[Sooqna Auth] failed to persist reset consume ledger", error);
+  }
+}
 
-  const driver = await getAuthStoreDriver();
-  if (driver === "postgres") {
-    await ensurePostgresTable();
+/** Best-effort audit row in Postgres — never required for issue/consume. */
+async function auditIssue(payload: SignedResetPayload): Promise<void> {
+  try {
+    const driver = await getAuthStoreDriver();
+    if (driver !== "postgres") return;
     await queryAuthPostgres(
-      `UPDATE password_reset_tokens
-       SET consumed_at = NOW()
-       WHERE user_id = $1 AND consumed_at IS NULL`,
-      [input.userId],
+      `CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        normalized_email TEXT NOT NULL,
+        token_hash TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMPTZ NOT NULL,
+        consumed_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`,
     );
     await queryAuthPostgres(
       `INSERT INTO password_reset_tokens
         (id, user_id, normalized_email, token_hash, expires_at, consumed_at, created_at)
-       VALUES ($1, $2, $3, $4, $5::timestamptz, NULL, $6::timestamptz)`,
+       VALUES ($1, $2, $3, $4, to_timestamp($5/1000.0), NULL, NOW())
+       ON CONFLICT (id) DO NOTHING`,
       [
-        record.id,
-        record.userId,
-        record.normalizedEmail,
-        record.tokenHash,
-        record.expiresAt,
-        record.createdAt,
+        payload.jti,
+        payload.uid,
+        payload.em,
+        createHash("sha256").update(payload.jti).digest("hex"),
+        payload.exp,
       ],
     );
-    return rawToken;
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+    }
+    // Signed tokens do not depend on this write.
   }
+}
 
-  await enqueueJson(async () => {
-    const tokens = await readJsonTokens();
-    const next = tokens.map((item) =>
-      item.userId === input.userId && !item.consumedAt
-        ? { ...item, consumedAt: now.toISOString() }
-        : item,
-    );
-    next.unshift(record);
-    await writeJsonTokens(next.slice(0, 200));
-  });
-  return rawToken;
+/**
+ * Issue a signed reset token. Does not require Postgres — email delivery only needs Resend.
+ * Returns the raw token for the email body only (never expose in API JSON).
+ */
+export async function issuePasswordResetToken(input: {
+  email: string;
+  userId: string;
+  passwordHash?: string | null;
+}): Promise<string> {
+  const payload: SignedResetPayload = {
+    uid: input.userId,
+    em: input.email.trim().toLowerCase(),
+    pv: passwordFingerprint(input.passwordHash),
+    exp: Date.now() + PASSWORD_RESET_TTL_MS,
+    jti: `pwr-${Date.now()}-${randomBytes(8).toString("hex")}`,
+  };
+  const token = encodePayload(payload);
+  void auditIssue(payload);
+  return token;
+}
+
+function classifyPayload(
+  payload: SignedResetPayload | null,
+): PasswordResetTokenStatus {
+  if (!payload) return "invalid";
+  if (payload.exp <= Date.now()) return "expired";
+  return "valid";
 }
 
 export async function inspectPasswordResetToken(
   rawToken: string,
 ): Promise<PasswordResetTokenStatus> {
   if (!rawToken || rawToken.length < 16) return "invalid";
-  const found = await findByHash(hashPasswordResetToken(rawToken));
-  return classifyToken(found).status;
+  const payload = decodePayload(rawToken);
+  const status = classifyPayload(payload);
+  if (status !== "valid" || !payload) return status;
+  if (await wasConsumed(payload.jti)) return "invalid";
+  return "valid";
 }
 
 export async function consumePasswordResetToken(rawToken: string): Promise<
-  | { ok: true; email: string; userId: string }
+  | { ok: true; email: string; userId: string; passwordFingerprint: string }
   | { ok: false; status: Exclude<PasswordResetTokenStatus, "valid"> }
 > {
   if (!rawToken || rawToken.length < 16) {
     return { ok: false, status: "invalid" };
   }
 
-  const tokenHash = hashPasswordResetToken(rawToken);
-  const found = await findByHash(tokenHash);
-  const classified = classifyToken(found);
-  if (!classified.record || classified.status !== "valid") {
+  const payload = decodePayload(rawToken);
+  const status = classifyPayload(payload);
+  if (!payload || status !== "valid") {
     return {
       ok: false,
-      status: classified.status === "expired" ? "expired" : "invalid",
+      status: status === "expired" ? "expired" : "invalid",
     };
   }
 
-  const now = new Date().toISOString();
-  const driver = await getAuthStoreDriver();
-  if (driver === "postgres") {
-    await ensurePostgresTable();
-    const updated = await queryAuthPostgres(
-      `UPDATE password_reset_tokens
-       SET consumed_at = $2::timestamptz
-       WHERE id = $1 AND consumed_at IS NULL
-       RETURNING id`,
-      [classified.record.id, now],
-    );
-    if (!updated.rows[0]) {
-      return { ok: false, status: "invalid" };
-    }
-  } else {
-    await enqueueJson(async () => {
-      const tokens = await readJsonTokens();
-      await writeJsonTokens(
-        tokens.map((item) =>
-          item.id === classified.record?.id ? { ...item, consumedAt: now } : item,
-        ),
-      );
-    });
+  if (await wasConsumed(payload.jti)) {
+    return { ok: false, status: "invalid" };
   }
+
+  await markConsumed(payload.jti);
 
   return {
     ok: true,
-    userId: classified.record.userId,
-    email: classified.record.normalizedEmail,
+    userId: payload.uid,
+    email: payload.em,
+    passwordFingerprint: payload.pv,
   };
 }

@@ -2,6 +2,16 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { StoredUser } from "@/types/domain/user";
 import { logProductionConfigIssues } from "@/services/auth/production-config";
+import {
+  findAuthUserInMirrorByEmail,
+  findAuthUserInMirrorById,
+  upsertAuthUserMirror,
+} from "@/services/auth/auth-user-mirror";
+import {
+  isPostgresQuotaOrUnavailableError,
+  isPostgresTemporarilyUnavailable,
+  markPostgresUnavailable,
+} from "@/services/db/postgres";
 
 const USERS_FILE = "users.json";
 const JSON_STORE_FILE = "sooqna-auth-users.json";
@@ -183,6 +193,9 @@ async function loadLegacyJsonUsers(): Promise<StoredUser[]> {
 }
 
 async function getPostgresPool(): Promise<PostgresPool> {
+  if (isPostgresTemporarilyUnavailable()) {
+    throw new AuthStoreError("AUTH_STORE_POSTGRES_DEGRADED");
+  }
   if (postgresPool) return postgresPool;
   const connectionString = getPostgresUrl();
   const pg = await import("pg");
@@ -192,7 +205,17 @@ async function getPostgresPool(): Promise<PostgresPool> {
     ssl: shouldUsePostgresSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
   });
   postgresPool = {
-    query: (sql: string, params?: unknown[]) => pool.query(sql, params),
+    query: async (sql: string, params?: unknown[]) => {
+      try {
+        return await pool.query(sql, params);
+      } catch (error) {
+        if (isPostgresQuotaOrUnavailableError(error)) {
+          markPostgresUnavailable(error);
+          postgresPool = null;
+        }
+        throw error;
+      }
+    },
   };
   return postgresPool;
 }
@@ -298,6 +321,24 @@ async function initAuthStore(): Promise<void> {
   await initPromise;
 }
 
+
+
+async function initEmergencyMirrorStore(): Promise<void> {
+  const dir = path.join("/tmp", "sooqna-auth-emergency");
+  await mkdir(dir, { recursive: true });
+  jsonFilePath = path.join(dir, JSON_STORE_FILE);
+  const { readAuthUserMirror } = await import("@/services/auth/auth-user-mirror");
+  jsonCache = await readAuthUserMirror();
+  try {
+    await writeJsonAtomic(jsonFilePath, jsonCache);
+  } catch {
+    // /tmp write best-effort
+  }
+  driver = "json-file";
+  initialized = true;
+  console.error("[Sooqna Auth] using emergency mirror store (Postgres unavailable)");
+}
+
 async function doInitAuthStore(): Promise<void> {
   if (initialized && driver) return;
 
@@ -305,16 +346,31 @@ async function doInitAuthStore(): Promise<void> {
 
   const postgresUrl = getPostgresUrl();
   if (postgresUrl.startsWith("postgres")) {
-    const pool = await getPostgresPool();
-    await runPostgresMigration(pool);
-    await importLegacyUsersIntoPostgres(pool);
-    driver = "postgres";
-    initialized = true;
-    return;
+    if (isPostgresTemporarilyUnavailable()) {
+      await initEmergencyMirrorStore();
+      return;
+    }
+    try {
+      const pool = await getPostgresPool();
+      await runPostgresMigration(pool);
+      await importLegacyUsersIntoPostgres(pool);
+      driver = "postgres";
+      initialized = true;
+      return;
+    } catch (error) {
+      if (isPostgresQuotaOrUnavailableError(error)) {
+        markPostgresUnavailable(error);
+        await initEmergencyMirrorStore();
+        return;
+      }
+      throw error;
+    }
   }
 
   if (isServerlessRuntime()) {
-    throw new AuthStoreError("AUTH_STORE_NOT_DURABLE");
+    // Prefer emergency mirror over hard failure so password reset / login can continue.
+    await initEmergencyMirrorStore();
+    return;
   }
 
   const dir = resolveDurableJsonDir();
@@ -379,15 +435,27 @@ export async function findPersistedUserByEmail(email: string): Promise<StoredUse
   const normalized = email.trim().toLowerCase();
   await initAuthStore();
   if (driver === "postgres") {
-    const pool = await getPostgresPool();
-    const result = await pool.query(
-      `SELECT id, normalized_email, password_hash, account_status, account_type, created_at, payload
-       FROM auth_users
-       WHERE normalized_email = $1
-       LIMIT 1`,
-      [normalized],
-    );
-    return result.rows[0] ? rowToUser(result.rows[0]) : null;
+    try {
+      const pool = await getPostgresPool();
+      const result = await pool.query(
+        `SELECT id, normalized_email, password_hash, account_status, account_type, created_at, payload
+         FROM auth_users
+         WHERE normalized_email = $1
+         LIMIT 1`,
+        [normalized],
+      );
+      const found = result.rows[0] ? rowToUser(result.rows[0]) : null;
+      if (found) {
+        void upsertAuthUserMirror(found);
+      }
+      return found ?? (await findAuthUserInMirrorByEmail(normalized));
+    } catch (error) {
+      if (isPostgresQuotaOrUnavailableError(error)) {
+        markPostgresUnavailable(error);
+        return findAuthUserInMirrorByEmail(normalized);
+      }
+      throw error;
+    }
   }
   const users = await listJsonUsers();
   return (
@@ -395,25 +463,35 @@ export async function findPersistedUserByEmail(email: string): Promise<StoredUse
       (user) =>
         (user.normalizedEmail ?? user.email).toLowerCase() === normalized ||
         user.email.toLowerCase() === normalized,
-    ) ?? null
+    ) ?? (await findAuthUserInMirrorByEmail(normalized))
   );
 }
 
 export async function findPersistedUserById(id: string): Promise<StoredUser | null> {
   await initAuthStore();
   if (driver === "postgres") {
-    const pool = await getPostgresPool();
-    const result = await pool.query(
-      `SELECT id, normalized_email, password_hash, account_status, account_type, created_at, payload
-       FROM auth_users
-       WHERE id = $1
-       LIMIT 1`,
-      [id],
-    );
-    return result.rows[0] ? rowToUser(result.rows[0]) : null;
+    try {
+      const pool = await getPostgresPool();
+      const result = await pool.query(
+        `SELECT id, normalized_email, password_hash, account_status, account_type, created_at, payload
+         FROM auth_users
+         WHERE id = $1
+         LIMIT 1`,
+        [id],
+      );
+      const found = result.rows[0] ? rowToUser(result.rows[0]) : null;
+      if (found) void upsertAuthUserMirror(found);
+      return found ?? (await findAuthUserInMirrorById(id));
+    } catch (error) {
+      if (isPostgresQuotaOrUnavailableError(error)) {
+        markPostgresUnavailable(error);
+        return findAuthUserInMirrorById(id);
+      }
+      throw error;
+    }
   }
   const users = await listJsonUsers();
-  return users.find((user) => user.id === id) ?? null;
+  return users.find((user) => user.id === id) ?? (await findAuthUserInMirrorById(id));
 }
 
 export async function persistUser(user: StoredUser): Promise<StoredUser> {
@@ -453,6 +531,7 @@ export async function persistUser(user: StoredUser): Promise<StoredUser> {
     if (normalized.passwordHash && stored.passwordHash !== normalized.passwordHash) {
       throw new AuthStoreError("AUTH_STORE_WRITE_VERIFY_FAILED");
     }
+    void upsertAuthUserMirror(stored);
     return stored;
   }
 
@@ -473,6 +552,7 @@ export async function persistUser(user: StoredUser): Promise<StoredUser> {
     if (!stored) {
       throw new AuthStoreError("AUTH_STORE_WRITE_VERIFY_FAILED");
     }
+    void upsertAuthUserMirror(stored);
     return stored;
   });
 }
