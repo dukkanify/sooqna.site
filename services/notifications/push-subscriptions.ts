@@ -1,5 +1,8 @@
 import type { PushSubscriptionRecord } from "@/types/domain/notification";
-import { getOptionalPostgresPool } from "@/services/db/postgres";
+import {
+  getOptionalPostgresPool,
+  isPostgresQuotaOrUnavailableError,
+} from "@/services/db/postgres";
 import { loadCollection, saveCollection } from "@/services/payments/data-store";
 
 const FILE = "push-subscriptions.json";
@@ -8,24 +11,31 @@ const TABLE = "push_subscriptions";
 let tableReady = false;
 
 async function ensureTable(): Promise<boolean> {
-  const pool = await getOptionalPostgresPool();
-  if (!pool) return false;
-  if (tableReady) return true;
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS ${TABLE} (
-      endpoint TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      auth TEXT NOT NULL,
-      p256dh TEXT NOT NULL,
-      user_agent TEXT,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-  await pool.query(
-    `CREATE INDEX IF NOT EXISTS push_subscriptions_user_idx ON ${TABLE} (user_id)`,
-  );
-  tableReady = true;
-  return true;
+  try {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) return false;
+    if (tableReady) return true;
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${TABLE} (
+        endpoint TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        p256dh TEXT NOT NULL,
+        user_agent TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS push_subscriptions_user_idx ON ${TABLE} (user_id)`,
+    );
+    tableReady = true;
+    return true;
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) {
+      console.error("[Sooqna Notify] push_subscriptions ensure failed", error);
+    }
+    return false;
+  }
 }
 
 function rowToSubscription(row: Record<string, unknown>): PushSubscriptionRecord {
@@ -48,13 +58,19 @@ export async function listPushSubscriptions(
   userId: string,
 ): Promise<PushSubscriptionRecord[]> {
   if (await ensureTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) return [];
-    const result = await pool.query(
-      `SELECT * FROM ${TABLE} WHERE user_id = $1 ORDER BY created_at DESC`,
-      [userId],
-    );
-    return result.rows.map(rowToSubscription);
+    try {
+      const pool = await getOptionalPostgresPool();
+      if (!pool) return [];
+      const result = await pool.query(
+        `SELECT * FROM ${TABLE} WHERE user_id = $1 ORDER BY created_at DESC`,
+        [userId],
+      );
+      return result.rows.map(rowToSubscription);
+    } catch (error) {
+      if (!isPostgresQuotaOrUnavailableError(error)) {
+        console.error("[Sooqna Notify] list push subscriptions failed", error);
+      }
+    }
   }
 
   const subscriptions = await loadCollection<PushSubscriptionRecord>(FILE);
@@ -67,31 +83,37 @@ export async function savePushSubscription(
   const createdAt = new Date().toISOString();
 
   if (await ensureTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) {
-      throw new Error("PUSH_SUBSCRIPTIONS_UNAVAILABLE");
+    try {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        await pool.query(
+          `INSERT INTO ${TABLE} (endpoint, user_id, auth, p256dh, user_agent, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6::timestamptz)
+           ON CONFLICT (endpoint) DO UPDATE SET
+             user_id = EXCLUDED.user_id,
+             auth = EXCLUDED.auth,
+             p256dh = EXCLUDED.p256dh,
+             user_agent = EXCLUDED.user_agent`,
+          [
+            input.endpoint,
+            input.userId,
+            input.keys.auth,
+            input.keys.p256dh,
+            input.userAgent ?? null,
+            createdAt,
+          ],
+        );
+        return {
+          ...input,
+          createdAt,
+        };
+      }
+    } catch (error) {
+      if (!isPostgresQuotaOrUnavailableError(error)) {
+        console.error("[Sooqna Notify] save push subscription failed", error);
+      }
+      // Fall through to JSON so subscribe does not 500 during Neon quota outages.
     }
-    await pool.query(
-      `INSERT INTO ${TABLE} (endpoint, user_id, auth, p256dh, user_agent, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6::timestamptz)
-       ON CONFLICT (endpoint) DO UPDATE SET
-         user_id = EXCLUDED.user_id,
-         auth = EXCLUDED.auth,
-         p256dh = EXCLUDED.p256dh,
-         user_agent = EXCLUDED.user_agent`,
-      [
-        input.endpoint,
-        input.userId,
-        input.keys.auth,
-        input.keys.p256dh,
-        input.userAgent ?? null,
-        createdAt,
-      ],
-    );
-    return {
-      ...input,
-      createdAt,
-    };
   }
 
   const subscriptions = await loadCollection<PushSubscriptionRecord>(FILE);
@@ -115,10 +137,17 @@ export async function savePushSubscription(
 
 export async function deletePushSubscription(endpoint: string): Promise<void> {
   if (await ensureTable()) {
-    const pool = await getOptionalPostgresPool();
-    if (!pool) return;
-    await pool.query(`DELETE FROM ${TABLE} WHERE endpoint = $1`, [endpoint]);
-    return;
+    try {
+      const pool = await getOptionalPostgresPool();
+      if (pool) {
+        await pool.query(`DELETE FROM ${TABLE} WHERE endpoint = $1`, [endpoint]);
+        return;
+      }
+    } catch (error) {
+      if (!isPostgresQuotaOrUnavailableError(error)) {
+        console.error("[Sooqna Notify] delete push subscription failed", error);
+      }
+    }
   }
 
   const subscriptions = await loadCollection<PushSubscriptionRecord>(FILE);

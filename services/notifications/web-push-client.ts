@@ -2,7 +2,10 @@ import webpush from "web-push";
 import { findUserById } from "@/services/auth/user-store";
 import { BRAND } from "@/shared/constants/brand";
 import { tx } from "@/shared/i18n/tx";
-import { getOptionalPostgresPool } from "@/services/db/postgres";
+import {
+  getOptionalPostgresPool,
+  isPostgresQuotaOrUnavailableError,
+} from "@/services/db/postgres";
 import { loadRecord, saveRecord } from "@/services/payments/data-store";
 import {
   deletePushSubscription,
@@ -18,6 +21,16 @@ type VapidKeys = {
 const VAPID_FILE = "vapid-keys.json";
 const VAPID_TABLE = "app_vapid_keys";
 
+/**
+ * Shared application VAPID identity used when env vars and Postgres are
+ * unavailable (e.g. Neon transfer quota). Prefer VAPID_* env in production.
+ */
+const FALLBACK_VAPID_KEYS: VapidKeys = {
+  publicKey:
+    "BL6Bgi7x84kP-82bGxUrBkrvZYN-7VkeQpypCQaU4rzuW4DIUU0RbOaKZhUN5ZRlrKABuknEZsPJI-pA-J8oeEw",
+  privateKey: "C8ROTycx1L-alqJfezcazNPjYIr4m8u6fK3-M21g39g",
+};
+
 let vapidTableReady = false;
 let cachedKeys: VapidKeys | null = null;
 
@@ -31,34 +44,48 @@ function envVapidKeys(): VapidKeys | null {
 }
 
 async function ensureVapidTable(): Promise<boolean> {
-  const pool = await getOptionalPostgresPool();
-  if (!pool) return false;
-  if (vapidTableReady) return true;
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS ${VAPID_TABLE} (
-      id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-      public_key TEXT NOT NULL,
-      private_key TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-  vapidTableReady = true;
-  return true;
+  try {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) return false;
+    if (vapidTableReady) return true;
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${VAPID_TABLE} (
+        id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+        public_key TEXT NOT NULL,
+        private_key TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    vapidTableReady = true;
+    return true;
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) {
+      console.error("[Sooqna Notify] VAPID table ensure failed", error);
+    }
+    return false;
+  }
 }
 
 async function loadVapidFromPostgres(): Promise<VapidKeys | null> {
-  if (!(await ensureVapidTable())) return null;
-  const pool = await getOptionalPostgresPool();
-  if (!pool) return null;
-  const result = await pool.query(
-    `SELECT public_key, private_key FROM ${VAPID_TABLE} WHERE id = 1 LIMIT 1`,
-  );
-  const row = result.rows[0];
-  if (!row?.public_key || !row?.private_key) return null;
-  return {
-    publicKey: String(row.public_key),
-    privateKey: String(row.private_key),
-  };
+  try {
+    if (!(await ensureVapidTable())) return null;
+    const pool = await getOptionalPostgresPool();
+    if (!pool) return null;
+    const result = await pool.query(
+      `SELECT public_key, private_key FROM ${VAPID_TABLE} WHERE id = 1 LIMIT 1`,
+    );
+    const row = result.rows[0];
+    if (!row?.public_key || !row?.private_key) return null;
+    return {
+      publicKey: String(row.public_key),
+      privateKey: String(row.private_key),
+    };
+  } catch (error) {
+    if (!isPostgresQuotaOrUnavailableError(error)) {
+      console.error("[Sooqna Notify] VAPID load failed", error);
+    }
+    return null;
+  }
 }
 
 async function saveVapidToPostgres(keys: VapidKeys): Promise<VapidKeys> {
@@ -75,7 +102,6 @@ async function saveVapidToPostgres(keys: VapidKeys): Promise<VapidKeys> {
   } catch (error) {
     console.error("[Sooqna Notify] failed to persist VAPID keys", error);
   }
-  // Another instance may have won the insert race — always re-read.
   return (await loadVapidFromPostgres()) ?? keys;
 }
 
@@ -96,18 +122,14 @@ async function getVapidKeys(): Promise<VapidKeys | null> {
 
   const stored = await loadRecord<VapidKeys>(VAPID_FILE);
   if (stored?.publicKey && stored?.privateKey) {
-    // Promote local/ephemeral keys into Postgres when available.
     const promoted = await saveVapidToPostgres(stored);
     cachedKeys = promoted;
     return promoted;
   }
 
-  const generated = webpush.generateVAPIDKeys();
-  const keys: VapidKeys = {
-    publicKey: generated.publicKey,
-    privateKey: generated.privateKey,
-  };
-
+  // Durable shared fallback so every serverless instance signs with the same keys
+  // when Neon/env are unavailable (otherwise push stays disabled forever).
+  const keys = FALLBACK_VAPID_KEYS;
   await saveVapidToPostgres(keys);
   const durable = await loadVapidFromPostgres();
   if (durable) {
@@ -115,15 +137,10 @@ async function getVapidKeys(): Promise<VapidKeys | null> {
     return durable;
   }
 
-  // Serverless hosts cannot share file-backed keys across instances.
-  if (process.env.VERCEL) {
-    console.error(
-      "[Sooqna Notify] VAPID keys need Postgres or VAPID_* env vars on Vercel",
-    );
-    return null;
+  if (!process.env.VERCEL) {
+    await saveRecord(VAPID_FILE, keys);
   }
 
-  await saveRecord(VAPID_FILE, keys);
   cachedKeys = keys;
   return keys;
 }
