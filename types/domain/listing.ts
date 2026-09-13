@@ -141,5 +141,6 @@ export type ListingSearchFilters = {
   minPrice?: number;
   premium?: boolean;
   query?: string;
+  sellerId?: string;
   sort?: "newest" | "price_asc" | "price_desc";
 };

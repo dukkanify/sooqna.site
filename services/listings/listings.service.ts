@@ -91,6 +91,7 @@ export async function searchListings(
     maxPrice: filters.maxPrice,
     minPrice: filters.minPrice,
     query: normalizedQuery,
+    sellerId: filters.sellerId,
     slim: "card",
     sort: filters.sort ?? "newest",
     status: "active",
