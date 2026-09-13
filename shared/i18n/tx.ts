@@ -101,12 +101,66 @@ const UNIT_SUFFIXES: Array<[RegExp, string]> = [
   [/ كم$/u, " km"],
 ];
 
+/** UAE emirates + all-emirates labels — used to detect location compounds. */
+const UAE_PLACE_ANCHORS = new Set([
+  "دبي",
+  "أبوظبي",
+  "الشارقة",
+  "عجمان",
+  "أم القيوين",
+  "رأس الخيمة",
+  "الفجيرة",
+  "جميع الإمارات",
+  "كل الإمارات",
+  "الإمارات",
+  "الإمارات العربية المتحدة",
+]);
+
 function lookup(text: string): string | undefined {
   const direct = EN[text];
   if (direct) return direct;
   const collapsed = text.replace(/\s+/g, " ").trim();
   if (collapsed !== text) return EN[collapsed];
   return undefined;
+}
+
+/** Translate area / emirate labels segment-by-segment for English locale. */
+export function txLocation(locale: AppLocale, text: string): string {
+  if (locale !== "en" || !text) return text;
+  const direct = lookup(text);
+  if (direct) return direct;
+
+  const separators: Array<[RegExp, string]> = [
+    [/\s*،\s*/u, ", "],
+    [/\s*,\s*/u, ", "],
+    [/\s*•\s*/u, " • "],
+    [/\s*·\s*/u, " · "],
+  ];
+
+  for (const [pattern, joinWith] of separators) {
+    if (!pattern.test(text)) continue;
+    const parts = text.split(pattern).map((part) => part.trim()).filter(Boolean);
+    if (parts.length < 2) continue;
+    const translated = parts.map((part) => lookup(part) ?? part);
+    if (translated.some((part, index) => part !== parts[index])) {
+      return translated.join(joinWith);
+    }
+  }
+
+  return text;
+}
+
+function translatePlaceCompound(text: string): string | undefined {
+  if (!text.includes("، ") && !text.includes(", ")) return undefined;
+  const parts = text.split(/\s*[،,]\s*/u).map((part) => part.trim()).filter(Boolean);
+  if (parts.length < 2) return undefined;
+  const looksLikeLocation = parts.some(
+    (part) => UAE_PLACE_ANCHORS.has(part) || Boolean(lookup(part)),
+  );
+  if (!looksLikeLocation) return undefined;
+  const translated = parts.map((part) => lookup(part) ?? part);
+  if (translated.every((part, index) => part === parts[index])) return undefined;
+  return translated.join(", ");
 }
 
 function translateGuillemets(text: string): string | undefined {
@@ -176,16 +230,25 @@ export function tx(locale: AppLocale, text: string): string {
     return unitHit ?? withUnits;
   }
 
+  const place = translatePlaceCompound(text);
+  if (place) return place;
+
   if (text.includes(" · ")) {
     return text
       .split(" · ")
-      .map((part) => lookup(part) ?? part)
+      .map((part) => tx(locale, part))
       .join(" · ");
+  }
+  if (text.includes(" • ")) {
+    return text
+      .split(" • ")
+      .map((part) => tx(locale, part))
+      .join(" • ");
   }
   if (text.includes(" — ")) {
     return text
       .split(" — ")
-      .map((part) => lookup(part) ?? part)
+      .map((part) => tx(locale, part))
       .join(" — ");
   }
   if (text.includes("، ")) {

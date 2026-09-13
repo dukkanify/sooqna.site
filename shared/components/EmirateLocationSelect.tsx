@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useSyncExternalStore } from "react";
 import { cities, ALL_EMIRATES_NAME, ALL_EMIRATES_LEGACY_NAME, isAllEmiratesSelection } from "@/shared/constants/locations";
 import { Icon } from "@/shared/ui/Icon";
+import { useTx } from "@/shared/i18n/useTx";
 
 type LocationOption = { id: string; name: string };
 
@@ -63,6 +64,7 @@ export function EmirateLocationSelect({
   variant = "mobile",
 }: EmirateLocationSelectProps) {
   const router = useRouter();
+  const t = useTx();
   const options = useMemo(() => buildEmirateOptions(), []);
   const city = useSyncExternalStore(
     subscribeEmirate,
@@ -89,16 +91,16 @@ export function EmirateLocationSelect({
         className={`relative inline-flex min-h-10 max-w-[11rem] items-center gap-2 rounded-full border border-border bg-surface-muted px-3 py-1.5 ${className}`.trim()}
       >
         <Icon className="shrink-0 text-[#B8955F]" name="map" size={14} />
-        <span className="min-w-0 truncate text-xs font-bold text-ink">{city}</span>
+        <span className="min-w-0 truncate text-xs font-bold text-ink">{t(city)}</span>
         <select
-          aria-label="الإمارة"
+          aria-label={t("الإمارة")}
           className="absolute inset-0 cursor-pointer opacity-0"
           onChange={(event) => handleChange(event.target.value)}
           value={city}
         >
           {options.map((item) => (
             <option key={item.id} value={item.name}>
-              {item.name}
+              {t(item.name)}
             </option>
           ))}
         </select>
@@ -110,16 +112,16 @@ export function EmirateLocationSelect({
   return (
     <label className={`mobile-home-header__location ${className}`.trim()}>
       <Icon className="mobile-home-header__location-icon" name="map" size={14} />
-      <span className="mobile-home-header__location-value">{city}</span>
+      <span className="mobile-home-header__location-value">{t(city)}</span>
       <select
-        aria-label="الإمارة"
+        aria-label={t("الإمارة")}
         className="mobile-home-header__location-select"
         onChange={(event) => handleChange(event.target.value)}
         value={city}
       >
         {options.map((item) => (
           <option key={item.id} value={item.name}>
-            {item.name}
+            {t(item.name)}
           </option>
         ))}
       </select>

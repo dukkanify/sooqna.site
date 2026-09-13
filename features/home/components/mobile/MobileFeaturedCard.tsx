@@ -17,6 +17,7 @@ import {
   getListingImages,
   getListingLocation,
 } from "@/features/listings/components/listing-card.utils";
+import { useTx } from "@/shared/i18n/useTx";
 
 type MobileFeaturedCardProps = {
   imageFit?: "contain" | "cover";
@@ -29,6 +30,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
   listing,
   priority = false,
 }: MobileFeaturedCardProps) {
+  const t = useTx();
   const href = getListingHref(listing);
   const imageUrl = getListingImageUrl(listing);
   const location = getListingLocation(listing);
@@ -85,7 +87,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
         </Link>
 
         <p className="mobile-home-featured-card__meta">
-          {location} • {formatPostedTime(listing.postedAt)}
+          {t(location)} • {t(formatPostedTime(listing.postedAt))}
         </p>
 
         {(listing.views ?? 0) > 0 ? (

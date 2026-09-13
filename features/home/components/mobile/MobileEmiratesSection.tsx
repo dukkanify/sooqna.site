@@ -5,6 +5,7 @@ import { Icon } from "@/shared/ui/Icon";
 import { getUaeEmiratesCards } from "@/features/home/shared/uae-emirates";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { getRequestLocale } from "@/shared/i18n/locale";
+import { tx } from "@/shared/i18n/tx";
 import { MobileSectionHeader } from "./MobileSectionHeader";
 
 export async function MobileEmiratesSection() {
@@ -14,14 +15,14 @@ export async function MobileEmiratesSection() {
   ]);
 
   return (
-    <section aria-label="الإمارات الأكثر شعبية" className="mobile-home-emirates">
+    <section aria-label={tx(locale, "الإمارات الأكثر شعبية")} className="mobile-home-emirates">
       <MobileSectionHeader title="الإمارات الأكثر شعبية" />
       <p className="mobile-home-emirates__desc">
-        من دبي إلى الفجيرة — تصفح الإعلانات في إمارتك.
+        {tx(locale, "من دبي إلى الفجيرة — تصفح الإعلانات في إمارتك.")}
       </p>
 
       <DragScrollRow
-        ariaLabel="الإمارات الأكثر شعبية"
+        ariaLabel={tx(locale, "الإمارات الأكثر شعبية")}
         className="mobile-home-emirates__track mobile-home-scroll flex w-full max-w-full flex-nowrap overflow-x-auto overscroll-x-contain"
       >
         {emirates.map((emirate) => (
@@ -31,7 +32,7 @@ export async function MobileEmiratesSection() {
             href={emirate.href}
           >
             <AppImage
-              alt={`${emirate.name} — ${emirate.landmark}`}
+              alt={`${tx(locale, emirate.name)} — ${tx(locale, emirate.landmark)}`}
               className="mobile-home-emirates__image transition duration-500 group-active:scale-[1.02]"
               fallback="emirates"
               fill
@@ -44,7 +45,7 @@ export async function MobileEmiratesSection() {
                 {listingCountLabel(emirate.count, locale)}
               </span>
               <span className="mobile-home-emirates__footer">
-                <span className="mobile-home-emirates__name">{emirate.name}</span>
+                <span className="mobile-home-emirates__name">{tx(locale, emirate.name)}</span>
                 <span className="mobile-home-emirates__arrow">
                   <Icon name="arrow-left" size={14} />
                 </span>

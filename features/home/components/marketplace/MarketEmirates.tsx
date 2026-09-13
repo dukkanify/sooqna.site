@@ -5,6 +5,7 @@ import { Icon } from "@/shared/ui/Icon";
 import { getUaeEmiratesCards } from "@/features/home/shared/uae-emirates";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { getRequestLocale } from "@/shared/i18n/locale";
+import { tx } from "@/shared/i18n/tx";
 
 export async function MarketEmirates() {
   const [emirates, locale] = await Promise.all([
@@ -18,15 +19,15 @@ export async function MarketEmirates() {
         <div className="mb-3 max-w-2xl md:mb-4">
           <p className="text-xs font-bold text-[#B8955F]">Emirates</p>
           <h2 className="mt-0.5 text-xl font-bold tracking-tight text-ink md:text-2xl">
-            الإمارات الأكثر شعبية
+            {tx(locale, "الإمارات الأكثر شعبية")}
           </h2>
           <p className="mt-1 text-sm leading-6 text-muted">
-            من دبي إلى الفجيرة — تصفح الإعلانات في إمارتك.
+            {tx(locale, "من دبي إلى الفجيرة — تصفح الإعلانات في إمارتك.")}
           </p>
         </div>
 
         <DragScrollRow
-          ariaLabel="الإمارات الأكثر شعبية"
+          ariaLabel={tx(locale, "الإمارات الأكثر شعبية")}
           className="market-emirates-rail -mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:-mx-6 md:gap-3 md:px-6"
         >
           {emirates.map((emirate) => (
@@ -36,7 +37,7 @@ export async function MarketEmirates() {
               href={emirate.href}
             >
               <AppImage
-                alt={`${emirate.name} — ${emirate.landmark}`}
+                alt={`${tx(locale, emirate.name)} — ${tx(locale, emirate.landmark)}`}
                 className="object-cover transition duration-500 group-hover:scale-[1.03]"
                 fallback="emirates"
                 fill
@@ -50,7 +51,7 @@ export async function MarketEmirates() {
                 </p>
                 <div className="mt-0.5 flex items-center justify-between gap-2">
                   <h3 className="text-base font-bold text-white sm:text-lg">
-                    {emirate.name}
+                    {tx(locale, emirate.name)}
                   </h3>
                   <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white/15 text-white">
                     <Icon name="arrow-left" size={14} />
