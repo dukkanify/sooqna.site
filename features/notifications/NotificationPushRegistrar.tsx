@@ -32,12 +32,23 @@ async function syncPushSubscription() {
   if (!publicKey) return;
 
   const registration = await navigator.serviceWorker.ready;
+  const storedKey =
+    typeof localStorage !== "undefined" ? localStorage.getItem("sooqna-vapid-public") : null;
   let subscription = await registration.pushManager.getSubscription();
+  if (subscription && storedKey && storedKey !== publicKey) {
+    await subscription.unsubscribe().catch(() => undefined);
+    subscription = null;
+  }
+
   if (!subscription) {
     subscription = await registration.pushManager.subscribe({
       applicationServerKey: urlBase64ToUint8Array(publicKey),
       userVisibleOnly: true,
     });
+  }
+
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem("sooqna-vapid-public", publicKey);
   }
 
   const json = subscription.toJSON();

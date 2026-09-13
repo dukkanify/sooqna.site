@@ -11,7 +11,7 @@ self.addEventListener("push", (event) => {
   let payload = {
     title: "سوقنا",
     body: "لديك تنبيه جديد",
-    href: "/profile#notifications",
+    href: "/notifications",
     id: "sooqna-notification",
   };
 
@@ -27,7 +27,7 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(payload.title, {
       body: payload.body,
       badge: "/brand/app-icon.svg",
-      data: { href: payload.href || "/profile#notifications" },
+      data: { href: payload.href || "/notifications" },
       dir: "rtl",
       icon: "/brand/app-icon.svg",
       lang: "ar",
@@ -38,7 +38,7 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = event.notification.data?.href || "/profile#notifications";
+  const target = event.notification.data?.href || "/notifications";
   const url = new URL(target, self.location.origin).href;
 
   event.waitUntil(

@@ -94,10 +94,15 @@
 .notify-bell__item {
   display: grid;
   gap: 0.15rem;
+  width: 100%;
+  border: 0;
   border-radius: 0.85rem;
   padding: 0.7rem 0.75rem;
+  background: transparent;
   color: inherit;
+  font: inherit;
   text-align: start;
+  cursor: pointer;
 }
 
 .notify-bell__item--unread {

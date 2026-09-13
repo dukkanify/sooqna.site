@@ -103,7 +103,8 @@ export function NotificationBell({
     };
     const timer = window.setInterval(() => {
       if (document.visibilityState !== "visible") return;
-      void refresh({ announce: true });
+      // full+announce: need the newest row title/body for the system toast
+      void refresh({ announce: true, full: true });
     }, POLL_MS);
 
     window.addEventListener(STORAGE_EVENTS.notificationsChange, onChange);
@@ -261,9 +262,15 @@ export function NotificationBell({
                         {content}
                       </Link>
                     ) : (
-                      <div className={`notify-bell__item${isFresh ? " notify-bell__item--unread" : ""}`}>
+                      <button
+                        className={`notify-bell__item${isFresh ? " notify-bell__item--unread" : ""}`}
+                        onClick={() => {
+                          void markItemRead(item);
+                        }}
+                        type="button"
+                      >
                         {content}
-                      </div>
+                      </button>
                     )}
                   </li>
                 );

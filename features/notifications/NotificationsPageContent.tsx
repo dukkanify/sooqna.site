@@ -41,6 +41,15 @@ export function NotificationsPageContent() {
     return () => window.clearTimeout(timeoutId);
   }, [load]);
 
+  async function markItemRead(item: AppNotification) {
+    if (item.read) return;
+    const nextUnread = await markNotificationsRead([item.id]);
+    setUnread(nextUnread);
+    setItems((current) =>
+      current.map((row) => (row.id === item.id ? { ...row, read: true } : row)),
+    );
+  }
+
   async function markAllRead() {
     const nextUnread = await markNotificationsRead();
     setUnread(nextUnread);
@@ -94,11 +103,25 @@ export function NotificationsPageContent() {
                 }`}
               >
                 {item.href ? (
-                  <Link className="block" href={item.href}>
+                  <Link
+                    className="block"
+                    href={item.href}
+                    onClick={() => {
+                      void markItemRead(item);
+                    }}
+                  >
                     {content}
                   </Link>
                 ) : (
-                  content
+                  <button
+                    className="block w-full text-start"
+                    onClick={() => {
+                      void markItemRead(item);
+                    }}
+                    type="button"
+                  >
+                    {content}
+                  </button>
                 )}
               </li>
             );
