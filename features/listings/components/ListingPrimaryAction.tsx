@@ -269,7 +269,17 @@ export function SellerContactActions({
       {hidePhone || !tel ? null : phoneRevealed ? (
         <Button href={tel} variant="secondary">
           <Icon className="shrink-0" name="phone-call" size={16} />
-          اتصال{displayPhone ? ` — ${displayPhone}` : ""}
+          <span>
+            اتصال
+            {displayPhone ? (
+              <>
+                {" — "}
+                <span className="tabular-nums" dir="ltr">
+                  {displayPhone}
+                </span>
+              </>
+            ) : null}
+          </span>
         </Button>
       ) : (
         <Button
