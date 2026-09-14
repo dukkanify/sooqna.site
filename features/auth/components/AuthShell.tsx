@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AuthBrandTitle } from "@/features/auth/components/AuthBrandTitle";
 import { BrandLogo } from "@/shared/components/BrandLogo";
 import { Icon } from "@/shared/ui/Icon";
 import { getAuthTrustPoints } from "@/services/content";
@@ -23,8 +24,6 @@ export async function AuthShell({
   title,
 }: AuthShellProps) {
   const trustPoints = await getAuthTrustPoints();
-  const titleParts = title.split("سوقنا");
-  const hasBrandInTitle = title.includes("سوقنا");
 
   return (
     <section className="auth-shell app-container page-padding">
@@ -37,17 +36,7 @@ export async function AuthShell({
             منصة إماراتية موثوقة
           </span>
 
-          <h1 className="auth-shell__title">
-            {hasBrandInTitle ? (
-              <>
-                {titleParts[0]}
-                <span className="auth-shell__title-accent">سوقنا</span>
-                {titleParts[1]}
-              </>
-            ) : (
-              title
-            )}
-          </h1>
+          <AuthBrandTitle title={title} />
 
           <p className="auth-shell__description">{description}</p>
 

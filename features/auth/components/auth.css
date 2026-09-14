@@ -1,7 +1,7 @@
 .auth-page {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgb(201 164 92 / 8%), transparent 55%),
-    linear-gradient(180deg, #faf9f7 0%, #f4f7fb 48%, #faf9f7 100%);
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgb(201 164 92 / 10%), transparent 55%),
+    var(--color-background);
 }
 
 .auth-shell {
@@ -68,35 +68,36 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid rgb(255 255 255 / 12%);
+  border: 1px solid rgb(255 255 255 / 18%);
   border-radius: 999px;
-  background: rgb(255 255 255 / 6%);
-  padding: 0.3125rem 0.75rem;
-  font-size: 0.6875rem;
+  background: rgb(255 255 255 / 10%);
+  padding: 0.375rem 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: rgb(255 255 255 / 82%);
+  color: #fff;
   backdrop-filter: blur(8px);
 }
 
 .auth-shell__title {
   margin-top: 1.5rem;
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-size: clamp(1.85rem, 5vw, 2.55rem);
   font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: #fff;
+  letter-spacing: 0;
 }
 
 .auth-shell__title-accent {
-  color: #d4b87a;
+  color: #f0d9a0;
 }
 
 .auth-shell__description {
   margin-top: 1rem;
   max-width: 30rem;
-  font-size: clamp(0.875rem, 2.8vw, 1rem);
+  font-size: clamp(0.9375rem, 2.8vw, 1.0625rem);
   font-weight: 500;
-  line-height: 1.85;
-  color: rgb(255 255 255 / 74%);
+  line-height: 1.9;
+  color: rgb(255 255 255 / 92%);
 }
 
 .auth-shell__points {
@@ -111,10 +112,10 @@
   gap: 0.75rem;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
   padding-bottom: 0.625rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.6;
-  color: rgb(255 255 255 / 88%);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.7;
+  color: #fff;
 }
 
 .auth-shell__point:last-child {
@@ -140,14 +141,25 @@
 }
 
 .auth-shell__card {
-  border: 1px solid rgb(15 23 42 / 6%);
+  /* Keep the form readable even when the site theme is dark:
+     the card is a light surface, so ink tokens must stay navy. */
+  --color-primary: #0b1628;
+  --color-ink: #0b1628;
+  --color-muted: #3f3a36;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f3f0ea;
+  --color-border: #cfc6b8;
+  --color-error: #b91c1c;
+  --color-error-soft: #fef2f2;
+  --color-secondary: #c9a962;
+  color: var(--color-ink);
+  border: 1px solid rgb(15 23 42 / 10%);
   border-radius: clamp(1.25rem, 3vw, 1.75rem);
-  background: rgb(255 255 255 / 92%);
+  background: #fff;
   padding: clamp(1.5rem, 4.5vw, 2.25rem);
   box-shadow:
     0 1px 0 rgb(255 255 255 / 90%) inset,
-    0 20px 50px rgb(15 23 42 / 7%);
-  backdrop-filter: blur(16px);
+    0 20px 50px rgb(15 23 42 / 10%);
 }
 
 .auth-shell__card-accent {
@@ -199,17 +211,19 @@
 
 .auth-shell__footer {
   margin-top: 1.75rem;
-  border-top: 1px solid rgb(15 23 42 / 6%);
+  border-top: 1px solid rgb(15 23 42 / 10%);
   padding-top: 1.25rem;
   text-align: center;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-muted, #6b7280);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-muted);
 }
 
 .auth-shell__footer a {
-  font-weight: 700;
-  color: var(--color-primary, #0f172a);
+  font-weight: 800;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   transition: color 180ms ease;
 }
 
@@ -222,28 +236,44 @@
 }
 
 .auth-form__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #a88642;
+  color: #6b4e1e;
 }
 
 .auth-form__title {
   margin-top: 0.375rem;
-  font-size: clamp(1.375rem, 4vw, 1.625rem);
+  font-size: clamp(1.5rem, 4vw, 1.75rem);
   font-weight: 800;
-  line-height: 1.25;
-  color: var(--color-ink, #0f172a);
-  letter-spacing: -0.02em;
+  line-height: 1.4;
+  color: var(--color-ink);
+  letter-spacing: 0;
 }
 
 .auth-form__subtitle {
   margin-top: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.7;
-  color: var(--color-muted, #6b7280);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.75;
+  color: var(--color-muted);
+}
+
+.auth-shell__card .auth-form input {
+  border-color: var(--color-border);
+  background: #fff;
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.auth-shell__card .auth-form input::placeholder {
+  color: #6b6560;
+  opacity: 1;
+}
+
+.auth-shell__card .text-muted {
+  color: var(--color-muted);
 }
 
 .auth-form {
@@ -269,8 +299,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
 .auth-form__links a,
