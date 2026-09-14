@@ -114,7 +114,12 @@ export function OtpVerification({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, code, purpose, next: nextPath }),
+        body: JSON.stringify({
+          email,
+          code,
+          purpose,
+          ...(nextPath ? { next: nextPath } : {}),
+        }),
       });
       const data = await response.json();
 

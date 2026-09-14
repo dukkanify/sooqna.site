@@ -14,6 +14,7 @@ import { persistSessionCookie } from "@/services/auth/session-sync";
 import { syncFavoritesAfterLogin } from "@/services/favorites/favorites-client";
 import { setSessionUser } from "@/services/storage";
 import { getSafeNextPath } from "@/shared/utils/safe-next";
+import { buildLoginPasswordPayload } from "@/features/auth/lib/login-password-payload";
 import { trackAuthEventClient } from "@/services/analytics/auth-events";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { findDemoAccountByIdentifier } from "@/mock/demo-accounts.mock";
@@ -38,7 +39,7 @@ function getLoginErrorMessage(data: { message?: string; error?: string }) {
     );
   }
 
-  return data.message ?? "بيانات الدخول غير صحيحة.";
+  return data.message ?? "تعذر تسجيل الدخول. حاول مرة أخرى.";
 }
 
 type LoginFormProps = {
@@ -64,19 +65,18 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
 
   const completePasswordLogin = useCallback(
     async (nextEmail: string, nextPassword: string) => {
-      const normalizedEmail = nextEmail.trim().toLowerCase();
-      const normalizedPassword = nextPassword.trim();
       const nextParam = new URLSearchParams(window.location.search).get("next");
+      const payload = buildLoginPasswordPayload({
+        email: nextEmail,
+        password: nextPassword,
+        next: nextParam,
+      });
 
       const response = await fetch("/api/auth/login/password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          email: normalizedEmail,
-          password: normalizedPassword,
-          next: nextParam,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await response.json();
       if (!response.ok) {

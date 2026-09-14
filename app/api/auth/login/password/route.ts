@@ -21,13 +21,13 @@ import {
 } from "@/services/auth/auth-messages";
 import { AuthStoreError } from "@/services/auth/user-persistence";
 import { findAuthUserInMirrorByEmail } from "@/services/auth/auth-user-mirror";
-import { getSafeNextPath } from "@/shared/utils/safe-next";
+import { getSafeNextPath, optionalRedirectPathSchema } from "@/shared/utils/safe-next";
 import type { StoredUser } from "@/types/domain/user";
 
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-  next: z.string().optional(),
+  next: optionalRedirectPathSchema,
   accountProof: z.string().min(20).optional(),
   fullName: z.string().min(1).optional(),
   accountType: z.enum(["buyer", "seller", "business", "individual", "company"]).optional(),

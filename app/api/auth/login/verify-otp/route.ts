@@ -6,12 +6,12 @@ import { SESSION_FAILED_MESSAGE } from "@/services/auth/auth-messages";
 import { trackAuthEvent } from "@/services/analytics/auth-events";
 import { setSessionCookie } from "@/services/auth/session-cookie";
 import { findUserByEmail, getRedirectAfterAuth, toUserProfile } from "@/services/auth/user-store";
-import { getSafeNextPath } from "@/shared/utils/safe-next";
+import { getSafeNextPath, optionalRedirectPathSchema } from "@/shared/utils/safe-next";
 
 const schema = z.object({
   code: z.string().length(6),
   email: z.string().email(),
-  next: z.string().optional(),
+  next: optionalRedirectPathSchema,
 });
 
 export async function POST(request: Request) {

@@ -10,11 +10,12 @@ import {
   findUserByEmail,
   getRedirectAfterAuth,
 } from "@/services/auth/user-store";
+import { optionalRedirectPathSchema } from "@/shared/utils/safe-next";
 
 const schema = z.object({
   code: z.string().length(6),
   email: z.string().email(),
-  next: z.string().optional(),
+  next: optionalRedirectPathSchema,
 });
 
 export async function POST(request: Request) {
