@@ -186,8 +186,15 @@ export async function inspectPasswordResetToken(
   return "valid";
 }
 
-export async function consumePasswordResetToken(rawToken: string): Promise<
-  | { ok: true; email: string; userId: string; passwordFingerprint: string }
+/** Validate token and return claims without burning it. Call mark after password write succeeds. */
+export async function resolvePasswordResetToken(rawToken: string): Promise<
+  | {
+      ok: true;
+      email: string;
+      userId: string;
+      passwordFingerprint: string;
+      jti: string;
+    }
   | { ok: false; status: Exclude<PasswordResetTokenStatus, "valid"> }
 > {
   if (!rawToken || rawToken.length < 16) {
@@ -207,12 +214,30 @@ export async function consumePasswordResetToken(rawToken: string): Promise<
     return { ok: false, status: "invalid" };
   }
 
-  await markConsumed(payload.jti);
-
   return {
     ok: true,
     userId: payload.uid,
     email: payload.em,
     passwordFingerprint: payload.pv,
+    jti: payload.jti,
+  };
+}
+
+export async function markPasswordResetTokenConsumed(jti: string): Promise<void> {
+  await markConsumed(jti);
+}
+
+export async function consumePasswordResetToken(rawToken: string): Promise<
+  | { ok: true; email: string; userId: string; passwordFingerprint: string }
+  | { ok: false; status: Exclude<PasswordResetTokenStatus, "valid"> }
+> {
+  const resolved = await resolvePasswordResetToken(rawToken);
+  if (!resolved.ok) return resolved;
+  await markConsumed(resolved.jti);
+  return {
+    ok: true,
+    userId: resolved.userId,
+    email: resolved.email,
+    passwordFingerprint: resolved.passwordFingerprint,
   };
 }

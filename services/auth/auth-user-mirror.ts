@@ -3,6 +3,36 @@ import { loadCollection, saveCollection } from "@/services/payments/data-store";
 
 const MIRROR_FILE = "auth-users-mirror.json";
 
+function passwordUpdatedMs(user: StoredUser | null | undefined): number {
+  const raw = user?.passwordUpdatedAt;
+  if (!raw) return 0;
+  const ms = Date.parse(raw);
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+/** Prefer the copy whose password was changed more recently (emergency vs Postgres). */
+export function preferNewerPasswordUser(
+  primary: StoredUser,
+  secondary: StoredUser | null | undefined,
+): StoredUser {
+  if (!secondary?.passwordHash) return primary;
+  if (!primary.passwordHash) return { ...primary, passwordHash: secondary.passwordHash, passwordUpdatedAt: secondary.passwordUpdatedAt };
+  if (primary.passwordHash === secondary.passwordHash) {
+    return passwordUpdatedMs(secondary) > passwordUpdatedMs(primary)
+      ? { ...primary, passwordUpdatedAt: secondary.passwordUpdatedAt }
+      : primary;
+  }
+  if (passwordUpdatedMs(secondary) > passwordUpdatedMs(primary)) {
+    return {
+      ...primary,
+      passwordHash: secondary.passwordHash,
+      passwordUpdatedAt: secondary.passwordUpdatedAt,
+      sessionVersion: secondary.sessionVersion ?? primary.sessionVersion,
+    };
+  }
+  return primary;
+}
+
 /** Best-effort per-instance mirror so auth can survive short Neon outages. */
 export async function readAuthUserMirror(): Promise<StoredUser[]> {
   try {
@@ -23,11 +53,20 @@ export async function writeAuthUserMirror(users: StoredUser[]): Promise<void> {
 export async function upsertAuthUserMirror(user: StoredUser): Promise<void> {
   const users = await readAuthUserMirror();
   const email = user.email.trim().toLowerCase();
+  const existing =
+    users.find(
+      (item) =>
+        item.id === user.id ||
+        item.email.trim().toLowerCase() === email ||
+        (item.normalizedEmail ?? "").toLowerCase() === email,
+    ) ?? null;
+  // Never clobber a newer emergency password with an older Postgres row.
+  const merged = preferNewerPasswordUser(user, existing);
   const next = [
-    user,
+    merged,
     ...users.filter(
       (item) =>
-        item.id !== user.id &&
+        item.id !== merged.id &&
         item.email.trim().toLowerCase() !== email &&
         (item.normalizedEmail ?? "").toLowerCase() !== email,
     ),
