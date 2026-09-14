@@ -66,6 +66,12 @@ export function DashboardShell({
   const loginNext = activePath || pathname || "/profile";
   const onWalletPage = pathname === "/wallet" || pathname.startsWith("/wallet/");
 
+  function handleLogout() {
+    clearSessionUser();
+    void removeSessionCookie();
+    router.replace("/login");
+  }
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       const sessionUser = getSessionUser();
@@ -109,6 +115,13 @@ export function DashboardShell({
             {link.label}
           </Link>
         ))}
+        <button
+          className="inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-xl)] border border-border bg-surface px-3.5 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+          onClick={handleLogout}
+          type="button"
+        >
+          تسجيل الخروج
+        </button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
@@ -144,11 +157,7 @@ export function DashboardShell({
               ))}
               <button
                 className="mt-2 rounded-[var(--radius-xl)] px-3 py-2.5 text-start text-sm font-medium text-muted transition hover:bg-surface-muted"
-                onClick={() => {
-                  clearSessionUser();
-                  void removeSessionCookie();
-                  router.replace("/login");
-                }}
+                onClick={handleLogout}
                 type="button"
               >
                 تسجيل الخروج
@@ -162,6 +171,15 @@ export function DashboardShell({
         <div>
           <PageHero description={description} eyebrow="لوحة التحكم" title={title} />
           {children}
+          <Card className="mt-6 p-4 lg:hidden" variant="flat">
+            <button
+              className="flex w-full items-center justify-center rounded-[var(--radius-xl)] border border-border bg-surface px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+              onClick={handleLogout}
+              type="button"
+            >
+              تسجيل الخروج
+            </button>
+          </Card>
         </div>
       </div>
     </section>
