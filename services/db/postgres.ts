@@ -76,6 +76,11 @@ export function isPostgresTemporarilyUnavailable(): boolean {
   return Date.now() < postgresDegradedUntil;
 }
 
+/** Clear the degrade window so the next call can reconnect (e.g. password writes). */
+export function clearPostgresDegraded(): void {
+  postgresDegradedUntil = 0;
+}
+
 export function getPostgresConnectionString(): string {
   const direct =
     process.env.DATABASE_URL?.trim() ||

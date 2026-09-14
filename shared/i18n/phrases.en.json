@@ -1066,6 +1066,7 @@
   "تم تحديث توثيق المنتج": "Product documentation updated",
   "تم تحديث كلمة المرور بنجاح.": "Password updated successfully.",
   "تم تحديث كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.": "Password updated successfully. You can sign in now.",
+  "تعذر حفظ كلمة المرور في قاعدة البيانات حاليًا. لم يُستهلك الرابط — أعد المحاولة بعد قليل، أو اطلب رابطًا جديدًا إن استمرت المشكلة.": "Could not save the password to the database right now. The link was not used — try again shortly, or request a new link if the problem continues.",
   "تم تحويل {amount} إلى رصيدك المتاح لطلب «…».": "{amount} was moved to your available balance for “…” .",
   "تم تحويل المبلغ": "Amount released",
   "تم تحويل المبلغ إلى رصيدك المتاح لطلب «…».": "Funds were moved to your available balance for order “…”.",

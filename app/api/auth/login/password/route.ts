@@ -7,13 +7,22 @@ import {
   toUserProfile,
   getRedirectAfterAuth,
   restoreUserWithPasswordProof,
+  saveUser,
 } from "@/services/auth/user-store";
 import { verifyPassword } from "@/services/auth/password.service";
 import { readAccountProofCookie } from "@/services/auth/account-vault";
 import { trackAuthEvent } from "@/services/analytics/auth-events";
-import { INVALID_CREDENTIALS_MESSAGE, PASSWORD_NOT_SET_MESSAGE, ACCOUNT_UNVERIFIED_MESSAGE, ACCOUNT_SUSPENDED_MESSAGE, AUTH_STORE_UNAVAILABLE_MESSAGE } from "@/services/auth/auth-messages";
+import {
+  INVALID_CREDENTIALS_MESSAGE,
+  PASSWORD_NOT_SET_MESSAGE,
+  ACCOUNT_UNVERIFIED_MESSAGE,
+  ACCOUNT_SUSPENDED_MESSAGE,
+  AUTH_STORE_UNAVAILABLE_MESSAGE,
+} from "@/services/auth/auth-messages";
 import { AuthStoreError } from "@/services/auth/user-persistence";
+import { findAuthUserInMirrorByEmail } from "@/services/auth/auth-user-mirror";
 import { getSafeNextPath } from "@/shared/utils/safe-next";
+import type { StoredUser } from "@/types/domain/user";
 
 const schema = z.object({
   email: z.string().email(),
@@ -29,6 +38,35 @@ function passwordMatches(storedHash: string, password: string): boolean {
     return verifyPassword(password, storedHash);
   } catch {
     return false;
+  }
+}
+
+async function reconcileFromMirrorIfNeeded(
+  stored: StoredUser,
+  password: string,
+): Promise<StoredUser | null> {
+  if (stored.passwordHash && passwordMatches(stored.passwordHash, password)) {
+    return stored;
+  }
+  const mirrored = await findAuthUserInMirrorByEmail(stored.email);
+  if (
+    !mirrored?.passwordHash ||
+    mirrored.passwordHash === stored.passwordHash ||
+    !passwordMatches(mirrored.passwordHash, password)
+  ) {
+    return null;
+  }
+  const healed: StoredUser = {
+    ...stored,
+    passwordHash: mirrored.passwordHash,
+    passwordUpdatedAt: mirrored.passwordUpdatedAt ?? new Date().toISOString(),
+    sessionVersion: mirrored.sessionVersion ?? stored.sessionVersion,
+  };
+  try {
+    return await saveUser(healed);
+  } catch (error) {
+    console.error("[Sooqna Auth] login mirror reconcile failed", error);
+    return healed;
   }
 }
 
@@ -79,6 +117,11 @@ export async function POST(request: Request) {
         },
         { status: 403 },
       );
+    }
+
+    if (stored?.passwordHash) {
+      const reconciled = await reconcileFromMirrorIfNeeded(stored, password);
+      if (reconciled) stored = reconciled;
     }
 
     if (stored?.passwordHash && passwordMatches(stored.passwordHash, password)) {

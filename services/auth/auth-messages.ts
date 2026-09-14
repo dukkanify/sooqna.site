@@ -43,3 +43,6 @@ export const PASSWORD_RESET_INVALID_MESSAGE = "رابط إعادة تعيين ك
 
 export const PASSWORD_RESET_SUCCESS_MESSAGE =
   "تم تحديث كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.";
+
+export const PASSWORD_RESET_NOT_DURABLE_MESSAGE =
+  "تعذر حفظ كلمة المرور في قاعدة البيانات حاليًا. لم يُستهلك الرابط — أعد المحاولة بعد قليل، أو اطلب رابطًا جديدًا إن استمرت المشكلة.";

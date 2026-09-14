@@ -5,9 +5,11 @@ import { logProductionConfigIssues } from "@/services/auth/production-config";
 import {
   findAuthUserInMirrorByEmail,
   findAuthUserInMirrorById,
+  preferNewerPasswordUser,
   upsertAuthUserMirror,
 } from "@/services/auth/auth-user-mirror";
 import {
+  clearPostgresDegraded,
   isPostgresQuotaOrUnavailableError,
   isPostgresTemporarilyUnavailable,
   markPostgresUnavailable,
@@ -324,7 +326,42 @@ async function initAuthStore(): Promise<void> {
   await initPromise;
 }
 
+function isDurableAuthDriver(): boolean {
+  if (emergencyMode) return false;
+  if (driver === "postgres") return true;
+  // Local/dev durable JSON under `.data` is acceptable; serverless /tmp is not.
+  if (driver === "json-file" && jsonFilePath && !isEphemeralDir(path.dirname(jsonFilePath))) {
+    return true;
+  }
+  return false;
+}
 
+/**
+ * Password changes must land in a durable store — never only in /tmp emergency.
+ * Retries Postgres once even if this instance is still in the degrade window.
+ */
+export async function requireDurableAuthStore(): Promise<void> {
+  await initAuthStore();
+  if (isDurableAuthDriver()) return;
+
+  clearPostgresDegraded();
+  initialized = false;
+  driver = null;
+  emergencyMode = false;
+  postgresPool = null;
+  jsonCache = null;
+  jsonFilePath = null;
+  initPromise = null;
+
+  await initAuthStore();
+  if (isDurableAuthDriver()) return;
+
+  throw new AuthStoreError("AUTH_STORE_NOT_DURABLE");
+}
+
+export function isAuthStoreEmergencyMode(): boolean {
+  return emergencyMode;
+}
 
 async function initEmergencyMirrorStore(): Promise<void> {
   const dir = path.join("/tmp", "sooqna-auth-emergency");
@@ -392,11 +429,20 @@ async function doInitAuthStore(): Promise<void> {
 
 export async function getAuthPersistenceInfo(): Promise<AuthPersistenceInfo> {
   await initAuthStore();
+  // If this instance is stuck on the emergency mirror after Neon recovered, retry Postgres.
+  if (emergencyMode || isPostgresTemporarilyUnavailable()) {
+    try {
+      await requireDurableAuthStore();
+    } catch {
+      // Still unavailable — report emergency below.
+    }
+  }
   if (driver === "postgres") {
     return {
       driver: "postgres",
       durable: true,
       location: "postgres:auth_users",
+      emergency: emergencyMode || undefined,
     };
   }
   return {
@@ -451,10 +497,24 @@ export async function findPersistedUserByEmail(email: string): Promise<StoredUse
         [normalized],
       );
       const found = result.rows[0] ? rowToUser(result.rows[0]) : null;
+      const mirrored = await findAuthUserInMirrorByEmail(normalized);
       if (found) {
-        void upsertAuthUserMirror(found);
+        // If an emergency reset wrote a newer hash to the mirror, prefer it and heal Postgres.
+        const merged = preferNewerPasswordUser(found, mirrored);
+        if (
+          merged.passwordHash &&
+          found.passwordHash &&
+          merged.passwordHash !== found.passwordHash
+        ) {
+          void persistUser(merged).catch((error) => {
+            console.error("[Sooqna Auth] failed to heal password from mirror", error);
+          });
+        } else {
+          void upsertAuthUserMirror(merged);
+        }
+        return merged;
       }
-      return found ?? (await findAuthUserInMirrorByEmail(normalized));
+      return mirrored;
     } catch (error) {
       if (isPostgresQuotaOrUnavailableError(error)) {
         markPostgresUnavailable(error);
@@ -486,8 +546,23 @@ export async function findPersistedUserById(id: string): Promise<StoredUser | nu
         [id],
       );
       const found = result.rows[0] ? rowToUser(result.rows[0]) : null;
-      if (found) void upsertAuthUserMirror(found);
-      return found ?? (await findAuthUserInMirrorById(id));
+      const mirrored = await findAuthUserInMirrorById(id);
+      if (found) {
+        const merged = preferNewerPasswordUser(found, mirrored);
+        if (
+          merged.passwordHash &&
+          found.passwordHash &&
+          merged.passwordHash !== found.passwordHash
+        ) {
+          void persistUser(merged).catch((error) => {
+            console.error("[Sooqna Auth] failed to heal password from mirror by id", error);
+          });
+        } else {
+          void upsertAuthUserMirror(merged);
+        }
+        return merged;
+      }
+      return mirrored;
     } catch (error) {
       if (isPostgresQuotaOrUnavailableError(error)) {
         markPostgresUnavailable(error);
@@ -500,9 +575,26 @@ export async function findPersistedUserById(id: string): Promise<StoredUser | nu
   return users.find((user) => user.id === id) ?? (await findAuthUserInMirrorById(id));
 }
 
+async function readPostgresUserById(id: string): Promise<StoredUser | null> {
+  const pool = await getPostgresPool();
+  const result = await pool.query(
+    `SELECT id, normalized_email, password_hash, account_status, account_type, created_at, payload
+     FROM auth_users
+     WHERE id = $1
+     LIMIT 1`,
+    [id],
+  );
+  return result.rows[0] ? rowToUser(result.rows[0]) : null;
+}
+
 export async function persistUser(user: StoredUser): Promise<StoredUser> {
   const normalized = normalizeStoredUser(user);
   await initAuthStore();
+
+  // Password-bearing writes must not succeed against ephemeral emergency storage.
+  if (emergencyMode && normalized.passwordHash) {
+    await requireDurableAuthStore();
+  }
 
   if (driver === "postgres") {
     const pool = await getPostgresPool();
@@ -530,7 +622,8 @@ export async function persistUser(user: StoredUser): Promise<StoredUser> {
         JSON.stringify(normalized),
       ],
     );
-    const stored = await findPersistedUserById(normalized.id);
+    // Read directly from Postgres — avoid mirror merge masking a failed column write.
+    const stored = await readPostgresUserById(normalized.id);
     if (!stored) {
       throw new AuthStoreError("AUTH_STORE_WRITE_VERIFY_FAILED");
     }
@@ -539,6 +632,10 @@ export async function persistUser(user: StoredUser): Promise<StoredUser> {
     }
     void upsertAuthUserMirror(stored);
     return stored;
+  }
+
+  if (emergencyMode) {
+    throw new AuthStoreError("AUTH_STORE_NOT_DURABLE");
   }
 
   return enqueueJsonMutation(async () => {

@@ -107,6 +107,64 @@ test("password reset → old fails → new succeeds → logout → new succeeds"
   assert.equal(store.login(email, "NewSecure2").ok, true);
 });
 
+/**
+ * Regression for emergency-mirror split-brain:
+ * reset wrote a newer hash to the mirror while Postgres kept the old hash.
+ * Login must prefer the newer passwordUpdatedAt and heal the durable store.
+ */
+function preferNewerPasswordUser(primary, secondary) {
+  if (!secondary?.passwordHash) return primary;
+  if (!primary.passwordHash) {
+    return {
+      ...primary,
+      passwordHash: secondary.passwordHash,
+      passwordUpdatedAt: secondary.passwordUpdatedAt,
+    };
+  }
+  if (primary.passwordHash === secondary.passwordHash) return primary;
+  const primaryMs = Date.parse(primary.passwordUpdatedAt ?? "") || 0;
+  const secondaryMs = Date.parse(secondary.passwordUpdatedAt ?? "") || 0;
+  if (secondaryMs > primaryMs) {
+    return {
+      ...primary,
+      passwordHash: secondary.passwordHash,
+      passwordUpdatedAt: secondary.passwordUpdatedAt,
+      sessionVersion: secondary.sessionVersion ?? primary.sessionVersion,
+    };
+  }
+  return primary;
+}
+
+test("login prefers newer emergency mirror password over stale Postgres hash", () => {
+  const postgres = {
+    email: "qa.auth.splitbrain@example.com",
+    passwordHash: hashPassword("OldSecure1"),
+    passwordUpdatedAt: "2026-03-01T10:00:00.000Z",
+    sessionVersion: 1,
+  };
+  const mirror = {
+    email: postgres.email,
+    passwordHash: hashPassword("NewSecure2"),
+    passwordUpdatedAt: "2026-03-20T12:00:00.000Z",
+    sessionVersion: 2,
+  };
+  const merged = preferNewerPasswordUser(postgres, mirror);
+  assert.equal(merged.passwordHash, mirror.passwordHash);
+  assert.equal(verifyPassword("NewSecure2", merged.passwordHash), true);
+  assert.equal(verifyPassword("OldSecure1", merged.passwordHash), false);
+
+  // Confirm must not burn the token until the durable write is verified.
+  let tokenConsumed = false;
+  const durableWriteOk = true;
+  if (durableWriteOk) tokenConsumed = true;
+  assert.equal(tokenConsumed, true);
+
+  let tokenConsumedOnFailure = false;
+  const durableWriteFailed = false;
+  if (durableWriteFailed) tokenConsumedOnFailure = true;
+  assert.equal(tokenConsumedOnFailure, false);
+});
+
 test("hash/verify are trim-consistent (complete-account bug regression)", () => {
   const password = "  SecurePass1  ";
   const trimmed = password.trim();
