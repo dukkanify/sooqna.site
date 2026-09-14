@@ -252,7 +252,7 @@ Performed only after golden main, Production, and backup tag/branch were verifie
 
 **Before (origin branches):** 17  
 **Deleted:** 13  
-**Remaining origin branches after cleanup + this PR branch:** see below.
+**Remaining origin branches after cleanup + this PR branch:** 5.
 
 ### SAFE_DELETE list (printed before deletion, then deleted)
 
@@ -362,7 +362,7 @@ Deleted count: 0
 BRANCHES:  
 Before: 17 origin heads  
 Deleted: 13  
-Remaining origin heads: `main`, `backup/dukkanify-golden-20260914`, `cursor/add-cloud-env-76f4`, `cursor/cloud-agent-1789220497826-047vw` (+ this PR branch once pushed)
+Remaining origin heads: `main`, `backup/dukkanify-golden-20260914`, `cursor/add-cloud-env-76f4`, `cursor/cloud-agent-1789220497826-047vw`, `cursor/golden-production-lock-f438`
 
 Deleted branches exactly:
 
@@ -386,6 +386,7 @@ Remaining origin branches exactly:
 - `backup/dukkanify-golden-20260914`
 - `cursor/add-cloud-env-76f4`
 - `cursor/cloud-agent-1789220497826-047vw`
+- `cursor/golden-production-lock-f438` (this documentation PR)
 
 DATA:  
 Production DB changed destructively: NO  
