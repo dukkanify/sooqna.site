@@ -17,6 +17,7 @@ import { EMAIL_ALREADY_REGISTERED_MESSAGE } from "@/services/auth/auth-messages"
 import { AuthStoreError } from "@/services/auth/user-persistence";
 import { trackAuthEvent } from "@/services/analytics/auth-events";
 import { maskEmail } from "@/shared/utils/mask-email";
+import { optionalRedirectPathSchema } from "@/shared/utils/safe-next";
 
 function registerOtpResponse(input: {
   email: string;
@@ -53,7 +54,7 @@ const schema = z.object({
   password: z.string().min(8),
   confirmPassword: z.string().min(8),
   accountType: z.enum(["individual", "company"]).default("individual"),
-  next: z.string().optional(),
+  next: optionalRedirectPathSchema,
 });
 
 export async function POST(request: Request) {
