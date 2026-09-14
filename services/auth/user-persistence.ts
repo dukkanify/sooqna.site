@@ -326,13 +326,23 @@ async function initAuthStore(): Promise<void> {
   await initPromise;
 }
 
+function isDurableAuthDriver(): boolean {
+  if (emergencyMode) return false;
+  if (driver === "postgres") return true;
+  // Local/dev durable JSON under `.data` is acceptable; serverless /tmp is not.
+  if (driver === "json-file" && jsonFilePath && !isEphemeralDir(path.dirname(jsonFilePath))) {
+    return true;
+  }
+  return false;
+}
+
 /**
- * Password changes must land in durable Postgres — never only in /tmp emergency.
+ * Password changes must land in a durable store — never only in /tmp emergency.
  * Retries Postgres once even if this instance is still in the degrade window.
  */
 export async function requireDurableAuthStore(): Promise<void> {
   await initAuthStore();
-  if (driver === "postgres" && !emergencyMode) return;
+  if (isDurableAuthDriver()) return;
 
   clearPostgresDegraded();
   initialized = false;
@@ -344,7 +354,7 @@ export async function requireDurableAuthStore(): Promise<void> {
   initPromise = null;
 
   await initAuthStore();
-  if (driver === "postgres" && !emergencyMode) return;
+  if (isDurableAuthDriver()) return;
 
   throw new AuthStoreError("AUTH_STORE_NOT_DURABLE");
 }
