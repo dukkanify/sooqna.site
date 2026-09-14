@@ -1,0 +1,17 @@
+{
+  "name": "sooqna-web",
+  "install": "npm ci",
+  "terminals": [
+    {
+      "name": "next-dev",
+      "command": "npm run dev",
+      "description": "Next.js 16 dev server (Turbopack) on http://localhost:3000 with hot reload. Mock/file-backed data flow needs no env vars."
+    }
+  ],
+  "ports": [
+    {
+      "name": "web",
+      "port": 3000
+    }
+  ]
+}
