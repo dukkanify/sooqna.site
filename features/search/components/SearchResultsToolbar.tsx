@@ -5,6 +5,7 @@ import { SavedSearches } from "./SavedSearches";
 import { SearchFilterChips } from "./SearchFilterChips";
 import { SearchQuickFilters } from "./SearchQuickFilters";
 import { buildSearchUrl, type SearchFilterState } from "./search-url";
+import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 
 type SearchResultsToolbarProps = {
   basePath?: string;
@@ -32,6 +33,7 @@ export function SearchResultsToolbar({
   const currentUrl = buildSearchUrl(selectedFilters, undefined, basePath);
 
   return (
+    <LocalizedTree>
     <div className="mb-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-semibold text-ink">
@@ -49,5 +51,6 @@ export function SearchResultsToolbar({
       />
       <SavedSearches currentLabel={buildLabel(selectedFilters, categories)} currentUrl={currentUrl} />
     </div>
+    </LocalizedTree>
   );
 }
