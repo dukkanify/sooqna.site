@@ -90,6 +90,39 @@ function isGuestCheckout(input: CreateCheckoutInput): boolean {
   return Boolean(input.isGuest || !input.buyer.id);
 }
 
+async function resolveRepurchaseSourceId(
+  sourceOrderId: string | undefined,
+  buyerId: string | undefined,
+): Promise<string | undefined> {
+  if (!sourceOrderId || !buyerId) return undefined;
+  const source = await getOrderById(sourceOrderId);
+  if (!source) return undefined;
+  if (source.buyerId !== buyerId) return undefined;
+  if (source.status === "pending_payment" || source.status === "disputed") {
+    return undefined;
+  }
+  return source.id;
+}
+
+async function linkRepurchaseSource(
+  pending: Order,
+  sourceOrderId: string,
+  buyerId: string | undefined,
+): Promise<boolean> {
+  const resolved = await resolveRepurchaseSourceId(sourceOrderId, buyerId);
+  if (!resolved) return false;
+  await updateOrder(
+    pending.id,
+    { repurchasedFromOrderId: resolved },
+    {
+      type: "repurchase_linked",
+      message: `إعادة شراء من الطلب ${resolved}`,
+      metadata: { repurchasedFromOrderId: resolved },
+    },
+  );
+  return true;
+}
+
 export async function initiateCheckout(
   input: CreateCheckoutInput,
 ): Promise<CheckoutSessionResult> {
@@ -132,6 +165,19 @@ export async function initiateCheckout(
     guest ? buyerEmail : undefined,
   );
   if (existingPending) {
+    if (
+      input.repurchasedFromOrderId &&
+      !existingPending.repurchasedFromOrderId
+    ) {
+      const linked = await linkRepurchaseSource(
+        existingPending,
+        input.repurchasedFromOrderId,
+        input.buyer.id,
+      );
+      if (linked) {
+        existingPending.repurchasedFromOrderId = input.repurchasedFromOrderId;
+      }
+    }
     if (input.forceMock && isMockCheckoutAllowed()) {
       return { mode: "mock", orderId: existingPending.id };
     }
@@ -196,7 +242,24 @@ export async function initiateCheckout(
         }
       : undefined,
     saveAddress: input.deliveryAddress?.saveAddress,
+    listingCategoryId: context.categoryId,
+    repurchasedFromOrderId: await resolveRepurchaseSourceId(
+      input.repurchasedFromOrderId,
+      input.buyer.id,
+    ),
   });
+
+  if (order.repurchasedFromOrderId) {
+    await updateOrder(
+      order.id,
+      {},
+      {
+        type: "repurchase",
+        message: `إعادة شراء من الطلب ${order.repurchasedFromOrderId}`,
+        metadata: { repurchasedFromOrderId: order.repurchasedFromOrderId },
+      },
+    );
+  }
 
   if (!isStripeConfigured()) {
     if (!isMockCheckoutAllowed()) {
@@ -218,6 +281,32 @@ export async function initiateCheckout(
   }
 
   return attachStripeCheckout(order, buyerEmail, listing.title);
+}
+
+export async function resumePendingCheckoutForBuyer(
+  orderId: string,
+  buyerId: string,
+): Promise<CheckoutSessionResult> {
+  const order = await getOrderById(orderId);
+  if (!order) {
+    throw new Error("ORDER_NOT_FOUND");
+  }
+  if (!order.buyerId || order.buyerId !== buyerId) {
+    throw new Error("FORBIDDEN");
+  }
+  if (order.status !== "pending_payment") {
+    throw new Error("INVALID_STATUS");
+  }
+
+  await hydrateListingCatalog();
+  const listing =
+    getServerListingById(order.listingId) ??
+    (order.listingSlug ? getServerListingBySlug(order.listingSlug) : undefined);
+  return resumeCheckoutForOrder(
+    order,
+    order.buyerEmail,
+    listing?.title ?? order.listingTitle,
+  );
 }
 
 async function resumeCheckoutForOrder(

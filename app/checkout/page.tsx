@@ -8,6 +8,7 @@ type CheckoutPageProps = {
     listing?: string;
     listingId?: string;
     payment?: string;
+    fromOrder?: string;
   }>;
 };
 
@@ -25,6 +26,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       <main>
         <CheckoutWizard
           catalogListing={catalogListing}
+          fromOrderId={params.fromOrder}
           listingRef={listingRef}
           paymentCancelled={params.payment === "cancelled"}
         />

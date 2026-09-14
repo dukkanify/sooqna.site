@@ -7,7 +7,8 @@ export type OrderStatus =
   | "confirmed"
   | "released"
   | "disputed"
-  | "refunded";
+  | "refunded"
+  | "cancelled";
 
 export type EscrowStatus =
   | "pending"
@@ -111,5 +112,7 @@ export type Order = {
   /** Increments each time seller completes a documentation set. */
   productVerificationVersion?: number;
   productVerificationStatus?: ProductVerificationStatus;
+  /** Source order when this purchase was started via Buy Again / repurchase. */
+  repurchasedFromOrderId?: string;
   auditLog: OrderAuditEvent[];
 };

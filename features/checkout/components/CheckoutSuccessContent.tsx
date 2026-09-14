@@ -26,6 +26,7 @@ const statusLabels: Record<Order["status"], string> = {
   released: "تم التحويل",
   disputed: "نزاع",
   refunded: "مسترد",
+  cancelled: "ملغى",
 };
 
 const MAX_POLL_ATTEMPTS = 12;

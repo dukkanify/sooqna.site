@@ -66,6 +66,7 @@ export const createCheckoutSchema = z.object({
   deliveryAddress: deliveryAddressInputSchema.optional(),
   isGuest: z.boolean().optional(),
   forceMock: z.boolean().optional(),
+  repurchasedFromOrderId: z.string().min(1).optional(),
 });
 
 export const confirmOrderSchema = z.object({
