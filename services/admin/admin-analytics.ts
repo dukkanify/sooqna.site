@@ -67,6 +67,7 @@ export function buildOrderStatusSlices(orders: Order[]): StatusSlice[] {
     released: "محرّر",
     refunded: "مسترد",
     disputed: "نزاع",
+    cancelled: "ملغى",
   };
 
   return [...map.entries()]

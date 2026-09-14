@@ -38,6 +38,7 @@ const ORDER_STATUS: Record<Order["status"], string> = {
   released: "تم الإفراج",
   disputed: "نزاع",
   refunded: "مسترد",
+  cancelled: "ملغى",
 };
 
 const LISTING_STATUS: Record<Listing["status"], string> = {

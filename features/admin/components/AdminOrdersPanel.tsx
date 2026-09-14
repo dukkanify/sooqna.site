@@ -99,6 +99,11 @@ export function AdminOrdersPanel() {
                       ? ` · ${customerTypeLabels[order.customerType]}`
                       : ""}
                   </p>
+                  {order.repurchasedFromOrderId ? (
+                    <p className="admin-ops__queue-meta">
+                      إعادة شراء من الطلب {order.repurchasedFromOrderId}
+                    </p>
+                  ) : null}
                   {order.stripePaymentIntentId ? (
                     <p className="admin-ops__queue-meta font-mono">
                       Stripe: {order.stripePaymentIntentId}

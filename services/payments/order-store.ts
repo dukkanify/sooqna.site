@@ -119,13 +119,14 @@ export function isValidOrderTransition(
   next: OrderStatus,
 ): boolean {
   const allowed: Record<OrderStatus, OrderStatus[]> = {
-    pending_payment: ["paid_held_in_escrow", "refunded"],
+    pending_payment: ["paid_held_in_escrow", "refunded", "cancelled"],
     paid_held_in_escrow: ["delivered", "disputed", "refunded", "confirmed"],
     delivered: ["confirmed", "disputed", "refunded"],
     confirmed: ["released", "disputed", "refunded"],
     released: [],
     disputed: ["released", "refunded"],
     refunded: [],
+    cancelled: [],
   };
   return allowed[current]?.includes(next) ?? false;
 }

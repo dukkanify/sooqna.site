@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Order } from "@/types";
 import { RateOrderForm } from "@/features/orders/components/RateOrderForm";
+import { OrderRepurchaseActions } from "@/features/orders/components/OrderRepurchaseActions";
+import type { BuyAgainDecision } from "@/services/payments/buy-again-action";
 import { getSessionUser } from "@/services/storage";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Badge } from "@/shared/ui/Badge";
@@ -28,6 +30,7 @@ const statusLabels: Record<Order["status"], string> = {
   released: "تم التحويل",
   disputed: "نزاع",
   refunded: "مسترد",
+  cancelled: "ملغى",
 };
 
 export function OrderDetailContent({
@@ -51,13 +54,16 @@ export function OrderDetailContent({
     canRate: boolean;
     hasRated: boolean;
   } | null>(null);
+  const [repurchase, setRepurchase] = useState<BuyAgainDecision | null>(null);
 
   useEffect(() => {
     fetch(`/api/orders/${orderId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.order) setOrder(data.order);
-        else setError("لم يتم العثور على الطلب.");
+        if (data.order) {
+          setOrder(data.order);
+          setRepurchase(data.repurchase ?? null);
+        } else setError("لم يتم العثور على الطلب.");
       })
       .catch(() => setError("تعذر تحميل الطلب."));
   }, [orderId]);
@@ -502,6 +508,10 @@ export function OrderDetailContent({
 
         {ratingInfo?.hasRated ? (
           <FormMessage variant="success">تم تقييم البائع لهذا الطلب.</FormMessage>
+        ) : null}
+
+        {isBuyer && repurchase ? (
+          <OrderRepurchaseActions decision={repurchase} orderId={order.id} />
         ) : null}
 
         <Card className="p-6" variant="flat">

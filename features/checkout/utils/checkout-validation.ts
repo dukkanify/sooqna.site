@@ -2,8 +2,9 @@ import type { Listing, UserProfile } from "@/types";
 import type { DeliveryAddressInput } from "@/services/payments/payment-schemas";
 import type { ShippingMethodId } from "@/types/domain/address";
 import { getListingActionConfig } from "@/shared/constants/listingActionConfig";
-import { isGuestCheckoutEnabled } from "@/shared/constants/feature-flags";
+import { isGuestCheckoutEnabled, isMockCheckoutEnabled } from "@/shared/constants/feature-flags";
 import { isOwnListing } from "@/shared/listings/listing-ownership";
+import { listingMeetsPurchaseRules } from "@/shared/listings/purchase-eligibility";
 import { isValidUaePhone, normalizeUaePhone } from "@/shared/utils/phone";
 
 export const CHECKOUT_ERRORS = {
@@ -75,7 +76,10 @@ export function validateCheckoutReviewStep(
   }
 
   const config = getListingActionConfig(listing);
-  if (!config.checkoutEnabled) {
+  if (
+    !config.checkoutEnabled &&
+    !(isMockCheckoutEnabled() && listingMeetsPurchaseRules(listing))
+  ) {
     return { ok: false, message: CHECKOUT_ERRORS.unavailable };
   }
 

@@ -281,6 +281,12 @@ test("category CTAs are centralized and job seeker is not apply-job", () => {
   assert.match(purchase, /isPurchasableListing/);
   assert.match(purchase, /isCheckoutOperational/);
   assert.match(purchase, /NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY/);
+  const buyAgain = readFileSync(
+    path.join(root, "services/payments/buy-again.service.ts"),
+    "utf8",
+  );
+  assert.match(buyAgain, /isPurchasableListing/);
+  assert.match(buyAgain, /evaluateBuyAgainForOrder/);
   const actions = readFileSync(
     path.join(root, "shared/constants/listingActionConfig.ts"),
     "utf8",

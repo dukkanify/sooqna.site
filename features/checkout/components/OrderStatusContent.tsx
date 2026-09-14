@@ -22,6 +22,7 @@ const statusLabels: Record<Order["status"], string> = {
   released: "تم التحويل",
   disputed: "نزاع",
   refunded: "مسترد",
+  cancelled: "ملغى",
 };
 
 export function OrderStatusContent({ token }: OrderStatusContentProps) {

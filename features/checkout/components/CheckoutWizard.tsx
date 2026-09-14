@@ -46,6 +46,7 @@ type CheckoutWizardProps = {
   catalogListing?: Listing;
   listingRef?: string;
   paymentCancelled?: boolean;
+  fromOrderId?: string;
 };
 
 type CheckoutStep = "review" | "delivery" | "payment";
@@ -95,6 +96,7 @@ export function CheckoutWizard({
   catalogListing,
   listingRef,
   paymentCancelled,
+  fromOrderId,
 }: CheckoutWizardProps) {
   const router = useRouter();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -360,6 +362,7 @@ export function CheckoutWizard({
             requiresAddress && (useLiveLocation || !sessionUser || !selectedAddress)
               ? buildDeliveryAddressInput(deliveryInfo, normalized)
               : undefined,
+          repurchasedFromOrderId: fromOrderId || undefined,
         }),
       });
 
@@ -435,6 +438,11 @@ export function CheckoutWizard({
 
         {paymentCancelled ? (
           <FormMessage variant="error">تم إلغاء الدفع. يمكنك المحاولة مرة أخرى.</FormMessage>
+        ) : null}
+        {fromOrderId ? (
+          <p className="mb-4 rounded-[var(--radius-md)] border border-border bg-surface-muted px-4 py-3 text-sm font-medium text-ink">
+            إعادة شراء بالسعر الحالي للإعلان. سيتم إنشاء طلب جديد دون تعديل الطلب السابق.
+          </p>
         ) : null}
         {error ? <FormMessage variant="error">{error}</FormMessage> : null}
 
