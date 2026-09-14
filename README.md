@@ -19,7 +19,7 @@ Production env checklist: `STRIPE_*` per [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md
 | Document | Purpose |
 |----------|---------|
 | [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md) | Stripe keys and webhook |
-| [EMAIL_NOTIFICATIONS_PRODUCTION_REPORT.md](./EMAIL_NOTIFICATIONS_PRODUCTION_REPORT.md) | In-app + email channel |
+| [EMAIL_NOTIFICATIONS_PRODUCTION_REPORT.md](./docs/archive/EMAIL_NOTIFICATIONS_PRODUCTION_REPORT.md) | In-app + email channel (archived) |
 
 ## Setup
 
