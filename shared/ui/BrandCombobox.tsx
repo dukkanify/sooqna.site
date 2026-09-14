@@ -12,6 +12,7 @@ type BrandComboboxProps = {
   error?: string;
   label: string;
   name: string;
+  onValueChange?: (value: string) => void;
   options: CategoryFieldOption[];
   placeholder?: string;
   required?: boolean;
@@ -23,6 +24,7 @@ export function BrandCombobox({
   error,
   label,
   name,
+  onValueChange,
   options,
   placeholder = "ابحث عن الماركة (مثال: Toy… أو App…)",
   required = false,
@@ -58,6 +60,7 @@ export function BrandCombobox({
   function selectOption(option: CategoryFieldOption) {
     setQuery(option.label);
     setValue(option.value);
+    onValueChange?.(option.value);
     setOpen(false);
     setActiveIndex(-1);
   }
@@ -67,6 +70,7 @@ export function BrandCombobox({
     if (next) {
       setValue(next);
       setQuery(next);
+      onValueChange?.(next);
     }
     setOpen(false);
     setActiveIndex(-1);

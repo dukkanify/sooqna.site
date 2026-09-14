@@ -2,6 +2,11 @@ import type { Listing, ListingSearchFilters } from "@/types";
 import type { AdminListingRecord } from "@/types/domain/admin";
 import { listingMatchesQuery } from "@/shared/listings/listing-specs";
 import {
+  listingMatchesSmartFilters,
+  specMatchCandidates,
+  specSqlPaths,
+} from "@/shared/listings/listing-filter-match";
+import {
   getOptionalPostgresPool,
   isPostgresQuotaOrUnavailableError,
   markPostgresUnavailable,
@@ -29,6 +34,7 @@ export type ListingQuerySlim = "card" | "suggest" | "full";
 export type ListingQuery = {
   area?: string;
   categoryId?: string;
+  categorySpecs?: Record<string, string>;
   city?: string;
   condition?: Listing["condition"];
   country?: string;
@@ -45,7 +51,10 @@ export type ListingQuery = {
   sellerId?: string;
   slim?: ListingQuerySlim;
   sort?: ListingSearchFilters["sort"];
+  specMax?: Record<string, number>;
+  specMin?: Record<string, number>;
   status?: Listing["status"];
+  subcategory?: string;
 };
 
 function omitUrgent(listing: Listing): Listing {
@@ -93,7 +102,6 @@ function matchesStructured(listing: Listing, query: ListingQuery): boolean {
   if (emirate && listing.emirate !== emirate && listing.city !== emirate) {
     return false;
   }
-  if (query.area && listing.area !== query.area) return false;
   if (query.country && listing.country !== query.country) return false;
   if (typeof query.minPrice === "number" && listing.price < query.minPrice) {
     return false;
@@ -104,7 +112,13 @@ function matchesStructured(listing: Listing, query: ListingQuery): boolean {
   if (query.query?.trim() && !listingMatchesQuery(listing, query.query)) {
     return false;
   }
-  return true;
+  return listingMatchesSmartFilters(listing, {
+    area: query.area,
+    categorySpecs: query.categorySpecs,
+    specMax: query.specMax,
+    specMin: query.specMin,
+    subcategory: query.subcategory,
+  });
 }
 
 function shouldExcludeFixtures(query: ListingQuery): boolean {
@@ -128,51 +142,93 @@ async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
   return limited.map((listing) => applySlim(listing, query.slim));
 }
 
-export async function queryListings(query: ListingQuery = {}): Promise<Listing[]> {
-  await ensureShowcaseCatalogPublished();
-  if (!(await ensureListingsTable())) {
-    return queryFromFile(query);
+function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: string[] } {
+  const where: string[] = [];
+  const values: unknown[] = [];
+  const add = (sql: string, value: unknown) => {
+    values.push(value);
+    where.push(sql.replace("?", `$${values.length}`));
+  };
+
+  if (query.status) add("status = ?", query.status);
+  if (query.categoryId) add("category_id = ?", query.categoryId);
+  if (query.sellerId) add("seller_id = ?", query.sellerId);
+  if (query.excludeId) add("id <> ?", query.excludeId);
+  if (query.featured) add("is_featured = ?", true);
+  if (query.condition) add("payload->>'condition' = ?", query.condition);
+  const emirate = query.emirate ?? query.city;
+  if (emirate) {
+    values.push(emirate);
+    const idx = values.length;
+    where.push(`(payload->>'emirate' = $${idx} OR payload->>'city' = $${idx})`);
   }
-  const pool = await getOptionalPostgresPool();
-  if (!pool) return queryFromFile(query);
+  if (query.country) add("payload->>'country' = ?", query.country);
+  if (typeof query.minPrice === "number") {
+    add("(payload->>'price')::numeric >= ?", query.minPrice);
+  }
+  if (typeof query.maxPrice === "number") {
+    add("(payload->>'price')::numeric <= ?", query.maxPrice);
+  }
+  if (query.subcategory) add("payload->>'subcategory' = ?", query.subcategory);
+  if (query.area?.trim()) {
+    const pattern = likePattern(query.area);
+    values.push(pattern);
+    const idx = values.length;
+    where.push(`(
+        payload->>'area' ILIKE $${idx} ESCAPE '\\'
+        OR payload->'categorySpecs'->>'city' ILIKE $${idx} ESCAPE '\\'
+        OR payload->'categorySpecs'->>'community' ILIKE $${idx} ESCAPE '\\'
+        OR payload->'categorySpecs'->>'coverageArea' ILIKE $${idx} ESCAPE '\\'
+        OR payload->'categorySpecs'->>'location' ILIKE $${idx} ESCAPE '\\'
+      )`);
+  }
+  for (const [key, wanted] of Object.entries(query.categorySpecs ?? {})) {
+    const paths = specSqlPaths(key);
+    const candidates = specMatchCandidates(wanted);
+    if (!paths.length || candidates.length === 0) continue;
+    values.push(candidates);
+    const idx = values.length;
+    const ors = paths.map(
+      (path) =>
+        `regexp_replace(lower(coalesce(${path}, '')), '\\s+', '', 'g') = ANY($${idx}::text[])`,
+    );
+    where.push(`(${ors.join(" OR ")})`);
+  }
+  for (const [key, min] of Object.entries(query.specMin ?? {})) {
+    const paths = specSqlPaths(key);
+    if (!paths.length || !Number.isFinite(min)) continue;
+    add(
+      `COALESCE(${paths
+        .map(
+          (path) =>
+            `NULLIF(regexp_replace(coalesce(${path}, ''), '[^0-9.]', '', 'g'), '')::numeric`,
+        )
+        .join(", ")}) >= ?`,
+      min,
+    );
+  }
+  for (const [key, max] of Object.entries(query.specMax ?? {})) {
+    const paths = specSqlPaths(key);
+    if (!paths.length || !Number.isFinite(max)) continue;
+    add(
+      `COALESCE(${paths
+        .map(
+          (path) =>
+            `NULLIF(regexp_replace(coalesce(${path}, ''), '[^0-9.]', '', 'g'), '')::numeric`,
+        )
+        .join(", ")}) <= ?`,
+      max,
+    );
+  }
+  if (shouldExcludeFixtures(query)) {
+    where.push(`NOT ${FIXTURE_LISTING_SQL}`);
+  }
 
-  try {
-    const where: string[] = [];
-    const values: unknown[] = [];
-    const add = (sql: string, value: unknown) => {
-      values.push(value);
-      where.push(sql.replace("?", `$${values.length}`));
-    };
-
-    if (query.status) add("status = ?", query.status);
-    if (query.categoryId) add("category_id = ?", query.categoryId);
-    if (query.sellerId) add("seller_id = ?", query.sellerId);
-    if (query.excludeId) add("id <> ?", query.excludeId);
-    if (query.featured) add("is_featured = ?", true);
-    if (query.condition) add("payload->>'condition' = ?", query.condition);
-    const emirate = query.emirate ?? query.city;
-    if (emirate) {
-      values.push(emirate);
-      const idx = values.length;
-      where.push(`(payload->>'emirate' = $${idx} OR payload->>'city' = $${idx})`);
-    }
-    if (query.area) add("payload->>'area' = ?", query.area);
-    if (query.country) add("payload->>'country' = ?", query.country);
-    if (typeof query.minPrice === "number") {
-      add("(payload->>'price')::numeric >= ?", query.minPrice);
-    }
-    if (typeof query.maxPrice === "number") {
-      add("(payload->>'price')::numeric <= ?", query.maxPrice);
-    }
-    if (shouldExcludeFixtures(query)) {
-      where.push(`NOT ${FIXTURE_LISTING_SQL}`);
-    }
-
-    if (query.query?.trim()) {
-      const pattern = likePattern(query.query);
-      values.push(pattern);
-      const idx = values.length;
-      where.push(`(
+  if (query.query?.trim()) {
+    const pattern = likePattern(query.query);
+    values.push(pattern);
+    const idx = values.length;
+    where.push(`(
       payload->>'title' ILIKE $${idx} ESCAPE '\\'
       OR payload->>'titleEnglish' ILIKE $${idx} ESCAPE '\\'
       OR payload->>'description' ILIKE $${idx} ESCAPE '\\'
@@ -182,7 +238,21 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
       OR payload->>'area' ILIKE $${idx} ESCAPE '\\'
       OR COALESCE(payload->'categorySpecs','{}'::jsonb)::text ILIKE $${idx} ESCAPE '\\'
     )`);
-    }
+  }
+
+  return { values, where };
+}
+
+export async function queryListings(query: ListingQuery = {}): Promise<Listing[]> {
+  await ensureShowcaseCatalogPublished();
+  if (!(await ensureListingsTable())) {
+    return queryFromFile(query);
+  }
+  const pool = await getOptionalPostgresPool();
+  if (!pool) return queryFromFile(query);
+
+  try {
+    const { where, values } = listingSqlFilter(query);
 
     const showcaseLast = `(CASE WHEN COALESCE(payload->>'source','') = '${SHOWCASE_SOURCE}' THEN 1 ELSE 0 END) ASC`;
     const order =
@@ -218,6 +288,44 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
     if (isPostgresQuotaOrUnavailableError(error)) {
       markPostgresUnavailable(error);
       return queryFromFile(query);
+    }
+    throw error;
+  }
+}
+
+export async function countMatchingListings(query: ListingQuery = {}): Promise<number> {
+  await ensureShowcaseCatalogPublished();
+  const countable: ListingQuery = { ...query };
+  delete countable.limit;
+  delete countable.offset;
+  delete countable.slim;
+
+  const fromStored = async () => {
+    const stored = syncLiveCatalogMedia(await loadPersistedListings());
+    return stored.filter((listing) => {
+      if (shouldExcludeFixtures(countable) && isConfirmedFixtureListing(listing)) {
+        return false;
+      }
+      return matchesStructured(listing, countable);
+    }).length;
+  };
+
+  if (!(await ensureListingsTable())) {
+    return fromStored();
+  }
+  const pool = await getOptionalPostgresPool();
+  if (!pool) return fromStored();
+
+  try {
+    const { where, values } = listingSqlFilter(countable);
+    let sql = `SELECT COUNT(*)::int AS c FROM ${TABLE}`;
+    if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
+    const result = await pool.query(sql, values);
+    return Number(result.rows[0]?.c) || 0;
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return fromStored();
     }
     throw error;
   }

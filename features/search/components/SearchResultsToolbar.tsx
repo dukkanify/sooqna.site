@@ -4,52 +4,32 @@ import type { Category } from "@/types";
 import { SavedSearches } from "./SavedSearches";
 import { SearchFilterChips } from "./SearchFilterChips";
 import { SearchQuickFilters } from "./SearchQuickFilters";
+import { buildSearchUrl, type SearchFilterState } from "./search-url";
 
 type SearchResultsToolbarProps = {
+  basePath?: string;
   categories: Category[];
   resultCount: number;
-  selectedFilters: {
-    category?: string;
-    city?: string;
-    condition?: string;
-    country?: string;
-    maxPrice?: string;
-    minPrice?: string;
-    query?: string;
-    sort?: string;
-  };
+  selectedFilters: SearchFilterState;
 };
 
-function buildCurrentUrl(filters: SearchResultsToolbarProps["selectedFilters"]) {
-  const params = new URLSearchParams();
-  if (filters.query) params.set("q", filters.query);
-  if (filters.country) params.set("country", filters.country);
-  if (filters.city) params.set("city", filters.city);
-  if (filters.category) params.set("category", filters.category);
-  if (filters.condition) params.set("condition", filters.condition);
-  if (filters.minPrice) params.set("minPrice", filters.minPrice);
-  if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
-  if (filters.sort && filters.sort !== "newest") params.set("sort", filters.sort);
-  const query = params.toString();
-  return query ? `/search?${query}` : "/search";
-}
-
 function buildLabel(
-  filters: SearchResultsToolbarProps["selectedFilters"],
+  filters: SearchFilterState,
   categories: Category[],
 ) {
   if (filters.query) return filters.query;
   const categoryName = categories.find((item) => item.id === filters.category)?.name;
-  const parts = [categoryName, filters.city, filters.country].filter(Boolean);
+  const parts = [categoryName, filters.subcategory, filters.city, filters.area, filters.country].filter(Boolean);
   return parts.length > 0 ? parts.join(" · ") : "بحث مخصص";
 }
 
 export function SearchResultsToolbar({
+  basePath = "/search",
   categories,
   resultCount,
   selectedFilters,
 }: SearchResultsToolbarProps) {
-  const currentUrl = buildCurrentUrl(selectedFilters);
+  const currentUrl = buildSearchUrl(selectedFilters, undefined, basePath);
 
   return (
     <div className="mb-5">
@@ -62,7 +42,11 @@ export function SearchResultsToolbar({
         </p>
       </div>
       <SearchQuickFilters categories={categories} selectedFilters={selectedFilters} />
-      <SearchFilterChips categories={categories} selectedFilters={selectedFilters} />
+      <SearchFilterChips
+        basePath={basePath}
+        categories={categories}
+        selectedFilters={selectedFilters}
+      />
       <SavedSearches currentLabel={buildLabel(selectedFilters, categories)} currentUrl={currentUrl} />
     </div>
   );

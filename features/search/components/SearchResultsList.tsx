@@ -2,8 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
-import { listingMatchesEmirate } from "@/shared/listings/listing-ownership";
-import { listingMatchesQuery } from "@/shared/listings/listing-specs";
+import { listingMatchesSmartFilters } from "@/shared/listings/listing-filter-match";
+import { toListingSearchFilters } from "@/features/search/lib/to-listing-filters";
+import {
+  activeFilterCount,
+  type SearchFilterState,
+} from "@/features/search/components/search-url";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import type { Category, Listing } from "@/types";
 import { ListingCard } from "@/features/listings/components/ListingCard";
@@ -19,26 +23,21 @@ import {
 const PAGE_SIZE = 12;
 
 type SearchResultsListProps = {
+  basePath?: string;
   categoryId?: string;
   categories: Category[];
   listings: Listing[];
-  selectedFilters?: {
-    category?: string;
-    city?: string;
-    condition?: string;
-    country?: string;
-    maxPrice?: string;
-    minPrice?: string;
-    query?: string;
-    sort?: string;
-  };
+  selectedFilters?: SearchFilterState;
+  serverTotal?: number;
 };
 
 export function SearchResultsList({
+  basePath = "/search",
   categoryId,
   categories,
   listings,
   selectedFilters = {},
+  serverTotal,
 }: SearchResultsListProps) {
   const [localListings, setLocalListings] = useState<Listing[]>([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -56,50 +55,15 @@ export function SearchResultsList({
   );
 
   const visibleListings = useMemo(() => {
-    const normalizedQuery = selectedFilters.query?.trim().toLowerCase();
-    const minPrice = selectedFilters.minPrice
-      ? Number(selectedFilters.minPrice)
-      : undefined;
-    const maxPrice = selectedFilters.maxPrice
-      ? Number(selectedFilters.maxPrice)
-      : undefined;
-    const filterCategory = categoryId || selectedFilters.category;
-
+    const listingFilters = toListingSearchFilters({
+      ...selectedFilters,
+      category: categoryId || selectedFilters.category,
+    });
     const matchingLocalListings = localListings
       .filter((listing) => listing.status === "active")
       .filter((listing) => !isConfirmedFixtureListing(listing))
-      .filter((listing) =>
-        filterCategory ? listing.categoryId === filterCategory : true,
-      )
-      .filter((listing) =>
-        selectedFilters.city
-          ? listingMatchesEmirate(listing, selectedFilters.city)
-          : true,
-      )
-      .filter((listing) =>
-        selectedFilters.country
-          ? listing.country === selectedFilters.country
-          : true,
-      )
-      .filter((listing) =>
-        selectedFilters.condition
-          ? listing.condition === selectedFilters.condition
-          : true,
-      )
-      .filter((listing) =>
-        typeof minPrice === "number" && Number.isFinite(minPrice)
-          ? listing.price >= minPrice
-          : true,
-      )
-      .filter((listing) =>
-        typeof maxPrice === "number" && Number.isFinite(maxPrice)
-          ? listing.price <= maxPrice
-          : true,
-      )
-      .filter((listing) => {
-        if (!normalizedQuery) return true;
-        return listingMatchesQuery(listing, normalizedQuery);
-      });
+      .filter((listing) => listingMatchesSmartFilters(listing, listingFilters))
+      .filter((listing) => !listings.some((item) => item.id === listing.id));
 
     return [...matchingLocalListings, ...listings].sort((a, b) => {
       if (selectedFilters.sort === "price_asc") return a.price - b.price;
@@ -107,6 +71,12 @@ export function SearchResultsList({
       return b.id.localeCompare(a.id);
     });
   }, [categoryId, listings, localListings, selectedFilters]);
+
+  const resultCount =
+    typeof serverTotal === "number"
+      ? serverTotal +
+        visibleListings.filter((listing) => listing.id.startsWith("local-")).length
+      : visibleListings.length;
 
   useEffect(() => {
     const syncLocalListings = () => {
@@ -126,20 +96,13 @@ export function SearchResultsList({
   }, []);
 
   if (visibleListings.length === 0) {
-    const hasActiveFilters = Boolean(
-      selectedFilters.query?.trim() ||
-        selectedFilters.city ||
-        selectedFilters.condition ||
-        selectedFilters.country ||
-        selectedFilters.minPrice ||
-        selectedFilters.maxPrice ||
-        selectedFilters.category,
-    );
+    const hasActiveFilters = activeFilterCount(selectedFilters) > 0;
     return (
       <>
         <SearchResultsToolbar
+          basePath={basePath}
           categories={categories}
-          resultCount={0}
+          resultCount={resultCount}
           selectedFilters={selectedFilters}
         />
         <EmptyState
@@ -168,8 +131,9 @@ export function SearchResultsList({
   return (
     <>
       <SearchResultsToolbar
+        basePath={basePath}
         categories={categories}
-        resultCount={visibleListings.length}
+        resultCount={resultCount}
         selectedFilters={selectedFilters}
       />
       <div className={`${MARKETPLACE_LISTING_GRID_CLASS} page-enter`}>

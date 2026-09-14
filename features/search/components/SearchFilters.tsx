@@ -11,6 +11,12 @@ import {
   SearchTypeahead,
   type SearchSuggestion,
 } from "./SearchTypeahead";
+import { CategorySmartFields } from "./CategorySmartFields";
+import {
+  activeFilterCount,
+  buildSearchUrl,
+  type SearchFilterState,
+} from "./search-url";
 
 type SearchFiltersProps = {
   action?: string;
@@ -21,16 +27,7 @@ type SearchFiltersProps = {
     name: string;
   }[];
   layout?: "bar" | "sidebar";
-  selectedFilters: {
-    category?: string;
-    city?: string;
-    condition?: string;
-    country?: string;
-    maxPrice?: string;
-    minPrice?: string;
-    query?: string;
-    sort?: string;
-  };
+  selectedFilters: SearchFilterState;
   showCategory?: boolean;
   suggestions?: SearchSuggestion[];
 };
@@ -59,6 +56,14 @@ export function SearchFilters({
 }: SearchFiltersProps) {
   const isSidebar = layout === "sidebar";
   const [mobileOpen, setMobileOpen] = useState(false);
+  const urlSignature = buildSearchUrl(selectedFilters, undefined, action);
+  const [seenSignature, setSeenSignature] = useState(urlSignature);
+  const [draft, setDraft] = useState<SearchFilterState>(selectedFilters);
+
+  if (seenSignature !== urlSignature) {
+    setSeenSignature(urlSignature);
+    setDraft(selectedFilters);
+  }
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)");
@@ -68,15 +73,20 @@ export function SearchFilters({
     return () => media.removeEventListener("change", sync);
   }, []);
 
-  const activeCount = [
-    selectedFilters.query,
-    selectedFilters.city,
-    selectedFilters.category,
-    selectedFilters.condition,
-    selectedFilters.minPrice,
-    selectedFilters.maxPrice,
-    selectedFilters.sort !== "newest" ? selectedFilters.sort : "",
-  ].filter(Boolean).length;
+  const selectedCategory =
+    categories.find((category) => category.id === (draft.category || selectedFilters.category)) ??
+    undefined;
+  const count = activeFilterCount(draft);
+  const resetHref = showCategory ? action.split("?")[0] || "/search" : action.split("?")[0] || "/search";
+
+  const smartFields = (
+    <CategorySmartFields
+      category={selectedCategory}
+      compact={isSidebar}
+      draft={draft}
+      onChange={setDraft}
+    />
+  );
 
   if (!isSidebar) {
     return (
@@ -87,15 +97,15 @@ export function SearchFilters({
           className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
         >
           <SearchTypeahead
-            defaultValue={selectedFilters.query}
+            defaultValue={draft.query}
             label="كلمة البحث"
             name="q"
             placeholder="سيارة، هاتف، عقار..."
-            selectedFilters={selectedFilters}
+            selectedFilters={draft}
             suggestions={suggestions}
           />
           <Select
-            defaultValue={selectedFilters.country}
+            defaultValue={draft.country}
             label="الدولة"
             name="country"
             options={[
@@ -107,19 +117,31 @@ export function SearchFilters({
             ]}
           />
           <Select
-            defaultValue={selectedFilters.city}
             label="الإمارة"
             name="city"
+            onChange={(event) =>
+              setDraft({ ...draft, city: event.target.value, area: "" })
+            }
             options={[
               { label: "كل المدن", value: "" },
               ...cities.map((city) => ({ label: city.name, value: city.name })),
             ]}
+            value={draft.city ?? ""}
           />
           {showCategory ? (
             <Select
-              defaultValue={selectedFilters.category}
               label="التصنيف"
               name="category"
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  category: event.target.value,
+                  specs: {},
+                  ranges: {},
+                  subcategory: "",
+                  area: "",
+                })
+              }
               options={[
                 { label: "كل التصنيفات", value: "" },
                 ...categories.map((category) => ({
@@ -127,16 +149,19 @@ export function SearchFilters({
                   value: category.id,
                 })),
               ]}
+              value={draft.category ?? ""}
             />
-          ) : null}
+          ) : (
+            <input name="category" type="hidden" value={draft.category ?? ""} />
+          )}
           <Select
-            defaultValue={selectedFilters.condition}
+            defaultValue={draft.condition}
             label="الحالة"
             name="condition"
             options={conditionOptions}
           />
           <Input
-            defaultValue={selectedFilters.minPrice}
+            defaultValue={draft.minPrice}
             inputMode="numeric"
             label="أقل سعر"
             min="0"
@@ -145,7 +170,7 @@ export function SearchFilters({
             type="number"
           />
           <Input
-            defaultValue={selectedFilters.maxPrice}
+            defaultValue={draft.maxPrice}
             inputMode="numeric"
             label="أعلى سعر"
             min="0"
@@ -155,7 +180,7 @@ export function SearchFilters({
           />
           <div className="grid gap-2">
             <Select
-              defaultValue={selectedFilters.sort}
+              defaultValue={draft.sort}
               label="الترتيب"
               name="sort"
               options={sortOptions}
@@ -164,6 +189,7 @@ export function SearchFilters({
               تطبيق الفلاتر
             </Button>
           </div>
+          <div className="md:col-span-2 lg:col-span-4 xl:col-span-7">{smartFields}</div>
         </form>
       </div>
       </LocalizedTree>
@@ -182,9 +208,9 @@ export function SearchFilters({
         <span className="inline-flex items-center gap-2">
           <Icon className="text-secondary" name="filter" size={16} />
           <span className="text-sm font-bold text-ink">تصفية النتائج</span>
-          {activeCount > 0 ? (
+          {count > 0 ? (
             <span className="rounded-full bg-secondary/15 px-2 py-0.5 text-[0.65rem] font-bold text-[#8a7040]">
-              {activeCount}
+              {count}
             </span>
           ) : null}
         </span>
@@ -203,11 +229,11 @@ export function SearchFilters({
           <h2 className="hidden text-xs font-bold text-ink lg:block">تصفية النتائج</h2>
           <SearchTypeahead
             compact
-            defaultValue={selectedFilters.query}
+            defaultValue={draft.query}
             label="كلمة البحث"
             name="q"
             placeholder="سيارة، هاتف، عقار..."
-            selectedFilters={selectedFilters}
+            selectedFilters={draft}
             suggestions={suggestions}
           />
         </div>
@@ -216,20 +242,32 @@ export function SearchFilters({
           <div className="grid grid-cols-2 gap-2">
             <Select
               compact
-              defaultValue={selectedFilters.city}
               label="الإمارة"
               name="city"
+              onChange={(event) =>
+                setDraft({ ...draft, city: event.target.value, area: "" })
+              }
               options={[
                 { label: "جميع الإمارات", value: "" },
                 ...cities.map((city) => ({ label: city.name, value: city.name })),
               ]}
+              value={draft.city ?? ""}
             />
             {showCategory ? (
               <Select
                 compact
-                defaultValue={selectedFilters.category}
                 label="التصنيف"
                 name="category"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    category: event.target.value,
+                    specs: {},
+                    ranges: {},
+                    subcategory: "",
+                    area: "",
+                  })
+                }
                 options={[
                   { label: "كل التصنيفات", value: "" },
                   ...categories.map((category) => ({
@@ -237,17 +275,38 @@ export function SearchFilters({
                     value: category.id,
                   })),
                 ]}
+                value={draft.category ?? ""}
               />
             ) : (
-              <Select
-                compact
-                defaultValue={selectedFilters.sort}
-                label="الترتيب"
-                name="sort"
-                options={sortOptions}
-              />
+              <>
+                <input name="category" type="hidden" value={draft.category ?? ""} />
+                <Select
+                  compact
+                  defaultValue={draft.sort}
+                  label="الترتيب"
+                  name="sort"
+                  options={sortOptions}
+                />
+              </>
             )}
           </div>
+
+          <details className="group rounded-xl border border-border/80 bg-surface-muted/35 open:pb-1" open>
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-xs font-bold text-ink marker:content-none">
+              <span className="inline-flex items-center gap-1.5">
+                <Icon className="text-secondary" name="filter" size={14} />
+                فلاتر القسم
+              </span>
+              <Icon
+                className="text-muted transition group-open:rotate-180"
+                name="chevron-left"
+                size={14}
+              />
+            </summary>
+            <div className="grid gap-2 border-t border-border/70 px-3 pt-2.5 pb-2.5">
+              {smartFields}
+            </div>
+          </details>
 
           <details className="group rounded-xl border border-border/80 bg-surface-muted/35 open:pb-1">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-xs font-bold text-ink marker:content-none">
@@ -265,7 +324,7 @@ export function SearchFilters({
               <div className={showCategory ? "grid grid-cols-2 gap-2" : ""}>
                 <Select
                   compact
-                  defaultValue={selectedFilters.condition}
+                  defaultValue={draft.condition}
                   label="الحالة"
                   name="condition"
                   options={conditionOptions}
@@ -273,7 +332,7 @@ export function SearchFilters({
                 {showCategory ? (
                   <Select
                     compact
-                    defaultValue={selectedFilters.sort}
+                    defaultValue={draft.sort}
                     label="الترتيب"
                     name="sort"
                     options={sortOptions}
@@ -283,7 +342,7 @@ export function SearchFilters({
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   compact
-                  defaultValue={selectedFilters.minPrice}
+                  defaultValue={draft.minPrice}
                   inputMode="numeric"
                   label="أقل سعر (د.إ)"
                   min="0"
@@ -293,7 +352,7 @@ export function SearchFilters({
                 />
                 <Input
                   compact
-                  defaultValue={selectedFilters.maxPrice}
+                  defaultValue={draft.maxPrice}
                   inputMode="numeric"
                   label="أعلى سعر (د.إ)"
                   min="0"
@@ -306,7 +365,10 @@ export function SearchFilters({
           </details>
         </div>
 
-        <div className="shrink-0 border-t border-border/70 bg-surface px-4 py-3">
+        <div className="shrink-0 grid grid-cols-2 gap-2 border-t border-border/70 bg-surface px-4 py-3">
+          <Button href={resetHref} size="sm" type="button" variant="secondary">
+            إعادة تعيين
+          </Button>
           <Button
             className="motion-press w-full"
             size="sm"

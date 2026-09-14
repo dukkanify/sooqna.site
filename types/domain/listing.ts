@@ -132,6 +132,7 @@ export type Listing = {
 export type ListingSearchFilters = {
   area?: string;
   categoryId?: string;
+  categorySpecs?: Record<string, string>;
   city?: string;
   condition?: ListingCondition;
   country?: string;
@@ -143,4 +144,7 @@ export type ListingSearchFilters = {
   query?: string;
   sellerId?: string;
   sort?: "newest" | "price_asc" | "price_desc";
+  specMax?: Record<string, number>;
+  specMin?: Record<string, number>;
+  subcategory?: string;
 };

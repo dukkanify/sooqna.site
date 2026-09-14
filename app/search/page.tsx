@@ -3,37 +3,27 @@ import { MobileBottomNav } from "@/features/home/components/mobile/MobileBottomN
 import { RecordRecentSearch } from "@/features/search/components/RecordRecentSearch";
 import { SearchFilters } from "@/features/search/components/SearchFilters";
 import { SearchResultsList } from "@/features/search/components/SearchResultsList";
+import { parseSearchFilterState } from "@/features/search/components/search-url";
+import { toListingSearchFilters } from "@/features/search/lib/to-listing-filters";
 import { buildSearchSuggestions } from "@/features/search/components/search-suggestions";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { getCategories } from "@/services/categories";
 import { getSearchSuggestionTitles } from "@/services/listings/home-feed";
-import { searchListings } from "@/services/listings";
+import { countSearchListings, searchListings } from "@/services/listings";
 import { getRequestLocale } from "@/shared/i18n/locale";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-function getParam(params: SearchParams, key: string) {
-  const value = params[key];
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function getNumberParam(params: SearchParams, key: string) {
-  const value = getParam(params, key);
-  if (!value) return undefined;
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : undefined;
-}
-
 function parseHomePriceBand(band?: string): {
-  maxPrice?: number;
-  minPrice?: number;
+  maxPrice?: string;
+  minPrice?: string;
 } {
   if (!band) return {};
 
   if (band.endsWith("+")) {
     const minPrice = Number(band.slice(0, -1));
-    return Number.isFinite(minPrice) ? { minPrice } : {};
+    return Number.isFinite(minPrice) ? { minPrice: String(minPrice) } : {};
   }
 
   const [rawMin, rawMax] = band.split("-");
@@ -41,8 +31,8 @@ function parseHomePriceBand(band?: string): {
   const maxPrice = Number(rawMax);
 
   return {
-    ...(Number.isFinite(minPrice) ? { minPrice } : {}),
-    ...(Number.isFinite(maxPrice) ? { maxPrice } : {}),
+    ...(Number.isFinite(minPrice) ? { minPrice: String(minPrice) } : {}),
+    ...(Number.isFinite(maxPrice) ? { maxPrice: String(maxPrice) } : {}),
   };
 }
 
@@ -52,39 +42,23 @@ export default async function SearchPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const priceBand = parseHomePriceBand(getParam(params, "price"));
-  const selectedFilters = {
-    category: getParam(params, "category") ?? "",
-    city: getParam(params, "city") ?? "",
-    condition: getParam(params, "condition") ?? "",
-    country: getParam(params, "country") ?? "",
-    maxPrice: getParam(params, "maxPrice") ?? (priceBand.maxPrice?.toString() ?? ""),
-    minPrice: getParam(params, "minPrice") ?? (priceBand.minPrice?.toString() ?? ""),
-    query: getParam(params, "q") ?? "",
-    sort: getParam(params, "sort") ?? "newest",
-  };
+  const selectedFilters = parseSearchFilterState(params);
+  const priceBand = parseHomePriceBand(
+    Array.isArray(params.price) ? params.price[0] : params.price,
+  );
+  if (!selectedFilters.minPrice && priceBand.minPrice) {
+    selectedFilters.minPrice = priceBand.minPrice;
+  }
+  if (!selectedFilters.maxPrice && priceBand.maxPrice) {
+    selectedFilters.maxPrice = priceBand.maxPrice;
+  }
 
-  const [categories, listings, suggestionTitles, locale] = await Promise.all([
+  const listingFilters = toListingSearchFilters(selectedFilters);
+
+  const [categories, listings, total, suggestionTitles, locale] = await Promise.all([
     getCategories(),
-    searchListings({
-      categoryId: selectedFilters.category || undefined,
-      city: selectedFilters.city || undefined,
-      condition:
-        selectedFilters.condition === "new" ||
-        selectedFilters.condition === "used" ||
-        selectedFilters.condition === "excellent"
-          ? selectedFilters.condition
-          : undefined,
-      country: selectedFilters.country || undefined,
-      maxPrice: getNumberParam(params, "maxPrice") ?? priceBand.maxPrice,
-      minPrice: getNumberParam(params, "minPrice") ?? priceBand.minPrice,
-      query: selectedFilters.query || undefined,
-      sort:
-        selectedFilters.sort === "price_asc" ||
-        selectedFilters.sort === "price_desc"
-          ? selectedFilters.sort
-          : "newest",
-    }),
+    searchListings(listingFilters),
+    countSearchListings(listingFilters),
     getSearchSuggestionTitles(),
     getRequestLocale(),
   ]);
@@ -111,8 +85,8 @@ export default async function SearchPage({
                 : "اعثر على الإعلان المناسب"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-              فلترة دقيقة حسب الإمارة والتصنيف والسعر — نفس جودة عرض الإعلانات في
-              الصفحة الرئيسية.
+              فلاتر حسب التصنيف والمواصفات الحقيقية — الماركة والموديل والسنة
+              والإمارة تُحفظ في الرابط وتُطبَّق على الخادم.
             </p>
           </div>
 
@@ -133,6 +107,7 @@ export default async function SearchPage({
                 categories={categories}
                 listings={listings}
                 selectedFilters={selectedFilters}
+                serverTotal={total}
               />
             </div>
           </div>

@@ -6,6 +6,7 @@ import {
   detectModelFromText,
 } from "@/shared/constants/product-brand-models";
 import { LIVE_CARS_ALL_BRANDS } from "@/services/listings/live-cars-all-brands";
+import { EMIRATE_AREAS } from "@/shared/constants/emirate-areas";
 
 /** Provenance marker — not showcase/demo; public catalog keeps these. */
 export const LIVE_MARKETPLACE_SOURCE = "SOOQNA_LIVE_MARKETPLACE";
@@ -16,15 +17,10 @@ type EmiratePack = {
   areas: string[];
 };
 
-const EMIRATES: EmiratePack[] = [
-  { emirate: "دبي", areas: ["دبي مارينا", "الخليج التجاري", "جميرا", "البرشاء", "ند الشبا"] },
-  { emirate: "أبوظبي", areas: ["جزيرة ياس", "الخالدية", "الريم", "المشرف", "البطين"] },
-  { emirate: "الشارقة", areas: ["الناصرية", "المجاز", "الفلج", "المجاز 3", "القلعة"] },
-  { emirate: "عجمان", areas: ["الراشدية", "النعيمية", "الجرف", "المويهات"] },
-  { emirate: "أم القيوين", areas: ["المدينة القديمة", "الراشدية", "السلمة"] },
-  { emirate: "رأس الخيمة", areas: ["النخيل", "الحمرانية", "خزام", "الجزيرة الحمراء"] },
-  { emirate: "الفجيرة", areas: ["مدينة الفجيرة", "الفسيل", "الحيل", "قدفع"] },
-];
+const EMIRATES: EmiratePack[] = Object.entries(EMIRATE_AREAS).map(([emirate, areas]) => ({
+  emirate,
+  areas: [...areas],
+}));
 
 const SELLERS: ListingSeller[] = [
   {
@@ -1653,6 +1649,44 @@ function buildCategorySpecs(def: SeedDef): Record<string, string> {
     else specs.bedrooms = "2";
 
     specs.area = String(600 + (def.price % 4000));
+  }
+
+  if (def.categoryId === "jobs") {
+    specs.listingType = /باحث|seeker|resume|cv/i.test(text) ? "seeker" : "vacancy";
+    specs.position = def.titleEnglish.split("—")[0]?.trim() || def.titleEnglish;
+    if (/دوام كامل|Full Time/i.test(text)) specs.employmentType = "دوام كامل";
+    else if (/دوام جزئي|Part Time/i.test(text)) specs.employmentType = "دوام جزئي";
+    else if (/عن بُعد|Remote/i.test(text)) specs.employmentType = "عن بُعد";
+    else if (/عقد|Contract/i.test(text)) specs.employmentType = "عقد";
+    const emirateHit = ["دبي", "أبوظبي", "الشارقة", "عجمان", "رأس الخيمة", "الفجيرة", "أم القيوين"].find(
+      (name) => text.includes(name) || def.titleEnglish.includes(name),
+    );
+    if (emirateHit) specs.location = emirateHit;
+    if (/سنتين|2\+/i.test(text)) specs.experience = "سنتان فأكثر";
+  }
+
+  if (def.categoryId === "services") {
+    specs.serviceCategory = def.subcategory;
+  }
+
+  if (def.categoryId === "furniture") {
+    const furnitureMap: Record<string, string> = {
+      "غرف نوم": "غرف نوم",
+      كنب: "كنب",
+      "طاولات طعام": "طاولات طعام",
+      "أثاث خارجي": "أثاث خارجي",
+    };
+    specs.furnitureType = furnitureMap[def.subcategory] ?? "other";
+    if (specs.furnitureType === "other") specs.furnitureTypeOther = def.subcategory;
+    specs.condition = def.condition;
+  }
+
+  if (def.categoryId === "food") {
+    specs.saleType = /جملة|wholesale/i.test(text) ? "wholesale" : "retail";
+    if (/تمر|dates/i.test(text)) specs.cuisine = "أخرى";
+    else if (/حلويات|dessert/i.test(text)) specs.cuisine = "حلويات";
+    else if (/قهوة|coffee/i.test(text)) specs.cuisine = "مشروبات";
+    else specs.cuisine = "إماراتي";
   }
 
   if (def.categoryId === "fashion" && brand) {

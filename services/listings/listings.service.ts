@@ -1,8 +1,7 @@
 import { cache } from "react";
 import type { Listing, ListingSearchFilters } from "@/types";
-import { listingMatchesQuery } from "@/shared/listings/listing-specs";
 import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
-import { queryListings } from "@/services/listings/listing-queries";
+import { queryListings, countMatchingListings } from "@/services/listings/listing-queries";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import {
   getAllListings,
@@ -71,10 +70,6 @@ export async function getRelatedListings(
   });
 }
 
-function matchesQuery(listing: Listing, query: string): boolean {
-  return listingMatchesQuery(listing, query);
-}
-
 export async function searchListings(
   filters: ListingSearchFilters = {},
 ): Promise<Listing[]> {
@@ -82,6 +77,7 @@ export async function searchListings(
   const rows = await queryListings({
     area: filters.area,
     categoryId: filters.categoryId,
+    categorySpecs: filters.categorySpecs,
     city: filters.emirate ?? filters.city,
     condition: filters.condition,
     country: filters.country,
@@ -94,16 +90,40 @@ export async function searchListings(
     sellerId: filters.sellerId,
     slim: "card",
     sort: filters.sort ?? "newest",
+    specMax: filters.specMax,
+    specMin: filters.specMin,
     status: "active",
+    subcategory: filters.subcategory,
   });
 
-  const results = rows
-    .filter((listing) =>
-      normalizedQuery ? matchesQuery(listing, normalizedQuery) : true,
-    )
-    .filter((listing) =>
-      filters.premium ? listing.isPremium === true : true,
-    );
+  const results = rows.filter((listing) =>
+    filters.premium ? listing.isPremium === true : true,
+  );
 
   return results.slice(0, SEARCH_RESULT_LIMIT);
+}
+
+export async function countSearchListings(
+  filters: ListingSearchFilters = {},
+): Promise<number> {
+  const normalizedQuery = filters.query?.trim();
+  return countMatchingListings({
+    area: filters.area,
+    categoryId: filters.categoryId,
+    categorySpecs: filters.categorySpecs,
+    city: filters.emirate ?? filters.city,
+    condition: filters.condition,
+    country: filters.country,
+    emirate: filters.emirate ?? filters.city,
+    featured: filters.featured || undefined,
+    maxPrice: filters.maxPrice,
+    minPrice: filters.minPrice,
+    query: normalizedQuery,
+    sellerId: filters.sellerId,
+    sort: filters.sort ?? "newest",
+    specMax: filters.specMax,
+    specMin: filters.specMin,
+    status: "active",
+    subcategory: filters.subcategory,
+  });
 }

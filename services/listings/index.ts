@@ -5,6 +5,7 @@ export {
   getMyListings,
   getRelatedListings,
   searchListings,
+  countSearchListings,
 } from "./listings.service";
 
 export { getHomeFeed, getSearchSuggestionTitles } from "./home-feed";

@@ -7,6 +7,8 @@ import { MobileBottomNav } from "@/features/home/components/mobile/MobileBottomN
 import { RecordRecentSearch } from "@/features/search/components/RecordRecentSearch";
 import { SearchFilters } from "@/features/search/components/SearchFilters";
 import { SearchResultsList } from "@/features/search/components/SearchResultsList";
+import { parseSearchFilterState } from "@/features/search/components/search-url";
+import { toListingSearchFilters } from "@/features/search/lib/to-listing-filters";
 import { buildSearchSuggestions } from "@/features/search/components/search-suggestions";
 import { Badge } from "@/shared/ui/Badge";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
@@ -18,7 +20,7 @@ import {
   getCategoryBySlug,
 } from "@/services/categories";
 import { getSearchSuggestionTitles } from "@/services/listings/home-feed";
-import { searchListings } from "@/services/listings";
+import { countSearchListings, searchListings } from "@/services/listings";
 import { resultsCountLabel } from "@/shared/i18n/count-labels";
 import { getRequestLocale } from "@/shared/i18n/locale";
 import { tx } from "@/shared/i18n/tx";
@@ -41,18 +43,6 @@ type CategoryPageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<SearchParams>;
 };
-
-function getParam(params: SearchParams, key: string) {
-  const value = params[key];
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function getNumberParam(params: SearchParams, key: string) {
-  const value = getParam(params, key);
-  if (!value) return undefined;
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : undefined;
-}
 
 export async function generateStaticParams() {
   const categories = await getCategories();
@@ -99,37 +89,15 @@ export default async function CategoryPage({
   if (!category) notFound();
 
   const selectedFilters = {
+    ...parseSearchFilterState(queryParams),
     category: category.id,
-    city: getParam(queryParams, "city") ?? "",
-    condition: getParam(queryParams, "condition") ?? "",
-    country: getParam(queryParams, "country") ?? "",
-    maxPrice: getParam(queryParams, "maxPrice") ?? "",
-    minPrice: getParam(queryParams, "minPrice") ?? "",
-    query: getParam(queryParams, "q") ?? "",
-    sort: getParam(queryParams, "sort") ?? "newest",
   };
+  const listingFilters = toListingSearchFilters(selectedFilters);
 
-  const [categories, listings, suggestionTitles, locale] = await Promise.all([
+  const [categories, listings, total, suggestionTitles, locale] = await Promise.all([
     getCategories(),
-    searchListings({
-      categoryId: category.id,
-      city: selectedFilters.city || undefined,
-      condition:
-        selectedFilters.condition === "new" ||
-        selectedFilters.condition === "used" ||
-        selectedFilters.condition === "excellent"
-          ? selectedFilters.condition
-          : undefined,
-      country: selectedFilters.country || undefined,
-      maxPrice: getNumberParam(queryParams, "maxPrice"),
-      minPrice: getNumberParam(queryParams, "minPrice"),
-      query: selectedFilters.query || undefined,
-      sort:
-        selectedFilters.sort === "price_asc" ||
-        selectedFilters.sort === "price_desc"
-          ? selectedFilters.sort
-          : "newest",
-    }),
+    searchListings(listingFilters),
+    countSearchListings(listingFilters),
     getSearchSuggestionTitles(),
     getRequestLocale(),
   ]);
@@ -162,7 +130,7 @@ export default async function CategoryPage({
             {category.subcategories.map((subcategory) => (
               <ChipLink
                 key={subcategory}
-                href={`/categories/${category.slug}?q=${encodeURIComponent(subcategory)}`}
+                href={`/categories/${category.slug}?subcategory=${encodeURIComponent(subcategory)}`}
                 label={subcategory}
               />
             ))}
@@ -185,7 +153,7 @@ export default async function CategoryPage({
             <div>
               <div className="mt-0 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-ink">
-                  {resultsCountLabel(listings.length, locale)}
+                  {resultsCountLabel(total, locale)}
                 </p>
                 {ESCROW_CHECKOUT_CATEGORIES.has(category.id) ? (
                   <Badge variant="escrow">ضمان مالي على الإعلانات المؤهلة</Badge>
@@ -194,10 +162,12 @@ export default async function CategoryPage({
 
               <div className="mt-5">
                 <SearchResultsList
+                  basePath={`/categories/${category.slug}`}
                   categoryId={category.id}
                   categories={categories}
                   listings={listings}
                   selectedFilters={selectedFilters}
+                  serverTotal={total}
                 />
               </div>
             </div>

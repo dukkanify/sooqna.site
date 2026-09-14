@@ -82,6 +82,9 @@ export function SearchQuickFilters({
         mergeSearchFilters(selectedFilters, {
           category:
             selectedFilters.category === category.id ? "" : category.id,
+          specs: {},
+          ranges: {},
+          subcategory: "",
         }),
       ),
     })),

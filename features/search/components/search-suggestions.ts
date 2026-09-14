@@ -21,13 +21,20 @@ export function buildSearchSuggestions({
   const categoryItems: SearchSuggestion[] = categories.map((category) => ({
     kind: "category",
     label: category.name,
-    href: buildSearchUrl({ ...selectedFilters, category: category.id, query: "" }),
+    href: buildSearchUrl({
+      ...selectedFilters,
+      category: category.id,
+      query: "",
+      specs: {},
+      ranges: {},
+      subcategory: "",
+    }),
   }));
 
   const cityItems: SearchSuggestion[] = cities.map((city) => ({
     kind: "city",
     label: city.name,
-    href: buildSearchUrl({ ...selectedFilters, city: city.name, query: "" }),
+    href: buildSearchUrl({ ...selectedFilters, city: city.name, query: "", area: "" }),
   }));
 
   const listingItems: SearchSuggestion[] = listings.slice(0, 40).map((listing) => ({
