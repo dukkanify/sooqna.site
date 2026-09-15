@@ -2,16 +2,17 @@
 
 ## Important Disclaimer
 
-**Stripe is not an escrow provider.** In Phase 1, Sooqna:
+**Stripe is not an escrow provider.** Sooqna:
 
 1. Collects payment via Stripe Checkout into the **platform Stripe account**
-2. Tracks held amounts in an **internal escrow ledger** (`.data/wallets.json`)
-3. Releases funds to seller **available balance** when buyer confirms receipt
-4. Does **not** automatically transfer to seller bank accounts
+2. Tracks held amounts in an **internal escrow ledger**
+3. Releases funds when the buyer confirms receipt (or admin force-release)
+4. When the seller has an **ACTIVE** Stripe Connect Express account with payouts enabled, creates a **Connect Transfer** of `productPrice` to that account (idempotent per order)
+5. If Connect is missing or disabled, release stays **ledger-only** (`connectPayoutSkipReason` recorded) — release never hard-fails solely because the seller is not connected
 
-Real seller payouts require **Stripe Connect** in a future phase.
+Disable Connect transfers with `ENABLE_STRIPE_CONNECT_PAYOUTS=false` (ledger-only emergency / demo).
 
-## Phase 1 Model
+## Release model
 
 ```
 Buyer pays via Stripe
@@ -26,7 +27,11 @@ Buyer confirms received
         ↓
 Internal ledger: escrow_status = released
         ↓
-Seller wallet: pendingBalance → availableBalance
+If seller Connect ACTIVE + payouts enabled:
+  Stripe Transfer → seller Express account
+  Wallet: pending → available, then withdrawal offset (already paid via Connect)
+Else:
+  Wallet: pendingBalance → availableBalance only
 ```
 
 ## Order Statuses
@@ -67,6 +72,8 @@ Seller wallet: pendingBalance → availableBalance
 | Seller `pendingBalance` | − product price |
 | Seller `heldInEscrow` | − product price |
 | Seller `availableBalance` | + product price |
+| If Connect transfer succeeded | `availableBalance` − product price (`withdrawal` = paid out via Connect) |
+| Order | `stripeTransferId` set, or `connectPayoutSkipReason` when skipped |
 
 ### On refund
 
@@ -75,6 +82,7 @@ Seller wallet: pendingBalance → availableBalance
 | Seller `pendingBalance` | − product price (if held) |
 | Seller `heldInEscrow` | − product price |
 | Stripe | Refund issued to buyer's card |
+| If Connect transfer existed | Transfer reversal attempted before PI refund |
 
 ## Stripe Metadata
 
@@ -110,27 +118,28 @@ Every Checkout Session includes:
 
 1. Wallet pending balance increases on payment
 2. Notification: "دفعة جديدة محجوزة"
-3. Available balance increases after buyer confirms
-4. Notification: "تم تحويل المبلغ"
+3. `/wallet` — Connect onboarding card («ربط حساب الاستلام») for Express payouts
+4. After buyer confirms: Connect transfer when linked, otherwise available balance only
+5. Notification: "تم تحويل المبلغ"
 
 ## What Admins See
 
 - `/admin/orders` — all orders with Stripe PaymentIntent IDs
 - `/admin/escrow` — active holds and protected totals
 - `/admin/reports` — payment volume and event audit log
-- Manual refund action per order
+- `/admin/stripe` — platform Connect tooling
+- Manual refund action per order (reverses Connect transfer when present)
 
-## Production Gaps (Phase 2+)
+## Remaining gaps
 
-| Gap | Phase 2 solution |
-|-----|------------------|
-| No real seller payouts | Stripe Connect Express accounts |
-| File-based storage | PostgreSQL with ACID transactions |
-| No delivery workflow | Seller "mark delivered" + auto-release timer |
-| No dispute resolution | Dispute form linked to orders |
-| No KYC for sellers | UAE PASS + Connect onboarding |
-| Platform fund segregation | Separate Stripe balance or treasury account |
+| Gap | Notes |
+|-----|-------|
+| Connect eligibility | Purchasable goods categories only (`isPurchasableCategory`) — not cars/real-estate/jobs |
+| Delivery workflow | Seller proof + buyer confirm; optional auto-release timer still open |
+| Dispute resolution | Dispute form linked to orders (partial) |
+| KYC | UAE PASS optional; Connect onboarding is the payout KYC path |
+| Platform fund segregation | Separate Stripe balance / treasury still optional |
 
 ## Compliance Note
 
-Marketplace escrow regulations vary by jurisdiction. Phase 1 is suitable for **closed beta testing** with mock/real test payments. Production launch requires legal review of fund holding and payout obligations in the UAE.
+Marketplace escrow regulations vary by jurisdiction. Live card charging and Connect transfers require configured Stripe keys and legal review of fund holding and payout obligations in the UAE.

@@ -38,6 +38,10 @@ import {
   refundStripePayment,
   retrieveCheckoutSession,
 } from "@/services/payments/stripe.service";
+import {
+  reverseEscrowTransferToSeller,
+  transferEscrowToSeller,
+} from "@/services/payments/stripe-connect.service";
 import { addWalletTransaction } from "@/services/payments/wallet-ledger";
 import type { ListingSnapshot } from "@/services/payments/listing-resolver";
 import { hydrateListingCatalog } from "@/services/payments/listing-resolver";
@@ -539,6 +543,72 @@ export async function handlePaymentIntentFailed(
 }
 
 /** Shared escrow release path used by buyer confirm / match flows. */
+
+async function settleSellerEscrowPayout(order: Order): Promise<{
+  stripeTransferId?: string;
+  connectPayoutSkipReason?: string;
+}> {
+  if (order.stripeTransferId) {
+    return { stripeTransferId: order.stripeTransferId };
+  }
+
+  const payout = await transferEscrowToSeller({
+    orderId: order.id,
+    sellerId: order.sellerId,
+    amountAed: order.fees.productPrice,
+    existingTransferId: order.stripeTransferId,
+  });
+
+  if (payout.status === "transferred") {
+    return { stripeTransferId: payout.transferId };
+  }
+
+  return {
+    connectPayoutSkipReason: payout.reason,
+    ...(payout.transferId ? { stripeTransferId: payout.transferId } : {}),
+  };
+}
+
+/** True when this release created a new Connect transfer (not skipped / already done). */
+function isFreshConnectTransfer(payout: {
+  stripeTransferId?: string;
+  connectPayoutSkipReason?: string;
+}): boolean {
+  return Boolean(payout.stripeTransferId) && !payout.connectPayoutSkipReason;
+}
+
+/**
+ * Move escrow from pending → available. When Connect paid the seller, offset
+ * available with a withdrawal so the ledger does not imply a second cash payout.
+ */
+async function creditSellerEscrowRelease(
+  order: Order,
+  payout: { stripeTransferId?: string; connectPayoutSkipReason?: string },
+  description: string,
+): Promise<{ sellerNet: number; connectPaidOut: boolean }> {
+  const sellerNet = order.fees.productPrice;
+  await addWalletTransaction(order.sellerId, {
+    orderId: order.id,
+    type: "escrow_release",
+    amount: sellerNet,
+    description,
+    status: "completed",
+  });
+
+  const connectPaidOut = isFreshConnectTransfer(payout);
+  if (connectPaidOut) {
+    await addWalletTransaction(order.sellerId, {
+      orderId: order.id,
+      type: "withdrawal",
+      amount: -sellerNet,
+      description: `تحويل Stripe Connect — ${order.listingTitle}`,
+      status: "completed",
+    });
+  }
+
+  return { sellerNet, connectPaidOut };
+}
+
 async function releaseEscrowToSeller(
   order: Order,
   audit: { type: string; message: string },
@@ -601,21 +671,35 @@ async function releaseEscrowToSeller(
 
   if (!working) return undefined;
 
-  const sellerNet = order.fees.productPrice;
-  await addWalletTransaction(order.sellerId, {
-    orderId: order.id,
-    type: "escrow_release",
-    amount: sellerNet,
-    description: `تحويل ضمان — ${order.listingTitle}`,
-    status: "completed",
-  });
+  const payoutPatch = await settleSellerEscrowPayout(working);
+  if (payoutPatch.stripeTransferId || payoutPatch.connectPayoutSkipReason) {
+    working =
+      (await updateOrder(order.id, {
+        ...(payoutPatch.stripeTransferId
+          ? { stripeTransferId: payoutPatch.stripeTransferId }
+          : {}),
+        ...(payoutPatch.connectPayoutSkipReason
+          ? { connectPayoutSkipReason: payoutPatch.connectPayoutSkipReason }
+          : {}),
+      })) ?? working;
+  }
+
+  const { sellerNet, connectPaidOut } = await creditSellerEscrowRelease(
+    order,
+    payoutPatch,
+    `تحويل ضمان — ${order.listingTitle}`,
+  );
+
+  const sellerReleaseBody = connectPaidOut
+    ? `تم تحويل ${formatCurrencyLabel(sellerNet)} إلى حساب Stripe المرتبط لطلب «${order.listingTitle}».`
+    : `تم تحويل ${formatCurrencyLabel(sellerNet)} إلى رصيدك المتاح لطلب «${order.listingTitle}».`;
 
   await createNotification({
     userId: order.sellerId,
     orderId: order.id,
     type: "order_released",
     title: "تم تحويل المبلغ",
-    body: `تم تحويل ${formatCurrencyLabel(sellerNet)} إلى رصيدك المتاح لطلب «${order.listingTitle}».`,
+    body: sellerReleaseBody,
     href: `/orders/${order.id}`,
   });
 
@@ -645,7 +729,7 @@ async function releaseEscrowToSeller(
     type: "order_released",
     title: "تم تحويل المبلغ",
     subject: `تم تحويل مبلغ الطلب — ${order.listingTitle}`,
-    body: `تم تحويل المبلغ إلى رصيدك المتاح لطلب «${order.listingTitle}».`,
+    body: sellerReleaseBody,
   }).catch((error) => console.error("[Sooqna Email] order released email failed", error));
 
   if (working.status === "released") {
@@ -839,6 +923,19 @@ export async function refundOrder(
 
   if (order.status === "refunded") return order;
 
+  
+  if (order.stripeTransferId && isStripeConfigured()) {
+    try {
+      await reverseEscrowTransferToSeller({
+        orderId: order.id,
+        transferId: order.stripeTransferId,
+      });
+    } catch (error) {
+      console.error("[Sooqna Escrow] Connect transfer reversal failed", error);
+      throw error;
+    }
+  }
+
   if (
     !options?.skipStripe &&
     order.stripePaymentIntentId &&
@@ -1016,53 +1113,41 @@ export async function adminReleaseEscrow(
       },
     );
     if (!releasedMid) return undefined;
-
-    const sellerNet = order.fees.productPrice;
-    await addWalletTransaction(order.sellerId, {
-      orderId: order.id,
-      type: "escrow_release",
-      amount: sellerNet,
-      description: `تحرير إداري للضمان — ${order.listingTitle}`,
-      status: "completed",
-    });
-
-    await createNotification({
-      userId: order.sellerId,
-      orderId: order.id,
-      type: "order_released",
-      title: "تم تحويل المبلغ",
-      body: `حرّرت الإدارة ${formatCurrencyLabel(sellerNet)} إلى رصيدك لطلب «${order.listingTitle}».`,
-      href: `/orders/${order.id}`,
-    });
-    void emailOrderStatusToUser({
-      userId: order.sellerId,
-      orderId: order.id,
-      type: "order_released",
-      title: "تم تحويل المبلغ",
-      subject: `تحرير الضمان — ${order.listingTitle}`,
-      body: `حرّرت الإدارة المبلغ إلى رصيدك لطلب «${order.listingTitle}».`,
-    }).catch((error) => console.error("[Sooqna Email] admin release email failed", error));
-
-    return releasedMid;
+    working = releasedMid;
+    // Fall through to shared Connect + ledger settlement below.
   } else {
     throw new Error("INVALID_STATUS");
   }
 
-  const sellerNet = order.fees.productPrice;
-  await addWalletTransaction(order.sellerId, {
-    orderId: order.id,
-    type: "escrow_release",
-    amount: sellerNet,
-    description: `تحرير إداري للضمان — ${order.listingTitle}`,
-    status: "completed",
-  });
+  const payoutPatch = await settleSellerEscrowPayout(working);
+  if (payoutPatch.stripeTransferId || payoutPatch.connectPayoutSkipReason) {
+    working =
+      (await updateOrder(orderId, {
+        ...(payoutPatch.stripeTransferId
+          ? { stripeTransferId: payoutPatch.stripeTransferId }
+          : {}),
+        ...(payoutPatch.connectPayoutSkipReason
+          ? { connectPayoutSkipReason: payoutPatch.connectPayoutSkipReason }
+          : {}),
+      })) ?? working;
+  }
+
+  const { sellerNet, connectPaidOut } = await creditSellerEscrowRelease(
+    order,
+    payoutPatch,
+    `تحرير إداري للضمان — ${order.listingTitle}`,
+  );
+
+  const adminReleaseBody = connectPaidOut
+    ? `حرّرت الإدارة ${formatCurrencyLabel(sellerNet)} إلى حساب Stripe المرتبط لطلب «${order.listingTitle}».`
+    : `حرّرت الإدارة ${formatCurrencyLabel(sellerNet)} إلى رصيدك لطلب «${order.listingTitle}».`;
 
   await createNotification({
     userId: order.sellerId,
     orderId: order.id,
     type: "order_released",
     title: "تم تحويل المبلغ",
-    body: `حرّرت الإدارة ${formatCurrencyLabel(sellerNet)} إلى رصيدك لطلب «${order.listingTitle}».`,
+    body: adminReleaseBody,
     href: `/orders/${order.id}`,
   });
   void emailOrderStatusToUser({
@@ -1071,9 +1156,11 @@ export async function adminReleaseEscrow(
     type: "order_released",
     title: "تم تحويل المبلغ",
     subject: `تحرير الضمان — ${order.listingTitle}`,
-    body: `حرّرت الإدارة المبلغ إلى رصيدك لطلب «${order.listingTitle}».`,
+    body: adminReleaseBody,
   }).catch((error) => console.error("[Sooqna Email] admin release email failed", error));
 
-  const released = await updateOrder(orderId, { status: "released" });
-  return released;
+  if (working.status === "released") {
+    return working;
+  }
+  return updateOrder(orderId, { status: "released" });
 }

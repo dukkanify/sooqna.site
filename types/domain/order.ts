@@ -97,6 +97,10 @@ export type Order = {
   stripeCheckoutSessionId?: string;
   stripePaymentIntentId?: string;
   stripeRefundId?: string;
+  /** Stripe Connect transfer created when escrow is released to the seller. */
+  stripeTransferId?: string;
+  /** Why Connect payout was skipped, when release stayed ledger-only. */
+  connectPayoutSkipReason?: string;
   createdAt: string;
   updatedAt: string;
   paidAt?: string;

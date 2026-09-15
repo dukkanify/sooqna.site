@@ -22,7 +22,7 @@ See [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md).
 |------|------------|
 | **Data storage** | **Users, OTP, notifications, listings, featured payments, orders, disputes, escrow evidence, jobs/viewings/quotes, webhook claims, dispute reminders** prefer Postgres (`DATABASE_URL`). Chat/favorites/some admin JSON may still use file `data-store`. |
 | **Sessions** | Signed HMAC session cookies (`SESSION_SECRET` / `NEXTAUTH_SECRET`). Client cannot forge profiles via `/api/auth/session`. |
-| **Seller payouts** | Stripe Connect onboarding available from `/admin/stripe`; seller marketplace payouts still operational pending full Connect payout wiring |
+| **Seller payouts** | Escrow release creates a Stripe Connect Transfer when the seller’s Express account is ACTIVE with payouts enabled (`/wallet` onboarding + `/admin/stripe`). Otherwise release stays ledger-only (`connectPayoutSkipReason`). Set `ENABLE_STRIPE_CONNECT_PAYOUTS=false` to force ledger-only. |
 | **Escrow evidence** | Seller can upload photos/video for مضمون verification; durable evidence records in Postgres. Object storage (S3) not yet wired. |
 | **Images** | Client-side compression / data URLs; no cloud object storage |
 | **RBAC** | Module-level flags (not full View/Add/Edit/Delete/Approve/Export matrix). Super Admin empty permissions; Sub Admin assigned modules; Save Permissions required. |

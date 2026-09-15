@@ -8,6 +8,7 @@ import {
 import { LIVE_CARS_ALL_BRANDS } from "@/services/listings/live-cars-all-brands";
 import { LIVE_CARS_REMAINING_MODELS } from "@/services/listings/live-cars-remaining-models";
 import { EMIRATE_AREAS } from "@/shared/constants/emirate-areas";
+import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 
 /** Provenance marker — not showcase/demo; public catalog keeps these. */
 export const LIVE_MARKETPLACE_SOURCE = "SOOQNA_LIVE_MARKETPLACE";
@@ -1744,7 +1745,7 @@ function buildListing(def: SeedDef, index: number): Listing {
     imageUrl: images[0],
     seller: { ...seller },
     verifiedSeller: true,
-    escrowAvailable: def.categoryId === "cars" || def.categoryId === "real-estate",
+    escrowAvailable: isPurchasableCategory(def.categoryId),
     postedAt,
     expiresAt: "2026-12-31T23:59:59+04:00",
     contactMethod: "both",

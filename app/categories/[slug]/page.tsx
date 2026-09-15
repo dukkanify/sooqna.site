@@ -33,7 +33,6 @@ const ESCROW_CHECKOUT_CATEGORIES = new Set([
   "sports",
   "books",
   "food",
-  "cars",
 ]);
 
 type SearchParams = Record<string, string | string[] | undefined>;
