@@ -16,7 +16,7 @@ type CategoryMarkProps = {
 export function CategoryMark({
   category,
   className = "",
-  iconSize = 28,
+  iconSize = 32,
   selected = false,
   variant = "category",
 }: CategoryMarkProps) {
