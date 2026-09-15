@@ -88,6 +88,12 @@ function setCache(listings: Listing[]) {
   return cacheRows;
 }
 
+export function clearListingMemoryCache() {
+  cacheRows = null;
+  inflight = null;
+  bumpListingsCache();
+}
+
 async function applyListingExpiry(listings: Listing[]): Promise<Listing[]> {
   if (expiryApplied) return listings;
   expiryApplied = true;
