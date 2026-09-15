@@ -1,14 +1,18 @@
 import type { Listing } from "@/types";
 import { getListingImageUrl } from "@/features/listings/components/listing-card.utils";
 
-/** Preferred showcase slugs for the app-download phone mockup. */
+/**
+ * Preferred live-catalog slugs for the app-download phone mockup.
+ * Match prefix/contains so indexed slugs like `mercedes-amg-g63-2024-003` still hit.
+ */
 export const APP_PREVIEW_LISTING_SLUGS = [
   "mercedes-amg-g63-2024",
-  "iphone-16-pro-max-256gb",
-  "toyota-land-cruiser-2023",
-  "samsung-galaxy-s25-ultra",
-  "bmw-x7-2023",
-  "apartment-downtown-dubai",
+  "playstation-5",
+  "iphone-16-pro-max",
+  "toyota-land-cruiser",
+  "samsung-galaxy-s25",
+  "bmw-x7",
+  "furnished-2br",
 ] as const;
 
 export function getAppPreviewImageUrl(listing: Listing): string | undefined {
@@ -17,6 +21,11 @@ export function getAppPreviewImageUrl(listing: Listing): string | undefined {
 
 function hasCover(listing: Listing): boolean {
   return Boolean(getListingImageUrl(listing));
+}
+
+function listingMatchesPreviewSlug(listing: Listing, needle: string): boolean {
+  const slug = listing.slug;
+  return slug === needle || slug.startsWith(`${needle}-`) || slug.includes(needle);
 }
 
 /** Ranked catalog cards for the phone screen — real covers only, no mock fallback. */
@@ -30,9 +39,8 @@ export function resolveAppPreviewListings(listings: Listing[]): Listing[] {
     picked.push(listing);
   };
 
-  const bySlug = new Map(listings.map((listing) => [listing.slug, listing]));
-  for (const slug of APP_PREVIEW_LISTING_SLUGS) {
-    take(bySlug.get(slug));
+  for (const needle of APP_PREVIEW_LISTING_SLUGS) {
+    take(listings.find((listing) => listingMatchesPreviewSlug(listing, needle)));
   }
   for (const listing of listings) {
     if (picked.length >= 6) break;
