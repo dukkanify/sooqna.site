@@ -753,7 +753,11 @@ export async function submitSellerProof(
   }
 
   const eligible =
-    order.status === "paid_held_in_escrow" || order.status === "delivered";
+    order.status === "paid_held_in_escrow" ||
+    order.status === "seller_preparing" ||
+    order.status === "shipped" ||
+    order.status === "ready_for_pickup" ||
+    order.status === "delivered";
   if (!eligible) {
     throw new Error("INVALID_STATUS");
   }
@@ -795,15 +799,23 @@ export async function submitSellerProof(
   }
 
   const urls = evidence.map((item) => item.storageUrl);
+  const nextStatus =
+    order.status === "paid_held_in_escrow" ||
+    order.status === "seller_preparing" ||
+    order.status === "shipped" ||
+    order.status === "ready_for_pickup"
+      ? ("delivered" as const)
+      : order.status;
   const updated = await updateOrder(
     orderId,
     {
-            sellerProofUrls: urls,
+      sellerProofUrls: urls,
       sellerProofNote: note?.trim() || undefined,
       sellerProofAt: new Date().toISOString(),
+      deliveredAt: new Date().toISOString(),
       productVerificationStatus: "awaiting_buyer" as const,
       productVerificationVersion: (order.productVerificationVersion ?? 0) + 1,
-      status: order.status === "paid_held_in_escrow" ? "delivered" : order.status,
+      status: nextStatus,
     },
     {
       type: "seller_proof_submitted",

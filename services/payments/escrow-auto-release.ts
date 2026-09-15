@@ -1,4 +1,5 @@
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
+import { getAdminDisputes } from "@/services/admin/dispute-store";
 import { getAllOrders } from "@/services/payments/order-store";
 import { adminReleaseEscrow } from "@/services/payments/order-service";
 import { createNotification } from "@/services/payments/notification-store";
@@ -23,7 +24,22 @@ function daysBetween(fromIso: string, to = new Date()): number {
 export async function processEscrowAutoRelease(): Promise<AutoReleaseResult> {
   const settings = await getAdminSettings();
   const holdDays = Math.max(1, settings.escrowHoldDays ?? 7);
-  const orders = await getAllOrders();
+  const [orders, disputes] = await Promise.all([
+    getAllOrders(),
+    getAdminDisputes(),
+  ]);
+  const openDisputeOrderIds = new Set(
+    disputes
+      .filter((d) =>
+        [
+          "open",
+          "under_review",
+          "needs_buyer_info",
+          "needs_seller_info",
+        ].includes(d.status),
+      )
+      .map((d) => d.orderId),
+  );
 
   const result: AutoReleaseResult = {
     scanned: 0,
@@ -36,9 +52,13 @@ export async function processEscrowAutoRelease(): Promise<AutoReleaseResult> {
     const held =
       order.escrowStatus === "held" ||
       order.status === "paid_held_in_escrow" ||
+      order.status === "seller_preparing" ||
+      order.status === "shipped" ||
+      order.status === "ready_for_pickup" ||
       order.status === "delivered";
     if (!held) continue;
     if (order.status === "disputed" || order.status === "refunded") continue;
+    if (openDisputeOrderIds.has(order.id)) continue;
     if (!order.sellerProofAt) continue;
 
     result.scanned += 1;

@@ -17,6 +17,9 @@ type OrderStatusContentProps = {
 const statusLabels: Record<Order["status"], string> = {
   pending_payment: "بانتظار الدفع",
   paid_held_in_escrow: "مدفوع — محجوز في الضمان",
+  seller_preparing: "البائع يجهّز الطلب",
+  shipped: "تم الشحن",
+  ready_for_pickup: "جاهز للاستلام",
   delivered: "تم التسليم",
   confirmed: "تم التأكيد",
   released: "تم التحويل",

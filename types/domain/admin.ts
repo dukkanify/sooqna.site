@@ -11,8 +11,11 @@ import type {
 export type DisputeStatus =
   | "open"
   | "under_review"
+  | "needs_buyer_info"
+  | "needs_seller_info"
   | "resolved_buyer"
   | "resolved_seller"
+  | "partial_resolution"
   | "closed";
 
 export type AdminUserRecord = {

@@ -15,8 +15,11 @@ import { Select } from "@/shared/ui/Select";
 const statusLabels: Record<DisputeStatus, string> = {
   open: "مفتوح",
   under_review: "قيد المراجعة",
+  needs_buyer_info: "بانتظار المشتري",
+  needs_seller_info: "بانتظار البائع",
   resolved_buyer: "لصالح المشتري",
   resolved_seller: "لصالح البائع",
+  partial_resolution: "حل جزئي",
   closed: "مغلق",
 };
 
@@ -25,8 +28,11 @@ const filterOptions = [
   { label: "الكل", value: "all" },
   { label: statusLabels.open, value: "open" },
   { label: statusLabels.under_review, value: "under_review" },
+  { label: statusLabels.needs_buyer_info, value: "needs_buyer_info" },
+  { label: statusLabels.needs_seller_info, value: "needs_seller_info" },
   { label: statusLabels.resolved_buyer, value: "resolved_buyer" },
   { label: statusLabels.resolved_seller, value: "resolved_seller" },
+  { label: statusLabels.partial_resolution, value: "partial_resolution" },
   { label: statusLabels.closed, value: "closed" },
 ];
 
@@ -34,8 +40,16 @@ function disputeBadgeVariant(
   status: DisputeStatus,
 ): "pending" | "verified" | "rejected" | "muted" | "escrow" {
   if (status === "open") return "pending";
-  if (status === "under_review") return "escrow";
-  if (status === "resolved_buyer") return "verified";
+  if (
+    status === "under_review" ||
+    status === "needs_buyer_info" ||
+    status === "needs_seller_info"
+  ) {
+    return "escrow";
+  }
+  if (status === "resolved_buyer" || status === "partial_resolution") {
+    return "verified";
+  }
   if (status === "resolved_seller") return "muted";
   return "rejected";
 }
@@ -57,8 +71,13 @@ export function AdminDisputesPanel() {
   const filtered = useMemo(() => {
     if (statusFilter === "all") return disputes;
     if (statusFilter === "openish") {
-      return disputes.filter(
-        (d) => d.status === "open" || d.status === "under_review",
+      return disputes.filter((d) =>
+        [
+          "open",
+          "under_review",
+          "needs_buyer_info",
+          "needs_seller_info",
+        ].includes(d.status),
       );
     }
     return disputes.filter((d) => d.status === statusFilter);
