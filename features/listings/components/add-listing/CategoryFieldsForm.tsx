@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CategoryFieldDefinition, CategorySpecs, Listing, ListingCondition } from "@/types";
 import { getCategoryFields, isDynamicCategory } from "@/shared/constants/category-fields";
+import { getModelsForBrand } from "@/shared/constants/product-brand-models";
 import { BrandCombobox } from "@/shared/ui/BrandCombobox";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
@@ -10,6 +11,7 @@ import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import type { CategoryFieldOption } from "@/types";
 import {
   addListingCheckboxGridClass,
   addListingCheckboxGroupClass,
@@ -68,9 +70,16 @@ function renderField(
   defaults: CategoryFieldsDefaults | undefined,
   selectedFeatures: string[],
   onSpecChange: (key: string, value: string) => void,
+  optionsOverride?: CategoryFieldOption[],
+  remountKey?: string,
+  currentValue?: string,
 ) {
   const name = `spec_${field.key}`;
-  const defaultValue = getSpecValue(defaults, field.key);
+  const defaultValue =
+    currentValue !== undefined
+      ? currentValue
+      : getSpecValue(defaults, field.key);
+  const options = optionsOverride ?? field.options ?? [];
 
   if (field.type === "textarea") {
     return (
@@ -96,7 +105,7 @@ function renderField(
         label={field.label}
         name={name}
         onChange={(event) => onSpecChange(field.key, event.target.value)}
-        options={field.options ?? []}
+        options={options}
         required={field.required}
       />
     );
@@ -105,12 +114,13 @@ function renderField(
   if (field.type === "combobox") {
     return (
       <BrandCombobox
-        key={field.key}
+        key={remountKey ?? field.key}
         compact
         defaultValue={defaultValue !== undefined ? String(defaultValue) : undefined}
         label={field.label}
         name={name}
-        options={field.options ?? []}
+        onValueChange={(value) => onSpecChange(field.key, value)}
+        options={options}
         placeholder={field.placeholder}
         required={field.required}
       />
@@ -231,7 +241,26 @@ export function CategoryFieldsForm({
       : defaults?.condition;
 
   function onSpecChange(key: string, value: string) {
-    setSpecs((prev) => ({ ...prev, [key]: value }));
+    setSpecs((prev) => {
+      const next = { ...prev, [key]: value };
+      // Cars/mobiles/electronics: changing brand clears a stale model.
+      if (key === "brand") {
+        next.model = "";
+      }
+      return next;
+    });
+  }
+
+  function optionsForField(field: CategoryFieldDefinition): CategoryFieldOption[] | undefined {
+    if (
+      field.key === "model" &&
+      (categoryId === "cars" ||
+        categoryId === "mobiles" ||
+        categoryId === "electronics")
+    ) {
+      return getModelsForBrand(categoryId, specs.brand);
+    }
+    return undefined;
   }
 
   return (
@@ -280,7 +309,19 @@ export function CategoryFieldsForm({
                 key={field.key}
                 className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
               >
-                {renderField(field, defaults, selectedFeatures, onSpecChange)}
+                {renderField(
+                  field,
+                  defaults,
+                  selectedFeatures,
+                  onSpecChange,
+                  optionsForField(field),
+                  field.key === "model"
+                    ? `model-${categoryId}-${specs.brand ?? ""}`
+                    : undefined,
+                  field.key === "brand" || field.key === "model"
+                    ? (specs[field.key] ?? "")
+                    : undefined,
+                )}
                 {field.note ? (
                   <p className="mt-1 text-xs text-muted">{field.note}</p>
                 ) : null}
