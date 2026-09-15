@@ -23,6 +23,14 @@ export function isMockSeedListingId(id: string): boolean {
 
 const QA_SELLER_NAMES = new Set(["Preview E2E User", "QA26 User"]);
 
+/**
+ * Live junk rows that must stay out of the public catalog (id/slug evidence only).
+ * `local-1789075968004` is keyboard-mash "Sony iPad Pro" — kept in DB / QA blocklist,
+ * but must not appear in search, home, or public detail pages.
+ */
+const PUBLIC_HIDDEN_LISTING_IDS = new Set(["local-1789075968004"]);
+const PUBLIC_HIDDEN_LISTING_SLUGS = new Set(["sony-ipad-pro"]);
+
 export type FixtureListingRef = {
   id?: string;
   slug?: string;
@@ -58,6 +66,8 @@ export function isConfirmedFixtureListing(listing: FixtureListingRef): boolean {
   if (id && isMockSeedListingId(id)) return true;
   if (slug && isMockSeedListingId(slug)) return true;
   if (slug === "office-business-bay") return true;
+  if (id && PUBLIC_HIDDEN_LISTING_IDS.has(id)) return true;
+  if (slug && PUBLIC_HIDDEN_LISTING_SLUGS.has(slug)) return true;
   if (isE2eFixtureKey(id) || isE2eFixtureKey(slug)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(id)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(slug)) return true;
@@ -91,4 +101,6 @@ export const FIXTURE_LISTING_SQL = `(
   OR id ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR slug ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR slug = 'office-business-bay'
+  OR id = 'local-1789075968004'
+  OR slug = 'sony-ipad-pro'
 )`;
