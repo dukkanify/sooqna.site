@@ -190,14 +190,7 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const tel = getTelHref(listing);
   const whatsapp = getWhatsAppHref(listing, getListingCanonicalUrl(listing));
   const primaryLabel = getListingActionLabel(listing, config.primaryAction);
-  const showGoldCta =
-    !isOwn &&
-    (config.showBuyNow ||
-      config.primaryAction === "BOOK_VIEWING" ||
-      config.primaryAction === "APPLY_JOB" ||
-      config.primaryAction === "REQUEST_QUOTE" ||
-      config.primaryAction === "BOOK_SERVICE" ||
-      config.primaryAction === "RESERVE");
+  const showGoldCta = !isOwn && config.showBuyNow;
   const showContactIcons = !isOwn;
 
   function handleBuyNow() {
@@ -224,7 +217,7 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
       <div
         className={`mobile-sticky-bar__inner${showGoldCta ? "" : " mobile-sticky-bar__inner--icons-only"}`}
       >
-        {showGoldCta && config.showBuyNow ? (
+        {showGoldCta ? (
           <button
             className="focus-ring mobile-sticky-bar__cta"
             onClick={handleBuyNow}
@@ -233,15 +226,6 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
             <Icon name="package" size={18} />
             {primaryLabel}
           </button>
-        ) : showGoldCta ? (
-          <div className="mobile-sticky-bar__cta-shell">
-            <ListingPrimaryAction
-              action={config.primaryAction}
-              className="mobile-sticky-bar__cta"
-              listing={listing}
-              size="sm"
-            />
-          </div>
         ) : null}
 
         {showContactIcons ? (
