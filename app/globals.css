@@ -314,8 +314,8 @@ textarea {
   z-index: 1;
   pointer-events: none;
   background:
-    linear-gradient(160deg, rgb(11 22 40 / 18%) 0%, rgb(11 22 40 / 42%) 48%, rgb(6 13 24 / 78%) 100%),
-    radial-gradient(circle at 50% 42%, rgb(11 22 40 / 8%), rgb(11 22 40 / 45%) 72%);
+    linear-gradient(165deg, rgb(11 22 40 / 28%) 0%, rgb(11 22 40 / 55%) 45%, rgb(6 13 24 / 82%) 100%),
+    radial-gradient(circle at 50% 45%, rgb(11 22 40 / 12%), rgb(11 22 40 / 55%) 70%);
 }
 
 .category-mark--solid .category-mark__scrim {
@@ -344,31 +344,34 @@ textarea {
   z-index: 3;
   display: grid;
   place-items: center;
-  width: 52%;
+  width: 72%;
   aspect-ratio: 1;
-  max-width: 3.1rem;
+  max-width: 4.25rem;
   border-radius: 999px;
   color: var(--category-mark-ink);
-  background: rgb(11 22 40 / 58%);
-  border: 1.5px solid rgb(201 169 98 / 55%);
+  background: rgb(11 22 40 / 72%);
+  border: 2px solid rgb(240 215 140 / 70%);
   box-shadow:
-    0 4px 14px rgb(0 0 0 / 35%),
-    inset 0 1px 0 rgb(255 255 255 / 18%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+    0 6px 18px rgb(0 0 0 / 45%),
+    0 0 0 4px rgb(11 22 40 / 28%),
+    inset 0 1px 0 rgb(255 255 255 / 22%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .category-mark--solid .category-mark__badge,
 .category-mark--more .category-mark__badge {
-  width: 58%;
-  max-width: 3.35rem;
-  background: rgb(255 255 255 / 8%);
-  border-color: rgb(201 169 98 / 45%);
+  width: 70%;
+  max-width: 4rem;
+  background: rgb(255 255 255 / 10%);
+  border-color: rgb(240 215 140 / 65%);
 }
 
 .category-mark__glyph {
   display: block;
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 35%));
+  width: 58% !important;
+  height: 58% !important;
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 45%));
 }
 
 .category-mark--selected {

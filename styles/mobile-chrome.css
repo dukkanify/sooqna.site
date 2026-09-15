@@ -1,7 +1,7 @@
 /* Shared mobile chrome used outside the homepage (bottom nav, category thumbs, location). */
 
 :root {
-  --mh-category-icon: clamp(3.25rem, 11vw, 4.5rem);
+  --mh-category-icon: clamp(3.75rem, 12vw, 5rem);
 }
 
 .drag-scroll-row {
