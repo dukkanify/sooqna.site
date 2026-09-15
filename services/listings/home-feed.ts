@@ -10,7 +10,6 @@ import {
   LISTINGS_CACHE_TAG,
 } from "@/services/listings/listings-cache";
 import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
-import { unsplashUrl, verifiedPhotoPools } from "@/shared/constants/image-fallbacks";
 
 export type HomeListingCard = Listing;
 export { slimListingForCard };
@@ -60,7 +59,7 @@ function uniqueUrls(urls: string[]): string[] {
   return out;
 }
 
-/** Candidate covers for a listing: own media first, then regenerated product gallery. */
+/** Candidate covers for a listing: own media first, then same-product gallery only. */
 function coverCandidates(listing: Listing): string[] {
   const own = [
     ...(listing.images ?? []),
@@ -69,6 +68,7 @@ function coverCandidates(listing: Listing): string[] {
     .map((url) => url?.trim())
     .filter((url): url is string => Boolean(url));
 
+  // Stay inside the listing's product-kind pool so a Patrol never gets a Mustang cover.
   const generated = galleryForListingProduct({
     categoryId: listing.categoryId,
     count: 8,
@@ -77,17 +77,16 @@ function coverCandidates(listing: Listing): string[] {
     titleEnglish: listing.titleEnglish,
   });
 
-  const categoryPool = verifiedPhotoPools[
-    listing.categoryId as keyof typeof verifiedPhotoPools
-  ];
-  const categoryUrls = categoryPool
-    ? categoryPool.map((photoId) => unsplashUrl(photoId, 1200))
-    : [];
-
-  return uniqueUrls([...own, ...generated, ...categoryUrls]);
+  return uniqueUrls([...own, ...generated]);
 }
 
 function withCover(listing: Listing, cover: string): Listing {
+  const original = coverKey(listing.imageUrl) || coverKey(listing.images?.[0]);
+  const nextKey = coverKey(cover);
+  // Prefer keeping the original photo when it is still unique on the page.
+  if (original && original === nextKey) {
+    return listing;
+  }
   return {
     ...listing,
     imageUrl: cover,
@@ -97,8 +96,8 @@ function withCover(listing: Listing, cover: string): Listing {
 
 /**
  * Pick listings without repeating ids OR cover photos.
- * If a listing's cover was already shown, rotate to another candidate image;
- * if none left, skip it and keep scanning the pool.
+ * Pass 1 keeps original covers when unique; pass 2 rotates within the same
+ * product gallery only; listings that still collide are skipped.
  */
 function takeDiverse(
   listings: Listing[],
@@ -108,17 +107,27 @@ function takeDiverse(
 ): Listing[] {
   const out: Listing[] = [];
 
-  for (const listing of listings) {
-    if (out.length >= limit) break;
-    if (usedIds.has(listing.id)) continue;
-
+  const tryTake = (listing: Listing, allowRemap: boolean) => {
+    if (out.length >= limit || usedIds.has(listing.id)) return;
     const candidates = coverCandidates(listing);
-    const fresh = candidates.find((url) => !usedCovers.has(coverKey(url)));
-    if (!fresh) continue;
-
+    const preferred = allowRemap
+      ? candidates.find((url) => !usedCovers.has(coverKey(url)))
+      : candidates[0] && !usedCovers.has(coverKey(candidates[0]))
+        ? candidates[0]
+        : undefined;
+    if (!preferred) return;
     usedIds.add(listing.id);
-    usedCovers.add(coverKey(fresh));
-    out.push(withCover(listing, fresh));
+    usedCovers.add(coverKey(preferred));
+    out.push(withCover(listing, preferred));
+  };
+
+  for (const listing of listings) {
+    tryTake(listing, false);
+    if (out.length >= limit) return out;
+  }
+  for (const listing of listings) {
+    tryTake(listing, true);
+    if (out.length >= limit) return out;
   }
 
   return out;
@@ -175,7 +184,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v12-unique-covers"],
+  ["sooqna-home-feed-v13-unique-matched-covers"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],
