@@ -9,6 +9,7 @@ import {
   type SearchFilterState,
 } from "@/features/search/components/search-url";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 import type { Category, Listing } from "@/types";
 import { ListingCard } from "@/features/listings/components/ListingCard";
 import { MARKETPLACE_LISTING_GRID_CLASS } from "@/features/listings/components/listing-card.utils";
@@ -62,6 +63,7 @@ export function SearchResultsList({
     const matchingLocalListings = localListings
       .filter((listing) => listing.status === "active")
       .filter((listing) => !isConfirmedFixtureListing(listing))
+      .filter((listing) => !isShowcaseListing(listing))
       .filter((listing) => listingMatchesSmartFilters(listing, listingFilters))
       .filter((listing) => !listings.some((item) => item.id === listing.id));
 

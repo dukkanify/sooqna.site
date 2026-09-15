@@ -3,6 +3,7 @@ import type { Listing, ListingSearchFilters } from "@/types";
 import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { queryListings, countMatchingListings } from "@/services/listings/listing-queries";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 import {
   getAllListings,
   getListingBySlug as getStoredListingBySlug,
@@ -10,8 +11,8 @@ import {
 
 export type { ListingSearchFilters };
 
-const SEARCH_FETCH_LIMIT = 60;
-const SEARCH_RESULT_LIMIT = 48;
+const SEARCH_FETCH_LIMIT = 280;
+const SEARCH_RESULT_LIMIT = 260;
 const RELATED_LIMIT = 3;
 
 export const getListings = cache(async (): Promise<Listing[]> => {
@@ -37,7 +38,10 @@ export async function getListingBySlug(
 ): Promise<Listing | undefined> {
   const listing = await getStoredListingBySlug(slug);
   if (!listing) return undefined;
-  if (options?.includeFixtures !== true && isConfirmedFixtureListing(listing)) {
+  if (
+    options?.includeFixtures !== true &&
+    (isConfirmedFixtureListing(listing) || isShowcaseListing(listing))
+  ) {
     return undefined;
   }
   const copy = { ...listing };

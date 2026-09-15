@@ -8,12 +8,12 @@ import {
 import { bumpListingsCache } from "@/services/listings/listings-cache";
 
 const LIVE_CATALOG_VERSION_KEY = "live_marketplace_catalog_version";
-const LIVE_CATALOG_VERSION = "v6-matched-car-media";
+const LIVE_CATALOG_VERSION = "v7-all-car-models";
 
 let ensureInflight: Promise<number> | null = null;
 
 /**
- * Publish the 100 professional live marketplace listings.
+ * Publish the professional live marketplace listings.
  * Inserts missing rows, and force-refreshes when catalog version bumps.
  */
 export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
