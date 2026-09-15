@@ -316,10 +316,8 @@ textarea {
   position: relative;
   z-index: 1;
   display: block;
-  width: 46% !important;
-  height: 46% !important;
-  max-width: 2.15rem;
-  max-height: 2.15rem;
+  width: 52% !important;
+  height: 52% !important;
 }
 
 .category-mark--selected {
