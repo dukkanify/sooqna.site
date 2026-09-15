@@ -2,13 +2,22 @@
 
 import Link from "next/link";
 import type { Category } from "@/types";
+import { cities } from "@/shared/constants/locations";
+import { DragScrollRow } from "@/shared/components/DragScrollRow";
 import {
   buildSearchUrl,
   mergeSearchFilters,
   type SearchFilterState,
 } from "./search-url";
 
+export const SEARCH_PRICE_BANDS = [
+  { label: "حتى 20 ألف", maxPrice: "20000" },
+  { label: "حتى 50 ألف", maxPrice: "50000" },
+  { label: "حتى 100 ألف", maxPrice: "100000" },
+] as const;
+
 type SearchQuickFiltersProps = {
+  basePath?: string;
   categories: Category[];
   selectedFilters: SearchFilterState;
 };
@@ -19,95 +28,113 @@ type QuickChip = {
   label: string;
 };
 
+function ChipRail({
+  ariaLabel,
+  chips,
+}: {
+  ariaLabel: string;
+  chips: QuickChip[];
+}) {
+  return (
+    <DragScrollRow
+      ariaLabel={ariaLabel}
+      className="-mx-1 flex snap-x gap-2 overflow-x-auto overscroll-x-contain px-1 pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {chips.map((chip) => (
+        <Link
+          key={`${chip.label}-${chip.href}`}
+          className={`inline-flex h-9 shrink-0 snap-start items-center rounded-full border px-3.5 text-xs font-bold transition ${
+            chip.active
+              ? "border-[#c9a45c] bg-[#c9a45c] text-[#0b1628]"
+              : "border-border bg-surface text-ink hover:border-[#c9a45c]/50 hover:bg-secondary-soft"
+          }`}
+          href={chip.href}
+        >
+          {chip.label}
+        </Link>
+      ))}
+    </DragScrollRow>
+  );
+}
+
 export function SearchQuickFilters({
+  basePath = "/search",
   categories,
   selectedFilters,
 }: SearchQuickFiltersProps) {
-  const topCategories = categories.slice(0, 4);
+  const hrefFor = (patch: Partial<SearchFilterState>) =>
+    buildSearchUrl(mergeSearchFilters(selectedFilters, patch), undefined, basePath);
 
-  const chips: QuickChip[] = [
+  const emirateChips: QuickChip[] = [
     {
-      label: "جديد",
-      active: selectedFilters.condition === "new",
-      href: buildSearchUrl(
-        mergeSearchFilters(selectedFilters, {
-          condition: selectedFilters.condition === "new" ? "" : "new",
-        }),
-      ),
+      label: "كل الإمارات",
+      active: !selectedFilters.city,
+      href: hrefFor({ city: "", area: "" }),
     },
-    {
-      label: "أقل من 50 ألف",
-      active: selectedFilters.maxPrice === "50000" && !selectedFilters.minPrice,
-      href: buildSearchUrl(
-        mergeSearchFilters(selectedFilters, {
-          maxPrice:
-            selectedFilters.maxPrice === "50000" && !selectedFilters.minPrice
-              ? ""
-              : "50000",
-          minPrice: "",
-        }),
-      ),
-    },
-    {
-      label: "دبي",
-      active: selectedFilters.city === "دبي",
-      href: buildSearchUrl(
-        mergeSearchFilters(selectedFilters, {
-          city: selectedFilters.city === "دبي" ? "" : "دبي",
-        }),
-      ),
-    },
-    {
-      label: "أبوظبي",
-      active: selectedFilters.city === "أبوظبي",
-      href: buildSearchUrl(
-        mergeSearchFilters(selectedFilters, {
-          city: selectedFilters.city === "أبوظبي" ? "" : "أبوظبي",
-        }),
-      ),
-    },
-    {
-      label: "الأرخص",
-      active: selectedFilters.sort === "price_asc",
-      href: buildSearchUrl(
-        mergeSearchFilters(selectedFilters, {
-          sort: selectedFilters.sort === "price_asc" ? "newest" : "price_asc",
-        }),
-      ),
-    },
-    ...topCategories.map((category) => ({
-      label: category.name,
-      active: selectedFilters.category === category.id,
-      href: buildSearchUrl(
-        mergeSearchFilters(selectedFilters, {
-          category:
-            selectedFilters.category === category.id ? "" : category.id,
-          specs: {},
-          ranges: {},
-          subcategory: "",
-        }),
-      ),
+    ...cities.map((city) => ({
+      label: city.name,
+      active: selectedFilters.city === city.name,
+      href: hrefFor({
+        city: selectedFilters.city === city.name ? "" : city.name,
+        area: "",
+      }),
     })),
   ];
 
+  const priceChips: QuickChip[] = [
+    {
+      label: "أي سعر",
+      active: !selectedFilters.maxPrice && !selectedFilters.minPrice,
+      href: hrefFor({ maxPrice: "", minPrice: "" }),
+    },
+    ...SEARCH_PRICE_BANDS.map((band) => {
+      const active =
+        selectedFilters.maxPrice === band.maxPrice && !selectedFilters.minPrice;
+      return {
+        label: band.label,
+        active,
+        href: hrefFor({
+          maxPrice: active ? "" : band.maxPrice,
+          minPrice: "",
+        }),
+      };
+    }),
+  ];
+
+  const showCategories = !basePath.startsWith("/categories/");
+  const categoryChips: QuickChip[] = showCategories
+    ? [
+        {
+          label: "كل التصنيفات",
+          active: !selectedFilters.category,
+          href: hrefFor({
+            category: "",
+            specs: {},
+            ranges: {},
+            subcategory: "",
+          }),
+        },
+        ...categories.slice(0, 8).map((category) => ({
+          label: category.name,
+          active: selectedFilters.category === category.id,
+          href: hrefFor({
+            category:
+              selectedFilters.category === category.id ? "" : category.id,
+            specs: {},
+            ranges: {},
+            subcategory: "",
+          }),
+        })),
+      ]
+    : [];
+
   return (
-    <div className="mb-1">
-      <p className="mb-2 text-[0.7rem] font-bold text-muted">فلاتر سريعة</p>
-      <div className="flex flex-wrap gap-2">
-        {chips.map((chip) => (
-          <Link
-            key={`${chip.label}-${chip.href}`}
-            className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
-              chip.active
-                ? "border-[#c9a45c] bg-[#c9a45c] text-[#0b1628]"
-                : "border-border bg-surface text-ink hover:border-[#c9a45c]/50 hover:bg-secondary-soft"
-            }`}
-            href={chip.href}
-          >
-            {chip.label}
-          </Link>
-        ))}
-      </div>
+    <div className="space-y-3">
+      <ChipRail ariaLabel="الإمارة" chips={emirateChips} />
+      <ChipRail ariaLabel="السعر" chips={priceChips} />
+      {categoryChips.length > 0 ? (
+        <ChipRail ariaLabel="التصنيف" chips={categoryChips} />
+      ) : null}
     </div>
   );
 }

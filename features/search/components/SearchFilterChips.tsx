@@ -11,6 +11,7 @@ import {
   omitSearchFilter,
   type SearchFilterState,
 } from "./search-url";
+import { SEARCH_PRICE_BANDS } from "./SearchQuickFilters";
 
 type SearchFilterChipsProps = {
   basePath?: string;
@@ -24,12 +25,6 @@ const conditionLabels: Record<string, string> = {
   used: "مستعمل",
 };
 
-const sortLabels: Record<string, string> = {
-  newest: "الأحدث",
-  price_asc: "السعر ↑",
-  price_desc: "السعر ↓",
-};
-
 const rangeLabels: Record<string, { max: string; min: string }> = {
   year: { min: "من السنة", max: "إلى السنة" },
   mileage: { min: "أقل عداد", max: "أعلى عداد" },
@@ -40,14 +35,17 @@ const rangeLabels: Record<string, { max: string; min: string }> = {
 
 export function SearchFilterChips({
   basePath = "/search",
-  categories,
   selectedFilters,
 }: SearchFilterChipsProps) {
-  const categoryName = categories.find((c) => c.id === selectedFilters.category)?.name;
   const categoryId = selectedFilters.category ?? "";
   const chips: { href: string; key: string; label: React.ReactNode }[] = [];
 
   const hrefFor = (next: SearchFilterState) => buildSearchUrl(next, undefined, basePath);
+  const priceBandMax = new Set<string>(SEARCH_PRICE_BANDS.map((band) => band.maxPrice));
+  const skipBandPriceChip =
+    Boolean(selectedFilters.maxPrice) &&
+    priceBandMax.has(selectedFilters.maxPrice ?? "") &&
+    !selectedFilters.minPrice;
 
   if (selectedFilters.query) {
     chips.push({
@@ -63,25 +61,11 @@ export function SearchFilterChips({
       href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "country" })),
     });
   }
-  if (selectedFilters.city) {
-    chips.push({
-      key: "city",
-      label: selectedFilters.city,
-      href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "city" })),
-    });
-  }
   if (selectedFilters.area) {
     chips.push({
       key: "area",
       label: selectedFilters.area,
       href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "area" })),
-    });
-  }
-  if (categoryName) {
-    chips.push({
-      key: "category",
-      label: categoryName,
-      href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "category" })),
     });
   }
   if (selectedFilters.subcategory) {
@@ -109,7 +93,7 @@ export function SearchFilterChips({
       href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "minPrice" })),
     });
   }
-  if (selectedFilters.maxPrice) {
+  if (selectedFilters.maxPrice && !skipBandPriceChip) {
     chips.push({
       key: "maxPrice",
       label: (
@@ -118,13 +102,6 @@ export function SearchFilterChips({
         </span>
       ),
       href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "maxPrice" })),
-    });
-  }
-  if (selectedFilters.sort && selectedFilters.sort !== "newest") {
-    chips.push({
-      key: "sort",
-      label: sortLabels[selectedFilters.sort] ?? selectedFilters.sort,
-      href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "sort" })),
     });
   }
 
