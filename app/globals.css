@@ -280,7 +280,7 @@ textarea {
     );
 }
 
-/* ── Category mark — navy circle + gold silhouette ── */
+/* ── Category mark — sharp navy circle + bright gold glyph ── */
 .category-mark {
   position: relative;
   display: grid;
@@ -289,16 +289,16 @@ textarea {
   height: 100%;
   overflow: hidden;
   isolation: isolate;
-  border: 1px solid rgb(201 169 98 / 18%);
+  border: 1.5px solid rgb(212 184 122 / 28%);
   border-radius: 50%;
   background:
-    radial-gradient(circle at 32% 26%, rgb(255 255 255 / 10%), transparent 42%),
-    linear-gradient(160deg, #152238 0%, #0b1628 58%, #080f1c 100%);
-  color: #d4b87a;
+    radial-gradient(circle at 50% 38%, #1a2a44 0%, #0d1728 55%, #070d18 100%);
+  color: #e4c572;
   box-shadow:
-    0 1px 2px rgb(11 22 40 / 18%),
-    0 10px 22px rgb(11 22 40 / 16%),
-    inset 0 1px 0 rgb(255 255 255 / 10%);
+    0 2px 4px rgb(11 22 40 / 20%),
+    0 12px 24px rgb(11 22 40 / 16%),
+    inset 0 1px 0 rgb(255 255 255 / 14%),
+    inset 0 -10px 18px rgb(0 0 0 / 28%);
   transition:
     transform var(--duration-normal) var(--ease-premium),
     box-shadow var(--duration-normal) var(--ease-premium),
@@ -309,34 +309,38 @@ textarea {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 120%, rgb(201 169 98 / 16%), transparent 46%);
+  background: radial-gradient(circle at 50% 18%, rgb(255 255 255 / 12%), transparent 40%);
 }
 
 .category-mark__glyph {
   position: relative;
   z-index: 1;
   display: block;
-  width: 52% !important;
-  height: 52% !important;
+  width: 58% !important;
+  height: 58% !important;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
 }
 
 .category-mark--selected {
-  border-color: rgb(212 184 122 / 55%);
+  border-color: rgb(228 197 114 / 65%);
   box-shadow:
-    0 1px 2px rgb(11 22 40 / 18%),
-    0 10px 22px rgb(11 22 40 / 16%),
-    0 0 0 2px rgb(201 169 98 / 28%);
+    0 2px 4px rgb(11 22 40 / 20%),
+    0 12px 24px rgb(11 22 40 / 16%),
+    0 0 0 2px rgb(201 169 98 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 14%);
 }
 
 .group:hover .category-mark,
 a:hover .category-mark,
 .mobile-home-categories__card:hover .category-mark {
   transform: translateY(-2px);
-  border-color: rgb(212 184 122 / 42%);
+  border-color: rgb(228 197 114 / 48%);
+  color: #f0d78c;
   box-shadow:
-    0 4px 10px rgb(11 22 40 / 18%),
-    0 14px 28px rgb(11 22 40 / 18%),
-    inset 0 1px 0 rgb(255 255 255 / 12%);
+    0 4px 10px rgb(11 22 40 / 22%),
+    0 16px 30px rgb(11 22 40 / 18%),
+    inset 0 1px 0 rgb(255 255 255 / 16%),
+    inset 0 -10px 18px rgb(0 0 0 / 24%);
 }
 
 .mobile-home-categories__card:active .category-mark {
@@ -344,7 +348,7 @@ a:hover .category-mark,
 }
 
 html[data-theme="dark"] .category-mark {
-  border-color: rgb(212 184 122 / 22%);
+  border-color: rgb(228 197 114 / 28%);
 }
 
 /* ── Sooqna brand identity ── */
