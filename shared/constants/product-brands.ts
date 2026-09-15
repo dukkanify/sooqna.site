@@ -1,64 +1,14 @@
 import type { CategoryFieldOption } from "@/types";
+import { getVehicleMakes } from "@/shared/vehicles";
 
 function toOptions(brands: readonly string[]): CategoryFieldOption[] {
   return brands.map((brand) => ({ label: brand, value: brand }));
 }
 
-/** Popular car brands in the UAE market — searchable by first letters. */
-export const CAR_BRANDS = [
-  "Toyota",
-  "Nissan",
-  "Honda",
-  "Lexus",
-  "Mercedes-Benz",
-  "BMW",
-  "Audi",
-  "Porsche",
-  "Land Rover",
-  "Range Rover",
-  "Jeep",
-  "Ford",
-  "Chevrolet",
-  "GMC",
-  "Hyundai",
-  "Kia",
-  "Mazda",
-  "Mitsubishi",
-  "Volkswagen",
-  "Volvo",
-  "Tesla",
-  "Infiniti",
-  "Cadillac",
-  "Genesis",
-  "Suzuki",
-  "Subaru",
-  "Peugeot",
-  "Renault",
-  "Dodge",
-  "Chrysler",
-  "Jaguar",
-  "MINI",
-  "Bentley",
-  "Rolls-Royce",
-  "Ferrari",
-  "Lamborghini",
-  "Maserati",
-  "McLaren",
-  "Aston Martin",
-  "Geely",
-  "Changan",
-  "MG",
-  "Haval",
-  "BYD",
-  "Jetour",
-  "Isuzu",
-  "Skoda",
-  "Seat",
-  "Cupra",
-  "Fiat",
-  "Alfa Romeo",
-  "Hummer",
-] as const;
+/** Canonical car makes from shared/vehicles catalog. */
+export const CAR_BRANDS: readonly string[] = getVehicleMakes().map(
+  (make) => make.nameEn,
+);
 
 /** Phone / tablet brands. */
 export const MOBILE_BRANDS = [

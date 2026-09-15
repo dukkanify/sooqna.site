@@ -1,0 +1,7675 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-15T00:00:00.000Z",
+  "source": "sooqna-uae-vehicle-reference",
+  "makes": [
+    {
+      "id": "make-toyota",
+      "slug": "toyota",
+      "nameEn": "Toyota",
+      "nameAr": "تويوتا",
+      "status": "active",
+      "sortOrder": 10
+    },
+    {
+      "id": "make-lexus",
+      "slug": "lexus",
+      "nameEn": "Lexus",
+      "nameAr": "لكزس",
+      "status": "active",
+      "sortOrder": 20
+    },
+    {
+      "id": "make-nissan",
+      "slug": "nissan",
+      "nameEn": "Nissan",
+      "nameAr": "نيسان",
+      "status": "active",
+      "sortOrder": 30
+    },
+    {
+      "id": "make-infiniti",
+      "slug": "infiniti",
+      "nameEn": "Infiniti",
+      "nameAr": "إنفينيتي",
+      "status": "active",
+      "sortOrder": 40
+    },
+    {
+      "id": "make-honda",
+      "slug": "honda",
+      "nameEn": "Honda",
+      "nameAr": "هوندا",
+      "status": "active",
+      "sortOrder": 50
+    },
+    {
+      "id": "make-acura",
+      "slug": "acura",
+      "nameEn": "Acura",
+      "nameAr": "أكيورا",
+      "status": "active",
+      "sortOrder": 60
+    },
+    {
+      "id": "make-mazda",
+      "slug": "mazda",
+      "nameEn": "Mazda",
+      "nameAr": "مازدا",
+      "status": "active",
+      "sortOrder": 70
+    },
+    {
+      "id": "make-mitsubishi",
+      "slug": "mitsubishi",
+      "nameEn": "Mitsubishi",
+      "nameAr": "ميتسوبيشي",
+      "status": "active",
+      "sortOrder": 80
+    },
+    {
+      "id": "make-subaru",
+      "slug": "subaru",
+      "nameEn": "Subaru",
+      "nameAr": "سوبارو",
+      "status": "active",
+      "sortOrder": 90
+    },
+    {
+      "id": "make-suzuki",
+      "slug": "suzuki",
+      "nameEn": "Suzuki",
+      "nameAr": "سوزوكي",
+      "status": "active",
+      "sortOrder": 100
+    },
+    {
+      "id": "make-isuzu",
+      "slug": "isuzu",
+      "nameEn": "Isuzu",
+      "nameAr": "إيسوزو",
+      "status": "active",
+      "sortOrder": 110
+    },
+    {
+      "id": "make-daihatsu",
+      "slug": "daihatsu",
+      "nameEn": "Daihatsu",
+      "nameAr": "دايهاتسو",
+      "status": "active",
+      "sortOrder": 120
+    },
+    {
+      "id": "make-mercedes-benz",
+      "slug": "mercedes-benz",
+      "nameEn": "Mercedes-Benz",
+      "nameAr": "مرسيدس بنز",
+      "status": "active",
+      "sortOrder": 130
+    },
+    {
+      "id": "make-bmw",
+      "slug": "bmw",
+      "nameEn": "BMW",
+      "nameAr": "بي إم دبليو",
+      "status": "active",
+      "sortOrder": 140
+    },
+    {
+      "id": "make-mini",
+      "slug": "mini",
+      "nameEn": "MINI",
+      "nameAr": "ميني",
+      "status": "active",
+      "sortOrder": 150
+    },
+    {
+      "id": "make-audi",
+      "slug": "audi",
+      "nameEn": "Audi",
+      "nameAr": "أودي",
+      "status": "active",
+      "sortOrder": 160
+    },
+    {
+      "id": "make-volkswagen",
+      "slug": "volkswagen",
+      "nameEn": "Volkswagen",
+      "nameAr": "فولكس واجن",
+      "status": "active",
+      "sortOrder": 170
+    },
+    {
+      "id": "make-porsche",
+      "slug": "porsche",
+      "nameEn": "Porsche",
+      "nameAr": "بورشه",
+      "status": "active",
+      "sortOrder": 180
+    },
+    {
+      "id": "make-opel",
+      "slug": "opel",
+      "nameEn": "Opel",
+      "nameAr": "أوبل",
+      "status": "active",
+      "sortOrder": 190
+    },
+    {
+      "id": "make-smart",
+      "slug": "smart",
+      "nameEn": "Smart",
+      "nameAr": "سمارت",
+      "status": "active",
+      "sortOrder": 200
+    },
+    {
+      "id": "make-land-rover",
+      "slug": "land-rover",
+      "nameEn": "Land Rover",
+      "nameAr": "لاند روفر",
+      "status": "active",
+      "sortOrder": 210
+    },
+    {
+      "id": "make-range-rover",
+      "slug": "range-rover",
+      "nameEn": "Range Rover",
+      "nameAr": "رنج روفر",
+      "status": "active",
+      "sortOrder": 220
+    },
+    {
+      "id": "make-jaguar",
+      "slug": "jaguar",
+      "nameEn": "Jaguar",
+      "nameAr": "جاكوار",
+      "status": "active",
+      "sortOrder": 230
+    },
+    {
+      "id": "make-bentley",
+      "slug": "bentley",
+      "nameEn": "Bentley",
+      "nameAr": "بنتلي",
+      "status": "active",
+      "sortOrder": 240
+    },
+    {
+      "id": "make-rolls-royce",
+      "slug": "rolls-royce",
+      "nameEn": "Rolls-Royce",
+      "nameAr": "رولز رويس",
+      "status": "active",
+      "sortOrder": 250
+    },
+    {
+      "id": "make-aston-martin",
+      "slug": "aston-martin",
+      "nameEn": "Aston Martin",
+      "nameAr": "أستون مارتن",
+      "status": "active",
+      "sortOrder": 260
+    },
+    {
+      "id": "make-mclaren",
+      "slug": "mclaren",
+      "nameEn": "McLaren",
+      "nameAr": "مكلارين",
+      "status": "active",
+      "sortOrder": 270
+    },
+    {
+      "id": "make-lotus",
+      "slug": "lotus",
+      "nameEn": "Lotus",
+      "nameAr": "لوتس",
+      "status": "active",
+      "sortOrder": 280
+    },
+    {
+      "id": "make-mg",
+      "slug": "mg",
+      "nameEn": "MG",
+      "nameAr": "إم جي",
+      "status": "active",
+      "sortOrder": 290
+    },
+    {
+      "id": "make-ford",
+      "slug": "ford",
+      "nameEn": "Ford",
+      "nameAr": "فورد",
+      "status": "active",
+      "sortOrder": 300
+    },
+    {
+      "id": "make-lincoln",
+      "slug": "lincoln",
+      "nameEn": "Lincoln",
+      "nameAr": "لينكولن",
+      "status": "active",
+      "sortOrder": 310
+    },
+    {
+      "id": "make-chevrolet",
+      "slug": "chevrolet",
+      "nameEn": "Chevrolet",
+      "nameAr": "شيفروليه",
+      "status": "active",
+      "sortOrder": 320
+    },
+    {
+      "id": "make-gmc",
+      "slug": "gmc",
+      "nameEn": "GMC",
+      "nameAr": "جي إم سي",
+      "status": "active",
+      "sortOrder": 330
+    },
+    {
+      "id": "make-cadillac",
+      "slug": "cadillac",
+      "nameEn": "Cadillac",
+      "nameAr": "كاديلاك",
+      "status": "active",
+      "sortOrder": 340
+    },
+    {
+      "id": "make-chrysler",
+      "slug": "chrysler",
+      "nameEn": "Chrysler",
+      "nameAr": "كرايسلر",
+      "status": "active",
+      "sortOrder": 350
+    },
+    {
+      "id": "make-dodge",
+      "slug": "dodge",
+      "nameEn": "Dodge",
+      "nameAr": "دودج",
+      "status": "active",
+      "sortOrder": 360
+    },
+    {
+      "id": "make-jeep",
+      "slug": "jeep",
+      "nameEn": "Jeep",
+      "nameAr": "جيب",
+      "status": "active",
+      "sortOrder": 370
+    },
+    {
+      "id": "make-ram",
+      "slug": "ram",
+      "nameEn": "Ram",
+      "nameAr": "رام",
+      "status": "active",
+      "sortOrder": 380
+    },
+    {
+      "id": "make-tesla",
+      "slug": "tesla",
+      "nameEn": "Tesla",
+      "nameAr": "تسلا",
+      "status": "active",
+      "sortOrder": 390
+    },
+    {
+      "id": "make-rivian",
+      "slug": "rivian",
+      "nameEn": "Rivian",
+      "nameAr": "ريفيان",
+      "status": "active",
+      "sortOrder": 400
+    },
+    {
+      "id": "make-lucid",
+      "slug": "lucid",
+      "nameEn": "Lucid",
+      "nameAr": "لوسيد",
+      "status": "active",
+      "sortOrder": 410
+    },
+    {
+      "id": "make-ferrari",
+      "slug": "ferrari",
+      "nameEn": "Ferrari",
+      "nameAr": "فيراري",
+      "status": "active",
+      "sortOrder": 420
+    },
+    {
+      "id": "make-lamborghini",
+      "slug": "lamborghini",
+      "nameEn": "Lamborghini",
+      "nameAr": "لامبورغيني",
+      "status": "active",
+      "sortOrder": 430
+    },
+    {
+      "id": "make-maserati",
+      "slug": "maserati",
+      "nameEn": "Maserati",
+      "nameAr": "مازيراتي",
+      "status": "active",
+      "sortOrder": 440
+    },
+    {
+      "id": "make-alfa-romeo",
+      "slug": "alfa-romeo",
+      "nameEn": "Alfa Romeo",
+      "nameAr": "ألفا روميو",
+      "status": "active",
+      "sortOrder": 450
+    },
+    {
+      "id": "make-fiat",
+      "slug": "fiat",
+      "nameEn": "Fiat",
+      "nameAr": "فيات",
+      "status": "active",
+      "sortOrder": 460
+    },
+    {
+      "id": "make-abarth",
+      "slug": "abarth",
+      "nameEn": "Abarth",
+      "nameAr": "أبارث",
+      "status": "active",
+      "sortOrder": 470
+    },
+    {
+      "id": "make-pagani",
+      "slug": "pagani",
+      "nameEn": "Pagani",
+      "nameAr": "باجاني",
+      "status": "active",
+      "sortOrder": 480
+    },
+    {
+      "id": "make-peugeot",
+      "slug": "peugeot",
+      "nameEn": "Peugeot",
+      "nameAr": "بيجو",
+      "status": "active",
+      "sortOrder": 490
+    },
+    {
+      "id": "make-citroen",
+      "slug": "citroen",
+      "nameEn": "Citroen",
+      "nameAr": "سيتروين",
+      "status": "active",
+      "sortOrder": 500
+    },
+    {
+      "id": "make-renault",
+      "slug": "renault",
+      "nameEn": "Renault",
+      "nameAr": "رينو",
+      "status": "active",
+      "sortOrder": 510
+    },
+    {
+      "id": "make-dacia",
+      "slug": "dacia",
+      "nameEn": "Dacia",
+      "nameAr": "داسيا",
+      "status": "active",
+      "sortOrder": 520
+    },
+    {
+      "id": "make-ds-automobiles",
+      "slug": "ds-automobiles",
+      "nameEn": "DS Automobiles",
+      "nameAr": "دي إس",
+      "status": "active",
+      "sortOrder": 530
+    },
+    {
+      "id": "make-bugatti",
+      "slug": "bugatti",
+      "nameEn": "Bugatti",
+      "nameAr": "بوجاتي",
+      "status": "active",
+      "sortOrder": 540
+    },
+    {
+      "id": "make-volvo",
+      "slug": "volvo",
+      "nameEn": "Volvo",
+      "nameAr": "فولفو",
+      "status": "active",
+      "sortOrder": 550
+    },
+    {
+      "id": "make-polestar",
+      "slug": "polestar",
+      "nameEn": "Polestar",
+      "nameAr": "بولستار",
+      "status": "active",
+      "sortOrder": 560
+    },
+    {
+      "id": "make-saab",
+      "slug": "saab",
+      "nameEn": "Saab",
+      "nameAr": "ساب",
+      "status": "active",
+      "sortOrder": 570
+    },
+    {
+      "id": "make-koenigsegg",
+      "slug": "koenigsegg",
+      "nameEn": "Koenigsegg",
+      "nameAr": "كوينيجسيج",
+      "status": "active",
+      "sortOrder": 580
+    },
+    {
+      "id": "make-hyundai",
+      "slug": "hyundai",
+      "nameEn": "Hyundai",
+      "nameAr": "هيونداي",
+      "status": "active",
+      "sortOrder": 590
+    },
+    {
+      "id": "make-genesis",
+      "slug": "genesis",
+      "nameEn": "Genesis",
+      "nameAr": "جينيسيس",
+      "status": "active",
+      "sortOrder": 600
+    },
+    {
+      "id": "make-kia",
+      "slug": "kia",
+      "nameEn": "Kia",
+      "nameAr": "كيا",
+      "status": "active",
+      "sortOrder": 610
+    },
+    {
+      "id": "make-kgm",
+      "slug": "kgm",
+      "nameEn": "KGM",
+      "nameAr": "كي جي إم",
+      "status": "active",
+      "sortOrder": 620
+    },
+    {
+      "id": "make-byd",
+      "slug": "byd",
+      "nameEn": "BYD",
+      "nameAr": "بي واي دي",
+      "status": "active",
+      "sortOrder": 630
+    },
+    {
+      "id": "make-geely",
+      "slug": "geely",
+      "nameEn": "Geely",
+      "nameAr": "جيلي",
+      "status": "active",
+      "sortOrder": 640
+    },
+    {
+      "id": "make-zeekr",
+      "slug": "zeekr",
+      "nameEn": "Zeekr",
+      "nameAr": "زيكر",
+      "status": "active",
+      "sortOrder": 650
+    },
+    {
+      "id": "make-chery",
+      "slug": "chery",
+      "nameEn": "Chery",
+      "nameAr": "شيري",
+      "status": "active",
+      "sortOrder": 660
+    },
+    {
+      "id": "make-exeed",
+      "slug": "exeed",
+      "nameEn": "Exeed",
+      "nameAr": "إكسيد",
+      "status": "active",
+      "sortOrder": 670
+    },
+    {
+      "id": "make-jetour",
+      "slug": "jetour",
+      "nameEn": "Jetour",
+      "nameAr": "جيتور",
+      "status": "active",
+      "sortOrder": 680
+    },
+    {
+      "id": "make-haval",
+      "slug": "haval",
+      "nameEn": "Haval",
+      "nameAr": "هافال",
+      "status": "active",
+      "sortOrder": 690
+    },
+    {
+      "id": "make-gwm",
+      "slug": "gwm",
+      "nameEn": "GWM",
+      "nameAr": "جي دبليو إم",
+      "status": "active",
+      "sortOrder": 700
+    },
+    {
+      "id": "make-tank",
+      "slug": "tank",
+      "nameEn": "Tank",
+      "nameAr": "تانك",
+      "status": "active",
+      "sortOrder": 710
+    },
+    {
+      "id": "make-hongqi",
+      "slug": "hongqi",
+      "nameEn": "Hongqi",
+      "nameAr": "هونغتشي",
+      "status": "active",
+      "sortOrder": 720
+    },
+    {
+      "id": "make-nio",
+      "slug": "nio",
+      "nameEn": "NIO",
+      "nameAr": "نيو",
+      "status": "active",
+      "sortOrder": 730
+    },
+    {
+      "id": "make-xpeng",
+      "slug": "xpeng",
+      "nameEn": "XPeng",
+      "nameAr": "إكس بنج",
+      "status": "active",
+      "sortOrder": 740
+    },
+    {
+      "id": "make-li-auto",
+      "slug": "li-auto",
+      "nameEn": "Li Auto",
+      "nameAr": "لي أوتو",
+      "status": "active",
+      "sortOrder": 750
+    },
+    {
+      "id": "make-changan",
+      "slug": "changan",
+      "nameEn": "Changan",
+      "nameAr": "شانجان",
+      "status": "active",
+      "sortOrder": 760
+    },
+    {
+      "id": "make-deepal",
+      "slug": "deepal",
+      "nameEn": "Deepal",
+      "nameAr": "ديبال",
+      "status": "active",
+      "sortOrder": 770
+    },
+    {
+      "id": "make-jac",
+      "slug": "jac",
+      "nameEn": "JAC",
+      "nameAr": "جاك",
+      "status": "active",
+      "sortOrder": 780
+    },
+    {
+      "id": "make-baic",
+      "slug": "baic",
+      "nameEn": "BAIC",
+      "nameAr": "بايك",
+      "status": "active",
+      "sortOrder": 790
+    },
+    {
+      "id": "make-dongfeng",
+      "slug": "dongfeng",
+      "nameEn": "Dongfeng",
+      "nameAr": "دونغفينغ",
+      "status": "active",
+      "sortOrder": 800
+    },
+    {
+      "id": "make-forthing",
+      "slug": "forthing",
+      "nameEn": "Forthing",
+      "nameAr": "فورثينج",
+      "status": "active",
+      "sortOrder": 810
+    },
+    {
+      "id": "make-gac",
+      "slug": "gac",
+      "nameEn": "GAC",
+      "nameAr": "جي إيه سي",
+      "status": "active",
+      "sortOrder": 820
+    },
+    {
+      "id": "make-aion",
+      "slug": "aion",
+      "nameEn": "Aion",
+      "nameAr": "أيون",
+      "status": "active",
+      "sortOrder": 830
+    },
+    {
+      "id": "make-rox",
+      "slug": "rox",
+      "nameEn": "Rox",
+      "nameAr": "روكس",
+      "status": "active",
+      "sortOrder": 840
+    },
+    {
+      "id": "make-jaecoo",
+      "slug": "jaecoo",
+      "nameEn": "Jaecoo",
+      "nameAr": "جايكو",
+      "status": "active",
+      "sortOrder": 850
+    },
+    {
+      "id": "make-omoda",
+      "slug": "omoda",
+      "nameEn": "Omoda",
+      "nameAr": "أومودا",
+      "status": "active",
+      "sortOrder": 860
+    },
+    {
+      "id": "make-leapmotor",
+      "slug": "leapmotor",
+      "nameEn": "Leapmotor",
+      "nameAr": "ليب موتور",
+      "status": "active",
+      "sortOrder": 870
+    },
+    {
+      "id": "make-mahindra",
+      "slug": "mahindra",
+      "nameEn": "Mahindra",
+      "nameAr": "ماهيندرا",
+      "status": "active",
+      "sortOrder": 880
+    },
+    {
+      "id": "make-tata",
+      "slug": "tata",
+      "nameEn": "Tata",
+      "nameAr": "تاتا",
+      "status": "active",
+      "sortOrder": 890
+    },
+    {
+      "id": "make-proton",
+      "slug": "proton",
+      "nameEn": "Proton",
+      "nameAr": "بروتون",
+      "status": "active",
+      "sortOrder": 900
+    },
+    {
+      "id": "make-perodua",
+      "slug": "perodua",
+      "nameEn": "Perodua",
+      "nameAr": "بيرودوا",
+      "status": "active",
+      "sortOrder": 910
+    },
+    {
+      "id": "make-skoda",
+      "slug": "skoda",
+      "nameEn": "Skoda",
+      "nameAr": "سكودا",
+      "status": "active",
+      "sortOrder": 920
+    },
+    {
+      "id": "make-seat",
+      "slug": "seat",
+      "nameEn": "Seat",
+      "nameAr": "سيات",
+      "status": "active",
+      "sortOrder": 930
+    },
+    {
+      "id": "make-cupra",
+      "slug": "cupra",
+      "nameEn": "Cupra",
+      "nameAr": "كوبرا",
+      "status": "active",
+      "sortOrder": 940
+    },
+    {
+      "id": "make-hummer",
+      "slug": "hummer",
+      "nameEn": "Hummer",
+      "nameAr": "همر",
+      "status": "active",
+      "sortOrder": 950
+    },
+    {
+      "id": "make-iveco",
+      "slug": "iveco",
+      "nameEn": "Iveco",
+      "nameAr": "إيفيكو",
+      "status": "active",
+      "sortOrder": 960
+    },
+    {
+      "id": "make-man",
+      "slug": "man",
+      "nameEn": "MAN",
+      "nameAr": "مان",
+      "status": "active",
+      "sortOrder": 970
+    },
+    {
+      "id": "make-hino",
+      "slug": "hino",
+      "nameEn": "Hino",
+      "nameAr": "هينو",
+      "status": "active",
+      "sortOrder": 980
+    },
+    {
+      "id": "make-foton",
+      "slug": "foton",
+      "nameEn": "Foton",
+      "nameAr": "فوتون",
+      "status": "active",
+      "sortOrder": 990
+    },
+    {
+      "id": "make-maxus",
+      "slug": "maxus",
+      "nameEn": "Maxus",
+      "nameAr": "ماكسوس",
+      "status": "active",
+      "sortOrder": 1000
+    },
+    {
+      "id": "make-great-wall",
+      "slug": "great-wall",
+      "nameEn": "Great Wall",
+      "nameAr": "جريت وول",
+      "status": "active",
+      "sortOrder": 1010
+    },
+    {
+      "id": "make-ssangyong",
+      "slug": "ssangyong",
+      "nameEn": "SsangYong",
+      "nameAr": "سانج يونج",
+      "status": "active",
+      "sortOrder": 1020
+    }
+  ],
+  "models": [
+    {
+      "id": "model-toyota-yaris",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "yaris",
+      "nameEn": "Yaris",
+      "nameAr": "Yaris",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-toyota-corolla",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "corolla",
+      "nameEn": "Corolla",
+      "nameAr": "Corolla",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-toyota-camry",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "camry",
+      "nameEn": "Camry",
+      "nameAr": "Camry",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-toyota-avalon",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "avalon",
+      "nameEn": "Avalon",
+      "nameAr": "Avalon",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-toyota-crown",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "crown",
+      "nameEn": "Crown",
+      "nameAr": "Crown",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-toyota-rav4",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "rav4",
+      "nameEn": "RAV4",
+      "nameAr": "RAV4",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-toyota-highlander",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "highlander",
+      "nameEn": "Highlander",
+      "nameAr": "Highlander",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-toyota-prado",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "prado",
+      "nameEn": "Prado",
+      "nameAr": "Prado",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-toyota-land-cruiser",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "land-cruiser",
+      "nameEn": "Land Cruiser",
+      "nameAr": "Land Cruiser",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-toyota-fortuner",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "fortuner",
+      "nameEn": "Fortuner",
+      "nameAr": "Fortuner",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-toyota-hilux",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "hilux",
+      "nameEn": "Hilux",
+      "nameAr": "Hilux",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-toyota-supra",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "supra",
+      "nameEn": "Supra",
+      "nameAr": "Supra",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-toyota-c-hr",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "c-hr",
+      "nameEn": "C-HR",
+      "nameAr": "C-HR",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-toyota-corolla-cross",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "corolla-cross",
+      "nameEn": "Corolla Cross",
+      "nameAr": "Corolla Cross",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-toyota-sequoia",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "sequoia",
+      "nameEn": "Sequoia",
+      "nameAr": "Sequoia",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-toyota-tundra",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "tundra",
+      "nameEn": "Tundra",
+      "nameAr": "Tundra",
+      "active": true,
+      "sortOrder": 160
+    },
+    {
+      "id": "model-toyota-4runner",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "4runner",
+      "nameEn": "4Runner",
+      "nameAr": "4Runner",
+      "active": true,
+      "sortOrder": 170
+    },
+    {
+      "id": "model-toyota-bz4x",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "bz4x",
+      "nameEn": "bZ4X",
+      "nameAr": "bZ4X",
+      "active": true,
+      "sortOrder": 180
+    },
+    {
+      "id": "model-toyota-alphard",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "alphard",
+      "nameEn": "Alphard",
+      "nameAr": "Alphard",
+      "active": true,
+      "sortOrder": 190
+    },
+    {
+      "id": "model-toyota-hiace",
+      "makeId": "make-toyota",
+      "makeSlug": "toyota",
+      "slug": "hiace",
+      "nameEn": "Hiace",
+      "nameAr": "Hiace",
+      "active": true,
+      "sortOrder": 200
+    },
+    {
+      "id": "model-lexus-ux",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "ux",
+      "nameEn": "UX",
+      "nameAr": "UX",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-lexus-nx",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "nx",
+      "nameEn": "NX",
+      "nameAr": "NX",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-lexus-rx",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "rx",
+      "nameEn": "RX",
+      "nameAr": "RX",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-lexus-gx",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "gx",
+      "nameEn": "GX",
+      "nameAr": "GX",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-lexus-lx",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "lx",
+      "nameEn": "LX",
+      "nameAr": "LX",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-lexus-es",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "es",
+      "nameEn": "ES",
+      "nameAr": "ES",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-lexus-is",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "is",
+      "nameEn": "IS",
+      "nameAr": "IS",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-lexus-gs",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "gs",
+      "nameEn": "GS",
+      "nameAr": "GS",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-lexus-ls",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "ls",
+      "nameEn": "LS",
+      "nameAr": "LS",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-lexus-rc",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "rc",
+      "nameEn": "RC",
+      "nameAr": "RC",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-lexus-lc",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "lc",
+      "nameEn": "LC",
+      "nameAr": "LC",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-lexus-lm",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "lm",
+      "nameEn": "LM",
+      "nameAr": "LM",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-lexus-tx",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "tx",
+      "nameEn": "TX",
+      "nameAr": "TX",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-lexus-lx-600",
+      "makeId": "make-lexus",
+      "makeSlug": "lexus",
+      "slug": "lx-600",
+      "nameEn": "LX 600",
+      "nameAr": "LX 600",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-nissan-sunny",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "sunny",
+      "nameEn": "Sunny",
+      "nameAr": "Sunny",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-nissan-altima",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "altima",
+      "nameEn": "Altima",
+      "nameAr": "Altima",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-nissan-maxima",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "maxima",
+      "nameEn": "Maxima",
+      "nameAr": "Maxima",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-nissan-kicks",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "kicks",
+      "nameEn": "Kicks",
+      "nameAr": "Kicks",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-nissan-x-trail",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "x-trail",
+      "nameEn": "X-Trail",
+      "nameAr": "X-Trail",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-nissan-pathfinder",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "pathfinder",
+      "nameEn": "Pathfinder",
+      "nameAr": "Pathfinder",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-nissan-patrol",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "patrol",
+      "nameEn": "Patrol",
+      "nameAr": "Patrol",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-nissan-patrol-safari",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "patrol-safari",
+      "nameEn": "Patrol Safari",
+      "nameAr": "Patrol Safari",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-nissan-navara",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "navara",
+      "nameEn": "Navara",
+      "nameAr": "Navara",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-nissan-gt-r",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "gt-r",
+      "nameEn": "GT-R",
+      "nameAr": "GT-R",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-nissan-ariya",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "ariya",
+      "nameEn": "Ariya",
+      "nameAr": "Ariya",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-nissan-juke",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "juke",
+      "nameEn": "Juke",
+      "nameAr": "Juke",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-nissan-sentra",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "sentra",
+      "nameEn": "Sentra",
+      "nameAr": "Sentra",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-nissan-terra",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "terra",
+      "nameEn": "Terra",
+      "nameAr": "Terra",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-nissan-urvan",
+      "makeId": "make-nissan",
+      "makeSlug": "nissan",
+      "slug": "urvan",
+      "nameEn": "Urvan",
+      "nameAr": "Urvan",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-infiniti-q50",
+      "makeId": "make-infiniti",
+      "makeSlug": "infiniti",
+      "slug": "q50",
+      "nameEn": "Q50",
+      "nameAr": "Q50",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-infiniti-q60",
+      "makeId": "make-infiniti",
+      "makeSlug": "infiniti",
+      "slug": "q60",
+      "nameEn": "Q60",
+      "nameAr": "Q60",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-infiniti-qx50",
+      "makeId": "make-infiniti",
+      "makeSlug": "infiniti",
+      "slug": "qx50",
+      "nameEn": "QX50",
+      "nameAr": "QX50",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-infiniti-qx55",
+      "makeId": "make-infiniti",
+      "makeSlug": "infiniti",
+      "slug": "qx55",
+      "nameEn": "QX55",
+      "nameAr": "QX55",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-infiniti-qx60",
+      "makeId": "make-infiniti",
+      "makeSlug": "infiniti",
+      "slug": "qx60",
+      "nameEn": "QX60",
+      "nameAr": "QX60",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-infiniti-qx80",
+      "makeId": "make-infiniti",
+      "makeSlug": "infiniti",
+      "slug": "qx80",
+      "nameEn": "QX80",
+      "nameAr": "QX80",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-honda-city",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "city",
+      "nameEn": "City",
+      "nameAr": "City",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-honda-civic",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "civic",
+      "nameEn": "Civic",
+      "nameAr": "Civic",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-honda-accord",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "accord",
+      "nameEn": "Accord",
+      "nameAr": "Accord",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-honda-cr-v",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "cr-v",
+      "nameEn": "CR-V",
+      "nameAr": "CR-V",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-honda-hr-v",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "hr-v",
+      "nameEn": "HR-V",
+      "nameAr": "HR-V",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-honda-zr-v",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "zr-v",
+      "nameEn": "ZR-V",
+      "nameAr": "ZR-V",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-honda-pilot",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "pilot",
+      "nameEn": "Pilot",
+      "nameAr": "Pilot",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-honda-odyssey",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "odyssey",
+      "nameEn": "Odyssey",
+      "nameAr": "Odyssey",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-honda-eny1",
+      "makeId": "make-honda",
+      "makeSlug": "honda",
+      "slug": "eny1",
+      "nameEn": "e:Ny1",
+      "nameAr": "e:Ny1",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-acura-adx",
+      "makeId": "make-acura",
+      "makeSlug": "acura",
+      "slug": "adx",
+      "nameEn": "ADX",
+      "nameAr": "ADX",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-acura-integra",
+      "makeId": "make-acura",
+      "makeSlug": "acura",
+      "slug": "integra",
+      "nameEn": "Integra",
+      "nameAr": "Integra",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-acura-mdx",
+      "makeId": "make-acura",
+      "makeSlug": "acura",
+      "slug": "mdx",
+      "nameEn": "MDX",
+      "nameAr": "MDX",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-acura-rdx",
+      "makeId": "make-acura",
+      "makeSlug": "acura",
+      "slug": "rdx",
+      "nameEn": "RDX",
+      "nameAr": "RDX",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-acura-tlx",
+      "makeId": "make-acura",
+      "makeSlug": "acura",
+      "slug": "tlx",
+      "nameEn": "TLX",
+      "nameAr": "TLX",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-acura-zdx",
+      "makeId": "make-acura",
+      "makeSlug": "acura",
+      "slug": "zdx",
+      "nameEn": "ZDX",
+      "nameAr": "ZDX",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-mazda-mazda2",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "mazda2",
+      "nameEn": "Mazda2",
+      "nameAr": "Mazda2",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-mazda-mazda3",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "mazda3",
+      "nameEn": "Mazda3",
+      "nameAr": "Mazda3",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-mazda-mazda6",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "mazda6",
+      "nameEn": "Mazda6",
+      "nameAr": "Mazda6",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-mazda-cx-3",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "cx-3",
+      "nameEn": "CX-3",
+      "nameAr": "CX-3",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mazda-cx-30",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "cx-30",
+      "nameEn": "CX-30",
+      "nameAr": "CX-30",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-mazda-cx-5",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "cx-5",
+      "nameEn": "CX-5",
+      "nameAr": "CX-5",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-mazda-cx-60",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "cx-60",
+      "nameEn": "CX-60",
+      "nameAr": "CX-60",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-mazda-cx-90",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "cx-90",
+      "nameEn": "CX-90",
+      "nameAr": "CX-90",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-mazda-cx-9",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "cx-9",
+      "nameEn": "CX-9",
+      "nameAr": "CX-9",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-mazda-mx-5",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "mx-5",
+      "nameEn": "MX-5",
+      "nameAr": "MX-5",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-mazda-mx-30",
+      "makeId": "make-mazda",
+      "makeSlug": "mazda",
+      "slug": "mx-30",
+      "nameEn": "MX-30",
+      "nameAr": "MX-30",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-mitsubishi-attrage",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "attrage",
+      "nameEn": "Attrage",
+      "nameAr": "Attrage",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-mitsubishi-lancer",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "lancer",
+      "nameEn": "Lancer",
+      "nameAr": "Lancer",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-mitsubishi-asx",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "asx",
+      "nameEn": "ASX",
+      "nameAr": "ASX",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-mitsubishi-eclipse-cross",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "eclipse-cross",
+      "nameEn": "Eclipse Cross",
+      "nameAr": "Eclipse Cross",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mitsubishi-outlander",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "outlander",
+      "nameEn": "Outlander",
+      "nameAr": "Outlander",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-mitsubishi-pajero",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "pajero",
+      "nameEn": "Pajero",
+      "nameAr": "Pajero",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-mitsubishi-pajero-sport",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "pajero-sport",
+      "nameEn": "Pajero Sport",
+      "nameAr": "Pajero Sport",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-mitsubishi-l200",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "l200",
+      "nameEn": "L200",
+      "nameAr": "L200",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-mitsubishi-montero",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "montero",
+      "nameEn": "Montero",
+      "nameAr": "Montero",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-mitsubishi-xpander",
+      "makeId": "make-mitsubishi",
+      "makeSlug": "mitsubishi",
+      "slug": "xpander",
+      "nameEn": "Xpander",
+      "nameAr": "Xpander",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-subaru-impreza",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "impreza",
+      "nameEn": "Impreza",
+      "nameAr": "Impreza",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-subaru-wrx",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "wrx",
+      "nameEn": "WRX",
+      "nameAr": "WRX",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-subaru-legacy",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "legacy",
+      "nameEn": "Legacy",
+      "nameAr": "Legacy",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-subaru-outback",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "outback",
+      "nameEn": "Outback",
+      "nameAr": "Outback",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-subaru-forester",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "forester",
+      "nameEn": "Forester",
+      "nameAr": "Forester",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-subaru-crosstrek",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "crosstrek",
+      "nameEn": "Crosstrek",
+      "nameAr": "Crosstrek",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-subaru-xv",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "xv",
+      "nameEn": "XV",
+      "nameAr": "XV",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-subaru-brz",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "brz",
+      "nameEn": "BRZ",
+      "nameAr": "BRZ",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-subaru-solterra",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "solterra",
+      "nameEn": "Solterra",
+      "nameAr": "Solterra",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-subaru-ascent",
+      "makeId": "make-subaru",
+      "makeSlug": "subaru",
+      "slug": "ascent",
+      "nameEn": "Ascent",
+      "nameAr": "Ascent",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-suzuki-swift",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "swift",
+      "nameEn": "Swift",
+      "nameAr": "Swift",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-suzuki-dzire",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "dzire",
+      "nameEn": "Dzire",
+      "nameAr": "Dzire",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-suzuki-ciaz",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "ciaz",
+      "nameEn": "Ciaz",
+      "nameAr": "Ciaz",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-suzuki-baleno",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "baleno",
+      "nameEn": "Baleno",
+      "nameAr": "Baleno",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-suzuki-vitara",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "vitara",
+      "nameEn": "Vitara",
+      "nameAr": "Vitara",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-suzuki-grand-vitara",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "grand-vitara",
+      "nameEn": "Grand Vitara",
+      "nameAr": "Grand Vitara",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-suzuki-jimny",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "jimny",
+      "nameEn": "Jimny",
+      "nameAr": "Jimny",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-suzuki-ertiga",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "ertiga",
+      "nameEn": "Ertiga",
+      "nameAr": "Ertiga",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-suzuki-fronx",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "fronx",
+      "nameEn": "Fronx",
+      "nameAr": "Fronx",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-suzuki-s-presso",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "s-presso",
+      "nameEn": "S-Presso",
+      "nameAr": "S-Presso",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-suzuki-carry",
+      "makeId": "make-suzuki",
+      "makeSlug": "suzuki",
+      "slug": "carry",
+      "nameEn": "Carry",
+      "nameAr": "Carry",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-isuzu-d-max",
+      "makeId": "make-isuzu",
+      "makeSlug": "isuzu",
+      "slug": "d-max",
+      "nameEn": "D-Max",
+      "nameAr": "D-Max",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-isuzu-mu-x",
+      "makeId": "make-isuzu",
+      "makeSlug": "isuzu",
+      "slug": "mu-x",
+      "nameEn": "MU-X",
+      "nameAr": "MU-X",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-isuzu-npr",
+      "makeId": "make-isuzu",
+      "makeSlug": "isuzu",
+      "slug": "npr",
+      "nameEn": "NPR",
+      "nameAr": "NPR",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-isuzu-nqr",
+      "makeId": "make-isuzu",
+      "makeSlug": "isuzu",
+      "slug": "nqr",
+      "nameEn": "NQR",
+      "nameAr": "NQR",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-daihatsu-terios",
+      "makeId": "make-daihatsu",
+      "makeSlug": "daihatsu",
+      "slug": "terios",
+      "nameEn": "Terios",
+      "nameAr": "Terios",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-daihatsu-gran-max",
+      "makeId": "make-daihatsu",
+      "makeSlug": "daihatsu",
+      "slug": "gran-max",
+      "nameEn": "Gran Max",
+      "nameAr": "Gran Max",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-daihatsu-rocky",
+      "makeId": "make-daihatsu",
+      "makeSlug": "daihatsu",
+      "slug": "rocky",
+      "nameEn": "Rocky",
+      "nameAr": "Rocky",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-daihatsu-sirion",
+      "makeId": "make-daihatsu",
+      "makeSlug": "daihatsu",
+      "slug": "sirion",
+      "nameEn": "Sirion",
+      "nameAr": "Sirion",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mercedes-benz-a-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "a-class",
+      "nameEn": "A-Class",
+      "nameAr": "A-Class",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-mercedes-benz-b-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "b-class",
+      "nameEn": "B-Class",
+      "nameAr": "B-Class",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-mercedes-benz-c-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "c-class",
+      "nameEn": "C-Class",
+      "nameAr": "C-Class",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-mercedes-benz-e-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "e-class",
+      "nameEn": "E-Class",
+      "nameAr": "E-Class",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mercedes-benz-s-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "s-class",
+      "nameEn": "S-Class",
+      "nameAr": "S-Class",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-mercedes-benz-cla",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "cla",
+      "nameEn": "CLA",
+      "nameAr": "CLA",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-mercedes-benz-cls",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "cls",
+      "nameEn": "CLS",
+      "nameAr": "CLS",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-mercedes-benz-gla",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "gla",
+      "nameEn": "GLA",
+      "nameAr": "GLA",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-mercedes-benz-glb",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "glb",
+      "nameEn": "GLB",
+      "nameAr": "GLB",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-mercedes-benz-glc",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "glc",
+      "nameEn": "GLC",
+      "nameAr": "GLC",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-mercedes-benz-gle",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "gle",
+      "nameEn": "GLE",
+      "nameAr": "GLE",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-mercedes-benz-gls",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "gls",
+      "nameEn": "GLS",
+      "nameAr": "GLS",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-mercedes-benz-g-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "g-class",
+      "nameEn": "G-Class",
+      "nameAr": "G-Class",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-mercedes-benz-g-63",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "g-63",
+      "nameEn": "G 63",
+      "nameAr": "G 63",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-mercedes-benz-amg-gt",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "amg-gt",
+      "nameEn": "AMG GT",
+      "nameAr": "AMG GT",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-mercedes-benz-sl",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "sl",
+      "nameEn": "SL",
+      "nameAr": "SL",
+      "active": true,
+      "sortOrder": 160
+    },
+    {
+      "id": "model-mercedes-benz-eqa",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "eqa",
+      "nameEn": "EQA",
+      "nameAr": "EQA",
+      "active": true,
+      "sortOrder": 170
+    },
+    {
+      "id": "model-mercedes-benz-eqb",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "eqb",
+      "nameEn": "EQB",
+      "nameAr": "EQB",
+      "active": true,
+      "sortOrder": 180
+    },
+    {
+      "id": "model-mercedes-benz-eqc",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "eqc",
+      "nameEn": "EQC",
+      "nameAr": "EQC",
+      "active": true,
+      "sortOrder": 190
+    },
+    {
+      "id": "model-mercedes-benz-eqe",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "eqe",
+      "nameEn": "EQE",
+      "nameAr": "EQE",
+      "active": true,
+      "sortOrder": 200
+    },
+    {
+      "id": "model-mercedes-benz-eqs",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "eqs",
+      "nameEn": "EQS",
+      "nameAr": "EQS",
+      "active": true,
+      "sortOrder": 210
+    },
+    {
+      "id": "model-mercedes-benz-eqs-suv",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "eqs-suv",
+      "nameEn": "EQS SUV",
+      "nameAr": "EQS SUV",
+      "active": true,
+      "sortOrder": 220
+    },
+    {
+      "id": "model-mercedes-benz-v-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "v-class",
+      "nameEn": "V-Class",
+      "nameAr": "V-Class",
+      "active": true,
+      "sortOrder": 230
+    },
+    {
+      "id": "model-mercedes-benz-sprinter",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "sprinter",
+      "nameEn": "Sprinter",
+      "nameAr": "Sprinter",
+      "active": true,
+      "sortOrder": 240
+    },
+    {
+      "id": "model-mercedes-benz-maybach-s-class",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "maybach-s-class",
+      "nameEn": "Maybach S-Class",
+      "nameAr": "Maybach S-Class",
+      "active": true,
+      "sortOrder": 250
+    },
+    {
+      "id": "model-mercedes-benz-maybach-gls",
+      "makeId": "make-mercedes-benz",
+      "makeSlug": "mercedes-benz",
+      "slug": "maybach-gls",
+      "nameEn": "Maybach GLS",
+      "nameAr": "Maybach GLS",
+      "active": true,
+      "sortOrder": 260
+    },
+    {
+      "id": "model-bmw-1-series",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "1-series",
+      "nameEn": "1 Series",
+      "nameAr": "1 Series",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-bmw-2-series",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "2-series",
+      "nameEn": "2 Series",
+      "nameAr": "2 Series",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-bmw-3-series",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "3-series",
+      "nameEn": "3 Series",
+      "nameAr": "3 Series",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-bmw-4-series",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "4-series",
+      "nameEn": "4 Series",
+      "nameAr": "4 Series",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-bmw-5-series",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "5-series",
+      "nameEn": "5 Series",
+      "nameAr": "5 Series",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-bmw-7-series",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "7-series",
+      "nameEn": "7 Series",
+      "nameAr": "7 Series",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-bmw-8-series",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "8-series",
+      "nameEn": "8 Series",
+      "nameAr": "8 Series",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-bmw-x1",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "x1",
+      "nameEn": "X1",
+      "nameAr": "X1",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-bmw-x2",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "x2",
+      "nameEn": "X2",
+      "nameAr": "X2",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-bmw-x3",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "x3",
+      "nameEn": "X3",
+      "nameAr": "X3",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-bmw-x4",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "x4",
+      "nameEn": "X4",
+      "nameAr": "X4",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-bmw-x5",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "x5",
+      "nameEn": "X5",
+      "nameAr": "X5",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-bmw-x6",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "x6",
+      "nameEn": "X6",
+      "nameAr": "X6",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-bmw-x7",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "x7",
+      "nameEn": "X7",
+      "nameAr": "X7",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-bmw-xm",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "xm",
+      "nameEn": "XM",
+      "nameAr": "XM",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-bmw-z4",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "z4",
+      "nameEn": "Z4",
+      "nameAr": "Z4",
+      "active": true,
+      "sortOrder": 160
+    },
+    {
+      "id": "model-bmw-i4",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "i4",
+      "nameEn": "i4",
+      "nameAr": "i4",
+      "active": true,
+      "sortOrder": 170
+    },
+    {
+      "id": "model-bmw-i5",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "i5",
+      "nameEn": "i5",
+      "nameAr": "i5",
+      "active": true,
+      "sortOrder": 180
+    },
+    {
+      "id": "model-bmw-i7",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "i7",
+      "nameEn": "i7",
+      "nameAr": "i7",
+      "active": true,
+      "sortOrder": 190
+    },
+    {
+      "id": "model-bmw-ix",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "ix",
+      "nameEn": "iX",
+      "nameAr": "iX",
+      "active": true,
+      "sortOrder": 200
+    },
+    {
+      "id": "model-bmw-ix1",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "ix1",
+      "nameEn": "iX1",
+      "nameAr": "iX1",
+      "active": true,
+      "sortOrder": 210
+    },
+    {
+      "id": "model-bmw-ix3",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "ix3",
+      "nameEn": "iX3",
+      "nameAr": "iX3",
+      "active": true,
+      "sortOrder": 220
+    },
+    {
+      "id": "model-bmw-m3",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "m3",
+      "nameEn": "M3",
+      "nameAr": "M3",
+      "active": true,
+      "sortOrder": 230
+    },
+    {
+      "id": "model-bmw-m4",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "m4",
+      "nameEn": "M4",
+      "nameAr": "M4",
+      "active": true,
+      "sortOrder": 240
+    },
+    {
+      "id": "model-bmw-m5",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "m5",
+      "nameEn": "M5",
+      "nameAr": "M5",
+      "active": true,
+      "sortOrder": 250
+    },
+    {
+      "id": "model-bmw-m8",
+      "makeId": "make-bmw",
+      "makeSlug": "bmw",
+      "slug": "m8",
+      "nameEn": "M8",
+      "nameAr": "M8",
+      "active": true,
+      "sortOrder": 260
+    },
+    {
+      "id": "model-mini-cooper",
+      "makeId": "make-mini",
+      "makeSlug": "mini",
+      "slug": "cooper",
+      "nameEn": "Cooper",
+      "nameAr": "Cooper",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-mini-cooper-s",
+      "makeId": "make-mini",
+      "makeSlug": "mini",
+      "slug": "cooper-s",
+      "nameEn": "Cooper S",
+      "nameAr": "Cooper S",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-mini-clubman",
+      "makeId": "make-mini",
+      "makeSlug": "mini",
+      "slug": "clubman",
+      "nameEn": "Clubman",
+      "nameAr": "Clubman",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-mini-countryman",
+      "makeId": "make-mini",
+      "makeSlug": "mini",
+      "slug": "countryman",
+      "nameEn": "Countryman",
+      "nameAr": "Countryman",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mini-aceman",
+      "makeId": "make-mini",
+      "makeSlug": "mini",
+      "slug": "aceman",
+      "nameEn": "Aceman",
+      "nameAr": "Aceman",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-mini-john-cooper-works",
+      "makeId": "make-mini",
+      "makeSlug": "mini",
+      "slug": "john-cooper-works",
+      "nameEn": "John Cooper Works",
+      "nameAr": "John Cooper Works",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-audi-a1",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "a1",
+      "nameEn": "A1",
+      "nameAr": "A1",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-audi-a3",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "a3",
+      "nameEn": "A3",
+      "nameAr": "A3",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-audi-a4",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "a4",
+      "nameEn": "A4",
+      "nameAr": "A4",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-audi-a5",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "a5",
+      "nameEn": "A5",
+      "nameAr": "A5",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-audi-a6",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "a6",
+      "nameEn": "A6",
+      "nameAr": "A6",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-audi-a7",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "a7",
+      "nameEn": "A7",
+      "nameAr": "A7",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-audi-a8",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "a8",
+      "nameEn": "A8",
+      "nameAr": "A8",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-audi-q2",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "q2",
+      "nameEn": "Q2",
+      "nameAr": "Q2",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-audi-q3",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "q3",
+      "nameEn": "Q3",
+      "nameAr": "Q3",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-audi-q5",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "q5",
+      "nameEn": "Q5",
+      "nameAr": "Q5",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-audi-q7",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "q7",
+      "nameEn": "Q7",
+      "nameAr": "Q7",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-audi-q8",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "q8",
+      "nameEn": "Q8",
+      "nameAr": "Q8",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-audi-tt",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "tt",
+      "nameEn": "TT",
+      "nameAr": "TT",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-audi-r8",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "r8",
+      "nameEn": "R8",
+      "nameAr": "R8",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-audi-e-tron",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "e-tron",
+      "nameEn": "e-tron",
+      "nameAr": "e-tron",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-audi-q4-e-tron",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "q4-e-tron",
+      "nameEn": "Q4 e-tron",
+      "nameAr": "Q4 e-tron",
+      "active": true,
+      "sortOrder": 160
+    },
+    {
+      "id": "model-audi-q8-e-tron",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "q8-e-tron",
+      "nameEn": "Q8 e-tron",
+      "nameAr": "Q8 e-tron",
+      "active": true,
+      "sortOrder": 170
+    },
+    {
+      "id": "model-audi-e-tron-gt",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "e-tron-gt",
+      "nameEn": "e-tron GT",
+      "nameAr": "e-tron GT",
+      "active": true,
+      "sortOrder": 180
+    },
+    {
+      "id": "model-audi-rs3",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "rs3",
+      "nameEn": "RS3",
+      "nameAr": "RS3",
+      "active": true,
+      "sortOrder": 190
+    },
+    {
+      "id": "model-audi-rs6",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "rs6",
+      "nameEn": "RS6",
+      "nameAr": "RS6",
+      "active": true,
+      "sortOrder": 200
+    },
+    {
+      "id": "model-audi-rs7",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "rs7",
+      "nameEn": "RS7",
+      "nameAr": "RS7",
+      "active": true,
+      "sortOrder": 210
+    },
+    {
+      "id": "model-audi-rs-q8",
+      "makeId": "make-audi",
+      "makeSlug": "audi",
+      "slug": "rs-q8",
+      "nameEn": "RS Q8",
+      "nameAr": "RS Q8",
+      "active": true,
+      "sortOrder": 220
+    },
+    {
+      "id": "model-volkswagen-polo",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "polo",
+      "nameEn": "Polo",
+      "nameAr": "Polo",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-volkswagen-golf",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "golf",
+      "nameEn": "Golf",
+      "nameAr": "Golf",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-volkswagen-passat",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "passat",
+      "nameEn": "Passat",
+      "nameAr": "Passat",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-volkswagen-arteon",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "arteon",
+      "nameEn": "Arteon",
+      "nameAr": "Arteon",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-volkswagen-t-roc",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "t-roc",
+      "nameEn": "T-Roc",
+      "nameAr": "T-Roc",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-volkswagen-tiguan",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "tiguan",
+      "nameEn": "Tiguan",
+      "nameAr": "Tiguan",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-volkswagen-touareg",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "touareg",
+      "nameEn": "Touareg",
+      "nameAr": "Touareg",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-volkswagen-teramont",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "teramont",
+      "nameEn": "Teramont",
+      "nameAr": "Teramont",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-volkswagen-id3",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "id3",
+      "nameEn": "ID.3",
+      "nameAr": "ID.3",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-volkswagen-id4",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "id4",
+      "nameEn": "ID.4",
+      "nameAr": "ID.4",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-volkswagen-id6",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "id6",
+      "nameEn": "ID.6",
+      "nameAr": "ID.6",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-volkswagen-id7",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "id7",
+      "nameEn": "ID.7",
+      "nameAr": "ID.7",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-volkswagen-caddy",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "caddy",
+      "nameEn": "Caddy",
+      "nameAr": "Caddy",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-volkswagen-transporter",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "transporter",
+      "nameEn": "Transporter",
+      "nameAr": "Transporter",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-volkswagen-amarok",
+      "makeId": "make-volkswagen",
+      "makeSlug": "volkswagen",
+      "slug": "amarok",
+      "nameEn": "Amarok",
+      "nameAr": "Amarok",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-porsche-911",
+      "makeId": "make-porsche",
+      "makeSlug": "porsche",
+      "slug": "911",
+      "nameEn": "911",
+      "nameAr": "911",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-porsche-718-cayman",
+      "makeId": "make-porsche",
+      "makeSlug": "porsche",
+      "slug": "718-cayman",
+      "nameEn": "718 Cayman",
+      "nameAr": "718 Cayman",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-porsche-718-boxster",
+      "makeId": "make-porsche",
+      "makeSlug": "porsche",
+      "slug": "718-boxster",
+      "nameEn": "718 Boxster",
+      "nameAr": "718 Boxster",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-porsche-panamera",
+      "makeId": "make-porsche",
+      "makeSlug": "porsche",
+      "slug": "panamera",
+      "nameEn": "Panamera",
+      "nameAr": "Panamera",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-porsche-cayenne",
+      "makeId": "make-porsche",
+      "makeSlug": "porsche",
+      "slug": "cayenne",
+      "nameEn": "Cayenne",
+      "nameAr": "Cayenne",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-porsche-macan",
+      "makeId": "make-porsche",
+      "makeSlug": "porsche",
+      "slug": "macan",
+      "nameEn": "Macan",
+      "nameAr": "Macan",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-porsche-taycan",
+      "makeId": "make-porsche",
+      "makeSlug": "porsche",
+      "slug": "taycan",
+      "nameEn": "Taycan",
+      "nameAr": "Taycan",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-opel-corsa",
+      "makeId": "make-opel",
+      "makeSlug": "opel",
+      "slug": "corsa",
+      "nameEn": "Corsa",
+      "nameAr": "Corsa",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-opel-astra",
+      "makeId": "make-opel",
+      "makeSlug": "opel",
+      "slug": "astra",
+      "nameEn": "Astra",
+      "nameAr": "Astra",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-opel-mokka",
+      "makeId": "make-opel",
+      "makeSlug": "opel",
+      "slug": "mokka",
+      "nameEn": "Mokka",
+      "nameAr": "Mokka",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-opel-crossland",
+      "makeId": "make-opel",
+      "makeSlug": "opel",
+      "slug": "crossland",
+      "nameEn": "Crossland",
+      "nameAr": "Crossland",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-opel-grandland",
+      "makeId": "make-opel",
+      "makeSlug": "opel",
+      "slug": "grandland",
+      "nameEn": "Grandland",
+      "nameAr": "Grandland",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-opel-insignia",
+      "makeId": "make-opel",
+      "makeSlug": "opel",
+      "slug": "insignia",
+      "nameEn": "Insignia",
+      "nameAr": "Insignia",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-opel-combo",
+      "makeId": "make-opel",
+      "makeSlug": "opel",
+      "slug": "combo",
+      "nameEn": "Combo",
+      "nameAr": "Combo",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-smart-fortwo",
+      "makeId": "make-smart",
+      "makeSlug": "smart",
+      "slug": "fortwo",
+      "nameEn": "Fortwo",
+      "nameAr": "Fortwo",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-smart-forfour",
+      "makeId": "make-smart",
+      "makeSlug": "smart",
+      "slug": "forfour",
+      "nameEn": "Forfour",
+      "nameAr": "Forfour",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-smart-1",
+      "makeId": "make-smart",
+      "makeSlug": "smart",
+      "slug": "1",
+      "nameEn": "#1",
+      "nameAr": "#1",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-smart-3",
+      "makeId": "make-smart",
+      "makeSlug": "smart",
+      "slug": "3",
+      "nameEn": "#3",
+      "nameAr": "#3",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-land-rover-defender",
+      "makeId": "make-land-rover",
+      "makeSlug": "land-rover",
+      "slug": "defender",
+      "nameEn": "Defender",
+      "nameAr": "Defender",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-land-rover-discovery",
+      "makeId": "make-land-rover",
+      "makeSlug": "land-rover",
+      "slug": "discovery",
+      "nameEn": "Discovery",
+      "nameAr": "Discovery",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-land-rover-discovery-sport",
+      "makeId": "make-land-rover",
+      "makeSlug": "land-rover",
+      "slug": "discovery-sport",
+      "nameEn": "Discovery Sport",
+      "nameAr": "Discovery Sport",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-land-rover-range-rover",
+      "makeId": "make-land-rover",
+      "makeSlug": "land-rover",
+      "slug": "range-rover",
+      "nameEn": "Range Rover",
+      "nameAr": "Range Rover",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-land-rover-range-rover-sport",
+      "makeId": "make-land-rover",
+      "makeSlug": "land-rover",
+      "slug": "range-rover-sport",
+      "nameEn": "Range Rover Sport",
+      "nameAr": "Range Rover Sport",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-land-rover-range-rover-velar",
+      "makeId": "make-land-rover",
+      "makeSlug": "land-rover",
+      "slug": "range-rover-velar",
+      "nameEn": "Range Rover Velar",
+      "nameAr": "Range Rover Velar",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-land-rover-range-rover-evoque",
+      "makeId": "make-land-rover",
+      "makeSlug": "land-rover",
+      "slug": "range-rover-evoque",
+      "nameEn": "Range Rover Evoque",
+      "nameAr": "Range Rover Evoque",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-range-rover-range-rover",
+      "makeId": "make-range-rover",
+      "makeSlug": "range-rover",
+      "slug": "range-rover",
+      "nameEn": "Range Rover",
+      "nameAr": "Range Rover",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-range-rover-range-rover-sport",
+      "makeId": "make-range-rover",
+      "makeSlug": "range-rover",
+      "slug": "range-rover-sport",
+      "nameEn": "Range Rover Sport",
+      "nameAr": "Range Rover Sport",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-range-rover-range-rover-velar",
+      "makeId": "make-range-rover",
+      "makeSlug": "range-rover",
+      "slug": "range-rover-velar",
+      "nameEn": "Range Rover Velar",
+      "nameAr": "Range Rover Velar",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-range-rover-range-rover-evoque",
+      "makeId": "make-range-rover",
+      "makeSlug": "range-rover",
+      "slug": "range-rover-evoque",
+      "nameEn": "Range Rover Evoque",
+      "nameAr": "Range Rover Evoque",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-jaguar-xe",
+      "makeId": "make-jaguar",
+      "makeSlug": "jaguar",
+      "slug": "xe",
+      "nameEn": "XE",
+      "nameAr": "XE",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-jaguar-xf",
+      "makeId": "make-jaguar",
+      "makeSlug": "jaguar",
+      "slug": "xf",
+      "nameEn": "XF",
+      "nameAr": "XF",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-jaguar-f-type",
+      "makeId": "make-jaguar",
+      "makeSlug": "jaguar",
+      "slug": "f-type",
+      "nameEn": "F-Type",
+      "nameAr": "F-Type",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-jaguar-e-pace",
+      "makeId": "make-jaguar",
+      "makeSlug": "jaguar",
+      "slug": "e-pace",
+      "nameEn": "E-Pace",
+      "nameAr": "E-Pace",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-jaguar-f-pace",
+      "makeId": "make-jaguar",
+      "makeSlug": "jaguar",
+      "slug": "f-pace",
+      "nameEn": "F-Pace",
+      "nameAr": "F-Pace",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-jaguar-i-pace",
+      "makeId": "make-jaguar",
+      "makeSlug": "jaguar",
+      "slug": "i-pace",
+      "nameEn": "I-Pace",
+      "nameAr": "I-Pace",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-jaguar-f-pace-svr",
+      "makeId": "make-jaguar",
+      "makeSlug": "jaguar",
+      "slug": "f-pace-svr",
+      "nameEn": "F-Pace SVR",
+      "nameAr": "F-Pace SVR",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-bentley-continental-gt",
+      "makeId": "make-bentley",
+      "makeSlug": "bentley",
+      "slug": "continental-gt",
+      "nameEn": "Continental GT",
+      "nameAr": "Continental GT",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-bentley-flying-spur",
+      "makeId": "make-bentley",
+      "makeSlug": "bentley",
+      "slug": "flying-spur",
+      "nameEn": "Flying Spur",
+      "nameAr": "Flying Spur",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-bentley-bentayga",
+      "makeId": "make-bentley",
+      "makeSlug": "bentley",
+      "slug": "bentayga",
+      "nameEn": "Bentayga",
+      "nameAr": "Bentayga",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-rolls-royce-ghost",
+      "makeId": "make-rolls-royce",
+      "makeSlug": "rolls-royce",
+      "slug": "ghost",
+      "nameEn": "Ghost",
+      "nameAr": "Ghost",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-rolls-royce-phantom",
+      "makeId": "make-rolls-royce",
+      "makeSlug": "rolls-royce",
+      "slug": "phantom",
+      "nameEn": "Phantom",
+      "nameAr": "Phantom",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-rolls-royce-wraith",
+      "makeId": "make-rolls-royce",
+      "makeSlug": "rolls-royce",
+      "slug": "wraith",
+      "nameEn": "Wraith",
+      "nameAr": "Wraith",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-rolls-royce-dawn",
+      "makeId": "make-rolls-royce",
+      "makeSlug": "rolls-royce",
+      "slug": "dawn",
+      "nameEn": "Dawn",
+      "nameAr": "Dawn",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-rolls-royce-cullinan",
+      "makeId": "make-rolls-royce",
+      "makeSlug": "rolls-royce",
+      "slug": "cullinan",
+      "nameEn": "Cullinan",
+      "nameAr": "Cullinan",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-rolls-royce-spectre",
+      "makeId": "make-rolls-royce",
+      "makeSlug": "rolls-royce",
+      "slug": "spectre",
+      "nameEn": "Spectre",
+      "nameAr": "Spectre",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-aston-martin-db12",
+      "makeId": "make-aston-martin",
+      "makeSlug": "aston-martin",
+      "slug": "db12",
+      "nameEn": "DB12",
+      "nameAr": "DB12",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-aston-martin-dbx",
+      "makeId": "make-aston-martin",
+      "makeSlug": "aston-martin",
+      "slug": "dbx",
+      "nameEn": "DBX",
+      "nameAr": "DBX",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-aston-martin-vantage",
+      "makeId": "make-aston-martin",
+      "makeSlug": "aston-martin",
+      "slug": "vantage",
+      "nameEn": "Vantage",
+      "nameAr": "Vantage",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-aston-martin-dbs",
+      "makeId": "make-aston-martin",
+      "makeSlug": "aston-martin",
+      "slug": "dbs",
+      "nameEn": "DBS",
+      "nameAr": "DBS",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-aston-martin-valhalla",
+      "makeId": "make-aston-martin",
+      "makeSlug": "aston-martin",
+      "slug": "valhalla",
+      "nameEn": "Valhalla",
+      "nameAr": "Valhalla",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-mclaren-artura",
+      "makeId": "make-mclaren",
+      "makeSlug": "mclaren",
+      "slug": "artura",
+      "nameEn": "Artura",
+      "nameAr": "Artura",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-mclaren-720s",
+      "makeId": "make-mclaren",
+      "makeSlug": "mclaren",
+      "slug": "720s",
+      "nameEn": "720S",
+      "nameAr": "720S",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-mclaren-750s",
+      "makeId": "make-mclaren",
+      "makeSlug": "mclaren",
+      "slug": "750s",
+      "nameEn": "750S",
+      "nameAr": "750S",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-mclaren-gt",
+      "makeId": "make-mclaren",
+      "makeSlug": "mclaren",
+      "slug": "gt",
+      "nameEn": "GT",
+      "nameAr": "GT",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mclaren-senna",
+      "makeId": "make-mclaren",
+      "makeSlug": "mclaren",
+      "slug": "senna",
+      "nameEn": "Senna",
+      "nameAr": "Senna",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-mclaren-elva",
+      "makeId": "make-mclaren",
+      "makeSlug": "mclaren",
+      "slug": "elva",
+      "nameEn": "Elva",
+      "nameAr": "Elva",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-lotus-emira",
+      "makeId": "make-lotus",
+      "makeSlug": "lotus",
+      "slug": "emira",
+      "nameEn": "Emira",
+      "nameAr": "Emira",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-lotus-eletre",
+      "makeId": "make-lotus",
+      "makeSlug": "lotus",
+      "slug": "eletre",
+      "nameEn": "Eletre",
+      "nameAr": "Eletre",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-lotus-evija",
+      "makeId": "make-lotus",
+      "makeSlug": "lotus",
+      "slug": "evija",
+      "nameEn": "Evija",
+      "nameAr": "Evija",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-lotus-emeya",
+      "makeId": "make-lotus",
+      "makeSlug": "lotus",
+      "slug": "emeya",
+      "nameEn": "Emeya",
+      "nameAr": "Emeya",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mg-mg3",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "mg3",
+      "nameEn": "MG3",
+      "nameAr": "MG3",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-mg-mg5",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "mg5",
+      "nameEn": "MG5",
+      "nameAr": "MG5",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-mg-mg6",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "mg6",
+      "nameEn": "MG6",
+      "nameAr": "MG6",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-mg-zs",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "zs",
+      "nameEn": "ZS",
+      "nameAr": "ZS",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mg-hs",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "hs",
+      "nameEn": "HS",
+      "nameAr": "HS",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-mg-rx5",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "rx5",
+      "nameEn": "RX5",
+      "nameAr": "RX5",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-mg-rx8",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "rx8",
+      "nameEn": "RX8",
+      "nameAr": "RX8",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-mg-cyberster",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "cyberster",
+      "nameEn": "Cyberster",
+      "nameAr": "Cyberster",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-mg-mg4",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "mg4",
+      "nameEn": "MG4",
+      "nameAr": "MG4",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-mg-marvel-r",
+      "makeId": "make-mg",
+      "makeSlug": "mg",
+      "slug": "marvel-r",
+      "nameEn": "Marvel R",
+      "nameAr": "Marvel R",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-ford-fiesta",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "fiesta",
+      "nameEn": "Fiesta",
+      "nameAr": "Fiesta",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-ford-focus",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "focus",
+      "nameEn": "Focus",
+      "nameAr": "Focus",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-ford-fusion",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "fusion",
+      "nameEn": "Fusion",
+      "nameAr": "Fusion",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-ford-mustang",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "mustang",
+      "nameEn": "Mustang",
+      "nameAr": "Mustang",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-ford-escape",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "escape",
+      "nameEn": "Escape",
+      "nameAr": "Escape",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-ford-edge",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "edge",
+      "nameEn": "Edge",
+      "nameAr": "Edge",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-ford-explorer",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "explorer",
+      "nameEn": "Explorer",
+      "nameAr": "Explorer",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-ford-expedition",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "expedition",
+      "nameEn": "Expedition",
+      "nameAr": "Expedition",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-ford-bronco",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "bronco",
+      "nameEn": "Bronco",
+      "nameAr": "Bronco",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-ford-bronco-sport",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "bronco-sport",
+      "nameEn": "Bronco Sport",
+      "nameAr": "Bronco Sport",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-ford-ranger",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "ranger",
+      "nameEn": "Ranger",
+      "nameAr": "Ranger",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-ford-f-150",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "f-150",
+      "nameEn": "F-150",
+      "nameAr": "F-150",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-ford-f-150-lightning",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "f-150-lightning",
+      "nameEn": "F-150 Lightning",
+      "nameAr": "F-150 Lightning",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-ford-territory",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "territory",
+      "nameEn": "Territory",
+      "nameAr": "Territory",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-ford-everest",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "everest",
+      "nameEn": "Everest",
+      "nameAr": "Everest",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-ford-transit",
+      "makeId": "make-ford",
+      "makeSlug": "ford",
+      "slug": "transit",
+      "nameEn": "Transit",
+      "nameAr": "Transit",
+      "active": true,
+      "sortOrder": 160
+    },
+    {
+      "id": "model-lincoln-corsair",
+      "makeId": "make-lincoln",
+      "makeSlug": "lincoln",
+      "slug": "corsair",
+      "nameEn": "Corsair",
+      "nameAr": "Corsair",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-lincoln-nautilus",
+      "makeId": "make-lincoln",
+      "makeSlug": "lincoln",
+      "slug": "nautilus",
+      "nameEn": "Nautilus",
+      "nameAr": "Nautilus",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-lincoln-aviator",
+      "makeId": "make-lincoln",
+      "makeSlug": "lincoln",
+      "slug": "aviator",
+      "nameEn": "Aviator",
+      "nameAr": "Aviator",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-lincoln-navigator",
+      "makeId": "make-lincoln",
+      "makeSlug": "lincoln",
+      "slug": "navigator",
+      "nameEn": "Navigator",
+      "nameAr": "Navigator",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-chevrolet-spark",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "spark",
+      "nameEn": "Spark",
+      "nameAr": "Spark",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-chevrolet-malibu",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "malibu",
+      "nameEn": "Malibu",
+      "nameAr": "Malibu",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-chevrolet-camaro",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "camaro",
+      "nameEn": "Camaro",
+      "nameAr": "Camaro",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-chevrolet-corvette",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "corvette",
+      "nameEn": "Corvette",
+      "nameAr": "Corvette",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-chevrolet-trax",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "trax",
+      "nameEn": "Trax",
+      "nameAr": "Trax",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-chevrolet-trailblazer",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "trailblazer",
+      "nameEn": "Trailblazer",
+      "nameAr": "Trailblazer",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-chevrolet-equinox",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "equinox",
+      "nameEn": "Equinox",
+      "nameAr": "Equinox",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-chevrolet-blazer",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "blazer",
+      "nameEn": "Blazer",
+      "nameAr": "Blazer",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-chevrolet-traverse",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "traverse",
+      "nameEn": "Traverse",
+      "nameAr": "Traverse",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-chevrolet-tahoe",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "tahoe",
+      "nameEn": "Tahoe",
+      "nameAr": "Tahoe",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-chevrolet-suburban",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "suburban",
+      "nameEn": "Suburban",
+      "nameAr": "Suburban",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-chevrolet-colorado",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "colorado",
+      "nameEn": "Colorado",
+      "nameAr": "Colorado",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-chevrolet-silverado",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "silverado",
+      "nameEn": "Silverado",
+      "nameAr": "Silverado",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-chevrolet-captiva",
+      "makeId": "make-chevrolet",
+      "makeSlug": "chevrolet",
+      "slug": "captiva",
+      "nameEn": "Captiva",
+      "nameAr": "Captiva",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-gmc-terrain",
+      "makeId": "make-gmc",
+      "makeSlug": "gmc",
+      "slug": "terrain",
+      "nameEn": "Terrain",
+      "nameAr": "Terrain",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-gmc-acadia",
+      "makeId": "make-gmc",
+      "makeSlug": "gmc",
+      "slug": "acadia",
+      "nameEn": "Acadia",
+      "nameAr": "Acadia",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-gmc-yukon",
+      "makeId": "make-gmc",
+      "makeSlug": "gmc",
+      "slug": "yukon",
+      "nameEn": "Yukon",
+      "nameAr": "Yukon",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-gmc-yukon-xl",
+      "makeId": "make-gmc",
+      "makeSlug": "gmc",
+      "slug": "yukon-xl",
+      "nameEn": "Yukon XL",
+      "nameAr": "Yukon XL",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-gmc-canyon",
+      "makeId": "make-gmc",
+      "makeSlug": "gmc",
+      "slug": "canyon",
+      "nameEn": "Canyon",
+      "nameAr": "Canyon",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-gmc-sierra",
+      "makeId": "make-gmc",
+      "makeSlug": "gmc",
+      "slug": "sierra",
+      "nameEn": "Sierra",
+      "nameAr": "Sierra",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-gmc-hummer-ev",
+      "makeId": "make-gmc",
+      "makeSlug": "gmc",
+      "slug": "hummer-ev",
+      "nameEn": "Hummer EV",
+      "nameAr": "Hummer EV",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-cadillac-ct4",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "ct4",
+      "nameEn": "CT4",
+      "nameAr": "CT4",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-cadillac-ct5",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "ct5",
+      "nameEn": "CT5",
+      "nameAr": "CT5",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-cadillac-xt4",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "xt4",
+      "nameEn": "XT4",
+      "nameAr": "XT4",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-cadillac-xt5",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "xt5",
+      "nameEn": "XT5",
+      "nameAr": "XT5",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-cadillac-xt6",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "xt6",
+      "nameEn": "XT6",
+      "nameAr": "XT6",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-cadillac-escalade",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "escalade",
+      "nameEn": "Escalade",
+      "nameAr": "Escalade",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-cadillac-lyriq",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "lyriq",
+      "nameEn": "Lyriq",
+      "nameAr": "Lyriq",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-cadillac-optiq",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "optiq",
+      "nameEn": "Optiq",
+      "nameAr": "Optiq",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-cadillac-vistiq",
+      "makeId": "make-cadillac",
+      "makeSlug": "cadillac",
+      "slug": "vistiq",
+      "nameEn": "Vistiq",
+      "nameAr": "Vistiq",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-chrysler-300",
+      "makeId": "make-chrysler",
+      "makeSlug": "chrysler",
+      "slug": "300",
+      "nameEn": "300",
+      "nameAr": "300",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-chrysler-pacifica",
+      "makeId": "make-chrysler",
+      "makeSlug": "chrysler",
+      "slug": "pacifica",
+      "nameEn": "Pacifica",
+      "nameAr": "Pacifica",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-chrysler-voyager",
+      "makeId": "make-chrysler",
+      "makeSlug": "chrysler",
+      "slug": "voyager",
+      "nameEn": "Voyager",
+      "nameAr": "Voyager",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-dodge-charger",
+      "makeId": "make-dodge",
+      "makeSlug": "dodge",
+      "slug": "charger",
+      "nameEn": "Charger",
+      "nameAr": "Charger",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-dodge-challenger",
+      "makeId": "make-dodge",
+      "makeSlug": "dodge",
+      "slug": "challenger",
+      "nameEn": "Challenger",
+      "nameAr": "Challenger",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-dodge-durango",
+      "makeId": "make-dodge",
+      "makeSlug": "dodge",
+      "slug": "durango",
+      "nameEn": "Durango",
+      "nameAr": "Durango",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-dodge-hornet",
+      "makeId": "make-dodge",
+      "makeSlug": "dodge",
+      "slug": "hornet",
+      "nameEn": "Hornet",
+      "nameAr": "Hornet",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-dodge-ram-1500",
+      "makeId": "make-dodge",
+      "makeSlug": "dodge",
+      "slug": "ram-1500",
+      "nameEn": "Ram 1500",
+      "nameAr": "Ram 1500",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-jeep-renegade",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "renegade",
+      "nameEn": "Renegade",
+      "nameAr": "Renegade",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-jeep-compass",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "compass",
+      "nameEn": "Compass",
+      "nameAr": "Compass",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-jeep-cherokee",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "cherokee",
+      "nameEn": "Cherokee",
+      "nameAr": "Cherokee",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-jeep-grand-cherokee",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "grand-cherokee",
+      "nameEn": "Grand Cherokee",
+      "nameAr": "Grand Cherokee",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-jeep-wrangler",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "wrangler",
+      "nameEn": "Wrangler",
+      "nameAr": "Wrangler",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-jeep-gladiator",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "gladiator",
+      "nameEn": "Gladiator",
+      "nameAr": "Gladiator",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-jeep-avenger",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "avenger",
+      "nameEn": "Avenger",
+      "nameAr": "Avenger",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-jeep-wagoneer",
+      "makeId": "make-jeep",
+      "makeSlug": "jeep",
+      "slug": "wagoneer",
+      "nameEn": "Wagoneer",
+      "nameAr": "Wagoneer",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-ram-1500",
+      "makeId": "make-ram",
+      "makeSlug": "ram",
+      "slug": "1500",
+      "nameEn": "1500",
+      "nameAr": "1500",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-ram-2500",
+      "makeId": "make-ram",
+      "makeSlug": "ram",
+      "slug": "2500",
+      "nameEn": "2500",
+      "nameAr": "2500",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-ram-3500",
+      "makeId": "make-ram",
+      "makeSlug": "ram",
+      "slug": "3500",
+      "nameEn": "3500",
+      "nameAr": "3500",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-ram-promaster",
+      "makeId": "make-ram",
+      "makeSlug": "ram",
+      "slug": "promaster",
+      "nameEn": "ProMaster",
+      "nameAr": "ProMaster",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-tesla-model-3",
+      "makeId": "make-tesla",
+      "makeSlug": "tesla",
+      "slug": "model-3",
+      "nameEn": "Model 3",
+      "nameAr": "Model 3",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-tesla-model-y",
+      "makeId": "make-tesla",
+      "makeSlug": "tesla",
+      "slug": "model-y",
+      "nameEn": "Model Y",
+      "nameAr": "Model Y",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-tesla-model-s",
+      "makeId": "make-tesla",
+      "makeSlug": "tesla",
+      "slug": "model-s",
+      "nameEn": "Model S",
+      "nameAr": "Model S",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-tesla-model-x",
+      "makeId": "make-tesla",
+      "makeSlug": "tesla",
+      "slug": "model-x",
+      "nameEn": "Model X",
+      "nameAr": "Model X",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-tesla-cybertruck",
+      "makeId": "make-tesla",
+      "makeSlug": "tesla",
+      "slug": "cybertruck",
+      "nameEn": "Cybertruck",
+      "nameAr": "Cybertruck",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-rivian-r1t",
+      "makeId": "make-rivian",
+      "makeSlug": "rivian",
+      "slug": "r1t",
+      "nameEn": "R1T",
+      "nameAr": "R1T",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-rivian-r1s",
+      "makeId": "make-rivian",
+      "makeSlug": "rivian",
+      "slug": "r1s",
+      "nameEn": "R1S",
+      "nameAr": "R1S",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-rivian-r2",
+      "makeId": "make-rivian",
+      "makeSlug": "rivian",
+      "slug": "r2",
+      "nameEn": "R2",
+      "nameAr": "R2",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-lucid-air",
+      "makeId": "make-lucid",
+      "makeSlug": "lucid",
+      "slug": "air",
+      "nameEn": "Air",
+      "nameAr": "Air",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-lucid-gravity",
+      "makeId": "make-lucid",
+      "makeSlug": "lucid",
+      "slug": "gravity",
+      "nameEn": "Gravity",
+      "nameAr": "Gravity",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-ferrari-roma",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "roma",
+      "nameEn": "Roma",
+      "nameAr": "Roma",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-ferrari-roma-spider",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "roma-spider",
+      "nameEn": "Roma Spider",
+      "nameAr": "Roma Spider",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-ferrari-sf90",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "sf90",
+      "nameEn": "SF90",
+      "nameAr": "SF90",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-ferrari-296-gtb",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "296-gtb",
+      "nameEn": "296 GTB",
+      "nameAr": "296 GTB",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-ferrari-f8-tributo",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "f8-tributo",
+      "nameEn": "F8 Tributo",
+      "nameAr": "F8 Tributo",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-ferrari-purosangue",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "purosangue",
+      "nameEn": "Purosangue",
+      "nameAr": "Purosangue",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-ferrari-12cilindri",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "12cilindri",
+      "nameEn": "12Cilindri",
+      "nameAr": "12Cilindri",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-ferrari-812",
+      "makeId": "make-ferrari",
+      "makeSlug": "ferrari",
+      "slug": "812",
+      "nameEn": "812",
+      "nameAr": "812",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-lamborghini-huracan",
+      "makeId": "make-lamborghini",
+      "makeSlug": "lamborghini",
+      "slug": "huracan",
+      "nameEn": "Huracán",
+      "nameAr": "Huracán",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-lamborghini-revuelto",
+      "makeId": "make-lamborghini",
+      "makeSlug": "lamborghini",
+      "slug": "revuelto",
+      "nameEn": "Revuelto",
+      "nameAr": "Revuelto",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-lamborghini-urus",
+      "makeId": "make-lamborghini",
+      "makeSlug": "lamborghini",
+      "slug": "urus",
+      "nameEn": "Urus",
+      "nameAr": "Urus",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-lamborghini-temerario",
+      "makeId": "make-lamborghini",
+      "makeSlug": "lamborghini",
+      "slug": "temerario",
+      "nameEn": "Temerario",
+      "nameAr": "Temerario",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-maserati-ghibli",
+      "makeId": "make-maserati",
+      "makeSlug": "maserati",
+      "slug": "ghibli",
+      "nameEn": "Ghibli",
+      "nameAr": "Ghibli",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-maserati-quattroporte",
+      "makeId": "make-maserati",
+      "makeSlug": "maserati",
+      "slug": "quattroporte",
+      "nameEn": "Quattroporte",
+      "nameAr": "Quattroporte",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-maserati-levante",
+      "makeId": "make-maserati",
+      "makeSlug": "maserati",
+      "slug": "levante",
+      "nameEn": "Levante",
+      "nameAr": "Levante",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-maserati-grecale",
+      "makeId": "make-maserati",
+      "makeSlug": "maserati",
+      "slug": "grecale",
+      "nameEn": "Grecale",
+      "nameAr": "Grecale",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-maserati-mc20",
+      "makeId": "make-maserati",
+      "makeSlug": "maserati",
+      "slug": "mc20",
+      "nameEn": "MC20",
+      "nameAr": "MC20",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-maserati-granturismo",
+      "makeId": "make-maserati",
+      "makeSlug": "maserati",
+      "slug": "granturismo",
+      "nameEn": "GranTurismo",
+      "nameAr": "GranTurismo",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-alfa-romeo-giulia",
+      "makeId": "make-alfa-romeo",
+      "makeSlug": "alfa-romeo",
+      "slug": "giulia",
+      "nameEn": "Giulia",
+      "nameAr": "Giulia",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-alfa-romeo-stelvio",
+      "makeId": "make-alfa-romeo",
+      "makeSlug": "alfa-romeo",
+      "slug": "stelvio",
+      "nameEn": "Stelvio",
+      "nameAr": "Stelvio",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-alfa-romeo-tonale",
+      "makeId": "make-alfa-romeo",
+      "makeSlug": "alfa-romeo",
+      "slug": "tonale",
+      "nameEn": "Tonale",
+      "nameAr": "Tonale",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-alfa-romeo-junior",
+      "makeId": "make-alfa-romeo",
+      "makeSlug": "alfa-romeo",
+      "slug": "junior",
+      "nameEn": "Junior",
+      "nameAr": "Junior",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-fiat-500",
+      "makeId": "make-fiat",
+      "makeSlug": "fiat",
+      "slug": "500",
+      "nameEn": "500",
+      "nameAr": "500",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-fiat-500x",
+      "makeId": "make-fiat",
+      "makeSlug": "fiat",
+      "slug": "500x",
+      "nameEn": "500X",
+      "nameAr": "500X",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-fiat-500e",
+      "makeId": "make-fiat",
+      "makeSlug": "fiat",
+      "slug": "500e",
+      "nameEn": "500e",
+      "nameAr": "500e",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-fiat-tipo",
+      "makeId": "make-fiat",
+      "makeSlug": "fiat",
+      "slug": "tipo",
+      "nameEn": "Tipo",
+      "nameAr": "Tipo",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-fiat-panda",
+      "makeId": "make-fiat",
+      "makeSlug": "fiat",
+      "slug": "panda",
+      "nameEn": "Panda",
+      "nameAr": "Panda",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-fiat-doblo",
+      "makeId": "make-fiat",
+      "makeSlug": "fiat",
+      "slug": "doblo",
+      "nameEn": "Doblo",
+      "nameAr": "Doblo",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-abarth-595",
+      "makeId": "make-abarth",
+      "makeSlug": "abarth",
+      "slug": "595",
+      "nameEn": "595",
+      "nameAr": "595",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-abarth-695",
+      "makeId": "make-abarth",
+      "makeSlug": "abarth",
+      "slug": "695",
+      "nameEn": "695",
+      "nameAr": "695",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-abarth-500e",
+      "makeId": "make-abarth",
+      "makeSlug": "abarth",
+      "slug": "500e",
+      "nameEn": "500e",
+      "nameAr": "500e",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-abarth-pulse",
+      "makeId": "make-abarth",
+      "makeSlug": "abarth",
+      "slug": "pulse",
+      "nameEn": "Pulse",
+      "nameAr": "Pulse",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-pagani-huayra",
+      "makeId": "make-pagani",
+      "makeSlug": "pagani",
+      "slug": "huayra",
+      "nameEn": "Huayra",
+      "nameAr": "Huayra",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-pagani-utopia",
+      "makeId": "make-pagani",
+      "makeSlug": "pagani",
+      "slug": "utopia",
+      "nameEn": "Utopia",
+      "nameAr": "Utopia",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-peugeot-208",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "208",
+      "nameEn": "208",
+      "nameAr": "208",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-peugeot-308",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "308",
+      "nameEn": "308",
+      "nameAr": "308",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-peugeot-408",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "408",
+      "nameEn": "408",
+      "nameAr": "408",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-peugeot-508",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "508",
+      "nameEn": "508",
+      "nameAr": "508",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-peugeot-2008",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "2008",
+      "nameEn": "2008",
+      "nameAr": "2008",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-peugeot-3008",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "3008",
+      "nameEn": "3008",
+      "nameAr": "3008",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-peugeot-5008",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "5008",
+      "nameEn": "5008",
+      "nameAr": "5008",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-peugeot-partner",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "partner",
+      "nameEn": "Partner",
+      "nameAr": "Partner",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-peugeot-expert",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "expert",
+      "nameEn": "Expert",
+      "nameAr": "Expert",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-peugeot-boxer",
+      "makeId": "make-peugeot",
+      "makeSlug": "peugeot",
+      "slug": "boxer",
+      "nameEn": "Boxer",
+      "nameAr": "Boxer",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-citroen-c3",
+      "makeId": "make-citroen",
+      "makeSlug": "citroen",
+      "slug": "c3",
+      "nameEn": "C3",
+      "nameAr": "C3",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-citroen-c4",
+      "makeId": "make-citroen",
+      "makeSlug": "citroen",
+      "slug": "c4",
+      "nameEn": "C4",
+      "nameAr": "C4",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-citroen-c5-aircross",
+      "makeId": "make-citroen",
+      "makeSlug": "citroen",
+      "slug": "c5-aircross",
+      "nameEn": "C5 Aircross",
+      "nameAr": "C5 Aircross",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-citroen-berlingo",
+      "makeId": "make-citroen",
+      "makeSlug": "citroen",
+      "slug": "berlingo",
+      "nameEn": "Berlingo",
+      "nameAr": "Berlingo",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-citroen-jumpy",
+      "makeId": "make-citroen",
+      "makeSlug": "citroen",
+      "slug": "jumpy",
+      "nameEn": "Jumpy",
+      "nameAr": "Jumpy",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-citroen-jumper",
+      "makeId": "make-citroen",
+      "makeSlug": "citroen",
+      "slug": "jumper",
+      "nameEn": "Jumper",
+      "nameAr": "Jumper",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-renault-clio",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "clio",
+      "nameEn": "Clio",
+      "nameAr": "Clio",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-renault-megane",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "megane",
+      "nameEn": "Megane",
+      "nameAr": "Megane",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-renault-captur",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "captur",
+      "nameEn": "Captur",
+      "nameAr": "Captur",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-renault-arkana",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "arkana",
+      "nameEn": "Arkana",
+      "nameAr": "Arkana",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-renault-austral",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "austral",
+      "nameEn": "Austral",
+      "nameAr": "Austral",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-renault-koleos",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "koleos",
+      "nameEn": "Koleos",
+      "nameAr": "Koleos",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-renault-duster",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "duster",
+      "nameEn": "Duster",
+      "nameAr": "Duster",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-renault-trafic",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "trafic",
+      "nameEn": "Trafic",
+      "nameAr": "Trafic",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-renault-master",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "master",
+      "nameEn": "Master",
+      "nameAr": "Master",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-renault-megane-e-tech",
+      "makeId": "make-renault",
+      "makeSlug": "renault",
+      "slug": "megane-e-tech",
+      "nameEn": "Megane E-Tech",
+      "nameAr": "Megane E-Tech",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-dacia-sandero",
+      "makeId": "make-dacia",
+      "makeSlug": "dacia",
+      "slug": "sandero",
+      "nameEn": "Sandero",
+      "nameAr": "Sandero",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-dacia-duster",
+      "makeId": "make-dacia",
+      "makeSlug": "dacia",
+      "slug": "duster",
+      "nameEn": "Duster",
+      "nameAr": "Duster",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-dacia-jogger",
+      "makeId": "make-dacia",
+      "makeSlug": "dacia",
+      "slug": "jogger",
+      "nameEn": "Jogger",
+      "nameAr": "Jogger",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-dacia-spring",
+      "makeId": "make-dacia",
+      "makeSlug": "dacia",
+      "slug": "spring",
+      "nameEn": "Spring",
+      "nameAr": "Spring",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-dacia-bigster",
+      "makeId": "make-dacia",
+      "makeSlug": "dacia",
+      "slug": "bigster",
+      "nameEn": "Bigster",
+      "nameAr": "Bigster",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-ds-automobiles-ds-3",
+      "makeId": "make-ds-automobiles",
+      "makeSlug": "ds-automobiles",
+      "slug": "ds-3",
+      "nameEn": "DS 3",
+      "nameAr": "DS 3",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-ds-automobiles-ds-4",
+      "makeId": "make-ds-automobiles",
+      "makeSlug": "ds-automobiles",
+      "slug": "ds-4",
+      "nameEn": "DS 4",
+      "nameAr": "DS 4",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-ds-automobiles-ds-7",
+      "makeId": "make-ds-automobiles",
+      "makeSlug": "ds-automobiles",
+      "slug": "ds-7",
+      "nameEn": "DS 7",
+      "nameAr": "DS 7",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-ds-automobiles-ds-9",
+      "makeId": "make-ds-automobiles",
+      "makeSlug": "ds-automobiles",
+      "slug": "ds-9",
+      "nameEn": "DS 9",
+      "nameAr": "DS 9",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-bugatti-chiron",
+      "makeId": "make-bugatti",
+      "makeSlug": "bugatti",
+      "slug": "chiron",
+      "nameEn": "Chiron",
+      "nameAr": "Chiron",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-bugatti-mistral",
+      "makeId": "make-bugatti",
+      "makeSlug": "bugatti",
+      "slug": "mistral",
+      "nameEn": "Mistral",
+      "nameAr": "Mistral",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-bugatti-tourbillon",
+      "makeId": "make-bugatti",
+      "makeSlug": "bugatti",
+      "slug": "tourbillon",
+      "nameEn": "Tourbillon",
+      "nameAr": "Tourbillon",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-volvo-s60",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "s60",
+      "nameEn": "S60",
+      "nameAr": "S60",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-volvo-s90",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "s90",
+      "nameEn": "S90",
+      "nameAr": "S90",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-volvo-v60",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "v60",
+      "nameEn": "V60",
+      "nameAr": "V60",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-volvo-v90",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "v90",
+      "nameEn": "V90",
+      "nameAr": "V90",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-volvo-xc40",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "xc40",
+      "nameEn": "XC40",
+      "nameAr": "XC40",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-volvo-xc60",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "xc60",
+      "nameEn": "XC60",
+      "nameAr": "XC60",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-volvo-xc90",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "xc90",
+      "nameEn": "XC90",
+      "nameAr": "XC90",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-volvo-ex30",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "ex30",
+      "nameEn": "EX30",
+      "nameAr": "EX30",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-volvo-ex90",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "ex90",
+      "nameEn": "EX90",
+      "nameAr": "EX90",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-volvo-c40",
+      "makeId": "make-volvo",
+      "makeSlug": "volvo",
+      "slug": "c40",
+      "nameEn": "C40",
+      "nameAr": "C40",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-polestar-2",
+      "makeId": "make-polestar",
+      "makeSlug": "polestar",
+      "slug": "2",
+      "nameEn": "2",
+      "nameAr": "2",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-polestar-3",
+      "makeId": "make-polestar",
+      "makeSlug": "polestar",
+      "slug": "3",
+      "nameEn": "3",
+      "nameAr": "3",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-polestar-4",
+      "makeId": "make-polestar",
+      "makeSlug": "polestar",
+      "slug": "4",
+      "nameEn": "4",
+      "nameAr": "4",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-saab-9-3",
+      "makeId": "make-saab",
+      "makeSlug": "saab",
+      "slug": "9-3",
+      "nameEn": "9-3",
+      "nameAr": "9-3",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-saab-9-5",
+      "makeId": "make-saab",
+      "makeSlug": "saab",
+      "slug": "9-5",
+      "nameEn": "9-5",
+      "nameAr": "9-5",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-saab-9-7x",
+      "makeId": "make-saab",
+      "makeSlug": "saab",
+      "slug": "9-7x",
+      "nameEn": "9-7X",
+      "nameAr": "9-7X",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-koenigsegg-jesko",
+      "makeId": "make-koenigsegg",
+      "makeSlug": "koenigsegg",
+      "slug": "jesko",
+      "nameEn": "Jesko",
+      "nameAr": "Jesko",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-koenigsegg-gemera",
+      "makeId": "make-koenigsegg",
+      "makeSlug": "koenigsegg",
+      "slug": "gemera",
+      "nameEn": "Gemera",
+      "nameAr": "Gemera",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-koenigsegg-cc850",
+      "makeId": "make-koenigsegg",
+      "makeSlug": "koenigsegg",
+      "slug": "cc850",
+      "nameEn": "CC850",
+      "nameAr": "CC850",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-koenigsegg-regera",
+      "makeId": "make-koenigsegg",
+      "makeSlug": "koenigsegg",
+      "slug": "regera",
+      "nameEn": "Regera",
+      "nameAr": "Regera",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-hyundai-i10",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "i10",
+      "nameEn": "i10",
+      "nameAr": "i10",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-hyundai-accent",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "accent",
+      "nameEn": "Accent",
+      "nameAr": "Accent",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-hyundai-elantra",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "elantra",
+      "nameEn": "Elantra",
+      "nameAr": "Elantra",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-hyundai-sonata",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "sonata",
+      "nameEn": "Sonata",
+      "nameAr": "Sonata",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-hyundai-azera",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "azera",
+      "nameEn": "Azera",
+      "nameAr": "Azera",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-hyundai-creta",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "creta",
+      "nameEn": "Creta",
+      "nameAr": "Creta",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-hyundai-tucson",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "tucson",
+      "nameEn": "Tucson",
+      "nameAr": "Tucson",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-hyundai-santa-fe",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "santa-fe",
+      "nameEn": "Santa Fe",
+      "nameAr": "Santa Fe",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-hyundai-palisade",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "palisade",
+      "nameEn": "Palisade",
+      "nameAr": "Palisade",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-hyundai-kona",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "kona",
+      "nameEn": "Kona",
+      "nameAr": "Kona",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-hyundai-ioniq-5",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "ioniq-5",
+      "nameEn": "Ioniq 5",
+      "nameAr": "Ioniq 5",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-hyundai-ioniq-6",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "ioniq-6",
+      "nameEn": "Ioniq 6",
+      "nameAr": "Ioniq 6",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-hyundai-staria",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "staria",
+      "nameEn": "Staria",
+      "nameAr": "Staria",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-hyundai-h-1",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "h-1",
+      "nameEn": "H-1",
+      "nameAr": "H-1",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-hyundai-venue",
+      "makeId": "make-hyundai",
+      "makeSlug": "hyundai",
+      "slug": "venue",
+      "nameEn": "Venue",
+      "nameAr": "Venue",
+      "active": true,
+      "sortOrder": 150
+    },
+    {
+      "id": "model-genesis-g70",
+      "makeId": "make-genesis",
+      "makeSlug": "genesis",
+      "slug": "g70",
+      "nameEn": "G70",
+      "nameAr": "G70",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-genesis-g80",
+      "makeId": "make-genesis",
+      "makeSlug": "genesis",
+      "slug": "g80",
+      "nameEn": "G80",
+      "nameAr": "G80",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-genesis-g90",
+      "makeId": "make-genesis",
+      "makeSlug": "genesis",
+      "slug": "g90",
+      "nameEn": "G90",
+      "nameAr": "G90",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-genesis-gv60",
+      "makeId": "make-genesis",
+      "makeSlug": "genesis",
+      "slug": "gv60",
+      "nameEn": "GV60",
+      "nameAr": "GV60",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-genesis-gv70",
+      "makeId": "make-genesis",
+      "makeSlug": "genesis",
+      "slug": "gv70",
+      "nameEn": "GV70",
+      "nameAr": "GV70",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-genesis-gv80",
+      "makeId": "make-genesis",
+      "makeSlug": "genesis",
+      "slug": "gv80",
+      "nameEn": "GV80",
+      "nameAr": "GV80",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-kia-picanto",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "picanto",
+      "nameEn": "Picanto",
+      "nameAr": "Picanto",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-kia-pegas",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "pegas",
+      "nameEn": "Pegas",
+      "nameAr": "Pegas",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-kia-cerato",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "cerato",
+      "nameEn": "Cerato",
+      "nameAr": "Cerato",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-kia-k5",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "k5",
+      "nameEn": "K5",
+      "nameAr": "K5",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-kia-k8",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "k8",
+      "nameEn": "K8",
+      "nameAr": "K8",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-kia-sportage",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "sportage",
+      "nameEn": "Sportage",
+      "nameAr": "Sportage",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-kia-sorento",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "sorento",
+      "nameEn": "Sorento",
+      "nameAr": "Sorento",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-kia-telluride",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "telluride",
+      "nameEn": "Telluride",
+      "nameAr": "Telluride",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-kia-seltos",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "seltos",
+      "nameEn": "Seltos",
+      "nameAr": "Seltos",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-kia-carnival",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "carnival",
+      "nameEn": "Carnival",
+      "nameAr": "Carnival",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-kia-ev6",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "ev6",
+      "nameEn": "EV6",
+      "nameAr": "EV6",
+      "active": true,
+      "sortOrder": 110
+    },
+    {
+      "id": "model-kia-ev9",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "ev9",
+      "nameEn": "EV9",
+      "nameAr": "EV9",
+      "active": true,
+      "sortOrder": 120
+    },
+    {
+      "id": "model-kia-niro",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "niro",
+      "nameEn": "Niro",
+      "nameAr": "Niro",
+      "active": true,
+      "sortOrder": 130
+    },
+    {
+      "id": "model-kia-rio",
+      "makeId": "make-kia",
+      "makeSlug": "kia",
+      "slug": "rio",
+      "nameEn": "Rio",
+      "nameAr": "Rio",
+      "active": true,
+      "sortOrder": 140
+    },
+    {
+      "id": "model-kgm-tivoli",
+      "makeId": "make-kgm",
+      "makeSlug": "kgm",
+      "slug": "tivoli",
+      "nameEn": "Tivoli",
+      "nameAr": "Tivoli",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-kgm-korando",
+      "makeId": "make-kgm",
+      "makeSlug": "kgm",
+      "slug": "korando",
+      "nameEn": "Korando",
+      "nameAr": "Korando",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-kgm-rexton",
+      "makeId": "make-kgm",
+      "makeSlug": "kgm",
+      "slug": "rexton",
+      "nameEn": "Rexton",
+      "nameAr": "Rexton",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-kgm-torres",
+      "makeId": "make-kgm",
+      "makeSlug": "kgm",
+      "slug": "torres",
+      "nameEn": "Torres",
+      "nameAr": "Torres",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-kgm-musso",
+      "makeId": "make-kgm",
+      "makeSlug": "kgm",
+      "slug": "musso",
+      "nameEn": "Musso",
+      "nameAr": "Musso",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-byd-seagull",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "seagull",
+      "nameEn": "Seagull",
+      "nameAr": "Seagull",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-byd-dolphin",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "dolphin",
+      "nameEn": "Dolphin",
+      "nameAr": "Dolphin",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-byd-seal",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "seal",
+      "nameEn": "Seal",
+      "nameAr": "Seal",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-byd-sealion-7",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "sealion-7",
+      "nameEn": "Sealion 7",
+      "nameAr": "Sealion 7",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-byd-atto-3",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "atto-3",
+      "nameEn": "Atto 3",
+      "nameAr": "Atto 3",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-byd-song-plus",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "song-plus",
+      "nameEn": "Song Plus",
+      "nameAr": "Song Plus",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-byd-tang",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "tang",
+      "nameEn": "Tang",
+      "nameAr": "Tang",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-byd-han",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "han",
+      "nameEn": "Han",
+      "nameAr": "Han",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-byd-yangwang-u8",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "yangwang-u8",
+      "nameEn": "Yangwang U8",
+      "nameAr": "Yangwang U8",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-byd-shark",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "shark",
+      "nameEn": "Shark",
+      "nameAr": "Shark",
+      "active": true,
+      "sortOrder": 100
+    },
+    {
+      "id": "model-geely-emgrand",
+      "makeId": "make-geely",
+      "makeSlug": "geely",
+      "slug": "emgrand",
+      "nameEn": "Emgrand",
+      "nameAr": "Emgrand",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-geely-coolray",
+      "makeId": "make-geely",
+      "makeSlug": "geely",
+      "slug": "coolray",
+      "nameEn": "Coolray",
+      "nameAr": "Coolray",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-geely-monjaro",
+      "makeId": "make-geely",
+      "makeSlug": "geely",
+      "slug": "monjaro",
+      "nameEn": "Monjaro",
+      "nameAr": "Monjaro",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-geely-okavango",
+      "makeId": "make-geely",
+      "makeSlug": "geely",
+      "slug": "okavango",
+      "nameEn": "Okavango",
+      "nameAr": "Okavango",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-geely-geometry-c",
+      "makeId": "make-geely",
+      "makeSlug": "geely",
+      "slug": "geometry-c",
+      "nameEn": "Geometry C",
+      "nameAr": "Geometry C",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-geely-preface",
+      "makeId": "make-geely",
+      "makeSlug": "geely",
+      "slug": "preface",
+      "nameEn": "Preface",
+      "nameAr": "Preface",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-geely-galaxy-e8",
+      "makeId": "make-geely",
+      "makeSlug": "geely",
+      "slug": "galaxy-e8",
+      "nameEn": "Galaxy E8",
+      "nameAr": "Galaxy E8",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-zeekr-001",
+      "makeId": "make-zeekr",
+      "makeSlug": "zeekr",
+      "slug": "001",
+      "nameEn": "001",
+      "nameAr": "001",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-zeekr-007",
+      "makeId": "make-zeekr",
+      "makeSlug": "zeekr",
+      "slug": "007",
+      "nameEn": "007",
+      "nameAr": "007",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-zeekr-x",
+      "makeId": "make-zeekr",
+      "makeSlug": "zeekr",
+      "slug": "x",
+      "nameEn": "X",
+      "nameAr": "X",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-zeekr-009",
+      "makeId": "make-zeekr",
+      "makeSlug": "zeekr",
+      "slug": "009",
+      "nameEn": "009",
+      "nameAr": "009",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-zeekr-7x",
+      "makeId": "make-zeekr",
+      "makeSlug": "zeekr",
+      "slug": "7x",
+      "nameEn": "7X",
+      "nameAr": "7X",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-chery-arrizo-5",
+      "makeId": "make-chery",
+      "makeSlug": "chery",
+      "slug": "arrizo-5",
+      "nameEn": "Arrizo 5",
+      "nameAr": "Arrizo 5",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-chery-arrizo-8",
+      "makeId": "make-chery",
+      "makeSlug": "chery",
+      "slug": "arrizo-8",
+      "nameEn": "Arrizo 8",
+      "nameAr": "Arrizo 8",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-chery-tiggo-4",
+      "makeId": "make-chery",
+      "makeSlug": "chery",
+      "slug": "tiggo-4",
+      "nameEn": "Tiggo 4",
+      "nameAr": "Tiggo 4",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-chery-tiggo-7",
+      "makeId": "make-chery",
+      "makeSlug": "chery",
+      "slug": "tiggo-7",
+      "nameEn": "Tiggo 7",
+      "nameAr": "Tiggo 7",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-chery-tiggo-8",
+      "makeId": "make-chery",
+      "makeSlug": "chery",
+      "slug": "tiggo-8",
+      "nameEn": "Tiggo 8",
+      "nameAr": "Tiggo 8",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-chery-tiggo-9",
+      "makeId": "make-chery",
+      "makeSlug": "chery",
+      "slug": "tiggo-9",
+      "nameEn": "Tiggo 9",
+      "nameAr": "Tiggo 9",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-chery-eq7",
+      "makeId": "make-chery",
+      "makeSlug": "chery",
+      "slug": "eq7",
+      "nameEn": "eQ7",
+      "nameAr": "eQ7",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-exeed-txl",
+      "makeId": "make-exeed",
+      "makeSlug": "exeed",
+      "slug": "txl",
+      "nameEn": "TXL",
+      "nameAr": "TXL",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-exeed-vx",
+      "makeId": "make-exeed",
+      "makeSlug": "exeed",
+      "slug": "vx",
+      "nameEn": "VX",
+      "nameAr": "VX",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-exeed-rx",
+      "makeId": "make-exeed",
+      "makeSlug": "exeed",
+      "slug": "rx",
+      "nameEn": "RX",
+      "nameAr": "RX",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-exeed-lx",
+      "makeId": "make-exeed",
+      "makeSlug": "exeed",
+      "slug": "lx",
+      "nameEn": "LX",
+      "nameAr": "LX",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-jetour-dashing",
+      "makeId": "make-jetour",
+      "makeSlug": "jetour",
+      "slug": "dashing",
+      "nameEn": "Dashing",
+      "nameAr": "Dashing",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-jetour-x70",
+      "makeId": "make-jetour",
+      "makeSlug": "jetour",
+      "slug": "x70",
+      "nameEn": "X70",
+      "nameAr": "X70",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-jetour-x90",
+      "makeId": "make-jetour",
+      "makeSlug": "jetour",
+      "slug": "x90",
+      "nameEn": "X90",
+      "nameAr": "X90",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-jetour-t2",
+      "makeId": "make-jetour",
+      "makeSlug": "jetour",
+      "slug": "t2",
+      "nameEn": "T2",
+      "nameAr": "T2",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-jetour-t1",
+      "makeId": "make-jetour",
+      "makeSlug": "jetour",
+      "slug": "t1",
+      "nameEn": "T1",
+      "nameAr": "T1",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-haval-jolion",
+      "makeId": "make-haval",
+      "makeSlug": "haval",
+      "slug": "jolion",
+      "nameEn": "Jolion",
+      "nameAr": "Jolion",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-haval-h6",
+      "makeId": "make-haval",
+      "makeSlug": "haval",
+      "slug": "h6",
+      "nameEn": "H6",
+      "nameAr": "H6",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-haval-h9",
+      "makeId": "make-haval",
+      "makeSlug": "haval",
+      "slug": "h9",
+      "nameEn": "H9",
+      "nameAr": "H9",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-haval-dargo",
+      "makeId": "make-haval",
+      "makeSlug": "haval",
+      "slug": "dargo",
+      "nameEn": "Dargo",
+      "nameAr": "Dargo",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-haval-h6-gt",
+      "makeId": "make-haval",
+      "makeSlug": "haval",
+      "slug": "h6-gt",
+      "nameEn": "H6 GT",
+      "nameAr": "H6 GT",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-gwm-poer",
+      "makeId": "make-gwm",
+      "makeSlug": "gwm",
+      "slug": "poer",
+      "nameEn": "Poer",
+      "nameAr": "Poer",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-gwm-cannon",
+      "makeId": "make-gwm",
+      "makeSlug": "gwm",
+      "slug": "cannon",
+      "nameEn": "Cannon",
+      "nameAr": "Cannon",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-gwm-tank-300",
+      "makeId": "make-gwm",
+      "makeSlug": "gwm",
+      "slug": "tank-300",
+      "nameEn": "Tank 300",
+      "nameAr": "Tank 300",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-gwm-tank-500",
+      "makeId": "make-gwm",
+      "makeSlug": "gwm",
+      "slug": "tank-500",
+      "nameEn": "Tank 500",
+      "nameAr": "Tank 500",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-gwm-ora-good-cat",
+      "makeId": "make-gwm",
+      "makeSlug": "gwm",
+      "slug": "ora-good-cat",
+      "nameEn": "Ora Good Cat",
+      "nameAr": "Ora Good Cat",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-tank-300",
+      "makeId": "make-tank",
+      "makeSlug": "tank",
+      "slug": "300",
+      "nameEn": "300",
+      "nameAr": "300",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-tank-400",
+      "makeId": "make-tank",
+      "makeSlug": "tank",
+      "slug": "400",
+      "nameEn": "400",
+      "nameAr": "400",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-tank-500",
+      "makeId": "make-tank",
+      "makeSlug": "tank",
+      "slug": "500",
+      "nameEn": "500",
+      "nameAr": "500",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-tank-700",
+      "makeId": "make-tank",
+      "makeSlug": "tank",
+      "slug": "700",
+      "nameEn": "700",
+      "nameAr": "700",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-hongqi-h5",
+      "makeId": "make-hongqi",
+      "makeSlug": "hongqi",
+      "slug": "h5",
+      "nameEn": "H5",
+      "nameAr": "H5",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-hongqi-h9",
+      "makeId": "make-hongqi",
+      "makeSlug": "hongqi",
+      "slug": "h9",
+      "nameEn": "H9",
+      "nameAr": "H9",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-hongqi-hs5",
+      "makeId": "make-hongqi",
+      "makeSlug": "hongqi",
+      "slug": "hs5",
+      "nameEn": "HS5",
+      "nameAr": "HS5",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-hongqi-hs7",
+      "makeId": "make-hongqi",
+      "makeSlug": "hongqi",
+      "slug": "hs7",
+      "nameEn": "HS7",
+      "nameAr": "HS7",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-hongqi-e-hs9",
+      "makeId": "make-hongqi",
+      "makeSlug": "hongqi",
+      "slug": "e-hs9",
+      "nameEn": "E-HS9",
+      "nameAr": "E-HS9",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-hongqi-eh7",
+      "makeId": "make-hongqi",
+      "makeSlug": "hongqi",
+      "slug": "eh7",
+      "nameEn": "EH7",
+      "nameAr": "EH7",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-nio-et5",
+      "makeId": "make-nio",
+      "makeSlug": "nio",
+      "slug": "et5",
+      "nameEn": "ET5",
+      "nameAr": "ET5",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-nio-et7",
+      "makeId": "make-nio",
+      "makeSlug": "nio",
+      "slug": "et7",
+      "nameEn": "ET7",
+      "nameAr": "ET7",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-nio-es6",
+      "makeId": "make-nio",
+      "makeSlug": "nio",
+      "slug": "es6",
+      "nameEn": "ES6",
+      "nameAr": "ES6",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-nio-es8",
+      "makeId": "make-nio",
+      "makeSlug": "nio",
+      "slug": "es8",
+      "nameEn": "ES8",
+      "nameAr": "ES8",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-nio-ec6",
+      "makeId": "make-nio",
+      "makeSlug": "nio",
+      "slug": "ec6",
+      "nameEn": "EC6",
+      "nameAr": "EC6",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-nio-ec7",
+      "makeId": "make-nio",
+      "makeSlug": "nio",
+      "slug": "ec7",
+      "nameEn": "EC7",
+      "nameAr": "EC7",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-xpeng-g6",
+      "makeId": "make-xpeng",
+      "makeSlug": "xpeng",
+      "slug": "g6",
+      "nameEn": "G6",
+      "nameAr": "G6",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-xpeng-g9",
+      "makeId": "make-xpeng",
+      "makeSlug": "xpeng",
+      "slug": "g9",
+      "nameEn": "G9",
+      "nameAr": "G9",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-xpeng-p7",
+      "makeId": "make-xpeng",
+      "makeSlug": "xpeng",
+      "slug": "p7",
+      "nameEn": "P7",
+      "nameAr": "P7",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-xpeng-p5",
+      "makeId": "make-xpeng",
+      "makeSlug": "xpeng",
+      "slug": "p5",
+      "nameEn": "P5",
+      "nameAr": "P5",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-xpeng-x9",
+      "makeId": "make-xpeng",
+      "makeSlug": "xpeng",
+      "slug": "x9",
+      "nameEn": "X9",
+      "nameAr": "X9",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-li-auto-l6",
+      "makeId": "make-li-auto",
+      "makeSlug": "li-auto",
+      "slug": "l6",
+      "nameEn": "L6",
+      "nameAr": "L6",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-li-auto-l7",
+      "makeId": "make-li-auto",
+      "makeSlug": "li-auto",
+      "slug": "l7",
+      "nameEn": "L7",
+      "nameAr": "L7",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-li-auto-l8",
+      "makeId": "make-li-auto",
+      "makeSlug": "li-auto",
+      "slug": "l8",
+      "nameEn": "L8",
+      "nameAr": "L8",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-li-auto-l9",
+      "makeId": "make-li-auto",
+      "makeSlug": "li-auto",
+      "slug": "l9",
+      "nameEn": "L9",
+      "nameAr": "L9",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-li-auto-mega",
+      "makeId": "make-li-auto",
+      "makeSlug": "li-auto",
+      "slug": "mega",
+      "nameEn": "MEGA",
+      "nameAr": "MEGA",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-changan-alsvin",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "alsvin",
+      "nameEn": "Alsvin",
+      "nameAr": "Alsvin",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-changan-eado",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "eado",
+      "nameEn": "Eado",
+      "nameAr": "Eado",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-changan-cs35-plus",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "cs35-plus",
+      "nameEn": "CS35 Plus",
+      "nameAr": "CS35 Plus",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-changan-cs55-plus",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "cs55-plus",
+      "nameEn": "CS55 Plus",
+      "nameAr": "CS55 Plus",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-changan-cs75-plus",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "cs75-plus",
+      "nameEn": "CS75 Plus",
+      "nameAr": "CS75 Plus",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-changan-uni-t",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "uni-t",
+      "nameEn": "UNI-T",
+      "nameAr": "UNI-T",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-changan-uni-v",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "uni-v",
+      "nameEn": "UNI-V",
+      "nameAr": "UNI-V",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-changan-uni-k",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "uni-k",
+      "nameEn": "UNI-K",
+      "nameAr": "UNI-K",
+      "active": true,
+      "sortOrder": 80
+    },
+    {
+      "id": "model-changan-hunter",
+      "makeId": "make-changan",
+      "makeSlug": "changan",
+      "slug": "hunter",
+      "nameEn": "Hunter",
+      "nameAr": "Hunter",
+      "active": true,
+      "sortOrder": 90
+    },
+    {
+      "id": "model-deepal-s07",
+      "makeId": "make-deepal",
+      "makeSlug": "deepal",
+      "slug": "s07",
+      "nameEn": "S07",
+      "nameAr": "S07",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-deepal-s05",
+      "makeId": "make-deepal",
+      "makeSlug": "deepal",
+      "slug": "s05",
+      "nameEn": "S05",
+      "nameAr": "S05",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-deepal-l07",
+      "makeId": "make-deepal",
+      "makeSlug": "deepal",
+      "slug": "l07",
+      "nameEn": "L07",
+      "nameAr": "L07",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-deepal-g318",
+      "makeId": "make-deepal",
+      "makeSlug": "deepal",
+      "slug": "g318",
+      "nameEn": "G318",
+      "nameAr": "G318",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-jac-j7",
+      "makeId": "make-jac",
+      "makeSlug": "jac",
+      "slug": "j7",
+      "nameEn": "J7",
+      "nameAr": "J7",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-jac-js4",
+      "makeId": "make-jac",
+      "makeSlug": "jac",
+      "slug": "js4",
+      "nameEn": "JS4",
+      "nameAr": "JS4",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-jac-js6",
+      "makeId": "make-jac",
+      "makeSlug": "jac",
+      "slug": "js6",
+      "nameEn": "JS6",
+      "nameAr": "JS6",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-jac-t8",
+      "makeId": "make-jac",
+      "makeSlug": "jac",
+      "slug": "t8",
+      "nameEn": "T8",
+      "nameAr": "T8",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-jac-iev7s",
+      "makeId": "make-jac",
+      "makeSlug": "jac",
+      "slug": "iev7s",
+      "nameEn": "iEV7S",
+      "nameAr": "iEV7S",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-baic-x55",
+      "makeId": "make-baic",
+      "makeSlug": "baic",
+      "slug": "x55",
+      "nameEn": "X55",
+      "nameAr": "X55",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-baic-x7",
+      "makeId": "make-baic",
+      "makeSlug": "baic",
+      "slug": "x7",
+      "nameEn": "X7",
+      "nameAr": "X7",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-baic-bj40",
+      "makeId": "make-baic",
+      "makeSlug": "baic",
+      "slug": "bj40",
+      "nameEn": "BJ40",
+      "nameAr": "BJ40",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-baic-eu5",
+      "makeId": "make-baic",
+      "makeSlug": "baic",
+      "slug": "eu5",
+      "nameEn": "EU5",
+      "nameAr": "EU5",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-dongfeng-shine",
+      "makeId": "make-dongfeng",
+      "makeSlug": "dongfeng",
+      "slug": "shine",
+      "nameEn": "Shine",
+      "nameAr": "Shine",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-dongfeng-ax7",
+      "makeId": "make-dongfeng",
+      "makeSlug": "dongfeng",
+      "slug": "ax7",
+      "nameEn": "AX7",
+      "nameAr": "AX7",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-dongfeng-mage",
+      "makeId": "make-dongfeng",
+      "makeSlug": "dongfeng",
+      "slug": "mage",
+      "nameEn": "Mage",
+      "nameAr": "Mage",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-dongfeng-huge",
+      "makeId": "make-dongfeng",
+      "makeSlug": "dongfeng",
+      "slug": "huge",
+      "nameEn": "Huge",
+      "nameAr": "Huge",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-dongfeng-boxer",
+      "makeId": "make-dongfeng",
+      "makeSlug": "dongfeng",
+      "slug": "boxer",
+      "nameEn": "Boxer",
+      "nameAr": "Boxer",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-forthing-t5-evo",
+      "makeId": "make-forthing",
+      "makeSlug": "forthing",
+      "slug": "t5-evo",
+      "nameEn": "T5 EVO",
+      "nameAr": "T5 EVO",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-forthing-u-tour",
+      "makeId": "make-forthing",
+      "makeSlug": "forthing",
+      "slug": "u-tour",
+      "nameEn": "U-Tour",
+      "nameAr": "U-Tour",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-forthing-friday",
+      "makeId": "make-forthing",
+      "makeSlug": "forthing",
+      "slug": "friday",
+      "nameEn": "Friday",
+      "nameAr": "Friday",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-gac-gs3",
+      "makeId": "make-gac",
+      "makeSlug": "gac",
+      "slug": "gs3",
+      "nameEn": "GS3",
+      "nameAr": "GS3",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-gac-gs4",
+      "makeId": "make-gac",
+      "makeSlug": "gac",
+      "slug": "gs4",
+      "nameEn": "GS4",
+      "nameAr": "GS4",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-gac-gs8",
+      "makeId": "make-gac",
+      "makeSlug": "gac",
+      "slug": "gs8",
+      "nameEn": "GS8",
+      "nameAr": "GS8",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-gac-empow",
+      "makeId": "make-gac",
+      "makeSlug": "gac",
+      "slug": "empow",
+      "nameEn": "Empow",
+      "nameAr": "Empow",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-gac-m8",
+      "makeId": "make-gac",
+      "makeSlug": "gac",
+      "slug": "m8",
+      "nameEn": "M8",
+      "nameAr": "M8",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-aion-s",
+      "makeId": "make-aion",
+      "makeSlug": "aion",
+      "slug": "s",
+      "nameEn": "S",
+      "nameAr": "S",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-aion-y",
+      "makeId": "make-aion",
+      "makeSlug": "aion",
+      "slug": "y",
+      "nameEn": "Y",
+      "nameAr": "Y",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-aion-v",
+      "makeId": "make-aion",
+      "makeSlug": "aion",
+      "slug": "v",
+      "nameEn": "V",
+      "nameAr": "V",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-aion-lx",
+      "makeId": "make-aion",
+      "makeSlug": "aion",
+      "slug": "lx",
+      "nameEn": "LX",
+      "nameAr": "LX",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-aion-hyper-gt",
+      "makeId": "make-aion",
+      "makeSlug": "aion",
+      "slug": "hyper-gt",
+      "nameEn": "Hyper GT",
+      "nameAr": "Hyper GT",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-rox-01",
+      "makeId": "make-rox",
+      "makeSlug": "rox",
+      "slug": "01",
+      "nameEn": "01",
+      "nameAr": "01",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-jaecoo-j5",
+      "makeId": "make-jaecoo",
+      "makeSlug": "jaecoo",
+      "slug": "j5",
+      "nameEn": "J5",
+      "nameAr": "J5",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-jaecoo-j7",
+      "makeId": "make-jaecoo",
+      "makeSlug": "jaecoo",
+      "slug": "j7",
+      "nameEn": "J7",
+      "nameAr": "J7",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-jaecoo-j8",
+      "makeId": "make-jaecoo",
+      "makeSlug": "jaecoo",
+      "slug": "j8",
+      "nameEn": "J8",
+      "nameAr": "J8",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-omoda-c5",
+      "makeId": "make-omoda",
+      "makeSlug": "omoda",
+      "slug": "c5",
+      "nameEn": "C5",
+      "nameAr": "C5",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-omoda-e5",
+      "makeId": "make-omoda",
+      "makeSlug": "omoda",
+      "slug": "e5",
+      "nameEn": "E5",
+      "nameAr": "E5",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-omoda-c7",
+      "makeId": "make-omoda",
+      "makeSlug": "omoda",
+      "slug": "c7",
+      "nameEn": "C7",
+      "nameAr": "C7",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-leapmotor-c10",
+      "makeId": "make-leapmotor",
+      "makeSlug": "leapmotor",
+      "slug": "c10",
+      "nameEn": "C10",
+      "nameAr": "C10",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-leapmotor-c11",
+      "makeId": "make-leapmotor",
+      "makeSlug": "leapmotor",
+      "slug": "c11",
+      "nameEn": "C11",
+      "nameAr": "C11",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-leapmotor-t03",
+      "makeId": "make-leapmotor",
+      "makeSlug": "leapmotor",
+      "slug": "t03",
+      "nameEn": "T03",
+      "nameAr": "T03",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-leapmotor-b10",
+      "makeId": "make-leapmotor",
+      "makeSlug": "leapmotor",
+      "slug": "b10",
+      "nameEn": "B10",
+      "nameAr": "B10",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mahindra-xuv700",
+      "makeId": "make-mahindra",
+      "makeSlug": "mahindra",
+      "slug": "xuv700",
+      "nameEn": "XUV700",
+      "nameAr": "XUV700",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-mahindra-scorpio",
+      "makeId": "make-mahindra",
+      "makeSlug": "mahindra",
+      "slug": "scorpio",
+      "nameEn": "Scorpio",
+      "nameAr": "Scorpio",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-mahindra-thar",
+      "makeId": "make-mahindra",
+      "makeSlug": "mahindra",
+      "slug": "thar",
+      "nameEn": "Thar",
+      "nameAr": "Thar",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-mahindra-bolero",
+      "makeId": "make-mahindra",
+      "makeSlug": "mahindra",
+      "slug": "bolero",
+      "nameEn": "Bolero",
+      "nameAr": "Bolero",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-mahindra-xuv300",
+      "makeId": "make-mahindra",
+      "makeSlug": "mahindra",
+      "slug": "xuv300",
+      "nameEn": "XUV300",
+      "nameAr": "XUV300",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-tata-nexon",
+      "makeId": "make-tata",
+      "makeSlug": "tata",
+      "slug": "nexon",
+      "nameEn": "Nexon",
+      "nameAr": "Nexon",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-tata-punch",
+      "makeId": "make-tata",
+      "makeSlug": "tata",
+      "slug": "punch",
+      "nameEn": "Punch",
+      "nameAr": "Punch",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-tata-harrier",
+      "makeId": "make-tata",
+      "makeSlug": "tata",
+      "slug": "harrier",
+      "nameEn": "Harrier",
+      "nameAr": "Harrier",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-tata-safari",
+      "makeId": "make-tata",
+      "makeSlug": "tata",
+      "slug": "safari",
+      "nameEn": "Safari",
+      "nameAr": "Safari",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-tata-tiago",
+      "makeId": "make-tata",
+      "makeSlug": "tata",
+      "slug": "tiago",
+      "nameEn": "Tiago",
+      "nameAr": "Tiago",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-proton-saga",
+      "makeId": "make-proton",
+      "makeSlug": "proton",
+      "slug": "saga",
+      "nameEn": "Saga",
+      "nameAr": "Saga",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-proton-persona",
+      "makeId": "make-proton",
+      "makeSlug": "proton",
+      "slug": "persona",
+      "nameEn": "Persona",
+      "nameAr": "Persona",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-proton-x50",
+      "makeId": "make-proton",
+      "makeSlug": "proton",
+      "slug": "x50",
+      "nameEn": "X50",
+      "nameAr": "X50",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-proton-x70",
+      "makeId": "make-proton",
+      "makeSlug": "proton",
+      "slug": "x70",
+      "nameEn": "X70",
+      "nameAr": "X70",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-proton-x90",
+      "makeId": "make-proton",
+      "makeSlug": "proton",
+      "slug": "x90",
+      "nameEn": "X90",
+      "nameAr": "X90",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-perodua-myvi",
+      "makeId": "make-perodua",
+      "makeSlug": "perodua",
+      "slug": "myvi",
+      "nameEn": "Myvi",
+      "nameAr": "Myvi",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-perodua-axia",
+      "makeId": "make-perodua",
+      "makeSlug": "perodua",
+      "slug": "axia",
+      "nameEn": "Axia",
+      "nameAr": "Axia",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-perodua-bezza",
+      "makeId": "make-perodua",
+      "makeSlug": "perodua",
+      "slug": "bezza",
+      "nameEn": "Bezza",
+      "nameAr": "Bezza",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-perodua-ativa",
+      "makeId": "make-perodua",
+      "makeSlug": "perodua",
+      "slug": "ativa",
+      "nameEn": "Ativa",
+      "nameAr": "Ativa",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-skoda-fabia",
+      "makeId": "make-skoda",
+      "makeSlug": "skoda",
+      "slug": "fabia",
+      "nameEn": "Fabia",
+      "nameAr": "Fabia",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-skoda-octavia",
+      "makeId": "make-skoda",
+      "makeSlug": "skoda",
+      "slug": "octavia",
+      "nameEn": "Octavia",
+      "nameAr": "Octavia",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-skoda-superb",
+      "makeId": "make-skoda",
+      "makeSlug": "skoda",
+      "slug": "superb",
+      "nameEn": "Superb",
+      "nameAr": "Superb",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-skoda-kamiq",
+      "makeId": "make-skoda",
+      "makeSlug": "skoda",
+      "slug": "kamiq",
+      "nameEn": "Kamiq",
+      "nameAr": "Kamiq",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-skoda-karoq",
+      "makeId": "make-skoda",
+      "makeSlug": "skoda",
+      "slug": "karoq",
+      "nameEn": "Karoq",
+      "nameAr": "Karoq",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-skoda-kodiaq",
+      "makeId": "make-skoda",
+      "makeSlug": "skoda",
+      "slug": "kodiaq",
+      "nameEn": "Kodiaq",
+      "nameAr": "Kodiaq",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-skoda-enyaq",
+      "makeId": "make-skoda",
+      "makeSlug": "skoda",
+      "slug": "enyaq",
+      "nameEn": "Enyaq",
+      "nameAr": "Enyaq",
+      "active": true,
+      "sortOrder": 70
+    },
+    {
+      "id": "model-seat-ibiza",
+      "makeId": "make-seat",
+      "makeSlug": "seat",
+      "slug": "ibiza",
+      "nameEn": "Ibiza",
+      "nameAr": "Ibiza",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-seat-leon",
+      "makeId": "make-seat",
+      "makeSlug": "seat",
+      "slug": "leon",
+      "nameEn": "Leon",
+      "nameAr": "Leon",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-seat-arona",
+      "makeId": "make-seat",
+      "makeSlug": "seat",
+      "slug": "arona",
+      "nameEn": "Arona",
+      "nameAr": "Arona",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-seat-ateca",
+      "makeId": "make-seat",
+      "makeSlug": "seat",
+      "slug": "ateca",
+      "nameEn": "Ateca",
+      "nameAr": "Ateca",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-seat-tarraco",
+      "makeId": "make-seat",
+      "makeSlug": "seat",
+      "slug": "tarraco",
+      "nameEn": "Tarraco",
+      "nameAr": "Tarraco",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-cupra-leon",
+      "makeId": "make-cupra",
+      "makeSlug": "cupra",
+      "slug": "leon",
+      "nameEn": "Leon",
+      "nameAr": "Leon",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-cupra-formentor",
+      "makeId": "make-cupra",
+      "makeSlug": "cupra",
+      "slug": "formentor",
+      "nameEn": "Formentor",
+      "nameAr": "Formentor",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-cupra-ateca",
+      "makeId": "make-cupra",
+      "makeSlug": "cupra",
+      "slug": "ateca",
+      "nameEn": "Ateca",
+      "nameAr": "Ateca",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-cupra-born",
+      "makeId": "make-cupra",
+      "makeSlug": "cupra",
+      "slug": "born",
+      "nameEn": "Born",
+      "nameAr": "Born",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-cupra-tavascan",
+      "makeId": "make-cupra",
+      "makeSlug": "cupra",
+      "slug": "tavascan",
+      "nameEn": "Tavascan",
+      "nameAr": "Tavascan",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-hummer-h2",
+      "makeId": "make-hummer",
+      "makeSlug": "hummer",
+      "slug": "h2",
+      "nameEn": "H2",
+      "nameAr": "H2",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-hummer-h3",
+      "makeId": "make-hummer",
+      "makeSlug": "hummer",
+      "slug": "h3",
+      "nameEn": "H3",
+      "nameAr": "H3",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-hummer-ev-pickup",
+      "makeId": "make-hummer",
+      "makeSlug": "hummer",
+      "slug": "ev-pickup",
+      "nameEn": "EV Pickup",
+      "nameAr": "EV Pickup",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-hummer-ev-suv",
+      "makeId": "make-hummer",
+      "makeSlug": "hummer",
+      "slug": "ev-suv",
+      "nameEn": "EV SUV",
+      "nameAr": "EV SUV",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-iveco-daily",
+      "makeId": "make-iveco",
+      "makeSlug": "iveco",
+      "slug": "daily",
+      "nameEn": "Daily",
+      "nameAr": "Daily",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-iveco-eurocargo",
+      "makeId": "make-iveco",
+      "makeSlug": "iveco",
+      "slug": "eurocargo",
+      "nameEn": "Eurocargo",
+      "nameAr": "Eurocargo",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-man-tge",
+      "makeId": "make-man",
+      "makeSlug": "man",
+      "slug": "tge",
+      "nameEn": "TGE",
+      "nameAr": "TGE",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-man-tgx",
+      "makeId": "make-man",
+      "makeSlug": "man",
+      "slug": "tgx",
+      "nameEn": "TGX",
+      "nameAr": "TGX",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-hino-300-series",
+      "makeId": "make-hino",
+      "makeSlug": "hino",
+      "slug": "300-series",
+      "nameEn": "300 Series",
+      "nameAr": "300 Series",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-hino-500-series",
+      "makeId": "make-hino",
+      "makeSlug": "hino",
+      "slug": "500-series",
+      "nameEn": "500 Series",
+      "nameAr": "500 Series",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-foton-tunland",
+      "makeId": "make-foton",
+      "makeSlug": "foton",
+      "slug": "tunland",
+      "nameEn": "Tunland",
+      "nameAr": "Tunland",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-foton-view",
+      "makeId": "make-foton",
+      "makeSlug": "foton",
+      "slug": "view",
+      "nameEn": "View",
+      "nameAr": "View",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-foton-aumark",
+      "makeId": "make-foton",
+      "makeSlug": "foton",
+      "slug": "aumark",
+      "nameEn": "Aumark",
+      "nameAr": "Aumark",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-maxus-d60",
+      "makeId": "make-maxus",
+      "makeSlug": "maxus",
+      "slug": "d60",
+      "nameEn": "D60",
+      "nameAr": "D60",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-maxus-d90",
+      "makeId": "make-maxus",
+      "makeSlug": "maxus",
+      "slug": "d90",
+      "nameEn": "D90",
+      "nameAr": "D90",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-maxus-g10",
+      "makeId": "make-maxus",
+      "makeSlug": "maxus",
+      "slug": "g10",
+      "nameEn": "G10",
+      "nameAr": "G10",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-maxus-g50",
+      "makeId": "make-maxus",
+      "makeSlug": "maxus",
+      "slug": "g50",
+      "nameEn": "G50",
+      "nameAr": "G50",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-maxus-t60",
+      "makeId": "make-maxus",
+      "makeSlug": "maxus",
+      "slug": "t60",
+      "nameEn": "T60",
+      "nameAr": "T60",
+      "active": true,
+      "sortOrder": 50
+    },
+    {
+      "id": "model-maxus-deliver-9",
+      "makeId": "make-maxus",
+      "makeSlug": "maxus",
+      "slug": "deliver-9",
+      "nameEn": "Deliver 9",
+      "nameAr": "Deliver 9",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
+      "id": "model-great-wall-wingle",
+      "makeId": "make-great-wall",
+      "makeSlug": "great-wall",
+      "slug": "wingle",
+      "nameEn": "Wingle",
+      "nameAr": "Wingle",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-great-wall-poer",
+      "makeId": "make-great-wall",
+      "makeSlug": "great-wall",
+      "slug": "poer",
+      "nameEn": "Poer",
+      "nameAr": "Poer",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-great-wall-cannon",
+      "makeId": "make-great-wall",
+      "makeSlug": "great-wall",
+      "slug": "cannon",
+      "nameEn": "Cannon",
+      "nameAr": "Cannon",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-ssangyong-tivoli",
+      "makeId": "make-ssangyong",
+      "makeSlug": "ssangyong",
+      "slug": "tivoli",
+      "nameEn": "Tivoli",
+      "nameAr": "Tivoli",
+      "active": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "model-ssangyong-korando",
+      "makeId": "make-ssangyong",
+      "makeSlug": "ssangyong",
+      "slug": "korando",
+      "nameEn": "Korando",
+      "nameAr": "Korando",
+      "active": true,
+      "sortOrder": 20
+    },
+    {
+      "id": "model-ssangyong-rexton",
+      "makeId": "make-ssangyong",
+      "makeSlug": "ssangyong",
+      "slug": "rexton",
+      "nameEn": "Rexton",
+      "nameAr": "Rexton",
+      "active": true,
+      "sortOrder": 30
+    },
+    {
+      "id": "model-ssangyong-musso",
+      "makeId": "make-ssangyong",
+      "makeSlug": "ssangyong",
+      "slug": "musso",
+      "nameEn": "Musso",
+      "nameAr": "Musso",
+      "active": true,
+      "sortOrder": 40
+    },
+    {
+      "id": "model-ssangyong-actyon",
+      "makeId": "make-ssangyong",
+      "makeSlug": "ssangyong",
+      "slug": "actyon",
+      "nameEn": "Actyon",
+      "nameAr": "Actyon",
+      "active": true,
+      "sortOrder": 50
+    }
+  ]
+}

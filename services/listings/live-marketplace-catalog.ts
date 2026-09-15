@@ -1611,7 +1611,7 @@ function buildCategorySpecs(def: SeedDef): Record<string, string> {
     const yearMatch = def.titleEnglish.match(/\b(20\d{2}|19\d{2})\b/);
     specs.year = yearMatch?.[1] ?? String(2018 + (def.title.length % 7));
     specs.transmission = /يدوي|Manual/i.test(text) ? "يدوي" : "أوتوماتيك";
-    specs.fuelType = /Tesla|كهرب|Electric/i.test(text) ? "كهرباء" : "بنزين";
+    specs.fuelType = /Tesla|كهرب|Electric/i.test(text) ? "كهربائي" : "بنزين";
     specs.mileage = String(12000 + (def.price % 90000));
     specs.regionalSpecs =
       /مستورد|US Spec|American|European|imported/i.test(text)
