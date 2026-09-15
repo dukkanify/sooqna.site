@@ -36,8 +36,15 @@
 }
 
 .app-phone__screen--detail {
+  display: grid;
+  grid-template-rows: auto minmax(7.5rem, 1fr) auto auto;
   gap: 0.28rem;
   padding-bottom: 0.18rem;
+}
+
+.app-phone__screen--detail .app-phone__detail-photo {
+  height: auto;
+  min-height: 7.5rem;
 }
 
 .app-phone__status {
