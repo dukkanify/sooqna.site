@@ -94,6 +94,16 @@
   gap: 0.5rem;
 }
 
+.mobile-sticky-bar__inner--icons-only .mobile-sticky-bar__actions {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mobile-sticky-bar__inner--icons-only .mobile-sticky-bar__icon {
+  width: auto;
+  flex: 1 1 0;
+}
+
 .mobile-sticky-bar__icon {
   position: relative;
   display: grid;
@@ -166,6 +176,10 @@
   box-shadow:
     0 1px 0 rgb(255 255 255 / 80%) inset,
     0 6px 16px rgb(15 23 42 / 6%) !important;
+}
+
+.mobile-sticky-bar__inner--icons-only .mobile-sticky-bar__icon.mobile-sticky-bar__icon--chat {
+  min-width: 0 !important;
 }
 
 @media (min-width: 1024px) {
