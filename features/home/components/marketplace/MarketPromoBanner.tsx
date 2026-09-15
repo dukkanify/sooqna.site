@@ -39,12 +39,13 @@ export function MarketPromoBanner() {
               </Link>
             </div>
 
-            <div className="relative mx-5 mb-5 h-[13rem] overflow-hidden rounded-2xl sm:h-[15rem] md:mx-0 md:mb-0 md:h-auto md:min-h-full md:rounded-none">
+            <div className="relative mx-5 mb-5 h-[13rem] overflow-hidden rounded-2xl bg-[#152033] sm:h-[15rem] md:mx-0 md:mb-0 md:h-auto md:min-h-full md:rounded-none">
               <AppImage
                 alt="سيارة مرسيدس للبيع على سوقنا"
                 className="object-cover"
                 fallbackCategory="cars"
                 fill
+                priority
                 sizes="(max-width: 768px) 90vw, 420px"
                 src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=900&q=80"
               />

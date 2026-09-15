@@ -25,6 +25,7 @@ export function MobilePromoBanner() {
             className="object-cover"
             fallbackCategory="cars"
             fill
+            priority
             sizes="(max-width: 640px) 100vw, 420px"
             src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=900&q=80"
           />

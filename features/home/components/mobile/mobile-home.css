@@ -1155,6 +1155,7 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   margin: 0 0.75rem 0.75rem;
   overflow: hidden;
   border-radius: 1rem;
+  background: #152033;
 }
 
 /* ── Featured ── */
