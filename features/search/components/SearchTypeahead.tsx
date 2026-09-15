@@ -116,10 +116,7 @@ export function SearchTypeahead({
 
   useEffect(() => {
     const query = value.trim();
-    if (!query) {
-      setRemote([]);
-      return;
-    }
+    if (!query) return;
 
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
@@ -245,7 +242,9 @@ export function SearchTypeahead({
           id={inputId}
           name={name}
           onChange={(event) => {
-            setValue(event.target.value);
+            const next = event.target.value;
+            setValue(next);
+            if (!next.trim()) setRemote([]);
             setOpen(true);
             setActiveIndex(-1);
           }}
