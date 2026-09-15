@@ -98,7 +98,9 @@ export async function patchAdminDispute(
 
 export async function getOpenDisputeCount(): Promise<number> {
   const disputes = await getAdminDisputes();
-  return disputes.filter(
-    (item) => item.status === "open" || item.status === "under_review",
+  return disputes.filter((item) =>
+    ["open", "under_review", "needs_buyer_info", "needs_seller_info"].includes(
+      item.status,
+    ),
   ).length;
 }

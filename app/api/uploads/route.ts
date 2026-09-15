@@ -38,7 +38,8 @@ export async function POST(request: Request) {
     const stored = await storeUploadedObject({
       buffer,
       contentType: file.type || "application/octet-stream",
-      folder: `${folder}/${user.id}`,
+      folder,
+      ownerScope: user.id,
     });
 
     return NextResponse.json({
@@ -48,6 +49,8 @@ export async function POST(request: Request) {
       contentType: stored.contentType,
       byteSize: stored.byteSize,
       provider: stored.provider,
+      visibility: stored.visibility,
+      mediaClass: stored.mediaClass,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "UPLOAD_FAILED";

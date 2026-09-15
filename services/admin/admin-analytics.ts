@@ -62,6 +62,9 @@ export function buildOrderStatusSlices(orders: Order[]): StatusSlice[] {
   const labels: Record<string, string> = {
     pending_payment: "بانتظار الدفع",
     paid_held_in_escrow: "مدفوع — ضمان",
+    seller_preparing: "تجهيز",
+    shipped: "شحن",
+    ready_for_pickup: "جاهز للاستلام",
     delivered: "تم التسليم",
     confirmed: "مؤكد",
     released: "محرّر",
