@@ -23,8 +23,13 @@ import {
   FIXTURE_LISTING_SQL,
   isConfirmedFixtureListing,
 } from "@/services/listings/mock-catalog-policy";
+import { ensureLiveMarketplaceCatalogPublished } from "@/services/listings/live-marketplace-catalog.service";
 import { ensureShowcaseCatalogPublished } from "@/services/listings/showcase-catalog.service";
-import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
+import {
+  SHOWCASE_LISTING_SQL,
+  SHOWCASE_SOURCE,
+  isShowcaseListing,
+} from "@/shared/listings/showcase-listing";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
 
 const TABLE = "marketplace_listings";
@@ -125,10 +130,21 @@ function shouldExcludeFixtures(query: ListingQuery): boolean {
   return query.includeFixtures !== true;
 }
 
+function isHiddenFromPublicCatalog(listing: Listing): boolean {
+  return isConfirmedFixtureListing(listing) || isShowcaseListing(listing);
+}
+
+async function ensureCatalogsForPublicRead(): Promise<void> {
+  await Promise.all([
+    ensureShowcaseCatalogPublished(),
+    ensureLiveMarketplaceCatalogPublished().catch(() => 0),
+  ]);
+}
+
 async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
   const stored = syncLiveCatalogMedia(await loadPersistedListings());
   const matched = stored.filter((listing) => {
-    if (shouldExcludeFixtures(query) && isConfirmedFixtureListing(listing)) {
+    if (shouldExcludeFixtures(query) && isHiddenFromPublicCatalog(listing)) {
       return false;
     }
     return matchesStructured(listing, query);
@@ -222,6 +238,7 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
   }
   if (shouldExcludeFixtures(query)) {
     where.push(`NOT ${FIXTURE_LISTING_SQL}`);
+    where.push(`NOT ${SHOWCASE_LISTING_SQL}`);
   }
 
   if (query.query?.trim()) {
@@ -244,7 +261,7 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
 }
 
 export async function queryListings(query: ListingQuery = {}): Promise<Listing[]> {
-  await ensureShowcaseCatalogPublished();
+  await ensureCatalogsForPublicRead();
   if (!(await ensureListingsTable())) {
     return queryFromFile(query);
   }
@@ -280,7 +297,7 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
         .map((row) => row.payload as Listing)
         .filter(
           (listing) =>
-            !shouldExcludeFixtures(query) || !isConfirmedFixtureListing(listing),
+            !shouldExcludeFixtures(query) || !isHiddenFromPublicCatalog(listing),
         ),
     );
     return rows.map((listing) => applySlim(listing, query.slim));
@@ -294,7 +311,7 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
 }
 
 export async function countMatchingListings(query: ListingQuery = {}): Promise<number> {
-  await ensureShowcaseCatalogPublished();
+  await ensureCatalogsForPublicRead();
   const countable: ListingQuery = { ...query };
   delete countable.limit;
   delete countable.offset;
@@ -303,7 +320,7 @@ export async function countMatchingListings(query: ListingQuery = {}): Promise<n
   const fromStored = async () => {
     const stored = syncLiveCatalogMedia(await loadPersistedListings());
     return stored.filter((listing) => {
-      if (shouldExcludeFixtures(countable) && isConfirmedFixtureListing(listing)) {
+      if (shouldExcludeFixtures(countable) && isHiddenFromPublicCatalog(listing)) {
         return false;
       }
       return matchesStructured(listing, countable);
@@ -343,6 +360,7 @@ function countWhere(
   }
   if (includeFixtures !== true) {
     where.push(`NOT ${FIXTURE_LISTING_SQL}`);
+    where.push(`NOT ${SHOWCASE_LISTING_SQL}`);
   }
   return {
     sql: where.length > 0 ? ` WHERE ${where.join(" AND ")}` : "",
@@ -354,7 +372,7 @@ export async function countListingsByCategory(
   status?: Listing["status"],
   options?: { includeFixtures?: boolean },
 ): Promise<Map<string, number>> {
-  await ensureShowcaseCatalogPublished();
+  await ensureCatalogsForPublicRead();
   const counts = new Map<string, number>();
   const includeFixtures = options?.includeFixtures === true;
   try {
@@ -382,7 +400,7 @@ export async function countListingsByCategory(
   const stored = await loadPersistedListings();
   for (const listing of stored) {
     if (status && listing.status !== status) continue;
-    if (!includeFixtures && isConfirmedFixtureListing(listing)) continue;
+    if (!includeFixtures && isHiddenFromPublicCatalog(listing)) continue;
     counts.set(listing.categoryId, (counts.get(listing.categoryId) ?? 0) + 1);
   }
   return counts;
@@ -411,7 +429,7 @@ const EMIRATE_NAME_TO_CITY_ID: Record<string, string> = {
 };
 
 export async function countActiveListingsByEmirate(): Promise<Map<string, number>> {
-  await ensureShowcaseCatalogPublished();
+  await ensureCatalogsForPublicRead();
   const counts = new Map<string, number>();
   const add = (emirate: string) => {
     const cityId = EMIRATE_NAME_TO_CITY_ID[emirate.trim()];
@@ -426,7 +444,7 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
         const result = await pool.query(
           `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
          FROM ${TABLE}
-         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL}`,
+         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
         );
         for (const row of result.rows) {
           if (typeof row.emirate === "string") add(row.emirate);
@@ -442,21 +460,21 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
   const stored = await loadPersistedListings();
   for (const listing of stored) {
     if (listing.status !== "active") continue;
-    if (isConfirmedFixtureListing(listing)) continue;
+    if (isHiddenFromPublicCatalog(listing)) continue;
     add(listing.emirate ?? listing.city);
   }
   return counts;
 }
 
 export async function countActivePublicListings(): Promise<number> {
-  await ensureShowcaseCatalogPublished();
+  await ensureCatalogsForPublicRead();
   try {
     if (await ensureListingsTable()) {
       const pool = await getOptionalPostgresPool();
       if (pool) {
         const result = await pool.query(
           `SELECT COUNT(*)::int AS c FROM ${TABLE}
-         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL}`,
+         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
         );
         return Number(result.rows[0]?.c) || 0;
       }
@@ -468,7 +486,7 @@ export async function countActivePublicListings(): Promise<number> {
   const stored = await loadPersistedListings();
   return stored.filter(
     (listing) =>
-      listing.status === "active" && !isConfirmedFixtureListing(listing),
+      listing.status === "active" && !isHiddenFromPublicCatalog(listing),
   ).length;
 }
 
@@ -499,7 +517,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
 }
 
 export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
-  await ensureShowcaseCatalogPublished();
+  await ensureCatalogsForPublicRead();
   try {
     if (await ensureListingsTable()) {
       const pool = await getOptionalPostgresPool();

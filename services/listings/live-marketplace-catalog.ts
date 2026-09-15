@@ -6,11 +6,12 @@ import {
   detectModelFromText,
 } from "@/shared/constants/product-brand-models";
 import { LIVE_CARS_ALL_BRANDS } from "@/services/listings/live-cars-all-brands";
+import { LIVE_CARS_REMAINING_MODELS } from "@/services/listings/live-cars-remaining-models";
 import { EMIRATE_AREAS } from "@/shared/constants/emirate-areas";
 
 /** Provenance marker — not showcase/demo; public catalog keeps these. */
 export const LIVE_MARKETPLACE_SOURCE = "SOOQNA_LIVE_MARKETPLACE";
-export const LIVE_MARKETPLACE_COUNT = 172;
+export const LIVE_MARKETPLACE_COUNT = 317;
 
 type EmiratePack = {
   emirate: string;
@@ -127,7 +128,7 @@ type SeedDef = {
   featured?: boolean;
 };
 
-/** 172 professional UAE marketplace listings (12 featured cars + 72 brand-complete cars + other categories). */
+/** 317 professional UAE marketplace listings (12 core cars + 72 brand cars + 145 remaining models + other categories). */
 const SEED_DEFS: SeedDef[] = [
   // —— cars (12 core)
   {
@@ -1576,6 +1577,9 @@ const SEED_DEFS: SeedDef[] = [
     condition: "new",
     features: ["بكر", "2 لتر"],
   },
+
+  // —— remaining car models (append-only so live-mkt-001..172 ids stay stable)
+  ...LIVE_CARS_REMAINING_MODELS,
 ];
 
 const TONES: ListingImageTone[] = ["gold", "amber", "sky", "rose", "slate"];
@@ -1761,7 +1765,7 @@ function buildListing(def: SeedDef, index: number): Listing {
 
 let cached: Listing[] | null = null;
 
-/** 100 professional active listings across all categories and emirates. */
+/** Professional active listings across all categories, car models, and emirates. */
 export function getLiveMarketplaceCatalogListings(): Listing[] {
   if (cached) return cached;
   if (SEED_DEFS.length !== LIVE_MARKETPLACE_COUNT) {

@@ -243,13 +243,48 @@ test("showcase ids and slugs are never confirmed fixtures", () => {
   );
 });
 
-test("public listing queries rank showcase after real listings", () => {
+test("public listing queries hide showcase without deleting rows", () => {
   const src = readFileSync(
     path.join(root, "services/listings/listing-queries.ts"),
     "utf8",
   );
-  assert.match(src, /SHOWCASE_SOURCE/);
+  const policy = readFileSync(
+    path.join(root, "shared/listings/showcase-listing.ts"),
+    "utf8",
+  );
+  const details = readFileSync(
+    path.join(root, "services/listings/listings.service.ts"),
+    "utf8",
+  );
+  assert.match(src, /SHOWCASE_LISTING_SQL/);
+  assert.match(src, /isHiddenFromPublicCatalog/);
+  assert.match(src, /ensureLiveMarketplaceCatalogPublished/);
   assert.match(src, /ensureShowcaseCatalogPublished/);
+  assert.match(policy, /SHOWCASE_LISTING_SQL/);
+  assert.match(details, /isShowcaseListing/);
+});
+
+test("live catalog covers remaining car models and keeps original live-mkt ids", () => {
+  const catalog = readFileSync(
+    path.join(root, "services/listings/live-marketplace-catalog.ts"),
+    "utf8",
+  );
+  const remaining = readFileSync(
+    path.join(root, "services/listings/live-cars-remaining-models.ts"),
+    "utf8",
+  );
+  const version = readFileSync(
+    path.join(root, "services/listings/live-marketplace-catalog.service.ts"),
+    "utf8",
+  );
+  assert.match(catalog, /LIVE_MARKETPLACE_COUNT = 317/);
+  assert.match(catalog, /\.\.\.LIVE_CARS_REMAINING_MODELS/);
+  assert.match(catalog, /live-mkt-001\.\.172 ids stay stable/);
+  assert.match(remaining, /Toyota Camry/);
+  assert.match(remaining, /Toyota Corolla/);
+  assert.match(remaining, /Toyota Hilux/);
+  assert.match(remaining, /Mercedes-Benz Maybach/);
+  assert.match(version, /v7-all-car-models/);
 });
 
 test("category CTAs are centralized and job seeker is not apply-job", () => {
