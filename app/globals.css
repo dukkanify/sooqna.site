@@ -280,7 +280,7 @@ textarea {
     );
 }
 
-/* ── Category mark — photo tile + filled glyph badge ── */
+/* ── Category mark — navy circle + gold silhouette ── */
 .category-mark {
   position: relative;
   display: grid;
@@ -289,119 +289,54 @@ textarea {
   height: 100%;
   overflow: hidden;
   isolation: isolate;
-  border: 2px solid rgb(255 255 255 / 94%);
-  border-radius: 1.35rem;
-  background: var(--category-mark-accent);
-  color: var(--category-mark-ink);
+  border: 1px solid rgb(201 169 98 / 18%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgb(255 255 255 / 10%), transparent 42%),
+    linear-gradient(160deg, #152238 0%, #0b1628 58%, #080f1c 100%);
+  color: #d4b87a;
   box-shadow:
-    0 2px 4px rgb(11 22 40 / 8%),
-    0 14px 32px rgb(11 22 40 / 16%);
+    0 1px 2px rgb(11 22 40 / 18%),
+    0 10px 22px rgb(11 22 40 / 16%),
+    inset 0 1px 0 rgb(255 255 255 / 10%);
   transition:
     transform var(--duration-normal) var(--ease-premium),
     box-shadow var(--duration-normal) var(--ease-premium),
     border-color var(--duration-normal) var(--ease-premium);
 }
 
-.category-mark__photo {
-  object-fit: cover;
-  transform: scale(1.06);
-  transition: transform 420ms var(--ease-premium);
-}
-
-.category-mark__scrim {
+.category-mark__glow {
   position: absolute;
   inset: 0;
-  z-index: 1;
   pointer-events: none;
-  background:
-    linear-gradient(165deg, rgb(11 22 40 / 8%) 0%, rgb(11 22 40 / 28%) 52%, rgb(6 13 24 / 55%) 100%);
-}
-
-.category-mark--solid .category-mark__scrim {
-  background:
-    radial-gradient(circle at 30% 22%, rgb(255 255 255 / 14%), transparent 42%),
-    radial-gradient(circle at 70% 80%, rgb(201 169 98 / 18%), transparent 55%);
-}
-
-.category-mark--more .category-mark__scrim {
-  background:
-    radial-gradient(circle at 28% 20%, rgb(201 169 98 / 22%), transparent 40%),
-    radial-gradient(circle at 75% 85%, rgb(255 255 255 / 8%), transparent 50%);
-}
-
-.category-mark__shine {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(135deg, rgb(255 255 255 / 18%) 0%, transparent 36%);
-  mix-blend-mode: soft-light;
-}
-
-.category-mark__badge {
-  position: relative;
-  z-index: 3;
-  display: grid;
-  place-items: center;
-  width: 78%;
-  aspect-ratio: 1;
-  max-width: 4.5rem;
-  border-radius: 999px;
-  color: var(--category-mark-ink);
-  /* Opaque plate — no frosted blur so glyphs stay crisp */
-  background: #0b1628;
-  border: 2.5px solid #f0d78c;
-  box-shadow:
-    0 8px 20px rgb(0 0 0 / 40%),
-    0 0 0 3px rgb(255 255 255 / 55%),
-    inset 0 1px 0 rgb(255 255 255 / 16%);
-}
-
-.category-mark--solid .category-mark__badge,
-.category-mark--more .category-mark__badge {
-  width: 74%;
-  max-width: 4.25rem;
-  background: #0b1628;
-  border-color: #f0d78c;
+  background: radial-gradient(circle at 50% 120%, rgb(201 169 98 / 16%), transparent 46%);
 }
 
 .category-mark__glyph {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: 68% !important;
-  height: 68% !important;
-  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
+  width: 52% !important;
+  height: 52% !important;
 }
 
 .category-mark--selected {
-  border-color: var(--color-secondary);
+  border-color: rgb(212 184 122 / 55%);
   box-shadow:
-    0 2px 4px rgb(11 22 40 / 10%),
-    0 14px 32px rgb(11 22 40 / 18%),
-    0 0 0 2px rgb(201 169 98 / 40%);
+    0 1px 2px rgb(11 22 40 / 18%),
+    0 10px 22px rgb(11 22 40 / 16%),
+    0 0 0 2px rgb(201 169 98 / 28%);
 }
 
 .group:hover .category-mark,
 a:hover .category-mark,
 .mobile-home-categories__card:hover .category-mark {
-  transform: translateY(-3px) scale(1.04);
+  transform: translateY(-2px);
+  border-color: rgb(212 184 122 / 42%);
   box-shadow:
-    0 4px 8px rgb(11 22 40 / 12%),
-    0 18px 40px rgb(11 22 40 / 22%);
-}
-
-.group:hover .category-mark__photo,
-a:hover .category-mark__photo {
-  transform: scale(1.12);
-}
-
-.group:hover .category-mark__badge,
-a:hover .category-mark__badge {
-  border-color: #ffe6a8;
-  background: #122036;
-  box-shadow:
-    0 10px 24px rgb(0 0 0 / 45%),
-    0 0 0 3px rgb(255 255 255 / 70%),
-    inset 0 1px 0 rgb(255 255 255 / 20%);
+    0 4px 10px rgb(11 22 40 / 18%),
+    0 14px 28px rgb(11 22 40 / 18%),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
 }
 
 .mobile-home-categories__card:active .category-mark {
@@ -409,10 +344,7 @@ a:hover .category-mark__badge {
 }
 
 html[data-theme="dark"] .category-mark {
-  border-color: rgb(255 255 255 / 12%);
-  box-shadow:
-    0 2px 4px rgb(0 0 0 / 35%),
-    0 14px 32px rgb(0 0 0 / 45%);
+  border-color: rgb(212 184 122 / 22%);
 }
 
 /* ── Sooqna brand identity ── */
