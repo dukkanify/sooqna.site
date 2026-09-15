@@ -13,7 +13,7 @@ import type { LocationPatch } from "@/types/domain/location";
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteParams) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -49,7 +49,7 @@ export async function PATCH(request: Request, context: RouteParams) {
 }
 
 export async function DELETE(_request: Request, context: RouteParams) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

@@ -120,7 +120,24 @@ export function isValidOrderTransition(
 ): boolean {
   const allowed: Record<OrderStatus, OrderStatus[]> = {
     pending_payment: ["paid_held_in_escrow", "refunded", "cancelled"],
-    paid_held_in_escrow: ["delivered", "disputed", "refunded", "confirmed"],
+    paid_held_in_escrow: [
+      "seller_preparing",
+      "shipped",
+      "ready_for_pickup",
+      "delivered",
+      "disputed",
+      "refunded",
+      "confirmed",
+    ],
+    seller_preparing: [
+      "shipped",
+      "ready_for_pickup",
+      "delivered",
+      "disputed",
+      "refunded",
+    ],
+    shipped: ["delivered", "disputed", "refunded"],
+    ready_for_pickup: ["delivered", "disputed", "refunded"],
     delivered: ["confirmed", "disputed", "refunded"],
     confirmed: ["released", "disputed", "refunded"],
     released: [],

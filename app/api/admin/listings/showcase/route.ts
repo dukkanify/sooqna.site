@@ -8,7 +8,7 @@ import { getAdminListingRecords } from "@/services/listings/listing-store";
 const ACTIONS = new Set(["publish", "hide", "remove"]);
 
 export async function POST(request: Request) {
-  const admin = await requireAdminPermission("listings");
+  const admin = await requireAdminPermission("listings", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

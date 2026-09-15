@@ -1,12 +1,10 @@
-import {
-  isSessionUser,
-  requireAdminUser,
-} from "@/services/auth/require-session";
+import { isSessionUser } from "@/services/auth/require-session";
+import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import { getAllOrders } from "@/services/payments/order-store";
 
 export async function GET() {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("payments", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }

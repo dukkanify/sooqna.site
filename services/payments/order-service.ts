@@ -28,6 +28,11 @@ import {
 } from "@/services/payments/order-store";
 import { logPaymentEvent } from "@/services/payments/payment-log";
 import {
+  recordPaymentTreasury,
+  recordRefundTreasury,
+  recordReleaseTreasury,
+} from "@/services/payments/platform-treasury";
+import {
   ensureStripeConfigLoaded,
   isStripeConfigured,
   isMockCheckoutAllowed,
@@ -460,6 +465,14 @@ async function markOrderPaid(
     status: "completed",
   });
 
+  await recordPaymentTreasury({
+    orderId: order.id,
+    grossAmount: order.fees.productPrice,
+    platformFee: order.fees.platformFee,
+    actor: "system",
+    source: source === "mock" ? "system" : "webhook",
+  });
+
   let finalOrder = updated;
   let guestAccessToken: string | undefined;
   let hasExistingAccount = updated.hasExistingAccount;
@@ -690,6 +703,13 @@ async function releaseEscrowToSeller(
     `تحويل ضمان — ${order.listingTitle}`,
   );
 
+  await recordReleaseTreasury({
+    orderId: order.id,
+    sellerAmount: sellerNet,
+    actor: "system",
+    source: "system",
+  });
+
   const sellerReleaseBody = connectPaidOut
     ? `تم تحويل ${formatCurrencyLabel(sellerNet)} إلى حساب Stripe المرتبط لطلب «${order.listingTitle}».`
     : `تم تحويل ${formatCurrencyLabel(sellerNet)} إلى رصيدك المتاح لطلب «${order.listingTitle}».`;
@@ -753,7 +773,11 @@ export async function submitSellerProof(
   }
 
   const eligible =
-    order.status === "paid_held_in_escrow" || order.status === "delivered";
+    order.status === "paid_held_in_escrow" ||
+    order.status === "seller_preparing" ||
+    order.status === "shipped" ||
+    order.status === "ready_for_pickup" ||
+    order.status === "delivered";
   if (!eligible) {
     throw new Error("INVALID_STATUS");
   }
@@ -795,15 +819,23 @@ export async function submitSellerProof(
   }
 
   const urls = evidence.map((item) => item.storageUrl);
+  const nextStatus =
+    order.status === "paid_held_in_escrow" ||
+    order.status === "seller_preparing" ||
+    order.status === "shipped" ||
+    order.status === "ready_for_pickup"
+      ? ("delivered" as const)
+      : order.status;
   const updated = await updateOrder(
     orderId,
     {
-            sellerProofUrls: urls,
+      sellerProofUrls: urls,
       sellerProofNote: note?.trim() || undefined,
       sellerProofAt: new Date().toISOString(),
+      deliveredAt: new Date().toISOString(),
       productVerificationStatus: "awaiting_buyer" as const,
       productVerificationVersion: (order.productVerificationVersion ?? 0) + 1,
-      status: order.status === "paid_held_in_escrow" ? "delivered" : order.status,
+      status: nextStatus,
     },
     {
       type: "seller_proof_submitted",
@@ -976,6 +1008,13 @@ export async function refundOrder(
   );
 
   if (!updated) return undefined;
+
+  await recordRefundTreasury({
+    orderId: order.id,
+    amount: order.fees.productPrice,
+    actor: "system",
+    source: options?.skipStripe ? "webhook" : "admin",
+  });
 
   // Unwind the ledger for every status that still reflects seller funds.
   // Held/delivered: reverse pending escrow. Released without Connect: debit available.
@@ -1160,6 +1199,13 @@ export async function adminReleaseEscrow(
     payoutPatch,
     `تحرير إداري للضمان — ${order.listingTitle}`,
   );
+
+  await recordReleaseTreasury({
+    orderId: order.id,
+    sellerAmount: sellerNet,
+    actor: "admin",
+    source: "admin",
+  });
 
   const adminReleaseBody = connectPaidOut
     ? `حرّرت الإدارة ${formatCurrencyLabel(sellerNet)} إلى حساب Stripe المرتبط لطلب «${order.listingTitle}».`

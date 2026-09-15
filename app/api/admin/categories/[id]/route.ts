@@ -10,7 +10,7 @@ import type { AdminCategoryPatch } from "@/types";
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteParams) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

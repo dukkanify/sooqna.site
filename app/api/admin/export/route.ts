@@ -51,7 +51,7 @@ function inRange(iso: string | undefined, startMs: number | null): boolean {
 
 /** Admin Excel export (SpreadsheetML .xls) for dashboard reports. */
 export async function GET(request: Request) {
-  const admin = await requireAdminPermission("reports");
+  const admin = await requireAdminPermission("reports", "export");
   if (!isSessionUser(admin)) return admin;
   if (!hasAdminAction(admin, "reports", "export")) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });

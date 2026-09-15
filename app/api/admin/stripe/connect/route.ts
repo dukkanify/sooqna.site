@@ -9,7 +9,7 @@ import {
 } from "@/services/payments/stripe-connect.service";
 
 export async function GET() {
-  const admin = await requireAdminPermission("payments");
+  const admin = await requireAdminPermission("payments", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -28,7 +28,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const admin = await requireAdminPermission("payments");
+  const admin = await requireAdminPermission("payments", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

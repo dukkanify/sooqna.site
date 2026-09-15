@@ -11,7 +11,7 @@ import {
 import type { AdminListingCreateInput, Listing } from "@/types";
 
 export async function GET() {
-  const admin = await requireAdminPermission("listings");
+  const admin = await requireAdminPermission("listings", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -23,7 +23,7 @@ export async function GET() {
  * (including localStorage-created ones).
  */
 export async function POST(request: Request) {
-  const admin = await requireAdminPermission("listings");
+  const admin = await requireAdminPermission("listings", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

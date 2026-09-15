@@ -7,7 +7,7 @@ import { getAllUsers, toAdminUserRecord } from "@/services/auth/user-store";
 import { countListingsBySeller } from "@/services/listings/listing-queries";
 
 export async function GET() {
-  const admin = await requireAdminPermission("users");
+  const admin = await requireAdminPermission("users", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }

@@ -33,6 +33,9 @@ const QUOTE_STATUS: Record<QuoteRequest["status"], string> = {
 const ORDER_STATUS: Record<Order["status"], string> = {
   pending_payment: "بانتظار الدفع",
   paid_held_in_escrow: "مدفوع — ضمان",
+  seller_preparing: "البائع يجهّز الطلب",
+  shipped: "تم الشحن",
+  ready_for_pickup: "جاهز للاستلام",
   delivered: "تم التوصيل",
   confirmed: "مؤكد",
   released: "تم الإفراج",
@@ -52,8 +55,11 @@ const LISTING_STATUS: Record<Listing["status"], string> = {
 const DISPUTE_STATUS: Record<AdminDisputeRecord["status"], string> = {
   open: "مفتوح",
   under_review: "قيد المراجعة",
+  needs_buyer_info: "بانتظار المشتري",
+  needs_seller_info: "بانتظار البائع",
   resolved_buyer: "حُلّ لصالح المشتري",
   resolved_seller: "حُلّ لصالح البائع",
+  partial_resolution: "حل جزئي",
   closed: "مغلق",
 };
 

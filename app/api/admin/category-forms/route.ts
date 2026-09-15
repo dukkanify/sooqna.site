@@ -42,7 +42,7 @@ const fieldSchema = z.object({
 });
 
 export async function GET(request: Request) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "view");
   if (!isSessionUser(admin)) return admin;
 
   const categoryId = new URL(request.url).searchParams.get("categoryId") ?? "";
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "edit");
   if (!isSessionUser(admin)) return admin;
 
   const body = await request.json().catch(() => null);

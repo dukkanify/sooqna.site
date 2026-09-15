@@ -16,7 +16,7 @@ import type { AdminUserPatch } from "@/types";
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteParams) {
-  const admin = await requireAdminPermission("users");
+  const admin = await requireAdminPermission("users", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

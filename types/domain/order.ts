@@ -3,6 +3,9 @@ import type { ShippingMethodId } from "@/types/domain/address";
 export type OrderStatus =
   | "pending_payment"
   | "paid_held_in_escrow"
+  | "seller_preparing"
+  | "shipped"
+  | "ready_for_pickup"
   | "delivered"
   | "confirmed"
   | "released"
@@ -110,6 +113,11 @@ export type Order = {
   sellerProofUrls?: string[];
   sellerProofNote?: string;
   sellerProofAt?: string;
+  /** Carrier/tracking reference when shipping (not fabricated integrations). */
+  shippingTrackingRef?: string;
+  shippedAt?: string;
+  readyForPickupAt?: string;
+  deliveredAt?: string;
   buyerMatchConfirmedAt?: string;
   /** Listing category at order time — used for product-condition eligibility. */
   listingCategoryId?: string;
