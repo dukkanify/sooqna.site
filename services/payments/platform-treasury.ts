@@ -107,3 +107,92 @@ export async function listTreasuryEntries(filters?: {
     )
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
+
+/** Record payment → escrow liability + platform fee revenue (idempotent). */
+export async function recordPaymentTreasury(input: {
+  orderId: string;
+  grossAmount: number;
+  platformFee: number;
+  actor?: string;
+  source?: TreasuryJournalEntry["source"];
+}): Promise<void> {
+  const actor = input.actor ?? "system";
+  const source = input.source ?? "system";
+  await appendTreasuryEntry({
+    transactionId: input.orderId,
+    reference: `pay:${input.orderId}`,
+    amount: input.grossAmount,
+    type: "escrow_hold",
+    account: "escrow_liability",
+    amountSigned: input.grossAmount,
+    actor,
+    source,
+    idempotencyKey: `treasury:escrow_hold:${input.orderId}`,
+  });
+  if (input.platformFee > 0) {
+    await appendTreasuryEntry({
+      transactionId: input.orderId,
+      reference: `fee:${input.orderId}`,
+      amount: input.platformFee,
+      type: "fee",
+      account: "platform_revenue",
+      amountSigned: input.platformFee,
+      actor,
+      source,
+      idempotencyKey: `treasury:fee:${input.orderId}`,
+    });
+  }
+}
+
+/** Release escrow liability into seller payable (idempotent). */
+export async function recordReleaseTreasury(input: {
+  orderId: string;
+  sellerAmount: number;
+  actor?: string;
+  source?: TreasuryJournalEntry["source"];
+}): Promise<void> {
+  const actor = input.actor ?? "system";
+  const source = input.source ?? "system";
+  await appendTreasuryEntry({
+    transactionId: input.orderId,
+    reference: `release:${input.orderId}`,
+    amount: input.sellerAmount,
+    type: "release",
+    account: "escrow_liability",
+    amountSigned: -input.sellerAmount,
+    actor,
+    source,
+    idempotencyKey: `treasury:release:escrow:${input.orderId}`,
+  });
+  await appendTreasuryEntry({
+    transactionId: input.orderId,
+    reference: `payable:${input.orderId}`,
+    amount: input.sellerAmount,
+    type: "release",
+    account: "seller_payable",
+    amountSigned: input.sellerAmount,
+    actor,
+    source,
+    idempotencyKey: `treasury:release:payable:${input.orderId}`,
+  });
+}
+
+/** Refund reverses escrow liability (idempotent). */
+export async function recordRefundTreasury(input: {
+  orderId: string;
+  amount: number;
+  actor?: string;
+  source?: TreasuryJournalEntry["source"];
+}): Promise<void> {
+  await appendTreasuryEntry({
+    transactionId: input.orderId,
+    reference: `refund:${input.orderId}`,
+    amount: input.amount,
+    type: "refund",
+    account: "escrow_liability",
+    amountSigned: -input.amount,
+    actor: input.actor ?? "system",
+    source: input.source ?? "system",
+    idempotencyKey: `treasury:refund:${input.orderId}`,
+  });
+}

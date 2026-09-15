@@ -10,7 +10,7 @@ import {
 } from "@/services/admin/admin-settings-store";
 
 export async function GET() {
-  const admin = await requireAdminPermission("settings");
+  const admin = await requireAdminPermission("settings", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -20,7 +20,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const admin = await requireAdminPermission("settings");
+  const admin = await requireAdminPermission("settings", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

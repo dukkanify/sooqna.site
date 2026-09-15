@@ -10,7 +10,7 @@ import {
 import type { AdminCategoryCreateInput } from "@/types";
 
 export async function GET() {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -18,7 +18,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

@@ -1,7 +1,5 @@
-import {
-  isSessionUser,
-  requireAdminUser,
-} from "@/services/auth/require-session";
+import { isSessionUser } from "@/services/auth/require-session";
+import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import { logAdminAction } from "@/services/admin/admin-audit-store";
 import {
@@ -36,7 +34,7 @@ function serializeWallets(
 }
 
 export async function GET() {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("payments", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -46,7 +44,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("payments", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

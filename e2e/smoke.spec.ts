@@ -36,7 +36,7 @@ test.describe("Sooqna smoke @qa-isolated", () => {
     await expect(page.locator("body")).toBeVisible();
   });
 
-  test(`qa marker ${QA} is isolated`, async () => {
+  test("qa marker is isolated", async () => {
     expect(QA.startsWith("qa-e2e-")).toBeTruthy();
   });
 });

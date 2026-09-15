@@ -8,7 +8,7 @@ import {
 import { logAdminAction } from "@/services/admin/admin-audit-store";
 
 export async function GET(request: Request) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "view");
   if (!isSessionUser(admin)) return admin;
 
   const status = new URL(request.url).searchParams.get("status") as
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const admin = await requireAdminPermission("categories");
+  const admin = await requireAdminPermission("categories", "edit");
   if (!isSessionUser(admin)) return admin;
 
   const body = (await request.json().catch(() => null)) as {

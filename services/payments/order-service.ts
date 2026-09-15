@@ -28,6 +28,11 @@ import {
 } from "@/services/payments/order-store";
 import { logPaymentEvent } from "@/services/payments/payment-log";
 import {
+  recordPaymentTreasury,
+  recordRefundTreasury,
+  recordReleaseTreasury,
+} from "@/services/payments/platform-treasury";
+import {
   ensureStripeConfigLoaded,
   isStripeConfigured,
   isMockCheckoutAllowed,
@@ -460,6 +465,14 @@ async function markOrderPaid(
     status: "completed",
   });
 
+  await recordPaymentTreasury({
+    orderId: order.id,
+    grossAmount: order.fees.productPrice,
+    platformFee: order.fees.platformFee,
+    actor: "system",
+    source: source === "mock" ? "system" : "webhook",
+  });
+
   let finalOrder = updated;
   let guestAccessToken: string | undefined;
   let hasExistingAccount = updated.hasExistingAccount;
@@ -689,6 +702,13 @@ async function releaseEscrowToSeller(
     payoutPatch,
     `تحويل ضمان — ${order.listingTitle}`,
   );
+
+  await recordReleaseTreasury({
+    orderId: order.id,
+    sellerAmount: sellerNet,
+    actor: "system",
+    source: "system",
+  });
 
   const sellerReleaseBody = connectPaidOut
     ? `تم تحويل ${formatCurrencyLabel(sellerNet)} إلى حساب Stripe المرتبط لطلب «${order.listingTitle}».`
@@ -989,6 +1009,13 @@ export async function refundOrder(
 
   if (!updated) return undefined;
 
+  await recordRefundTreasury({
+    orderId: order.id,
+    amount: order.fees.productPrice,
+    actor: "system",
+    source: options?.skipStripe ? "webhook" : "admin",
+  });
+
   // Unwind the ledger for every status that still reflects seller funds.
   // Held/delivered: reverse pending escrow. Released without Connect: debit available.
   // Released with Connect transfer: Stripe reversal already ran; ledger was net-zero.
@@ -1172,6 +1199,13 @@ export async function adminReleaseEscrow(
     payoutPatch,
     `تحرير إداري للضمان — ${order.listingTitle}`,
   );
+
+  await recordReleaseTreasury({
+    orderId: order.id,
+    sellerAmount: sellerNet,
+    actor: "admin",
+    source: "admin",
+  });
 
   const adminReleaseBody = connectPaidOut
     ? `حرّرت الإدارة ${formatCurrencyLabel(sellerNet)} إلى حساب Stripe المرتبط لطلب «${order.listingTitle}».`

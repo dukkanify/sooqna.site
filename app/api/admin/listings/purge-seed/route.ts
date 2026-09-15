@@ -11,7 +11,7 @@ import { purgeMockSeedListings } from "@/services/listings/listing-store";
  * Public catalog already hides those rows. Never deletes MANUAL_REVIEW records.
  */
 export async function POST() {
-  const admin = await requireAdminPermission("listings");
+  const admin = await requireAdminPermission("listings", "delete");
   if (!isSessionUser(admin)) {
     return admin;
   }
