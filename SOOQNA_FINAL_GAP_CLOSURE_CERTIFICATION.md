@@ -1,167 +1,149 @@
-# SOOQNA — FINAL GAP CLOSURE CERTIFICATION
+# SOOQNA — FINAL GAP CLOSURE CERTIFICATION (PR #26 Deep Gate)
 
-**Generated:** 2026-09-15 (Cloud workspace)  
-**Canonical repo:** `dukkanify/sooqna.site`  
-**Production:** https://sooqna.site
+**Date:** 2026-09-15 (Cloud)  
+**Repo:** `dukkanify/sooqna.site`  
+**PR:** [#26](https://github.com/dukkanify/sooqna.site/pull/26)  
+**Branch tip (this cert):** post-hardening follow-up on `cursor/gap-hardening-f438`  
+**Preview SHA certified initially:** `224aeef`  
+**Preview URL:** https://sooqna-o1w3aoh7s-dukkanify-technology-llcs-projects.vercel.app  
 
-> This report is honest. Incomplete gates are marked FAIL / PARTIAL / BLOCKED.  
-> Do **not** treat this document as “100% COMPLETE”.
-
----
-
-## PRESERVATION
-
-| Field | Value |
-|-------|--------|
-| 367af0c preserved | **YES** (`367af0ccb7bff35d0176bd6bc5a0ba5662ddb6b0`) |
-| Branch pushed | **YES** `cursor/close-remaining-gaps-f438` |
-| PR | https://github.com/dukkanify/sooqna.site/pull/25 (**MERGED**) |
-| Merged | **YES** → `main` as `cb62848837b276096dbcbcd63526daa279eac3d4` |
-
-Follow-up hardening commits after merge continue on the same branch tip (storage SigV4, private media, delivery states, RBAC matrix, Playwright scaffold, treasury journal).
+> Honest gate. No secrets printed. **PR #26 must NOT be merged** until owner credentials unlock remaining BLOCKED flows or an explicit owner waiver is given.
 
 ---
 
-## OPS
+## GATE SUMMARY
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Stripe | PARTIAL | Keys not printed; presence not fully certified from this agent |
-| Stripe Webhook | PARTIAL | Route exists; live TEST certification not completed this turn |
-| Stripe Connect | PARTIAL | Release + retry paths exist; regulated identity may need owner input |
-| Resend | PARTIAL | Config expected via Vercel env; delivery not re-certified this turn |
-| EMAIL_FROM_ADDRESS | EXPECTED `no-reply@sooqna.site` | Verify in Vercel Production |
-| NEXT_PUBLIC_APP_URL | EXPECTED `https://sooqna.site` | Verify in Vercel Production |
-| SESSION_SECRET | UNKNOWN (do not print) | Must be set in Production |
-| CRON_SECRET | UNKNOWN (do not print) | Preview returned `503 CRON_SECRET_REQUIRED` when unset |
-| Redeploy | PENDING follow-up PR | Production already has merged `367af0c` content |
-
----
-
-## ESCROW
-
-| Item | Status |
+| Area | Status |
 |------|--------|
-| Held | PASS (code path) |
-| Seller Proof | PASS |
-| Buyer Confirmation | PASS (session-only) |
-| Auto Release | PASS (cron + hold days + open-dispute block) |
-| Refund | PASS (ledger correction in 367af0c) |
-| Connect Retry | PASS (maintenance cron) |
-| Ledger | PARTIAL (seller wallet durable; platform treasury journal added) |
+| STORAGE | **BLOCKED** (S3 creds not proven on Preview; local path code-ready) |
+| PRIVATE MEDIA | **PASS*** (guest deny proven; party/admin allow **BLOCKED** without QA sessions) |
+| DELIVERY | **PASS*** (transitions + guest deny; authenticated lifecycle **BLOCKED**) |
+| AUTO RELEASE | **BLOCKED** (Preview returns `CRON_SECRET_REQUIRED`; unauthorized reject PASS) |
+| DISPUTES | **PARTIAL** (guest deny PASS; full open→resolve→finance **BLOCKED**) |
+| TREASURY/LEDGER | **PARTIAL** (journal wired + idempotent keys; live money path not Preview-proven) |
+| RBAC | **PASS*** (action enforcement fixed + unit matrix; live multi-role matrix **BLOCKED**) |
+| PLAYWRIGHT | **PASS** (21/21 on Preview after expansion; auth OTP/checkout happy paths still absent) |
+| STRIPE TEST | **BLOCKED** |
+| STRIPE CONNECT | **BLOCKED** |
+| EMAIL | **BLOCKED** |
+| OPS SECRETS | **PARTIAL** (Preview cron secret missing; others unknown / not printed) |
+| SECURITY | **PASS** (guest gates on Preview) |
+| LINT | **PASS** |
+| TESTS | **PASS** (56) |
+| BUILD | **PASS** |
+| ISOLATION | **PASS** |
+
+\*Starred PASS = code + guest/API security proven; full authenticated party flows remain credential-gated.
 
 ---
 
-## DELIVERY
+## 1. STORAGE — BLOCKED
 
-| Item | Status |
+**Code:** S3-compatible provider via `@aws-sdk/client-s3` + presigner; local durable fallback.  
+**Preview proof:** Guest upload rejected. No owner-provided S3/R2 keys → cannot certify live PutObject/DeleteObject/signed GET.  
+**Evidence:** `services/storage/*`, Preview `POST /api/uploads` → 401/403.
+
+## 2. PRIVATE MEDIA — PASS* / party access BLOCKED
+
+**Preview:**
+- `GET /api/media/evidence/...` → **401 UNAUTHORIZED** (guest)
+- `GET /api/media/disputes/...` → **401**
+- Public listing media missing object → **404** (not open write)
+
+**Code:** buyer/seller/admin allow rules in media route.  
+**Not proven without sessions:** buyer allow, seller allow, unrelated 403, admin allow.
+
+## 3. DELIVERY — PASS* / auth lifecycle BLOCKED
+
+**Code statuses:** `pending_payment → paid_held_in_escrow → seller_preparing → shipped|ready_for_pickup → delivered → confirmed → released` (+ dispute/refund branches).  
+**API:** `POST /api/orders/[id]/delivery` seller-only; invalid transitions rejected.  
+**Preview:** guest delivery mutate → 401.  
+**Pickup vs shipping guards:** code enforces method-specific actions.
+
+## 4. AUTO RELEASE — BLOCKED
+
+**Preview unauthorized:** `GET /api/cron/escrow-maintenance` → **503** `CRON_SECRET_REQUIRED`.  
+Authorized cron **cannot** be certified without secret (do not invent).  
+**Code:** open dispute statuses block auto-release; status-gated idempotency; audit/notifications on release path.
+
+## 5. DISPUTES — PARTIAL
+
+Guest open dispute → 401. Status model expanded (`needs_buyer_info`, `needs_seller_info`, `partial_resolution`).  
+Admin resolve buyer/seller triggers refund/release.  
+Full buyer→evidence→seller→admin→finance E2E **BLOCKED** (no QA accounts on Preview).
+
+## 6. TREASURY / LEDGER — PARTIAL
+
+`platform-treasury` append-only journal with idempotency keys; now called from payment / release / refund in `order-service`.  
+Wallet ledger remains balance+txn store.  
+Live payment→escrow→fee→release journal agreement **not** Preview-proven (Stripe BLOCKED).
+
+## 7. RBAC — PASS*
+
+**Fix in this cert pass:** mutating admin routes now require `edit`/`delete`/`export` actions (not default `view`). Wallets/escrow/order release gated to `payments`/`orders`.  
+**Unit:** `scripts/rbac-action-enforcement.test.mjs` — view-only cannot `disputes.manage` / `escrow.manage`.  
+**Live multi-role page/API matrix** (Super/Moderator/Finance/Support/Read-only) **BLOCKED** without seeded role users.
+
+## 8. PLAYWRIGHT — PASS (scope-limited)
+
+Ran against Preview: **21 passed / 0 failed**.  
+Covers: auth pages, search, guest security (media/upload/delivery/dispute/admin/cron), escrow UI, notifications/admin redirect.  
+**Missing vs brief:** register→verify→login→reset OTP, create order, repurchase, full Madmoon/dispute finance — need QA users + Stripe TEST.
+
+## 9. STRIPE TEST — BLOCKED
+
+No confirmed `sk_test` / webhook secret on Preview from this agent. Checkout probe without listing → 400 only.
+
+## 10. STRIPE CONNECT — BLOCKED
+
+Owner identity/onboarding required; not automated.
+
+## 11. EMAIL — BLOCKED
+
+Resend delivery not proven (API key presence unknown). Expected from-address remains `no-reply@sooqna.site` when configured.
+
+## 12. OPS SECRETS (presence only — values never printed)
+
+| Secret | Preview signal |
+|--------|----------------|
+| SESSION_SECRET | Unknown (sessions endpoint responds; value not inspected) |
+| CRON_SECRET | **Missing** (503 CRON_SECRET_REQUIRED) |
+| Stripe keys | Unknown / not certified |
+| Stripe webhook | Unknown |
+| Resend | Unknown |
+| EMAIL_FROM_ADDRESS | Unknown |
+| NEXT_PUBLIC_APP_URL | App serves Preview host |
+| S3/object storage | Unknown (local fallback likely) |
+
+## 13. QUALITY
+
+| Gate | Result |
 |------|--------|
-| Shipping | PARTIAL (`shipped` + tracking ref API) |
-| Pickup | PARTIAL (`ready_for_pickup` path) |
-| Delivery Confirmation | PASS (buyer confirm) |
-| Auto Release Window | PASS (admin `escrowHoldDays`) |
+| `npm run lint` | PASS |
+| `npm test` | PASS (56) |
+| `npm run build` | PASS |
+| `npm run verify:isolation` | PASS |
+| Playwright @ Preview | PASS (21) |
+
+## 14. FINAL MERGE DECISION
+
+### **DO NOT MERGE PR #26**
+
+Reasons:
+1. Preview **CRON_SECRET** missing → auto-release cannot be authorized-tested.
+2. Stripe TEST / Connect / Email / S3 live paths remain **BLOCKED**.
+3. Authenticated Madmoon delivery + dispute financial E2E not PASS.
+4. Owner must configure Preview secrets + QA accounts, then re-run deep cert.
+
+Safe to defer only after explicit owner waiver: S3 live, Stripe TEST, Connect KYC, email inbox proof.
+
+**No Production deploy. No merge performed by this agent.**
 
 ---
 
-## DISPUTES
+## Changes included in cert follow-up (to push on PR branch)
 
-| Item | Status |
-|------|--------|
-| Open | PASS |
-| Evidence | PASS (upload + private media class) |
-| Admin Review | PARTIAL (expanded statuses; UI actions still lean on resolve/refund/release) |
-| Resolution | PASS (`resolved_buyer` / `resolved_seller`) |
-| Financial Resolution | PASS (blocks auto-release; refund/release on resolve) |
-
----
-
-## PERSISTENCE
-
-| Item | Status |
-|------|--------|
-| Wallet | PASS (durable collection) |
-| Chat | PASS (server store) |
-| Favorites | PASS (durable) |
-| Admin Settings | PASS |
-| Notifications | PASS (Postgres or JSON) |
-| Orders | PASS |
-
----
-
-## STORAGE
-
-| Item | Status |
-|------|--------|
-| Local fallback | PASS |
-| S3-compatible | PASS (official `@aws-sdk/client-s3` + presigner; R2 endpoint support) |
-| Private evidence | PASS (`/api/media` auth gate + signed GET) |
-| Public listing media | PASS |
-
----
-
-## RBAC
-
-| Role | Status |
-|------|--------|
-| Super Admin | PASS (empty modules = full) |
-| Moderator | PARTIAL (template + matrix helpers) |
-| Finance | PARTIAL |
-| Support | PARTIAL |
-| Read-only | PARTIAL |
-
-Server enforcement via `requireAdminPermission` + dotted `permission-matrix` helpers. UI hiding alone is not security.
-
----
-
-## TESTING
-
-| Gate | Status |
-|------|--------|
-| Unit / integration (`npm test`) | See CI / local run |
-| Playwright | ADDED (`e2e/smoke.spec.ts`) — full suite expansion still needed |
-| Stripe TEST | NOT COMPLETE this turn |
-| Security | PARTIAL |
-| Build | See local run |
-| Lint | See local run |
-| Isolation | PASS (`verify:isolation`) |
-
----
-
-## UAE PASS
-
-| Field | Value |
-|-------|--------|
-| Implemented | **NO** (flag + profile teaser only) |
-| Configured | **NO** (owner credentials not assumed) |
-| Enabled | **NO** (`NEXT_PUBLIC_ENABLE_UAE_PASS=false`) |
-
----
-
-## PRODUCTION
-
-| Field | Value |
-|-------|--------|
-| Main SHA (at merge of #25) | `cb62848837b276096dbcbcd63526daa279eac3d4` (contains 367af0c) |
-| Production SHA | Verify after Vercel Production deploy |
-| Deployment | Vercel Git integration |
-| Domain | https://sooqna.site |
-
----
-
-## FINAL RELEASE RULE (CURRENT)
-
-```
-SOOQNA FINAL GAP CLOSURE: PARTIAL
-OPS: PARTIAL
-ESCROW: PASS
-DELIVERY: PARTIAL
-DISPUTES: PARTIAL
-PERSISTENCE: PASS
-STORAGE: PASS
-RBAC: PARTIAL
-PLAYWRIGHT E2E: PARTIAL (scaffold + smoke)
-SECURITY: PARTIAL
-MAIN = PRODUCTION: VERIFY AFTER DEPLOY
-```
-
-**Not production-ready as “100% COMPLETE”.** Continue Preview verification of follow-up hardening PR before claiming PRODUCTION READY.
+- Enforce admin **edit** actions on mutating APIs; payments gates on wallets/escrow/release
+- Wire treasury journal into pay/release/refund
+- Expand Playwright deep-cert suite
+- RBAC action unit tests
