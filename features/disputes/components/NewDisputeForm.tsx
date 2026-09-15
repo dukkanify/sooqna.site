@@ -26,6 +26,7 @@ export function NewDisputeForm({ orderId }: NewDisputeFormProps) {
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [evidenceUrl, setEvidenceUrl] = useState("");
+  const [evidenceFiles, setEvidenceFiles] = useState<FileList | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,6 +52,32 @@ export function NewDisputeForm({ orderId }: NewDisputeFormProps) {
       .split(/[\n,]/)
       .map((item) => item.trim())
       .filter(Boolean);
+
+    if (evidenceFiles && evidenceFiles.length > 0) {
+      for (const file of Array.from(evidenceFiles).slice(0, 8)) {
+        if (file.size > 4_500_000) {
+          setError("حجم أحد ملفات الأدلة كبير جداً (حد 4.5MB).");
+          return;
+        }
+        try {
+          const form = new FormData();
+          form.append("file", file);
+          form.append("folder", "disputes");
+          const uploadResponse = await fetch("/api/uploads", {
+            method: "POST",
+            body: form,
+            credentials: "same-origin",
+          });
+          if (uploadResponse.ok) {
+            const uploaded = (await uploadResponse.json()) as { url?: string };
+            if (uploaded.url) evidenceUrls.push(uploaded.url);
+          }
+        } catch {
+          setError("تعذر رفع أحد ملفات الأدلة.");
+          return;
+        }
+      }
+    }
 
     setIsSubmitting(true);
     try {
@@ -91,12 +118,7 @@ export function NewDisputeForm({ orderId }: NewDisputeFormProps) {
   return (
     <Card className="p-6" variant="flat">
       <form className="grid gap-4" onSubmit={handleSubmit}>
-        <Input
-          disabled
-          label="رقم الطلب"
-          readOnly
-          value={orderId}
-        />
+        <Input disabled label="رقم الطلب" readOnly value={orderId} />
         <Textarea
           label="سبب النزاع"
           hint="اشرح المشكلة بوضوح (١٠ أحرف على الأقل)."
@@ -113,6 +135,17 @@ export function NewDisputeForm({ orderId }: NewDisputeFormProps) {
           onChange={(event) => setEvidenceUrl(event.target.value)}
           placeholder="https://..."
         />
+        <label className="grid gap-1.5 text-sm">
+          <span className="font-medium text-ink">ملفات أدلة (اختياري)</span>
+          <input
+            accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,application/pdf"
+            className="block w-full text-sm text-muted"
+            multiple
+            onChange={(event) => setEvidenceFiles(event.target.files)}
+            type="file"
+          />
+          <span className="text-xs text-muted">حتى 8 ملفات · حد 4.5MB لكل ملف</span>
+        </label>
         {error ? <FormMessage variant="error">{error}</FormMessage> : null}
         {success ? <FormMessage variant="success">{success}</FormMessage> : null}
         <Button loading={isSubmitting} size="lg" type="submit" variant="accent">

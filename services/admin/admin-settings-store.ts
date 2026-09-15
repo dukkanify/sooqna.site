@@ -1,4 +1,4 @@
-import { loadCollection, saveCollection } from "@/services/payments/data-store";
+import { createPayloadCollectionStore } from "@/services/db/durable-json-collection";
 
 export type AdminSiteSettings = {
   platformFeePercent: number;
@@ -17,7 +17,14 @@ export type AdminSiteSettings = {
   updatedAt: string;
 };
 
-const SETTINGS_FILE = "admin-settings.json";
+type SettingsRecord = AdminSiteSettings & { id: string };
+
+const SETTINGS_ID = "site";
+
+const store = createPayloadCollectionStore<SettingsRecord>({
+  table: "marketplace_admin_settings",
+  fileName: "sooqna-admin-settings.json",
+});
 
 const DEFAULT_SETTINGS: AdminSiteSettings = {
   platformFeePercent: 2.5,
@@ -38,12 +45,17 @@ const DEFAULT_SETTINGS: AdminSiteSettings = {
 
 let cached: AdminSiteSettings | null = null;
 
+function stripId(record: SettingsRecord): AdminSiteSettings {
+  const { id, ...settings } = record;
+  void id;
+  return settings;
+}
+
 export async function getAdminSettings(): Promise<AdminSiteSettings> {
   if (cached) return cached;
-  const rows = await loadCollection<AdminSiteSettings>(SETTINGS_FILE).catch(
-    () => [] as AdminSiteSettings[],
-  );
-  cached = rows[0] ? { ...DEFAULT_SETTINGS, ...rows[0] } : { ...DEFAULT_SETTINGS };
+  const rows = await store.listAll();
+  const row = rows.find((item) => item.id === SETTINGS_ID) ?? rows[0];
+  cached = row ? { ...DEFAULT_SETTINGS, ...stripId(row) } : { ...DEFAULT_SETTINGS };
   return cached;
 }
 
@@ -66,7 +78,10 @@ export async function updateAdminSettings(
       patch.gatewayFeePercent ?? current.gatewayFeePercent,
     ),
     gatewayFeeFixed: Math.max(0, patch.gatewayFeeFixed ?? current.gatewayFeeFixed),
-    escrowHoldDays: Math.max(1, Math.round(patch.escrowHoldDays ?? current.escrowHoldDays)),
+    escrowHoldDays: Math.max(
+      1,
+      Math.round(patch.escrowHoldDays ?? current.escrowHoldDays),
+    ),
     disputeWindowDays: Math.max(
       1,
       Math.round(patch.disputeWindowDays ?? current.disputeWindowDays),
@@ -92,7 +107,7 @@ export async function updateAdminSettings(
     updatedAt: new Date().toISOString(),
   };
   cached = next;
-  await saveCollection(SETTINGS_FILE, [next]);
+  await store.upsert({ ...next, id: SETTINGS_ID });
   return next;
 }
 

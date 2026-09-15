@@ -135,10 +135,11 @@ Every Checkout Session includes:
 | Gap | Notes |
 |-----|-------|
 | Connect eligibility | Purchasable goods categories only (`isPurchasableCategory`) — not cars/real-estate/jobs |
-| Delivery workflow | Seller proof + buyer confirm; optional auto-release timer still open |
-| Dispute resolution | Dispute form linked to orders (partial) |
+| Delivery workflow | Seller proof + buyer confirm + daily auto-release after `escrowHoldDays` |
+| Dispute resolution | Form + admin resolve + file evidence uploads; reminders cron |
 | KYC | UAE PASS optional; Connect onboarding is the payout KYC path |
 | Platform fund segregation | Separate Stripe balance / treasury still optional |
+| Object storage | Local durable `/api/media` by default; optional S3 via env |
 
 ## Compliance Note
 

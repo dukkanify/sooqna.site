@@ -123,15 +123,6 @@ export function OrderDetailContent({
     try {
       const response = await fetch(`/api/orders/${orderId}/confirm`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          buyer: {
-            id: user.id,
-            email: user.email,
-            fullName: user.fullName,
-            role: user.role,
-          },
-        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -213,6 +204,28 @@ export function OrderDetailContent({
           setError("حجم الملف كبير جداً (الحد تقريباً 4.5MB لكل ملف).");
           return;
         }
+        try {
+          const form = new FormData();
+          form.append("file", file);
+          form.append("folder", "evidence");
+          const uploadResponse = await fetch("/api/uploads", {
+            method: "POST",
+            body: form,
+            credentials: "same-origin",
+          });
+          if (uploadResponse.ok) {
+            const uploaded = (await uploadResponse.json()) as { url?: string };
+            if (uploaded.url) {
+              fileItems.push({
+                storageUrl: uploaded.url,
+                kind: file.type.startsWith("video/") ? "video" : "photo",
+              });
+              continue;
+            }
+          }
+        } catch {
+          // fall back to data URL
+        }
         const dataUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(String(reader.result ?? ""));
@@ -256,7 +269,7 @@ export function OrderDetailContent({
         return;
       }
       setOrder(data.order);
-      setConfirmMessage("تم رفع إثبات التسليم بنجاح.");
+      setConfirmMessage("تم رفع / تحديث إثبات التسليم بنجاح.");
       setProofUrlsText("");
       setProofNote("");
       setProofFiles(null);
@@ -295,7 +308,7 @@ export function OrderDetailContent({
     (order.status === "paid_held_in_escrow" ||
       order.status === "delivered" ||
       order.status === "confirmed");
-  const showSellerProofForm = isSeller && escrowActive && !order.sellerProofAt;
+  const showSellerProofForm = isSeller && escrowActive;
   const showBuyerMatch =
     isBuyer &&
     Boolean(order.sellerProofAt) &&
@@ -423,7 +436,7 @@ export function OrderDetailContent({
         {showSellerProofForm ? (
           <Card className="p-6" variant="flat">
             <h3 className="text-sm font-semibold text-ink">
-              رفع إثبات التسليم (مضمون)
+              رفع / تحديث إثبات التسليم (مضمون)
             </h3>
             <p className="mt-1 text-sm text-muted">
               ارفع صوراً أو فيديو حديث للمنتج بعد الدفع. يراجعها المشتري قبل تحرير

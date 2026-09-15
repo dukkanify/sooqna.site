@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
+import {
+  isSessionUser,
+  requireSessionUser,
+} from "@/services/auth/require-session";
 import { confirmOrderReceived } from "@/services/payments/order-service";
-import { confirmOrderSchema } from "@/services/payments/payment-schemas";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-export async function POST(request: Request, { params }: RouteParams) {
+/**
+ * Buyer confirms receipt and releases escrow.
+ * Session cookie is the source of truth — never trust buyer.id from the body.
+ */
+export async function POST(_request: Request, { params }: RouteParams) {
+  const user = await requireSessionUser();
+  if (!isSessionUser(user)) return user;
+
   try {
     const { id } = await params;
-    const body = await request.json();
-    const parsed = confirmOrderSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 });
-    }
-
-    const order = await confirmOrderReceived(id, parsed.data.buyer.id);
+    const order = await confirmOrderReceived(id, user.id);
     if (!order) {
       return NextResponse.json({ error: "ORDER_NOT_FOUND" }, { status: 404 });
     }

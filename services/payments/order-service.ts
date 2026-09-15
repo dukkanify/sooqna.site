@@ -798,9 +798,11 @@ export async function submitSellerProof(
   const updated = await updateOrder(
     orderId,
     {
-      sellerProofUrls: urls,
+            sellerProofUrls: urls,
       sellerProofNote: note?.trim() || undefined,
       sellerProofAt: new Date().toISOString(),
+      productVerificationStatus: "awaiting_buyer" as const,
+      productVerificationVersion: (order.productVerificationVersion ?? 0) + 1,
       status: order.status === "paid_held_in_escrow" ? "delivered" : order.status,
     },
     {
@@ -868,6 +870,9 @@ export async function confirmBuyerMatch(
   });
 
   const matchAt = new Date().toISOString();
+  await updateOrder(order.id, {
+    productVerificationStatus: "match_confirmed",
+  });
   const released = await releaseEscrowToSeller(
     order,
     {
@@ -906,6 +911,10 @@ export async function confirmOrderReceived(
   if (!order.sellerProofAt) {
     throw new Error("PROOF_REQUIRED");
   }
+
+  await updateOrder(order.id, {
+    productVerificationStatus: "match_confirmed",
+  });
 
   return releaseEscrowToSeller(order, {
     type: "buyer_confirmed",
@@ -968,12 +977,26 @@ export async function refundOrder(
 
   if (!updated) return undefined;
 
-  if (order.status === "paid_held_in_escrow" || order.status === "confirmed") {
+  // Unwind the ledger for every status that still reflects seller funds.
+  // Held/delivered: reverse pending escrow. Released without Connect: debit available.
+  // Released with Connect transfer: Stripe reversal already ran; ledger was net-zero.
+  if (order.status === "paid_held_in_escrow" || order.status === "delivered") {
     await addWalletTransaction(order.sellerId, {
       orderId: order.id,
       type: "refund",
       amount: -order.fees.productPrice,
       description: `استرداد — ${order.listingTitle}`,
+      status: "completed",
+    });
+  } else if (
+    (order.status === "confirmed" || order.status === "released") &&
+    !order.stripeTransferId
+  ) {
+    await addWalletTransaction(order.sellerId, {
+      orderId: order.id,
+      type: "withdrawal",
+      amount: -order.fees.productPrice,
+      description: `استرداد بعد التحرير — ${order.listingTitle}`,
       status: "completed",
     });
   }
