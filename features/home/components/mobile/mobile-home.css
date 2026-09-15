@@ -675,10 +675,14 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 
 /* ── Search card ── */
 .mobile-home-search-card {
+  position: relative;
+  z-index: 4;
   padding: 0 0.75rem 0.5rem;
 }
 
 .mobile-home-search-card__panel {
+  position: relative;
+  overflow: visible;
   border: 1px solid var(--mh-border);
   border-radius: var(--mh-radius-lg);
   background: rgb(248 250 252 / 88%);
@@ -687,6 +691,8 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 }
 
 .mobile-home-search-card__input-row {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: 0.4375rem;
@@ -695,6 +701,11 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   border-radius: var(--mh-radius-md);
   background: var(--mh-bg);
   padding-inline: 0.625rem;
+}
+
+.mobile-home-search-card__typeahead {
+  position: relative;
+  z-index: 3;
 }
 
 .mobile-home-search-card__input {

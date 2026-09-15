@@ -386,13 +386,14 @@ html[data-theme="dark"] .category-mark {
 .market-hero {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow: visible;
   background: #0b1628;
 }
 
 .market-hero__scene {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
@@ -533,7 +534,7 @@ html[data-theme="dark"] .category-mark {
 
 .market-hero__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   padding-block: clamp(2rem, 5vw, 3rem) clamp(2.25rem, 5vw, 3.5rem);
 }
 
@@ -608,6 +609,8 @@ html[data-theme="dark"] .category-mark {
 }
 
 .market-hero-pills {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -639,7 +642,9 @@ html[data-theme="dark"] .category-mark {
 }
 
 .market-hero-search {
-  overflow: hidden;
+  position: relative;
+  z-index: 5;
+  overflow: visible;
   border: 1px solid rgb(255 255 255 / 0.9);
   border-radius: 1.1rem;
   background: rgb(255 255 255 / 0.94);
@@ -651,10 +656,15 @@ html[data-theme="dark"] .category-mark {
 
 .market-hero-search__accent {
   height: 2px;
+  overflow: hidden;
+  border-radius: 1.1rem 1.1rem 0 0;
   background: linear-gradient(90deg, transparent, #d4b87a 18%, #c9a962 50%, #9a7d4a 82%, transparent);
 }
 
 .market-hero-search__body {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
   padding: 0.65rem;
 }
 
@@ -666,9 +676,16 @@ html[data-theme="dark"] .category-mark {
 }
 
 .market-hero-search__query {
+  position: relative;
+  z-index: 3;
   grid-column: 1 / -1;
   display: grid;
   gap: 0;
+}
+
+.market-hero-search__typeahead {
+  position: relative;
+  z-index: 3;
 }
 
 .market-hero-search__slot {
