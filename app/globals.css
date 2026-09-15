@@ -280,7 +280,7 @@ textarea {
     );
 }
 
-/* ── Category mark — sharp navy circle + bright gold glyph ── */
+/* ── Category mark — professional navy disc + crisp gold glyph ── */
 .category-mark {
   position: relative;
   display: grid;
@@ -289,58 +289,61 @@ textarea {
   height: 100%;
   overflow: hidden;
   isolation: isolate;
-  border: 1.5px solid rgb(212 184 122 / 28%);
+  border: 1px solid rgb(212 184 122 / 34%);
   border-radius: 50%;
   background:
-    radial-gradient(circle at 50% 38%, #1a2a44 0%, #0d1728 55%, #070d18 100%);
-  color: #e4c572;
+    radial-gradient(circle at 48% 32%, #243553 0%, #122038 52%, #0a1220 100%);
+  color: #efd28a;
   box-shadow:
-    0 2px 4px rgb(11 22 40 / 20%),
-    0 12px 24px rgb(11 22 40 / 16%),
-    inset 0 1px 0 rgb(255 255 255 / 14%),
-    inset 0 -10px 18px rgb(0 0 0 / 28%);
+    0 1px 2px rgb(11 22 40 / 18%),
+    0 10px 22px rgb(11 22 40 / 14%),
+    inset 0 1px 0 rgb(255 255 255 / 12%),
+    inset 0 -8px 14px rgb(0 0 0 / 22%);
   transition:
     transform var(--duration-normal) var(--ease-premium),
     box-shadow var(--duration-normal) var(--ease-premium),
-    border-color var(--duration-normal) var(--ease-premium);
+    border-color var(--duration-normal) var(--ease-premium),
+    color var(--duration-normal) var(--ease-premium);
 }
 
 .category-mark__glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 18%, rgb(255 255 255 / 12%), transparent 40%);
+  background:
+    radial-gradient(circle at 50% 22%, rgb(255 255 255 / 14%), transparent 42%),
+    radial-gradient(circle at 50% 78%, rgb(201 169 98 / 10%), transparent 48%);
 }
 
 .category-mark__glyph {
   position: relative;
   z-index: 1;
   display: block;
-  width: 58% !important;
-  height: 58% !important;
-  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
+  width: 72% !important;
+  height: 72% !important;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 40%));
 }
 
 .category-mark--selected {
-  border-color: rgb(228 197 114 / 65%);
+  border-color: rgb(239 210 138 / 72%);
   box-shadow:
-    0 2px 4px rgb(11 22 40 / 20%),
-    0 12px 24px rgb(11 22 40 / 16%),
-    0 0 0 2px rgb(201 169 98 / 30%),
-    inset 0 1px 0 rgb(255 255 255 / 14%);
+    0 1px 2px rgb(11 22 40 / 18%),
+    0 10px 22px rgb(11 22 40 / 14%),
+    0 0 0 2px rgb(201 169 98 / 28%),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
 }
 
 .group:hover .category-mark,
 a:hover .category-mark,
 .mobile-home-categories__card:hover .category-mark {
   transform: translateY(-2px);
-  border-color: rgb(228 197 114 / 48%);
-  color: #f0d78c;
+  border-color: rgb(239 210 138 / 55%);
+  color: #f6e2a8;
   box-shadow:
-    0 4px 10px rgb(11 22 40 / 22%),
-    0 16px 30px rgb(11 22 40 / 18%),
-    inset 0 1px 0 rgb(255 255 255 / 16%),
-    inset 0 -10px 18px rgb(0 0 0 / 24%);
+    0 4px 10px rgb(11 22 40 / 20%),
+    0 14px 28px rgb(11 22 40 / 16%),
+    inset 0 1px 0 rgb(255 255 255 / 14%),
+    inset 0 -8px 14px rgb(0 0 0 / 20%);
 }
 
 .mobile-home-categories__card:active .category-mark {
