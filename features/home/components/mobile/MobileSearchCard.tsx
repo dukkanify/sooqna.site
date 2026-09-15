@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Category } from "@/types";
 import { cities } from "@/shared/constants/locations";
 import { Icon } from "@/shared/ui/Icon";
@@ -7,25 +8,34 @@ import {
   HOME_SEARCH_LABELS,
   HOME_SEARCH_PRICE_OPTIONS,
 } from "@/features/home/shared/home-search-fields";
+import { SearchTypeahead } from "@/features/search/components/SearchTypeahead";
+import { SMART_SEARCH_INPUT_ID } from "@/features/search/focus-smart-search";
 
 type MobileSearchCardProps = {
   categories: Category[];
 };
 
 export function MobileSearchCard({ categories }: MobileSearchCardProps) {
+  const [category, setCategory] = useState("");
+  const [city, setCity] = useState("");
+
   return (
     <section aria-label="البحث" className="mobile-home-search-card" data-search-anchor>
       <form action="/search" className="mobile-home-search-card__panel">
-        <label className="mobile-home-search-card__input-row">
+        <div className="mobile-home-search-card__input-row">
           <span className="sr-only">{HOME_SEARCH_LABELS.query}</span>
-          <input
-            className="mobile-home-search-card__input"
+          <SearchTypeahead
+            bare
+            className="mobile-home-search-card__typeahead min-w-0 flex-1"
+            inputClassName="mobile-home-search-card__input"
+            inputId={SMART_SEARCH_INPUT_ID}
+            label=""
             name="q"
-            placeholder={HOME_SEARCH_LABELS.queryPlaceholder}
-            type="search"
+            placeholder=""
+            selectedFilters={{ category, city }}
           />
           <Icon className="mobile-home-search-card__search-icon" name="search" size={16} />
-        </label>
+        </div>
 
         <div className="mobile-home-search-card__filters">
           <div className="mobile-home-search-card__filter-row">
@@ -40,11 +50,16 @@ export function MobileSearchCard({ categories }: MobileSearchCardProps) {
                   name="grid"
                   size={11}
                 />
-                <select className="mobile-home-search-card__select" defaultValue="" name="category">
+                <select
+                  className="mobile-home-search-card__select"
+                  name="category"
+                  onChange={(event) => setCategory(event.target.value)}
+                  value={category}
+                >
                   <option value="">{HOME_SEARCH_LABELS.categoryAll}</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.slug}>
-                      {category.name}
+                  {categories.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
                     </option>
                   ))}
                 </select>
@@ -62,7 +77,12 @@ export function MobileSearchCard({ categories }: MobileSearchCardProps) {
                   name="map"
                   size={11}
                 />
-                <select className="mobile-home-search-card__select" defaultValue="" name="city">
+                <select
+                  className="mobile-home-search-card__select"
+                  name="city"
+                  onChange={(event) => setCity(event.target.value)}
+                  value={city}
+                >
                   <option value="">{HOME_SEARCH_LABELS.cityAll}</option>
                   {cities.map((item) => (
                     <option key={item.id} value={item.name}>

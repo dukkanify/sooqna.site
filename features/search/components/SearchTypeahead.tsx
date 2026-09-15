@@ -116,7 +116,10 @@ export function SearchTypeahead({
 
   useEffect(() => {
     const query = value.trim();
-    if (!query) return;
+    if (!query) {
+      setRemote([]);
+      return;
+    }
 
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
