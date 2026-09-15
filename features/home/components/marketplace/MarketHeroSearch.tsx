@@ -25,9 +25,10 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
               <div className="market-hero-search__field market-hero-search__field--query">
                 <Icon aria-hidden className="shrink-0 text-[#B8955F]" name="search" size={18} />
                 <input
-                  className="w-full bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted/55 md:text-base"
+                  aria-label={HOME_SEARCH_LABELS.query}
+                  className="w-full bg-transparent text-sm font-semibold text-ink outline-none md:text-base"
                   name="q"
-                  placeholder={HOME_SEARCH_LABELS.queryPlaceholder}
+                  placeholder=""
                   type="search"
                 />
               </div>
@@ -37,7 +38,9 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
               <span className="market-hero-search__label">{HOME_SEARCH_LABELS.category}</span>
               <span className="market-hero-search__chip">
                 <Icon aria-hidden className="market-hero-search__chip-icon" name="grid" size={14} />
+                <span className="market-hero-search__chip-text">{HOME_SEARCH_LABELS.category}</span>
                 <select
+                  aria-label={HOME_SEARCH_LABELS.category}
                   className="market-hero-search__field market-hero-search__select"
                   defaultValue=""
                   name="category"
@@ -56,7 +59,9 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
               <span className="market-hero-search__label">{HOME_SEARCH_LABELS.city}</span>
               <span className="market-hero-search__chip">
                 <Icon aria-hidden className="market-hero-search__chip-icon" name="map" size={14} />
+                <span className="market-hero-search__chip-text">{HOME_SEARCH_LABELS.city}</span>
                 <select
+                  aria-label={HOME_SEARCH_LABELS.city}
                   className="market-hero-search__field market-hero-search__select"
                   defaultValue=""
                   name="city"
@@ -75,7 +80,9 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
               <span className="market-hero-search__label">{HOME_SEARCH_LABELS.price}</span>
               <span className="market-hero-search__chip">
                 <Icon aria-hidden className="market-hero-search__chip-icon" name="wallet" size={14} />
+                <span className="market-hero-search__chip-text">{HOME_SEARCH_LABELS.price}</span>
                 <select
+                  aria-label={HOME_SEARCH_LABELS.price}
                   className="market-hero-search__field market-hero-search__select"
                   defaultValue=""
                   name="price"

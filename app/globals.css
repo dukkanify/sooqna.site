@@ -695,8 +695,25 @@ html[data-theme="dark"] .category-mark {
   position: absolute;
   inset-inline-start: 0.55rem;
   top: 50%;
-  z-index: 1;
+  z-index: 2;
   color: #9a7d4a;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.market-hero-search__chip-text {
+  position: absolute;
+  inset-inline-start: 1.85rem;
+  top: 50%;
+  z-index: 2;
+  max-width: calc(100% - 3rem);
+  overflow: hidden;
+  color: var(--color-ink);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transform: translateY(-50%);
   pointer-events: none;
 }
@@ -728,14 +745,21 @@ html[data-theme="dark"] .category-mark {
 }
 
 .market-hero-search__select {
+  position: relative;
+  z-index: 1;
   padding-inline-start: 1.85rem;
   padding-inline-end: 1.35rem;
+  color: transparent;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6560' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: left 0.55rem center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.market-hero-search__select option {
+  color: var(--color-ink);
 }
 
 .market-hero-search__field:focus,
@@ -813,12 +837,14 @@ html[data-theme="dark"] .category-mark {
     grid-column: auto;
   }
 
-  .market-hero-search__chip-icon {
+  .market-hero-search__chip-icon,
+  .market-hero-search__chip-text {
     display: none;
   }
 
   .market-hero-search__select {
     padding-inline-start: 0.9rem;
+    color: var(--color-ink);
   }
 
   .market-hero-search__field,
