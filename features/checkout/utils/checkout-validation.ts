@@ -16,8 +16,11 @@ export const CHECKOUT_ERRORS = {
   invalidEmail: "اكتب بريدًا إلكترونيًا صحيحًا.",
   invalidPhone: "اكتب رقم هاتف إماراتي صحيحًا.",
   nameRequired: "الاسم الكامل مطلوب.",
+  emirateRequired: "اختر الإمارة.",
+  addressLineRequired: "اكتب عنوان التوصيل بالكامل.",
   addressRequired: "اختر الإمارة واكتب عنوان التوصيل.",
   savedAddressRequired: "اختر عنوان التوصيل المحفوظ.",
+  fieldsIncomplete: "أكمل الحقول المطلوبة أدناه.",
 } as const;
 
 export type CheckoutReviewValidation =
@@ -90,41 +93,82 @@ export function validateCheckoutReviewStep(
   return { ok: true };
 }
 
-export function validateGuestBuyerInfo(input: GuestBuyerInfo): string | null {
+export type CheckoutFieldKey =
+  | "fullName"
+  | "email"
+  | "phone"
+  | "emirate"
+  | "addressLine"
+  | "savedAddress";
+
+export type CheckoutFieldErrors = Partial<Record<CheckoutFieldKey, string>>;
+
+export function validateGuestBuyerFields(input: GuestBuyerInfo): CheckoutFieldErrors {
+  const errors: CheckoutFieldErrors = {};
   if (input.fullName.trim().length < 2) {
-    return CHECKOUT_ERRORS.nameRequired;
+    errors.fullName = CHECKOUT_ERRORS.nameRequired;
   }
   const email = input.email.trim().toLowerCase();
   if (!isValidEmail(email)) {
-    return CHECKOUT_ERRORS.invalidEmail;
+    errors.email = CHECKOUT_ERRORS.invalidEmail;
   }
   if (!isValidUaePhone(input.phone)) {
-    return CHECKOUT_ERRORS.invalidPhone;
+    errors.phone = CHECKOUT_ERRORS.invalidPhone;
   }
-  return null;
+  return errors;
+}
+
+export function validateGuestBuyerInfo(input: GuestBuyerInfo): string | null {
+  const errors = validateGuestBuyerFields(input);
+  return (
+    errors.fullName ?? errors.email ?? errors.phone ?? null
+  );
+}
+
+export function validateGuestDeliveryFields(
+  input: GuestDeliveryInfo,
+  requiresAddress: boolean,
+): CheckoutFieldErrors {
+  const errors = validateGuestBuyerFields(input);
+
+  if (!requiresAddress || input.shippingMethod === "pickup") {
+    return errors;
+  }
+
+  const emirate = input.emirate?.trim() ?? "";
+  const addressLine = input.addressLine?.trim() ?? "";
+
+  if (!emirate) {
+    errors.emirate = CHECKOUT_ERRORS.emirateRequired;
+  }
+  if (addressLine.length < 4) {
+    errors.addressLine = CHECKOUT_ERRORS.addressLineRequired;
+  }
+
+  return errors;
+}
+
+export function firstCheckoutFieldError(
+  errors: CheckoutFieldErrors,
+): string | null {
+  return (
+    errors.fullName ??
+    errors.email ??
+    errors.phone ??
+    errors.emirate ??
+    errors.addressLine ??
+    errors.savedAddress ??
+    null
+  );
 }
 
 export function validateGuestDeliveryStep(
   input: GuestDeliveryInfo,
   requiresAddress: boolean,
 ): string | null {
-  const buyerError = validateGuestBuyerInfo(input);
-  if (buyerError) {
-    return buyerError;
-  }
-
-  if (!requiresAddress || input.shippingMethod === "pickup") {
-    return null;
-  }
-
-  const emirate = input.emirate?.trim() ?? "";
-  const addressLine = input.addressLine?.trim() ?? "";
-
-  if (!emirate || addressLine.length < 4) {
-    return CHECKOUT_ERRORS.addressRequired;
-  }
-
-  return null;
+  return firstCheckoutFieldError(
+    validateGuestDeliveryFields(input, requiresAddress),
+  );
 }
 
 export function normalizeGuestBuyer(input: GuestBuyerInfo): GuestBuyerInfo {

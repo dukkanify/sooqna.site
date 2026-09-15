@@ -18,7 +18,8 @@ import {
   formatSavedAddressLine,
   normalizeGuestBuyer,
   validateCheckoutReviewStep,
-  validateGuestDeliveryStep,
+  validateGuestDeliveryFields,
+  type CheckoutFieldErrors,
   type GuestDeliveryInfo,
 } from "@/features/checkout/utils/checkout-validation";
 import { getLocalListingById } from "@/services/storage";
@@ -131,6 +132,7 @@ export function CheckoutWizard({
   const [isLoading, setIsLoading] = useState(false);
   const [isContinuing, setIsContinuing] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<CheckoutFieldErrors>({});
   const [existingAccountHint, setExistingAccountHint] = useState(false);
 
   const shippable = listing ? isCategoryShippable(listing.categoryId) : false;
@@ -158,9 +160,51 @@ export function CheckoutWizard({
     panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function clearDeliveryErrors() {
+    setError("");
+    setFieldErrors({});
+  }
+
+  function focusFirstFieldError(nextErrors: CheckoutFieldErrors) {
+    const order: Array<keyof CheckoutFieldErrors> = [
+      "fullName",
+      "email",
+      "phone",
+      "savedAddress",
+      "emirate",
+      "addressLine",
+    ];
+    const firstKey = order.find((key) => nextErrors[key]);
+    const targetName =
+      firstKey === "savedAddress" ? "addressId" : firstKey;
+    window.requestAnimationFrame(() => {
+      if (!targetName) {
+        scrollPanelToTop();
+        return;
+      }
+      const field = document.querySelector<HTMLElement>(
+        `[name="${targetName}"]`,
+      );
+      field?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (field && "focus" in field) {
+        (field as HTMLInputElement).focus({ preventScroll: true });
+      }
+    });
+  }
+
+  function applyDeliveryFieldErrors(
+    nextErrors: CheckoutFieldErrors,
+    summary: string = CHECKOUT_ERRORS.fieldsIncomplete,
+  ) {
+    setFieldErrors(nextErrors);
+    setError(summary);
+    focusFirstFieldError(nextErrors);
+  }
+
   function advanceStep(next: CheckoutStep) {
     setStep(next);
     setError("");
+    setFieldErrors({});
     scrollPanelToTop();
   }
 
@@ -258,7 +302,7 @@ export function CheckoutWizard({
   async function handleContinueFromDelivery() {
     if (transitionLockRef.current || isContinuing) return;
 
-    setError("");
+    clearDeliveryErrors();
     const buyer = getSessionSnapshot();
     const deliveryInfo: GuestDeliveryInfo = {
       ...guestInfo,
@@ -273,15 +317,16 @@ export function CheckoutWizard({
 
     if (buyer && shippable && requiresAddress && addresses.length > 0 && !liveLocationReady) {
       if (!selectedAddressId) {
-        setError(CHECKOUT_ERRORS.savedAddressRequired);
-        scrollPanelToTop();
+        applyDeliveryFieldErrors(
+          { savedAddress: CHECKOUT_ERRORS.savedAddressRequired },
+          CHECKOUT_ERRORS.savedAddressRequired,
+        );
         return;
       }
     } else {
-      const validationError = validateGuestDeliveryStep(deliveryInfo, requiresAddress);
-      if (validationError) {
-        setError(validationError);
-        scrollPanelToTop();
+      const nextFieldErrors = validateGuestDeliveryFields(deliveryInfo, requiresAddress);
+      if (Object.keys(nextFieldErrors).length > 0) {
+        applyDeliveryFieldErrors(nextFieldErrors);
         return;
       }
     }
@@ -313,9 +358,10 @@ export function CheckoutWizard({
       };
 
       if (isGuest) {
-        const validationError = validateGuestDeliveryStep(deliveryInfo, requiresAddress);
-        if (validationError) {
-          setError(validationError);
+        const nextFieldErrors = validateGuestDeliveryFields(deliveryInfo, requiresAddress);
+        if (Object.keys(nextFieldErrors).length > 0) {
+          setStep("delivery");
+          applyDeliveryFieldErrors(nextFieldErrors);
           return;
         }
       } else if (!sessionUser) {
@@ -502,33 +548,39 @@ export function CheckoutWizard({
             <h3 className="font-black text-ink">بيانات المشتري</h3>
             <div className="grid gap-3 md:grid-cols-2">
               <Input
+                error={fieldErrors.fullName}
                 label="الاسم الكامل"
                 name="fullName"
-                onChange={(event) =>
-                  setGuestInfo((prev) => ({ ...prev, fullName: event.target.value }))
-                }
+                onChange={(event) => {
+                  setGuestInfo((prev) => ({ ...prev, fullName: event.target.value }));
+                  setFieldErrors((prev) => ({ ...prev, fullName: undefined }));
+                }}
                 required
                 value={guestInfo.fullName}
               />
               <Input
+                error={fieldErrors.email}
                 label="البريد الإلكتروني"
                 name="email"
                 onBlur={() => checkEmailExists(guestInfo.email)}
-                onChange={(event) =>
-                  setGuestInfo((prev) => ({ ...prev, email: event.target.value }))
-                }
+                onChange={(event) => {
+                  setGuestInfo((prev) => ({ ...prev, email: event.target.value }));
+                  setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                }}
                 required
                 type="email"
                 value={guestInfo.email}
               />
               <Input
                 dir="ltr"
+                error={fieldErrors.phone}
                 inputMode="tel"
                 label="رقم الجوال"
                 name="phone"
-                onChange={(event) =>
-                  setGuestInfo((prev) => ({ ...prev, phone: event.target.value }))
-                }
+                onChange={(event) => {
+                  setGuestInfo((prev) => ({ ...prev, phone: event.target.value }));
+                  setFieldErrors((prev) => ({ ...prev, phone: undefined }));
+                }}
                 required
                 type="tel"
                 value={guestInfo.phone}
@@ -594,13 +646,23 @@ export function CheckoutWizard({
                           longitude: value.longitude,
                           formattedAddress: value.formattedAddress,
                         }));
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          emirate: undefined,
+                          addressLine: undefined,
+                          savedAddress: undefined,
+                        }));
                       }}
                     />
                     {sessionUser && addresses.length > 0 && !hasLiveLocation ? (
                       <Select
+                        error={fieldErrors.savedAddress}
                         label="عنوان محفوظ"
                         name="addressId"
-                        onChange={(event) => setSelectedAddressId(event.target.value)}
+                        onChange={(event) => {
+                          setSelectedAddressId(event.target.value);
+                          setFieldErrors((prev) => ({ ...prev, savedAddress: undefined }));
+                        }}
                         options={addresses.map((item) => ({
                           label: `${item.label} — ${item.area}`,
                           value: item.id,
@@ -611,21 +673,25 @@ export function CheckoutWizard({
                     {(!sessionUser || addresses.length === 0 || hasLiveLocation) && (
                       <div className="grid gap-3">
                         <Select
+                          error={fieldErrors.emirate}
                           label="الإمارة"
                           name="emirate"
-                          onChange={(event) =>
-                            setGuestInfo((prev) => ({ ...prev, emirate: event.target.value }))
-                          }
+                          onChange={(event) => {
+                            setGuestInfo((prev) => ({ ...prev, emirate: event.target.value }));
+                            setFieldErrors((prev) => ({ ...prev, emirate: undefined }));
+                          }}
                           options={cities.map((city) => ({ label: city.name, value: city.name }))}
                           required
                           value={guestInfo.emirate}
                         />
                         <Input
+                          error={fieldErrors.addressLine}
                           label="عنوان التوصيل"
                           name="addressLine"
-                          onChange={(event) =>
-                            setGuestInfo((prev) => ({ ...prev, addressLine: event.target.value }))
-                          }
+                          onChange={(event) => {
+                            setGuestInfo((prev) => ({ ...prev, addressLine: event.target.value }));
+                            setFieldErrors((prev) => ({ ...prev, addressLine: undefined }));
+                          }}
                           placeholder="مثال: الخليج التجاري، برج الإمارات، الطابق 12"
                           required
                           value={guestInfo.addressLine}
