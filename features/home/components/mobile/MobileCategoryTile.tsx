@@ -19,9 +19,9 @@ export function MobileCategoryTile({
     <Link className="mobile-home-categories__card" href={href}>
       <span className="mobile-home-categories__thumb">
         {variant === "more" ? (
-          <CategoryMark iconSize={22} variant="more" />
+          <CategoryMark iconSize={18} variant="more" />
         ) : category ? (
-          <CategoryMark category={category} iconSize={24} />
+          <CategoryMark category={category} iconSize={20} />
         ) : null}
       </span>
       <span className="mobile-home-categories__label">{label}</span>

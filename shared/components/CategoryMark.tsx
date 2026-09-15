@@ -1,109 +1,52 @@
 import type { CSSProperties } from "react";
 import type { Category, CategoryIconName } from "@/types";
-import { Icon } from "@/shared/ui/Icon";
+import { AppImage } from "@/shared/components/AppImage";
+import { CategoryGlyph } from "@/shared/components/CategoryGlyph";
 
 type CategoryTone = {
-  /** Soft brand wash behind the glyph */
-  wash: string;
-  /** Icon / glyph color */
+  /** Accent wash used when no photo / for the icon badge */
+  accent: string;
+  /** Glyph color on the badge */
   ink: string;
-  /** Accent ring (gold) */
-  ring: string;
-  /** Optional deeper face for hero categories */
-  face?: "navy" | "soft";
 };
 
-/**
- * Brand-aligned tones — navy / gold / warm ivory only.
- * Soft faces use a denser wash so marks read clearly on the light page.
- */
+/** Bold brand accents — navy / gold / forest only (no rainbow). */
 const CATEGORY_TONES: Record<string, CategoryTone> = {
-  cars: {
-    face: "navy",
-    wash: "linear-gradient(145deg, #0b1628 0%, #1c2d48 58%, #243a58 100%)",
-    ink: "#c9a962",
-    ring: "rgb(201 169 98 / 55%)",
-  },
-  electronics: {
-    face: "soft",
-    wash: "linear-gradient(160deg, #efe6d4 0%, #e4e9f2 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 48%)",
-  },
-  jobs: {
-    face: "soft",
-    wash: "linear-gradient(160deg, #e4e9f2 0%, #ebe4d8 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 42%)",
-  },
-  furniture: {
-    face: "soft",
-    wash: "linear-gradient(160deg, #f0e4cf 0%, #ebe6dc 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 50%)",
-  },
-  fashion: {
-    face: "navy",
-    wash: "linear-gradient(145deg, #122036 0%, #1a2a44 55%, #2a3f5c 100%)",
-    ink: "#c9a962",
-    ring: "rgb(201 169 98 / 50%)",
-  },
-  mobiles: {
-    face: "soft",
-    wash: "linear-gradient(160deg, #e2e7f0 0%, #dce2ec 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 44%)",
-  },
-  "real-estate": {
-    face: "soft",
-    wash: "linear-gradient(160deg, #dcebe3 0%, #e4e9f2 100%)",
-    ink: "#0b1628",
-    ring: "rgb(45 106 79 / 38%)",
-  },
-  services: {
-    face: "soft",
-    wash: "linear-gradient(160deg, #ebe4d8 0%, #f0e4cf 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 46%)",
-  },
-  pets: {
-    face: "soft",
-    wash: "linear-gradient(160deg, #f0e4cf 0%, #ebe6dc 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 48%)",
-  },
-  sports: {
-    face: "soft",
-    wash: "linear-gradient(160deg, #e4e9f2 0%, #ebe4d8 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 42%)",
-  },
+  cars: { accent: "linear-gradient(145deg, #0b1628 0%, #1a2f4d 100%)", ink: "#f0d78c" },
+  electronics: { accent: "linear-gradient(145deg, #152238 0%, #243a58 100%)", ink: "#ffffff" },
+  jobs: { accent: "linear-gradient(145deg, #1a2438 0%, #2a3a52 100%)", ink: "#f0d78c" },
+  furniture: { accent: "linear-gradient(145deg, #2a2418 0%, #3d3424 100%)", ink: "#f0d78c" },
+  fashion: { accent: "linear-gradient(145deg, #0b1628 0%, #2a2418 100%)", ink: "#f0d78c" },
+  mobiles: { accent: "linear-gradient(145deg, #121c2e 0%, #1e2d48 100%)", ink: "#ffffff" },
+  "real-estate": { accent: "linear-gradient(145deg, #143528 0%, #1e4a38 100%)", ink: "#ffffff" },
+  services: { accent: "linear-gradient(145deg, #1c1810 0%, #3a3020 100%)", ink: "#f0d78c" },
+  pets: { accent: "linear-gradient(145deg, #2a2418 0%, #1a2438 100%)", ink: "#f0d78c" },
+  sports: { accent: "linear-gradient(145deg, #152238 0%, #1a3a2e 100%)", ink: "#ffffff" },
 };
 
 const DEFAULT_TONE: CategoryTone = {
-  face: "soft",
-  wash: "linear-gradient(160deg, #efe6d4 0%, #e4e9f2 100%)",
-  ink: "#0b1628",
-  ring: "rgb(201 169 98 / 44%)",
+  accent: "linear-gradient(145deg, #0b1628 0%, #1c2d48 100%)",
+  ink: "#f0d78c",
 };
 
 const MORE_TONE: CategoryTone = {
-  face: "navy",
-  wash: "linear-gradient(145deg, #0b1628 0%, #243049 100%)",
+  accent: "linear-gradient(145deg, #060d18 0%, #0b1628 45%, #1a2a44 100%)",
   ink: "#c9a962",
-  ring: "rgb(255 255 255 / 14%)",
 };
 
 type CategoryMarkProps = {
-  category?: Pick<Category, "id" | "icon" | "name">;
+  category?: Pick<Category, "id" | "icon" | "name" | "imageUrl">;
   className?: string;
-  /** Pixel size of the glyph inside the mark */
+  /** Pixel size of the glyph */
   iconSize?: number;
   selected?: boolean;
-  /** "more" uses the navy/gold grid treatment */
   variant?: "category" | "more";
 };
 
+/**
+ * Strong marketplace category tile:
+ * full-bleed photo + heavy navy scrim + large filled glyph badge.
+ */
 export function CategoryMark({
   category,
   className = "",
@@ -111,32 +54,52 @@ export function CategoryMark({
   selected = false,
   variant = "category",
 }: CategoryMarkProps) {
-  const tone =
-    variant === "more"
-      ? MORE_TONE
-      : category
-        ? (CATEGORY_TONES[category.id] ?? DEFAULT_TONE)
-        : DEFAULT_TONE;
+  const isMore = variant === "more";
+  const tone = isMore
+    ? MORE_TONE
+    : category
+      ? (CATEGORY_TONES[category.id] ?? DEFAULT_TONE)
+      : DEFAULT_TONE;
 
-  const iconName: CategoryIconName | "grid" =
-    variant === "more" ? "grid" : (category?.icon ?? "grid");
+  const iconName: CategoryIconName | "grid" = isMore
+    ? "grid"
+    : (category?.icon ?? "grid");
+
+  // Always use photo mode for categories — AppImage falls back by category id
+  // when imageUrl is missing from the store payload.
+  const hasPhoto = !isMore && Boolean(category?.id);
 
   return (
     <span
       aria-hidden
-      className={`category-mark ${tone.face === "navy" ? "category-mark--navy" : "category-mark--soft"} ${
+      className={`category-mark ${hasPhoto ? "category-mark--photo" : "category-mark--solid"} ${
         selected ? "category-mark--selected" : ""
-      } ${className}`.trim()}
+      } ${isMore ? "category-mark--more" : ""} ${className}`.trim()}
       style={
         {
-          "--category-mark-wash": tone.wash,
+          "--category-mark-accent": tone.accent,
           "--category-mark-ink": tone.ink,
-          "--category-mark-ring": tone.ring,
         } as CSSProperties
       }
     >
-      <span className="category-mark__glow" />
-      <Icon className="category-mark__icon" name={iconName} size={iconSize} />
+      {hasPhoto && category ? (
+        <AppImage
+          alt=""
+          aria-hidden
+          className="category-mark__photo"
+          fallbackCategory={category.id}
+          fill
+          sizes="96px"
+          src={category.imageUrl}
+        />
+      ) : null}
+
+      <span className="category-mark__scrim" />
+      <span className="category-mark__shine" />
+
+      <span className="category-mark__badge">
+        <CategoryGlyph className="category-mark__glyph" name={iconName} size={iconSize} />
+      </span>
     </span>
   );
 }

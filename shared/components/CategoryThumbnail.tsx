@@ -15,7 +15,7 @@ export function CategoryThumbnail({
   selected = false,
   variant = "default",
 }: CategoryThumbnailProps) {
-  const iconSize = variant === "compact" ? 22 : 26;
+  const iconSize = variant === "compact" ? 18 : 22;
 
   return (
     <span

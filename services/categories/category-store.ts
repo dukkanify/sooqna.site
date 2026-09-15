@@ -99,6 +99,8 @@ export const getEnabledCategories = cache(async (): Promise<Category[]> => {
       icon: category.icon,
       listingCount: counts.get(category.id) ?? 0,
       subcategories: [...category.subcategories],
+      imageUrl: category.imageUrl,
+      featuredListingSlug: category.featuredListingSlug,
     }));
 });
 
