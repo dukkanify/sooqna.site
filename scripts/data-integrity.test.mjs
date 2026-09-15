@@ -29,8 +29,8 @@ function isConfirmedFixtureListing(listing) {
   if (id && isMockSeedListingId(id)) return true;
   if (slug && isMockSeedListingId(slug)) return true;
   if (slug === "office-business-bay") return true;
-  if (/^e2e-preview-[a-f0-9]+$/i.test(slug)) return true;
-  if (/^e2e-[a-f0-9]{8}$/i.test(slug)) return true;
+  if (/^e2e-/i.test(id) || /^e2e-/i.test(slug)) return true;
+  if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(id)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(slug)) return true;
   return false;
 }
@@ -41,6 +41,7 @@ function needsManualReviewListing(listing) {
   const sellerName = listing.seller?.name?.trim() ?? "";
   return (
     /^إعلان تجريبي\b/.test(title) ||
+    /^إعلان مرفوض\b/.test(title) ||
     /^E2E Preview Test Listing$/i.test(title) ||
     QA_SELLER_NAMES.has(sellerName)
   );
@@ -57,6 +58,8 @@ test("policy file still encodes fixture and no-seed-on-vercel rules", () => {
   assert.match(src, /qa26-\[a-z\]\+-\[a-f0-9\]\+/);
   assert.match(src, /needsManualReviewListing/);
   assert.match(src, /FIXTURE_LISTING_SQL/);
+  assert.match(src, /id ~ '\^e2e-'/);
+  assert.match(src, /slug ~ '\^e2e-'/);
   assert.doesNotMatch(
     src,
     /OR COALESCE\(payload->>'title', ''\) LIKE 'إعلان تجريبي%'/,
@@ -85,6 +88,24 @@ test("confirmed mock/QA listings are fixtures by id or slug only", () => {
       id: "x",
       slug: "e2e-a53b6e42",
       title: "E2E Preview Test Listing",
+    }),
+    true,
+  );
+  assert.equal(
+    isConfirmedFixtureListing({
+      id: "e2e-001ab765",
+      slug: "e2e-reject-001ab765",
+      title: "إعلان مرفوض 001ab765",
+      seller: { name: "Preview E2E User" },
+    }),
+    true,
+  );
+  assert.equal(
+    isConfirmedFixtureListing({
+      id: "e2e-14871a0c",
+      slug: "e2e-reject-14871a0c",
+      title: "إعلان مرفوض 14871a0c",
+      seller: { name: "Preview E2E User" },
     }),
     true,
   );

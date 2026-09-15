@@ -37,9 +37,14 @@ function looksLikeQaTitleOrName(listing: FixtureListingRef): boolean {
   const sellerName = listing.seller?.name?.trim() ?? "";
   return (
     /^إعلان تجريبي\b/.test(title) ||
+    /^إعلان مرفوض\b/.test(title) ||
     /^E2E Preview Test Listing$/i.test(title) ||
     QA_SELLER_NAMES.has(sellerName)
   );
+}
+
+function isE2eFixtureKey(value: string): boolean {
+  return /^e2e-/i.test(value);
 }
 
 /**
@@ -53,8 +58,8 @@ export function isConfirmedFixtureListing(listing: FixtureListingRef): boolean {
   if (id && isMockSeedListingId(id)) return true;
   if (slug && isMockSeedListingId(slug)) return true;
   if (slug === "office-business-bay") return true;
-  if (/^e2e-preview-[a-f0-9]+$/i.test(slug)) return true;
-  if (/^e2e-[a-f0-9]{8}$/i.test(slug)) return true;
+  if (isE2eFixtureKey(id) || isE2eFixtureKey(slug)) return true;
+  if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(id)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(slug)) return true;
   return false;
 }
@@ -81,8 +86,9 @@ export const FIXTURE_LISTING_SQL = `(
   id ~ '^listing-(car|re|mob|elec|furn|svc|job|fashion|pets|kids|books|sports|food)-[0-9]{3}$'
   OR id ~ '^listing-extra-[0-9]+$'
   OR id ~ '^user-listing-[0-9]{3}$'
-  OR slug ~ '^e2e-preview-[a-f0-9]+$'
-  OR slug ~ '^e2e-[a-f0-9]{8}$'
+  OR id ~ '^e2e-'
+  OR slug ~ '^e2e-'
+  OR id ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR slug ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR slug = 'office-business-bay'
 )`;
