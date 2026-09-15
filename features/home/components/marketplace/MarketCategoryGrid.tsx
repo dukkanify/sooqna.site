@@ -46,7 +46,7 @@ export function MarketCategoryGrid({ categories }: MarketCategoryGridProps) {
               href={`/categories/${category.slug}`}
             >
               <span className="relative size-[5.25rem] md:size-[5.75rem]">
-                <CategoryMark category={category} iconSize={30} />
+                <CategoryMark category={category} iconSize={34} />
               </span>
               <span className="max-w-full truncate text-xs font-bold text-ink">
                 {MOBILE_MAIN_CATEGORY_LABELS[category.id] ?? category.name}

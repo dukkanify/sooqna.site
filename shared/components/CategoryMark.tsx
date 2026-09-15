@@ -10,28 +10,28 @@ type CategoryTone = {
   ink: string;
 };
 
-/** Bold brand accents — navy / gold / forest only (no rainbow). */
+/** Bold brand accents — navy plates; bright ink for max glyph clarity. */
 const CATEGORY_TONES: Record<string, CategoryTone> = {
-  cars: { accent: "linear-gradient(145deg, #0b1628 0%, #1a2f4d 100%)", ink: "#f0d78c" },
+  cars: { accent: "linear-gradient(145deg, #0b1628 0%, #1a2f4d 100%)", ink: "#ffffff" },
   electronics: { accent: "linear-gradient(145deg, #152238 0%, #243a58 100%)", ink: "#ffffff" },
-  jobs: { accent: "linear-gradient(145deg, #1a2438 0%, #2a3a52 100%)", ink: "#f0d78c" },
-  furniture: { accent: "linear-gradient(145deg, #2a2418 0%, #3d3424 100%)", ink: "#f0d78c" },
-  fashion: { accent: "linear-gradient(145deg, #0b1628 0%, #2a2418 100%)", ink: "#f0d78c" },
+  jobs: { accent: "linear-gradient(145deg, #1a2438 0%, #2a3a52 100%)", ink: "#ffffff" },
+  furniture: { accent: "linear-gradient(145deg, #2a2418 0%, #3d3424 100%)", ink: "#ffffff" },
+  fashion: { accent: "linear-gradient(145deg, #0b1628 0%, #2a2418 100%)", ink: "#ffffff" },
   mobiles: { accent: "linear-gradient(145deg, #121c2e 0%, #1e2d48 100%)", ink: "#ffffff" },
   "real-estate": { accent: "linear-gradient(145deg, #143528 0%, #1e4a38 100%)", ink: "#ffffff" },
-  services: { accent: "linear-gradient(145deg, #1c1810 0%, #3a3020 100%)", ink: "#f0d78c" },
-  pets: { accent: "linear-gradient(145deg, #2a2418 0%, #1a2438 100%)", ink: "#f0d78c" },
+  services: { accent: "linear-gradient(145deg, #1c1810 0%, #3a3020 100%)", ink: "#ffffff" },
+  pets: { accent: "linear-gradient(145deg, #2a2418 0%, #1a2438 100%)", ink: "#ffffff" },
   sports: { accent: "linear-gradient(145deg, #152238 0%, #1a3a2e 100%)", ink: "#ffffff" },
 };
 
 const DEFAULT_TONE: CategoryTone = {
   accent: "linear-gradient(145deg, #0b1628 0%, #1c2d48 100%)",
-  ink: "#f0d78c",
+  ink: "#ffffff",
 };
 
 const MORE_TONE: CategoryTone = {
   accent: "linear-gradient(145deg, #060d18 0%, #0b1628 45%, #1a2a44 100%)",
-  ink: "#c9a962",
+  ink: "#ffe6a8",
 };
 
 type CategoryMarkProps = {
