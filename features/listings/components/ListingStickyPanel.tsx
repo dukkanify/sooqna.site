@@ -189,9 +189,9 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const isOwn = user ? isOwnListing(listing, user) : false;
   const tel = getTelHref(listing);
   const whatsapp = getWhatsAppHref(listing, getListingCanonicalUrl(listing));
-  const showContactRail = Boolean(tel || whatsapp);
-  const showPhoneInRail = Boolean(tel);
   const primaryLabel = getListingActionLabel(listing, config.primaryAction);
+  const showGoldCta = !isOwn && config.showBuyNow;
+  const showContactIcons = !isOwn;
 
   function handleBuyNow() {
     if (listing.status !== "active") {
@@ -214,8 +214,10 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   return (
     <LocalizedTree>
     <div className="mobile-sticky-bar">
-      <div className="mobile-sticky-bar__inner">
-        {!isOwn && config.showBuyNow ? (
+      <div
+        className={`mobile-sticky-bar__inner${showGoldCta ? "" : " mobile-sticky-bar__inner--icons-only"}`}
+      >
+        {showGoldCta ? (
           <button
             className="focus-ring mobile-sticky-bar__cta"
             onClick={handleBuyNow}
@@ -224,18 +226,9 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
             <Icon name="package" size={18} />
             {primaryLabel}
           </button>
-        ) : !isOwn ? (
-          <div className="mobile-sticky-bar__cta-shell">
-            <ListingPrimaryAction
-              action={config.primaryAction}
-              className="mobile-sticky-bar__cta"
-              listing={listing}
-              size="sm"
-            />
-          </div>
         ) : null}
 
-        {showContactRail ? (
+        {showContactIcons ? (
           <div className="mobile-sticky-bar__actions">
             <StartChatButton
               className="mobile-sticky-bar__icon mobile-sticky-bar__icon--chat"
@@ -256,25 +249,15 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
               </MobileContactIconButton>
             ) : null}
 
-            {showPhoneInRail ? (
+            {tel ? (
               <MobileContactIconButton
                 ariaLabel="اتصال بالبائع"
                 className="mobile-sticky-bar__icon--call"
-                href={tel ?? undefined}
+                href={tel}
               >
                 <Icon name="phone-call" size={19} />
               </MobileContactIconButton>
             ) : null}
-          </div>
-        ) : !isOwn ? (
-          <div className="mobile-sticky-bar__actions">
-            <StartChatButton
-              className="mobile-sticky-bar__icon mobile-sticky-bar__icon--chat"
-              layout="icon"
-              listing={listing}
-              size="sm"
-              variant="ghost"
-            />
           </div>
         ) : null}
       </div>
