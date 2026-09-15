@@ -13,16 +13,16 @@ export async function getMarketHeroBackground(): Promise<string> {
 
 export async function getMarketQuickSearches() {
   return [
-    { href: "/search?q=Mercedes", label: "Mercedes" },
-    { href: "/search?q=Patrol", label: "Patrol" },
-    { href: "/search?q=جزيرة+ياس", label: "Yas Island" },
-    { href: "/search?q=كورنيش+أبوظبي", label: "Abu Dhabi Corniche" },
-    { href: "/search?q=شقة", label: "Apartment" },
-    { href: "/search?q=فيلا", label: "Villa" },
-    { href: "/search?q=iPhone", label: "iPhone" },
-    { href: "/search?q=مكتب", label: "Office" },
-    { href: "/search?q=MacBook", label: "MacBook" },
-    { href: "/search?q=Land+Cruiser", label: "Land Cruiser" },
+    { href: "/search?q=مرسيدس", label: "مرسيدس" },
+    { href: "/search?q=باترول", label: "باترول" },
+    { href: "/search?q=جزيرة+ياس", label: "جزيرة ياس" },
+    { href: "/search?q=كورنيش+أبوظبي", label: "كورنيش أبوظبي" },
+    { href: "/search?q=شقة", label: "شقة" },
+    { href: "/search?q=فيلا", label: "فيلا" },
+    { href: "/search?q=آيفون", label: "آيفون" },
+    { href: "/search?q=مكتب", label: "مكتب" },
+    { href: "/search?q=ماك+بوك", label: "ماك بوك" },
+    { href: "/search?q=لاند+كروزر", label: "لاند كروزر" },
   ];
 }
 

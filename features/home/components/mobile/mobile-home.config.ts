@@ -36,9 +36,9 @@ export const MOBILE_APP_LINKS = {
 export const MOBILE_TRENDING_SEARCHES = [
   { emoji: "⌚", href: "/search?q=ساعات", label: "ساعات" },
   { emoji: "🏢", href: "/search?q=شقة", label: "شقق" },
-  { emoji: "📱", href: "/search?q=iPhone", label: "iPhone" },
+  { emoji: "📱", href: "/search?q=آيفون", label: "آيفون" },
   { emoji: "🏡", href: "/search?q=فيلا", label: "فلل" },
-  { emoji: "🚗", href: "/search?q=Land+Cruiser", label: "Land Cruiser" },
+  { emoji: "🚗", href: "/search?q=لاند+كروزر", label: "لاند كروزر" },
 ] as const;
 
 /** @deprecated Unused on current homepage — kept empty so leftover imports never show fake KPIs */
