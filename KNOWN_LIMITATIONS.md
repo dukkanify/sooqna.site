@@ -20,14 +20,15 @@ See [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md).
 
 | Area | Limitation |
 |------|------------|
-| **Data storage** | **Users, OTP, notifications, listings, featured payments, orders, disputes, escrow evidence, jobs/viewings/quotes, webhook claims, dispute reminders** prefer Postgres (`DATABASE_URL`). Chat/favorites/some admin JSON may still use file `data-store`. |
+| **Data storage** | Users/OTP/notifications/listings/orders/disputes/evidence prefer Postgres. Wallets, favorites, chat, and admin settings use durable collections (Postgres or `.data` files). |
 | **Sessions** | Signed HMAC session cookies (`SESSION_SECRET` / `NEXTAUTH_SECRET`). Client cannot forge profiles via `/api/auth/session`. |
-| **Seller payouts** | Escrow release creates a Stripe Connect Transfer when the seller’s Express account is ACTIVE with payouts enabled (`/wallet` onboarding + `/admin/stripe`). Otherwise release stays ledger-only (`connectPayoutSkipReason`). Set `ENABLE_STRIPE_CONNECT_PAYOUTS=false` to force ledger-only. |
-| **Escrow evidence** | Seller can upload photos/video for مضمون verification; durable evidence records in Postgres. Object storage (S3) not yet wired. |
-| **Images** | Client-side compression / data URLs; no cloud object storage |
+| **Seller payouts** | Connect Transfer on release when seller Express is ACTIVE. Skipped payouts retry via daily `/api/cron/escrow-maintenance`. `ENABLE_STRIPE_CONNECT_PAYOUTS=false` forces ledger-only. |
+| **Escrow evidence** | Uploads via `/api/uploads` to durable local `/api/media` (or S3 when configured). Metadata prefers Postgres. |
+| **Images** | Prefer `/api/uploads`; listings fall back to client compression if upload fails. |
 | **RBAC** | Module-level flags (not full View/Add/Edit/Delete/Approve/Export matrix). Super Admin empty permissions; Sub Admin assigned modules; Save Permissions required. |
 | **UAE PASS** | Hidden until `NEXT_PUBLIC_ENABLE_UAE_PASS=true` |
-| **Automated tests** | None — validate with `npm run lint`, `npm run build`, and browser QA |
+| **Auto-release** | Daily `/api/cron/escrow-maintenance` after `escrowHoldDays` once seller proof exists (needs `CRON_SECRET` in production). |
+| **Automated tests** | `npm test` covers auth, integrity, filters, buy-again, escrow auto-release eligibility. No Playwright E2E yet. |
 
 ## Production redeploy note (2026-08-27)
 

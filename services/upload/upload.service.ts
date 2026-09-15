@@ -1,16 +1,40 @@
 import { persistImageFiles } from "@/shared/utils/persist-images";
 
 /**
- * Demo: compress + data URL in localStorage.
- * Production: swap provider via NEXT_PUBLIC_UPLOAD_PROVIDER (cloudinary | s3 | supabase).
+ * Listing image upload helper.
+ * Prefer server `/api/uploads` when available; otherwise compress to data URLs.
  */
 export async function uploadListingImages(files: File[]): Promise<string[]> {
-  const provider = process.env.NEXT_PUBLIC_UPLOAD_PROVIDER;
+  if (typeof window !== "undefined") {
+    const urls: string[] = [];
+    for (const file of files) {
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("folder", "listings");
+        const response = await fetch("/api/uploads", {
+          method: "POST",
+          body: form,
+          credentials: "same-origin",
+        });
+        if (response.ok) {
+          const data = (await response.json()) as { url?: string };
+          if (data.url) {
+            urls.push(data.url);
+            continue;
+          }
+        }
+      } catch {
+        // fall through to local compression
+      }
+    }
+    if (urls.length === files.length) return urls;
+  }
 
+  const provider = process.env.NEXT_PUBLIC_UPLOAD_PROVIDER;
   if (provider && provider !== "local") {
-    // Production hook — wire to CDN when backend is available
     console.warn(
-      `[upload] Provider "${provider}" not wired yet — falling back to local compression.`,
+      `[upload] Provider "${provider}" not fully wired — falling back to local compression.`,
     );
   }
 
