@@ -9,6 +9,8 @@ import {
   HOME_FEED_REVALIDATE_SECONDS,
   LISTINGS_CACHE_TAG,
 } from "@/services/listings/listings-cache";
+import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
+import { unsplashUrl, verifiedPhotoPools } from "@/shared/constants/image-fallbacks";
 
 export type HomeListingCard = Listing;
 export { slimListingForCard };
@@ -28,25 +30,97 @@ export type HomeFeed = {
 };
 
 const HOME_SECTION_LIMIT = 13;
-const FEATURED_FETCH = 16;
+const FEATURED_FETCH = 24;
 const PREVIEW_SHOW = 4;
 const FEATURED_SHOW = 6;
-const CATALOG_FETCH = 96;
+const CATALOG_FETCH = 160;
 const NEARBY_SHOW = 12;
 const SECTION_SHOW = 4;
 
-function takeUnique(
+/** Strip query/size so the same Unsplash photo collides across listings. */
+function coverKey(url: string | undefined): string {
+  if (!url?.trim()) return "";
+  try {
+    const parsed = new URL(url.trim());
+    return `${parsed.hostname}${parsed.pathname}`.toLowerCase();
+  } catch {
+    return url.trim().split("?")[0]?.toLowerCase() ?? "";
+  }
+}
+
+function uniqueUrls(urls: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of urls) {
+    const key = coverKey(url);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(url);
+  }
+  return out;
+}
+
+/** Candidate covers for a listing: own media first, then regenerated product gallery. */
+function coverCandidates(listing: Listing): string[] {
+  const own = [
+    ...(listing.images ?? []),
+    listing.imageUrl ?? "",
+  ]
+    .map((url) => url?.trim())
+    .filter((url): url is string => Boolean(url));
+
+  const generated = galleryForListingProduct({
+    categoryId: listing.categoryId,
+    count: 8,
+    seed: `${listing.id}-home-cover`,
+    title: listing.title,
+    titleEnglish: listing.titleEnglish,
+  });
+
+  const categoryPool = verifiedPhotoPools[
+    listing.categoryId as keyof typeof verifiedPhotoPools
+  ];
+  const categoryUrls = categoryPool
+    ? categoryPool.map((photoId) => unsplashUrl(photoId, 1200))
+    : [];
+
+  return uniqueUrls([...own, ...generated, ...categoryUrls]);
+}
+
+function withCover(listing: Listing, cover: string): Listing {
+  return {
+    ...listing,
+    imageUrl: cover,
+    images: [cover],
+  };
+}
+
+/**
+ * Pick listings without repeating ids OR cover photos.
+ * If a listing's cover was already shown, rotate to another candidate image;
+ * if none left, skip it and keep scanning the pool.
+ */
+function takeDiverse(
   listings: Listing[],
   limit: number,
   usedIds: Set<string>,
+  usedCovers: Set<string>,
 ): Listing[] {
   const out: Listing[] = [];
+
   for (const listing of listings) {
-    if (usedIds.has(listing.id)) continue;
-    usedIds.add(listing.id);
-    out.push(listing);
     if (out.length >= limit) break;
+    if (usedIds.has(listing.id)) continue;
+
+    const candidates = coverCandidates(listing);
+    const fresh = candidates.find((url) => !usedCovers.has(coverKey(url)));
+    if (!fresh) continue;
+
+    usedIds.add(listing.id);
+    usedCovers.add(coverKey(fresh));
+    out.push(withCover(listing, fresh));
   }
+
   return out;
 }
 
@@ -71,32 +145,44 @@ async function buildHomeFeed(): Promise<HomeFeed> {
   ]);
 
   const usedIds = new Set<string>();
+  const usedCovers = new Set<string>();
   const activeFeatured = featuredRows.filter((listing) =>
     isListingFeaturedActive(listing),
   );
 
-  const preview = takeUnique(activeFeatured, PREVIEW_SHOW, usedIds);
-  const featured = takeUnique(activeFeatured, FEATURED_SHOW, usedIds);
-  const nearbySource = takeUnique(catalogRows, NEARBY_SHOW, usedIds);
+  // Prefer featured pool first, then backfill from catalog so preview/featured stay full.
+  const featuredPool = [
+    ...activeFeatured,
+    ...catalogRows.filter((listing) => !activeFeatured.some((item) => item.id === listing.id)),
+  ];
+
+  const preview = takeDiverse(featuredPool, PREVIEW_SHOW, usedIds, usedCovers);
+  const featured = takeDiverse(featuredPool, FEATURED_SHOW, usedIds, usedCovers);
+  const nearbySource = takeDiverse(catalogRows, NEARBY_SHOW, usedIds, usedCovers);
 
   const sections = sectionDefs.map((section) => ({
     ...section,
-    items: takeUnique(
+    items: takeDiverse(
       catalogRows.filter((listing) => listing.categoryId === section.categoryId),
       SECTION_SHOW,
       usedIds,
+      usedCovers,
     ),
   }));
 
   return { featured, nearbySource, preview, sections };
 }
 
-const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v11-hide-sony-junk"], {
-  revalidate: HOME_FEED_REVALIDATE_SECONDS,
-  tags: [LISTINGS_CACHE_TAG],
-});
+const getHomeFeedCached = unstable_cache(
+  buildHomeFeed,
+  ["sooqna-home-feed-v12-unique-covers"],
+  {
+    revalidate: HOME_FEED_REVALIDATE_SECONDS,
+    tags: [LISTINGS_CACHE_TAG],
+  },
+);
 
-/** Cached homepage slices — cover-only cards, capped sections, no cross-section duplicates. */
+/** Cached homepage slices — unique ids and unique cover photos across sections. */
 export const getHomeFeed = cache(async (): Promise<HomeFeed> => {
   return getHomeFeedCached();
 });

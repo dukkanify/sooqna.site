@@ -28,14 +28,29 @@ function listingMatchesPreviewSlug(listing: Listing, needle: string): boolean {
   return slug === needle || slug.startsWith(`${needle}-`) || slug.includes(needle);
 }
 
-/** Ranked catalog cards for the phone screen — real covers only, no mock fallback. */
+/** Ranked catalog cards for the phone screen — real covers only, unique photos. */
 export function resolveAppPreviewListings(listings: Listing[]): Listing[] {
-  const seen = new Set<string>();
+  const seenIds = new Set<string>();
+  const seenCovers = new Set<string>();
   const picked: Listing[] = [];
 
+  const coverKey = (url: string | undefined) => {
+    if (!url?.trim()) return "";
+    try {
+      const parsed = new URL(url.trim());
+      return `${parsed.hostname}${parsed.pathname}`.toLowerCase();
+    } catch {
+      return url.trim().split("?")[0]?.toLowerCase() ?? "";
+    }
+  };
+
   const take = (listing?: Listing) => {
-    if (!listing || seen.has(listing.id) || !hasCover(listing)) return;
-    seen.add(listing.id);
+    if (!listing || seenIds.has(listing.id) || !hasCover(listing)) return;
+    const cover = getListingImageUrl(listing);
+    const key = coverKey(cover);
+    if (key && seenCovers.has(key)) return;
+    seenIds.add(listing.id);
+    if (key) seenCovers.add(key);
     picked.push(listing);
   };
 
