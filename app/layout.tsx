@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { BrandJsonLd } from "@/shared/components/BrandJsonLd";
 import { DeferredOfflineBanner } from "@/shared/components/DeferredOfflineBanner";
+import { ScrollToTopOnNavigate } from "@/shared/components/ScrollToTopOnNavigate";
 import { NotificationPushRegistrar } from "@/features/notifications/NotificationPushRegistrar";
 import { MaintenanceGate } from "@/shared/components/MaintenanceGate";
 import { ToastProvider } from "@/shared/components/ToastProvider";
@@ -107,6 +108,7 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
           <LiveLocalizer />
           <ToastProvider>
+            <ScrollToTopOnNavigate />
             <NotificationPushRegistrar />
             <BrandJsonLd />
             <DeferredOfflineBanner />
