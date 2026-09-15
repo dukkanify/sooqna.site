@@ -34,23 +34,30 @@ export function SearchResultsToolbar({
 
   return (
     <LocalizedTree>
-    <div className="mb-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-ink">
-          <span className="text-lg font-bold text-primary">
-            {resultCount.toLocaleString("ar-AE")}
-          </span>{" "}
-          إعلان
-        </p>
+      <div className="mb-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-ink">
+            <span className="text-lg font-bold text-primary">
+              {resultCount.toLocaleString("ar-AE")}
+            </span>{" "}
+            إعلان
+          </p>
+          <SavedSearches
+            currentLabel={buildLabel(selectedFilters, categories)}
+            currentUrl={currentUrl}
+          />
+        </div>
+        <SearchQuickFilters
+          basePath={basePath}
+          categories={categories}
+          selectedFilters={selectedFilters}
+        />
+        <SearchFilterChips
+          basePath={basePath}
+          categories={categories}
+          selectedFilters={selectedFilters}
+        />
       </div>
-      <SearchQuickFilters categories={categories} selectedFilters={selectedFilters} />
-      <SearchFilterChips
-        basePath={basePath}
-        categories={categories}
-        selectedFilters={selectedFilters}
-      />
-      <SavedSearches currentLabel={buildLabel(selectedFilters, categories)} currentUrl={currentUrl} />
-    </div>
     </LocalizedTree>
   );
 }

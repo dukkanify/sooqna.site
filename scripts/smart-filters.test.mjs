@@ -133,4 +133,8 @@ test("mobile drawer still has apply and reset", () => {
   assert.match(src, /تطبيق الفلاتر/);
   assert.match(src, /إعادة تعيين/);
   assert.match(src, /CategorySmartFields/);
+  assert.match(src, /فلاتر البحث/);
+  const quick = read("features/search/components/SearchQuickFilters.tsx");
+  assert.match(quick, /كل الإمارات/);
+  assert.match(quick, /حتى 50 ألف/);
 });

@@ -21,7 +21,6 @@ import {
 } from "@/services/categories";
 import { getSearchSuggestionTitles } from "@/services/listings/home-feed";
 import { countSearchListings, searchListings } from "@/services/listings";
-import { resultsCountLabel } from "@/shared/i18n/count-labels";
 import { getRequestLocale } from "@/shared/i18n/locale";
 import { tx } from "@/shared/i18n/tx";
 
@@ -136,7 +135,7 @@ export default async function CategoryPage({
             ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[18rem_1fr] xl:grid-cols-[20rem_1fr]">
+          <div className="grid gap-4 lg:grid-cols-[18rem_1fr] lg:gap-6 xl:grid-cols-[20rem_1fr]">
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <SearchFilters
                 action={`/categories/${category.slug}`}
@@ -151,25 +150,19 @@ export default async function CategoryPage({
             </aside>
 
             <div>
-              <div className="mt-0 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-ink">
-                  {resultsCountLabel(total, locale)}
-                </p>
-                {ESCROW_CHECKOUT_CATEGORIES.has(category.id) ? (
+              {ESCROW_CHECKOUT_CATEGORIES.has(category.id) ? (
+                <div className="mb-3">
                   <Badge variant="escrow">ضمان مالي على الإعلانات المؤهلة</Badge>
-                ) : null}
-              </div>
-
-              <div className="mt-5">
-                <SearchResultsList
-                  basePath={`/categories/${category.slug}`}
-                  categoryId={category.id}
-                  categories={categories}
-                  listings={listings}
-                  selectedFilters={selectedFilters}
-                  serverTotal={total}
-                />
-              </div>
+                </div>
+              ) : null}
+              <SearchResultsList
+                basePath={`/categories/${category.slug}`}
+                categoryId={category.id}
+                categories={categories}
+                listings={listings}
+                selectedFilters={selectedFilters}
+                serverTotal={total}
+              />
             </div>
           </div>
         </section>
