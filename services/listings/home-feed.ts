@@ -91,7 +91,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
   return { featured, nearbySource, preview, sections };
 }
 
-const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v10-hide-e2e"], {
+const getHomeFeedCached = unstable_cache(buildHomeFeed, ["sooqna-home-feed-v11-hide-sony-junk"], {
   revalidate: HOME_FEED_REVALIDATE_SECONDS,
   tags: [LISTINGS_CACHE_TAG],
 });

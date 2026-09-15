@@ -22,6 +22,9 @@ function isMockSeedListingId(id) {
 
 const QA_SELLER_NAMES = new Set(["Preview E2E User", "QA26 User"]);
 
+const PUBLIC_HIDDEN_LISTING_IDS = new Set(["local-1789075968004"]);
+const PUBLIC_HIDDEN_LISTING_SLUGS = new Set(["sony-ipad-pro"]);
+
 function isConfirmedFixtureListing(listing) {
   const id = listing.id?.trim() ?? "";
   const slug = listing.slug?.trim() || id;
@@ -29,6 +32,8 @@ function isConfirmedFixtureListing(listing) {
   if (id && isMockSeedListingId(id)) return true;
   if (slug && isMockSeedListingId(slug)) return true;
   if (slug === "office-business-bay") return true;
+  if (id && PUBLIC_HIDDEN_LISTING_IDS.has(id)) return true;
+  if (slug && PUBLIC_HIDDEN_LISTING_SLUGS.has(slug)) return true;
   if (/^e2e-/i.test(id) || /^e2e-/i.test(slug)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(id)) return true;
   if (/^qa26-[a-z]+-[a-f0-9]+$/i.test(slug)) return true;
@@ -60,6 +65,8 @@ test("policy file still encodes fixture and no-seed-on-vercel rules", () => {
   assert.match(src, /FIXTURE_LISTING_SQL/);
   assert.match(src, /id ~ '\^e2e-'/);
   assert.match(src, /slug ~ '\^e2e-'/);
+  assert.match(src, /local-1789075968004/);
+  assert.match(src, /sony-ipad-pro/);
   assert.doesNotMatch(
     src,
     /OR COALESCE\(payload->>'title', ''\) LIKE 'إعلان تجريبي%'/,
@@ -115,6 +122,22 @@ test("confirmed mock/QA listings are fixtures by id or slug only", () => {
       slug: "qa26-car-be50a099",
       title: "Nissan Patrol كورنيش be50a099",
       seller: { name: "QA26 User" },
+    }),
+    true,
+  );
+  assert.equal(
+    isConfirmedFixtureListing({
+      id: "local-1789075968004",
+      slug: "sony-ipad-pro",
+      title: "Sony iPad Pro",
+    }),
+    true,
+  );
+  assert.equal(
+    isConfirmedFixtureListing({
+      id: "local-other",
+      slug: "sony-ipad-pro",
+      title: "Sony iPad Pro",
     }),
     true,
   );
