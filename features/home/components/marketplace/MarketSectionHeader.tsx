@@ -17,16 +17,16 @@ export function MarketSectionHeader({
   title,
 }: MarketSectionHeaderProps) {
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:mb-6">
       <div className="max-w-2xl">
         {eyebrow ? (
           <p className="text-xs font-bold text-[#B8955F]">{eyebrow}</p>
         ) : null}
-        <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink md:text-3xl">
+        <h2 className="mt-1 text-xl font-bold tracking-tight text-ink md:text-2xl">
           {title}
         </h2>
         {description ? (
-          <p className="mt-2 text-base leading-7 text-muted">{description}</p>
+          <p className="mt-1.5 text-sm leading-6 text-muted md:text-base md:leading-7">{description}</p>
         ) : null}
       </div>
       {actionHref ? (
@@ -50,7 +50,7 @@ export function MarketSectionShell({
 }) {
   return (
     <section
-      className={`py-16 md:py-20 ${variant === "sand" ? "bg-background" : "bg-surface"}`}
+      className={`py-8 md:py-10 ${variant === "sand" ? "bg-background" : "bg-surface"}`}
     >
       <div className="app-container">{children}</div>
     </section>
