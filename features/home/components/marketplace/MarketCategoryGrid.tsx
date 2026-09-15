@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Category } from "@/types";
-import { AppImage } from "@/shared/components/AppImage";
-import { Icon } from "@/shared/ui/Icon";
+import { CategoryMark } from "@/shared/components/CategoryMark";
 import {
   MOBILE_CATEGORY_PAGE_ORDER,
   MOBILE_MAIN_CATEGORY_LABELS,
@@ -46,18 +45,10 @@ export function MarketCategoryGrid({ categories }: MarketCategoryGridProps) {
               className="group flex min-w-0 flex-col items-center gap-2 text-center"
               href={`/categories/${category.slug}`}
             >
-              <span className="relative size-[4.25rem] overflow-hidden rounded-2xl border-2 border-surface bg-surface-muted shadow-[0_8px_20px_rgb(15_23_42/9%)] transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_28px_rgb(15_23_42/12%)] md:size-[4.75rem]">
-                <AppImage
-                  alt=""
-                  aria-hidden
-                  className="object-cover"
-                  fallbackCategory={category.id}
-                  fill
-                  sizes="(max-width: 768px) 68px, 76px"
-                  src={category.imageUrl}
-                />
+              <span className="relative size-[5.25rem] md:size-[5.75rem]">
+                <CategoryMark category={category} iconSize={30} />
               </span>
-              <span className="max-w-full truncate text-xs font-semibold text-ink">
+              <span className="max-w-full truncate text-xs font-bold text-ink">
                 {MOBILE_MAIN_CATEGORY_LABELS[category.id] ?? category.name}
               </span>
             </Link>
@@ -67,10 +58,10 @@ export function MarketCategoryGrid({ categories }: MarketCategoryGridProps) {
             className="group flex min-w-0 flex-col items-center gap-2 text-center"
             href="/categories"
           >
-            <span className="grid size-[4.25rem] place-items-center rounded-2xl border-2 border-surface bg-[#0b1628] text-secondary shadow-[0_8px_22px_rgb(15_23_42/18%)] transition duration-200 group-hover:-translate-y-0.5 md:size-[4.75rem]">
-              <Icon aria-hidden name="grid" size={24} />
+            <span className="relative size-[5.25rem] md:size-[5.75rem]">
+              <CategoryMark iconSize={28} variant="more" />
             </span>
-            <span className="max-w-full truncate text-xs font-semibold text-ink">المزيد</span>
+            <span className="max-w-full truncate text-xs font-bold text-ink">المزيد</span>
           </Link>
         </div>
       </div>

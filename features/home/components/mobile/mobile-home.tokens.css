@@ -1,6 +1,6 @@
 /* Scoped design tokens — mobile homepage reference (#0F172A / #C9A45C) */
 :root {
-  --mh-category-icon: clamp(3.25rem, 11vw, 4.5rem);
+  --mh-category-icon: clamp(3.75rem, 12vw, 5rem);
 }
 
 .mobile-home-shell {
@@ -34,7 +34,7 @@
   --mh-radius-xl: clamp(1rem, 3vw, 1.25rem);
   --mh-radius-2xl: clamp(1.125rem, 3.6vw, 1.5rem);
   --mh-card-width: clamp(10.75rem, 46vw, 12.75rem);
-  --mh-category-icon: clamp(3.25rem, 11vw, 4.5rem);
+  --mh-category-icon: clamp(3.75rem, 12vw, 5rem);
   --mh-fab-size: clamp(2.75rem, 10.5vw, 3.25rem);
   --mh-bottom-nav-clearance: calc(
     clamp(4.25rem, 14vw, 4.75rem) + (var(--mh-fab-size) * 0.35) + 1.5rem +
