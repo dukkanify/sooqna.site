@@ -124,3 +124,15 @@ export function isMockCheckoutAllowed(): boolean {
 
 /** Re-export for payment redirects (Stripe success/cancel URLs). */
 export { getAppUrl };
+
+
+/**
+ * When Stripe is configured, escrow release transfers seller net to their
+ * Connect Express account. Set ENABLE_STRIPE_CONNECT_PAYOUTS=false to keep
+ * ledger-only releases (demo / emergency).
+ */
+export function isStripeConnectPayoutsEnabled(): boolean {
+  if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "false") return false;
+  if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "true") return true;
+  return isStripeConfigured();
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SellerPayoutConnectCard } from "@/features/wallet/components/SellerPayoutConnectCard";
 import { WalletBalances } from "@/features/wallet/components/WalletBalances";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
@@ -8,6 +9,7 @@ import { Icon } from "@/shared/ui/Icon";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { requireCurrentUser } from "@/services/profile";
+import { getConnectStatusForUser } from "@/services/payments/stripe-connect.service";
 import { getWalletSummary } from "@/services/walletService";
 import { getRequestLocale, intlLocale } from "@/shared/i18n/locale";
 
@@ -22,11 +24,24 @@ const activityLabels = {
   escrow_release: "تحويل ضمان",
 } as const;
 
-export default async function WalletPage() {
+type WalletPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function WalletPage({ searchParams }: WalletPageProps) {
   const user = await requireCurrentUser("/wallet");
   const wallet = await getWalletSummary(user.id);
   const locale = await getRequestLocale();
   const dateLocale = intlLocale(locale);
+  const params = (await searchParams) ?? {};
+  const connectParam = params.connect;
+  const autoStartConnect =
+    connectParam === "refresh" ||
+    (Array.isArray(connectParam) && connectParam.includes("refresh"));
+
+  const connectStatus = await getConnectStatusForUser(user, { sync: true }).catch(
+    async () => getConnectStatusForUser(user, { sync: false }),
+  );
 
   return (
     <>
@@ -43,6 +58,20 @@ export default async function WalletPage() {
               defaultAvailable={wallet.availableBalance}
               defaultHeldInEscrow={wallet.heldInEscrow}
               defaultPending={wallet.pendingBalance}
+            />
+
+            <SellerPayoutConnectCard
+              autoStart={autoStartConnect}
+              initialConnect={{
+                status: connectStatus.status,
+                statusLabelAr: connectStatus.statusLabelAr,
+                stripeAccountId: connectStatus.stripeAccountId,
+                chargesEnabled: connectStatus.chargesEnabled,
+                payoutsEnabled: connectStatus.payoutsEnabled,
+                detailsSubmitted: connectStatus.detailsSubmitted,
+                platformConfigured: connectStatus.platformConfigured,
+                canOpenDashboard: connectStatus.canOpenDashboard,
+              }}
             />
 
             <Card className="p-6" variant="flat">
@@ -79,11 +108,7 @@ export default async function WalletPage() {
                       <div
                         className={`shrink-0 text-sm font-bold ${item.amount >= 0 ? "text-success" : "text-ink"}`}
                       >
-                        <CurrencyAmount
-                          amount={item.amount}
-                          showSign
-                          size="sm"
-                        />
+                        <CurrencyAmount amount={item.amount} showSign size="sm" />
                       </div>
                     </li>
                   ))}

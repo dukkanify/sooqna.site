@@ -362,15 +362,18 @@ export async function ensureConnectAccount(
 
 export async function createConnectAccountLink(
   user: UserProfile,
+  options?: { returnPath?: string; refreshPath?: string },
 ): Promise<{ url: string; stripeAccountId: string }> {
   const record = await ensureConnectAccount(user);
   const stripe = await getStripeClient();
   const appUrl = getAppUrl();
+  const returnPath = options?.returnPath ?? "/admin/stripe/return";
+  const refreshPath = options?.refreshPath ?? "/admin/stripe/refresh";
 
   const link = await stripe.accountLinks.create({
     account: record.stripeAccountId,
-    refresh_url: `${appUrl}/admin/stripe/refresh`,
-    return_url: `${appUrl}/admin/stripe/return`,
+    refresh_url: `${appUrl}${refreshPath.startsWith("/") ? refreshPath : `/${refreshPath}`}`,
+    return_url: `${appUrl}${returnPath.startsWith("/") ? returnPath : `/${returnPath}`}`,
     type: "account_onboarding",
   });
 
@@ -477,4 +480,136 @@ export function assertConnectOwnership(
 ): boolean {
   if (!record) return true;
   return record.ownerUserId === userId;
+}
+
+export type EscrowSellerPayoutResult =
+  | {
+      status: "transferred";
+      transferId: string;
+      destination: string;
+      amountAed: number;
+    }
+  | {
+      status: "skipped";
+      reason:
+        | "PAYOUTS_DISABLED"
+        | "STRIPE_NOT_CONFIGURED"
+        | "SELLER_NOT_CONNECTED"
+        | "SELLER_PAYOUTS_DISABLED"
+        | "INVALID_AMOUNT"
+        | "ALREADY_TRANSFERRED";
+      transferId?: string;
+    };
+
+/**
+ * Move seller net from the platform Stripe balance to their Connect Express account.
+ * Ledger-only releases remain valid when this returns `skipped`.
+ */
+export async function transferEscrowToSeller(input: {
+  orderId: string;
+  sellerId: string;
+  amountAed: number;
+  existingTransferId?: string | null;
+  currency?: string;
+}): Promise<EscrowSellerPayoutResult> {
+  if (input.existingTransferId) {
+    return {
+      status: "skipped",
+      reason: "ALREADY_TRANSFERRED",
+      transferId: input.existingTransferId,
+    };
+  }
+
+  const { isStripeConnectPayoutsEnabled } = await import(
+    "@/services/payments/payment-config"
+  );
+  if (!isStripeConnectPayoutsEnabled()) {
+    return { status: "skipped", reason: "PAYOUTS_DISABLED" };
+  }
+  if (!isStripeConfigured()) {
+    return { status: "skipped", reason: "STRIPE_NOT_CONFIGURED" };
+  }
+
+  const amountAed = Number(input.amountAed);
+  if (!Number.isFinite(amountAed) || amountAed <= 0) {
+    return { status: "skipped", reason: "INVALID_AMOUNT" };
+  }
+
+  const record = await getConnectAccountByOwner(input.sellerId);
+  if (!record?.stripeAccountId) {
+    return { status: "skipped", reason: "SELLER_NOT_CONNECTED" };
+  }
+  if (
+    record.stripeOnboardingStatus !== "ACTIVE" ||
+    !record.stripePayoutsEnabled
+  ) {
+    return { status: "skipped", reason: "SELLER_PAYOUTS_DISABLED" };
+  }
+
+  const stripe = await getStripeClient();
+  const currency = (input.currency ?? "aed").toLowerCase();
+  const transfer = await stripe.transfers.create(
+    {
+      amount: Math.round(amountAed * 100),
+      currency,
+      destination: record.stripeAccountId,
+      transfer_group: input.orderId,
+      metadata: {
+        orderId: input.orderId,
+        sellerId: input.sellerId,
+        platform: "sooqna",
+        purpose: "escrow_release",
+      },
+    },
+    { idempotencyKey: `sooqna-escrow-transfer-${input.orderId}` },
+  );
+
+  await logPaymentEvent({
+    type: "connect.escrow_transfer.created",
+    payload: {
+      orderId: input.orderId,
+      sellerId: input.sellerId,
+      transferId: transfer.id,
+      destination: record.stripeAccountId,
+      amountAed,
+    },
+  });
+
+  return {
+    status: "transferred",
+    transferId: transfer.id,
+    destination: record.stripeAccountId,
+    amountAed,
+  };
+}
+
+/** Reverse a prior escrow Connect transfer (e.g. admin refund after release). */
+export async function reverseEscrowTransferToSeller(input: {
+  orderId: string;
+  transferId: string;
+}): Promise<{ reversalId: string } | null> {
+  if (!isStripeConfigured()) return null;
+  const stripe = await getStripeClient();
+  const reversal = await stripe.transfers.createReversal(
+    input.transferId,
+    {
+      metadata: {
+        orderId: input.orderId,
+        platform: "sooqna",
+        purpose: "escrow_refund_reversal",
+      },
+    },
+    { idempotencyKey: `sooqna-escrow-reversal-${input.orderId}` },
+  );
+
+  await logPaymentEvent({
+    type: "connect.escrow_transfer.reversed",
+    payload: {
+      orderId: input.orderId,
+      transferId: input.transferId,
+      reversalId: reversal.id,
+    },
+  });
+
+  return { reversalId: reversal.id };
 }
