@@ -45,8 +45,8 @@ export function MarketCategoryGrid({ categories }: MarketCategoryGridProps) {
               className="group flex min-w-0 flex-col items-center gap-2 text-center"
               href={`/categories/${category.slug}`}
             >
-              <span className="relative size-[4.5rem] md:size-[5rem]">
-                <CategoryMark category={category} iconSize={30} />
+              <span className="relative size-[4.75rem] md:size-[5.25rem]">
+                <CategoryMark category={category} iconSize={32} />
               </span>
               <span className="max-w-full truncate text-xs font-semibold text-ink">
                 {MOBILE_MAIN_CATEGORY_LABELS[category.id] ?? category.name}
@@ -58,8 +58,8 @@ export function MarketCategoryGrid({ categories }: MarketCategoryGridProps) {
             className="group flex min-w-0 flex-col items-center gap-2 text-center"
             href="/categories"
           >
-            <span className="relative size-[4.5rem] md:size-[5rem]">
-              <CategoryMark iconSize={26} variant="more" />
+            <span className="relative size-[4.75rem] md:size-[5.25rem]">
+              <CategoryMark iconSize={28} variant="more" />
             </span>
             <span className="max-w-full truncate text-xs font-semibold text-ink">المزيد</span>
           </Link>

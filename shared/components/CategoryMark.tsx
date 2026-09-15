@@ -15,7 +15,7 @@ type CategoryTone = {
 
 /**
  * Brand-aligned tones — navy / gold / warm ivory only.
- * Avoids rainbow category chips so the grid reads as one Sooqna system.
+ * Soft faces use a denser wash so marks read clearly on the light page.
  */
 const CATEGORY_TONES: Record<string, CategoryTone> = {
   cars: {
@@ -26,65 +26,65 @@ const CATEGORY_TONES: Record<string, CategoryTone> = {
   },
   electronics: {
     face: "soft",
-    wash: "linear-gradient(160deg, #f7f0e4 0%, #eef1f6 100%)",
+    wash: "linear-gradient(160deg, #efe6d4 0%, #e4e9f2 100%)",
     ink: "#0b1628",
-    ring: "rgb(201 169 98 / 35%)",
+    ring: "rgb(201 169 98 / 48%)",
   },
   jobs: {
     face: "soft",
-    wash: "linear-gradient(160deg, #eef1f6 0%, #f3f0ea 100%)",
+    wash: "linear-gradient(160deg, #e4e9f2 0%, #ebe4d8 100%)",
     ink: "#0b1628",
-    ring: "rgb(201 169 98 / 30%)",
+    ring: "rgb(201 169 98 / 42%)",
   },
   furniture: {
     face: "soft",
-    wash: "linear-gradient(160deg, #f7f0e4 0%, #faf9f7 100%)",
+    wash: "linear-gradient(160deg, #f0e4cf 0%, #ebe6dc 100%)",
     ink: "#0b1628",
-    ring: "rgb(201 169 98 / 38%)",
+    ring: "rgb(201 169 98 / 50%)",
   },
   fashion: {
-    face: "soft",
-    wash: "linear-gradient(145deg, #f7f0e4 0%, #efe4cf 100%)",
-    ink: "#0b1628",
-    ring: "rgb(201 169 98 / 45%)",
+    face: "navy",
+    wash: "linear-gradient(145deg, #122036 0%, #1a2a44 55%, #2a3f5c 100%)",
+    ink: "#c9a962",
+    ring: "rgb(201 169 98 / 50%)",
   },
   mobiles: {
     face: "soft",
-    wash: "linear-gradient(160deg, #eef1f6 0%, #e8ecf3 100%)",
+    wash: "linear-gradient(160deg, #e2e7f0 0%, #dce2ec 100%)",
     ink: "#0b1628",
-    ring: "rgb(201 169 98 / 32%)",
+    ring: "rgb(201 169 98 / 44%)",
   },
   "real-estate": {
     face: "soft",
-    wash: "linear-gradient(160deg, #e8f3ed 0%, #eef1f6 100%)",
+    wash: "linear-gradient(160deg, #dcebe3 0%, #e4e9f2 100%)",
     ink: "#0b1628",
-    ring: "rgb(45 106 79 / 28%)",
+    ring: "rgb(45 106 79 / 38%)",
   },
   services: {
     face: "soft",
-    wash: "linear-gradient(160deg, #f3f0ea 0%, #f7f0e4 100%)",
+    wash: "linear-gradient(160deg, #ebe4d8 0%, #f0e4cf 100%)",
     ink: "#0b1628",
-    ring: "rgb(201 169 98 / 34%)",
+    ring: "rgb(201 169 98 / 46%)",
   },
   pets: {
     face: "soft",
-    wash: "linear-gradient(160deg, #f7f0e4 0%, #f3f0ea 100%)",
+    wash: "linear-gradient(160deg, #f0e4cf 0%, #ebe6dc 100%)",
     ink: "#0b1628",
-    ring: "rgb(201 169 98 / 36%)",
+    ring: "rgb(201 169 98 / 48%)",
   },
   sports: {
     face: "soft",
-    wash: "linear-gradient(160deg, #eef1f6 0%, #f3f0ea 100%)",
+    wash: "linear-gradient(160deg, #e4e9f2 0%, #ebe4d8 100%)",
     ink: "#0b1628",
-    ring: "rgb(201 169 98 / 30%)",
+    ring: "rgb(201 169 98 / 42%)",
   },
 };
 
 const DEFAULT_TONE: CategoryTone = {
   face: "soft",
-  wash: "linear-gradient(160deg, #f7f0e4 0%, #eef1f6 100%)",
+  wash: "linear-gradient(160deg, #efe6d4 0%, #e4e9f2 100%)",
   ink: "#0b1628",
-  ring: "rgb(201 169 98 / 32%)",
+  ring: "rgb(201 169 98 / 44%)",
 };
 
 const MORE_TONE: CategoryTone = {
