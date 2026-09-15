@@ -127,7 +127,8 @@ export function ListingDetailsView({
               <SellerPanel listing={listing} />
             </div>
             <ListingSafetyTips />
-            <div className="mt-6 lg:hidden">
+            <div className="mt-6 flex flex-col gap-6 lg:hidden">
+              <EscrowProtectionCard listing={listing} />
               <ListingPlatformNotice listing={listing} />
             </div>
           </div>
