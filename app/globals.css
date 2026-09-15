@@ -609,6 +609,8 @@ html[data-theme="dark"] .category-mark {
 }
 
 .market-hero-pills {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -640,6 +642,8 @@ html[data-theme="dark"] .category-mark {
 }
 
 .market-hero-search {
+  position: relative;
+  z-index: 5;
   overflow: visible;
   border: 1px solid rgb(255 255 255 / 0.9);
   border-radius: 1.1rem;
