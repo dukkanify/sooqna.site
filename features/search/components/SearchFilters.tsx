@@ -313,10 +313,10 @@ export function SearchFilters({
   return (
     <LocalizedTree>
       <div className="sticky top-[4.25rem] z-30 lg:hidden">
-        <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-[var(--shadow-card)] backdrop-blur">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-[var(--shadow-card)] backdrop-blur">
           <button
             aria-expanded={sheetOpen}
-            className="focus-ring inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-secondary-soft/80 px-3 text-sm font-bold text-ink"
+            className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-secondary-soft/80 px-3 text-sm font-bold text-ink"
             onClick={() => setSheetOpen(true)}
             type="button"
           >
@@ -328,11 +328,11 @@ export function SearchFilters({
               </span>
             ) : null}
           </button>
-          <label className="grid min-w-[9.5rem] shrink-0">
+          <label className="relative inline-flex min-h-11 w-[9.25rem] shrink-0 items-center">
             <span className="sr-only">الترتيب</span>
             <select
               aria-label="الترتيب"
-              className="focus-ring min-h-11 rounded-xl border border-border bg-surface px-3 text-xs font-bold text-ink"
+              className="focus-ring h-11 w-full cursor-pointer appearance-none rounded-xl border border-border bg-surface pe-8 ps-3 text-xs font-bold text-ink"
               onChange={(event) => {
                 router.push(
                   buildSearchUrl(
@@ -350,6 +350,11 @@ export function SearchFilters({
                 </option>
               ))}
             </select>
+            <Icon
+              className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 rotate-90 text-muted"
+              name="chevron-left"
+              size={14}
+            />
           </label>
         </div>
       </div>
