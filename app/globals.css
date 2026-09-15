@@ -319,8 +319,8 @@ textarea {
   position: relative;
   z-index: 1;
   display: block;
-  width: 68% !important;
-  height: 68% !important;
+  width: 72% !important;
+  height: 72% !important;
   filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 40%));
 }
 
