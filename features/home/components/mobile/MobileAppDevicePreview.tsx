@@ -5,6 +5,7 @@ import type { Listing } from "@/types";
 import { AppImage } from "@/shared/components/AppImage";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { BRAND } from "@/shared/constants/brand";
+import { getListingActionLabel } from "@/shared/constants/listingActionConfig";
 import {
   getListingLocation,
 } from "@/features/listings/components/listing-card.utils";
@@ -19,7 +20,9 @@ type AppPhoneMockupProps = {
   listings: Listing[];
 };
 
-const CHIPS = ["سيارات", "عقارات", "موبايلات", "إلكترونيات"] as const;
+const HOME_CHIPS = ["سيارات", "عقارات", "موبايلات", "إلكترونيات"] as const;
+const SEARCH_EMIRATES = ["دبي", "أبوظبي", "الشارقة", "عجمان"] as const;
+const SEARCH_PRICES = ["حتى 20 ألف", "حتى 50 ألف", "حتى 100 ألف"] as const;
 const SLIDE_MS = 5200;
 
 function useListingCopy(listing: Listing | undefined) {
@@ -84,27 +87,42 @@ function StatusBar() {
   );
 }
 
-function TabBar({ active }: { active: "home" | "search" | "listing" }) {
+function TabBar({
+  active,
+}: {
+  active?: "home" | "favorites" | "messages" | "account";
+}) {
   return (
     <nav className="app-phone__tabs">
       <span className={`app-phone__tab${active === "home" ? " is-active" : ""}`}>
-        <Icon name="home" size={13} />
+        <span className="app-phone__tab-icon">
+          <Icon name="home" size={12} />
+        </span>
         <b>الرئيسية</b>
       </span>
-      <span className={`app-phone__tab${active === "search" ? " is-active" : ""}`}>
-        <Icon name="search" size={13} />
-        <b>بحث</b>
+      <span className={`app-phone__tab${active === "favorites" ? " is-active" : ""}`}>
+        <span className="app-phone__tab-icon">
+          <Icon filled={active === "favorites"} name="heart" size={12} />
+        </span>
+        <b>المفضلة</b>
       </span>
-      <span className="app-phone__tab app-phone__tab--fab">
-        <Icon name="plus" size={14} />
+      <span className="app-phone__tab app-phone__tab--fab-slot">
+        <span className="app-phone__fab">
+          <Icon name="plus" size={13} />
+        </span>
+        <b>أضف إعلان</b>
       </span>
-      <span className="app-phone__tab">
-        <Icon name="message" size={13} />
-        <b>محادثات</b>
+      <span className={`app-phone__tab${active === "messages" ? " is-active" : ""}`}>
+        <span className="app-phone__tab-icon">
+          <Icon name="message" size={12} />
+        </span>
+        <b>الرسائل</b>
       </span>
-      <span className="app-phone__tab">
-        <Icon name="user" size={13} />
-        <b>حسابي</b>
+      <span className={`app-phone__tab${active === "account" ? " is-active" : ""}`}>
+        <span className="app-phone__tab-icon">
+          <Icon name="user" size={12} />
+        </span>
+        <b>الحساب</b>
       </span>
     </nav>
   );
@@ -139,7 +157,7 @@ function HomeScreen({ listings }: { listings: Listing[] }) {
       </div>
 
       <div className="app-phone__chips">
-        {CHIPS.map((chip, index) => (
+        {HOME_CHIPS.map((chip, index) => (
           <span key={chip} className={index === 0 ? "is-active" : undefined}>
             {chip}
           </span>
@@ -181,9 +199,11 @@ function HomeScreen({ listings }: { listings: Listing[] }) {
 function ListingScreen({ listing }: { listing?: Listing }) {
   const copy = useListingCopy(listing);
   if (!listing) return null;
+  const cta = getListingActionLabel(listing);
+  const verified = listing.seller.isVerified;
 
   return (
-    <div className="app-phone__screen">
+    <div className="app-phone__screen app-phone__screen--detail">
       <StatusBar />
       <div className="app-phone__detail-photo">
         <Cover listing={listing} sizes="280px" />
@@ -205,12 +225,22 @@ function ListingScreen({ listing }: { listing?: Listing }) {
           <span>{copy.seller.slice(0, 1)}</span>
           <div>
             <b data-ugc>{copy.seller}</b>
-            <small>بائع موثّق</small>
+            <small>{verified ? "بائع موثّق" : "بائع"}</small>
           </div>
         </div>
-        <div className="app-phone__cta">تواصل مع البائع</div>
       </div>
-      <TabBar active="listing" />
+      <div className="app-phone__sticky">
+        <div className="app-phone__cta">{cta}</div>
+        <span className="app-phone__sticky-icon app-phone__sticky-icon--chat">
+          <Icon name="message" size={11} />
+        </span>
+        <span className="app-phone__sticky-icon app-phone__sticky-icon--wa">
+          <Icon name="whatsapp" size={12} />
+        </span>
+        <span className="app-phone__sticky-icon app-phone__sticky-icon--call">
+          <Icon name="phone-call" size={11} />
+        </span>
+      </div>
     </div>
   );
 }
@@ -220,12 +250,38 @@ function SearchScreen({ listings }: { listings: Listing[] }) {
   return (
     <div className="app-phone__screen">
       <StatusBar />
-      <div className="app-phone__search app-phone__search--filled">
+      <div className="app-phone__search">
         <Icon name="search" size={11} />
-        <span>مرسيدس · دبي</span>
+        <span>ابحث في سوقنا...</span>
       </div>
+      <div className="app-phone__dock">
+        <span className="app-phone__dock-filters">
+          <Icon name="filter" size={10} />
+          فلاتر
+          <em>1</em>
+        </span>
+        <span className="app-phone__dock-sort">
+          الأحدث
+          <Icon name="chevron-left" size={9} />
+        </span>
+      </div>
+      <div className="app-phone__chips">
+        {SEARCH_EMIRATES.map((chip, index) => (
+          <span key={chip} className={index === 0 ? "is-active" : undefined}>
+            {chip}
+          </span>
+        ))}
+      </div>
+      <div className="app-phone__chips">
+        {SEARCH_PRICES.map((chip) => (
+          <span key={chip}>{chip}</span>
+        ))}
+      </div>
+      <p className="app-phone__count">
+        <b>{Math.min(listings.length, 2).toLocaleString("ar-AE")}</b> إعلان
+      </p>
       <div className="app-phone__results">
-        {listings.slice(0, 3).map((listing) => (
+        {listings.slice(0, 2).map((listing) => (
           <article key={listing.id} className="app-phone__row">
             <div className="app-phone__thumb">
               <Cover listing={listing} sizes="88px" />
@@ -241,7 +297,7 @@ function SearchScreen({ listings }: { listings: Listing[] }) {
           </article>
         ))}
       </div>
-      <TabBar active="search" />
+      <TabBar />
     </div>
   );
 }
