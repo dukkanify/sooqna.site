@@ -10,8 +10,8 @@ export const HOME_SEARCH_LABELS = {
   categoryAll: "كل التصنيفات",
   city: "الإمارة",
   cityAll: "جميع الإمارات",
-  price: "السعر AED",
+  price: "السعر",
   query: "ماذا تبحث عنه؟",
-  queryPlaceholder: "سيارات، عقارات، إلكترونيات، خدمات...",
+  queryPlaceholder: "ابحث عن أي شيء...",
   submit: "بحث",
 } as const;
