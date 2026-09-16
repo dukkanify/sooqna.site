@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Category, CategoryFieldDefinition } from "@/types";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
@@ -13,6 +14,7 @@ import {
   optionsForSearchField,
   subcategoryFilterLabel,
 } from "@/features/search/lib/category-filter-fields";
+import { setVehicleCatalogOverrides } from "@/shared/vehicles";
 import type { SearchFilterState } from "./search-url";
 
 type CategorySmartFieldsProps = {
@@ -75,6 +77,25 @@ export function CategorySmartFields({
   onChange,
 }: CategorySmartFieldsProps) {
   const categoryId = draft.category || category?.id || "";
+
+  useEffect(() => {
+    if (categoryId !== "cars") return;
+    let cancelled = false;
+    void fetch("/api/vehicle-catalog/overrides")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setVehicleCatalogOverrides({
+          disabledMakeSlugs: data.disabledMakeSlugs ?? [],
+          disabledModelIds: data.disabledModelIds ?? [],
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId]);
+
   if (!categoryId) {
     return (
       <p className="rounded-xl border border-dashed border-border/80 px-3 py-2 text-[0.7rem] leading-5 text-muted">

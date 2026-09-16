@@ -22,12 +22,16 @@ type MakeRow = {
   status: string;
   disabled: boolean;
   modelCount: number;
+  countryCode?: string | null;
+  countryNameEn?: string | null;
+  countryNameAr?: string | null;
   models?: ModelRow[];
 };
 
 type Stats = {
   makesTotal: number;
   makesActive: number;
+  makesWithCountry?: number;
   modelsTotal: number;
 };
 
@@ -154,6 +158,12 @@ export function AdminVehicleCatalogPanel() {
               <dt className="text-muted">الموديلات</dt>
               <dd className="font-bold text-ink">{stats.modelsTotal}</dd>
             </div>
+            <div>
+              <dt className="text-muted">بدولة منشأ</dt>
+              <dd className="font-bold text-ink">
+                {stats.makesWithCountry ?? "—"}
+              </dd>
+            </div>
           </dl>
         ) : null}
         {message ? (
@@ -174,6 +184,7 @@ export function AdminVehicleCatalogPanel() {
               <tr>
                 <th className="px-2 py-2 font-semibold">الماركة / الموديل</th>
                 <th className="px-2 py-2 font-semibold">عربي</th>
+                <th className="px-2 py-2 font-semibold">المنشأ</th>
                 <th className="px-2 py-2 font-semibold">موديلات</th>
                 <th className="px-2 py-2 font-semibold">الحالة</th>
                 <th className="px-2 py-2 font-semibold" />
@@ -199,6 +210,9 @@ export function AdminVehicleCatalogPanel() {
                         </button>
                       </td>
                       <td className="px-2 py-2 text-ink">{make.nameAr}</td>
+                      <td className="px-2 py-2 text-ink">
+                        {make.countryNameAr || make.countryNameEn || "—"}
+                      </td>
                       <td className="px-2 py-2 text-ink">{make.modelCount}</td>
                       <td className="px-2 py-2">
                         {make.disabled ? (

@@ -9,7 +9,10 @@
       "nameEn": "Toyota",
       "nameAr": "تويوتا",
       "status": "active",
-      "sortOrder": 10
+      "sortOrder": 10,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-lexus",
@@ -17,7 +20,10 @@
       "nameEn": "Lexus",
       "nameAr": "لكزس",
       "status": "active",
-      "sortOrder": 20
+      "sortOrder": 20,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-nissan",
@@ -25,7 +31,10 @@
       "nameEn": "Nissan",
       "nameAr": "نيسان",
       "status": "active",
-      "sortOrder": 30
+      "sortOrder": 30,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-infiniti",
@@ -33,7 +42,10 @@
       "nameEn": "Infiniti",
       "nameAr": "إنفينيتي",
       "status": "active",
-      "sortOrder": 40
+      "sortOrder": 40,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-honda",
@@ -41,7 +53,10 @@
       "nameEn": "Honda",
       "nameAr": "هوندا",
       "status": "active",
-      "sortOrder": 50
+      "sortOrder": 50,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-acura",
@@ -49,7 +64,10 @@
       "nameEn": "Acura",
       "nameAr": "أكيورا",
       "status": "active",
-      "sortOrder": 60
+      "sortOrder": 60,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-mazda",
@@ -57,7 +75,10 @@
       "nameEn": "Mazda",
       "nameAr": "مازدا",
       "status": "active",
-      "sortOrder": 70
+      "sortOrder": 70,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-mitsubishi",
@@ -65,7 +86,10 @@
       "nameEn": "Mitsubishi",
       "nameAr": "ميتسوبيشي",
       "status": "active",
-      "sortOrder": 80
+      "sortOrder": 80,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-subaru",
@@ -73,7 +97,10 @@
       "nameEn": "Subaru",
       "nameAr": "سوبارو",
       "status": "active",
-      "sortOrder": 90
+      "sortOrder": 90,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-suzuki",
@@ -81,7 +108,10 @@
       "nameEn": "Suzuki",
       "nameAr": "سوزوكي",
       "status": "active",
-      "sortOrder": 100
+      "sortOrder": 100,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-isuzu",
@@ -89,7 +119,10 @@
       "nameEn": "Isuzu",
       "nameAr": "إيسوزو",
       "status": "active",
-      "sortOrder": 110
+      "sortOrder": 110,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-daihatsu",
@@ -97,7 +130,10 @@
       "nameEn": "Daihatsu",
       "nameAr": "دايهاتسو",
       "status": "active",
-      "sortOrder": 120
+      "sortOrder": 120,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-mercedes-benz",
@@ -105,7 +141,10 @@
       "nameEn": "Mercedes-Benz",
       "nameAr": "مرسيدس بنز",
       "status": "active",
-      "sortOrder": 130
+      "sortOrder": 130,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-bmw",
@@ -113,7 +152,10 @@
       "nameEn": "BMW",
       "nameAr": "بي إم دبليو",
       "status": "active",
-      "sortOrder": 140
+      "sortOrder": 140,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-mini",
@@ -121,7 +163,10 @@
       "nameEn": "MINI",
       "nameAr": "ميني",
       "status": "active",
-      "sortOrder": 150
+      "sortOrder": 150,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-audi",
@@ -129,7 +174,10 @@
       "nameEn": "Audi",
       "nameAr": "أودي",
       "status": "active",
-      "sortOrder": 160
+      "sortOrder": 160,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-volkswagen",
@@ -137,7 +185,10 @@
       "nameEn": "Volkswagen",
       "nameAr": "فولكس واجن",
       "status": "active",
-      "sortOrder": 170
+      "sortOrder": 170,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-porsche",
@@ -145,7 +196,10 @@
       "nameEn": "Porsche",
       "nameAr": "بورشه",
       "status": "active",
-      "sortOrder": 180
+      "sortOrder": 180,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-opel",
@@ -153,7 +207,10 @@
       "nameEn": "Opel",
       "nameAr": "أوبل",
       "status": "active",
-      "sortOrder": 190
+      "sortOrder": 190,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-smart",
@@ -161,7 +218,10 @@
       "nameEn": "Smart",
       "nameAr": "سمارت",
       "status": "active",
-      "sortOrder": 200
+      "sortOrder": 200,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-land-rover",
@@ -169,7 +229,10 @@
       "nameEn": "Land Rover",
       "nameAr": "لاند روفر",
       "status": "active",
-      "sortOrder": 210
+      "sortOrder": 210,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-range-rover",
@@ -177,7 +240,10 @@
       "nameEn": "Range Rover",
       "nameAr": "رنج روفر",
       "status": "active",
-      "sortOrder": 220
+      "sortOrder": 220,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-jaguar",
@@ -185,7 +251,10 @@
       "nameEn": "Jaguar",
       "nameAr": "جاكوار",
       "status": "active",
-      "sortOrder": 230
+      "sortOrder": 230,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-bentley",
@@ -193,7 +262,10 @@
       "nameEn": "Bentley",
       "nameAr": "بنتلي",
       "status": "active",
-      "sortOrder": 240
+      "sortOrder": 240,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-rolls-royce",
@@ -201,7 +273,10 @@
       "nameEn": "Rolls-Royce",
       "nameAr": "رولز رويس",
       "status": "active",
-      "sortOrder": 250
+      "sortOrder": 250,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-aston-martin",
@@ -209,7 +284,10 @@
       "nameEn": "Aston Martin",
       "nameAr": "أستون مارتن",
       "status": "active",
-      "sortOrder": 260
+      "sortOrder": 260,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-mclaren",
@@ -217,7 +295,10 @@
       "nameEn": "McLaren",
       "nameAr": "مكلارين",
       "status": "active",
-      "sortOrder": 270
+      "sortOrder": 270,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-lotus",
@@ -225,7 +306,10 @@
       "nameEn": "Lotus",
       "nameAr": "لوتس",
       "status": "active",
-      "sortOrder": 280
+      "sortOrder": 280,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-mg",
@@ -233,7 +317,10 @@
       "nameEn": "MG",
       "nameAr": "إم جي",
       "status": "active",
-      "sortOrder": 290
+      "sortOrder": 290,
+      "countryCode": "GB",
+      "countryNameEn": "United Kingdom",
+      "countryNameAr": "المملكة المتحدة"
     },
     {
       "id": "make-ford",
@@ -241,7 +328,10 @@
       "nameEn": "Ford",
       "nameAr": "فورد",
       "status": "active",
-      "sortOrder": 300
+      "sortOrder": 300,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-lincoln",
@@ -249,7 +339,10 @@
       "nameEn": "Lincoln",
       "nameAr": "لينكولن",
       "status": "active",
-      "sortOrder": 310
+      "sortOrder": 310,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-chevrolet",
@@ -257,7 +350,10 @@
       "nameEn": "Chevrolet",
       "nameAr": "شيفروليه",
       "status": "active",
-      "sortOrder": 320
+      "sortOrder": 320,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-gmc",
@@ -265,7 +361,10 @@
       "nameEn": "GMC",
       "nameAr": "جي إم سي",
       "status": "active",
-      "sortOrder": 330
+      "sortOrder": 330,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-cadillac",
@@ -273,7 +372,10 @@
       "nameEn": "Cadillac",
       "nameAr": "كاديلاك",
       "status": "active",
-      "sortOrder": 340
+      "sortOrder": 340,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-chrysler",
@@ -281,7 +383,10 @@
       "nameEn": "Chrysler",
       "nameAr": "كرايسلر",
       "status": "active",
-      "sortOrder": 350
+      "sortOrder": 350,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-dodge",
@@ -289,7 +394,10 @@
       "nameEn": "Dodge",
       "nameAr": "دودج",
       "status": "active",
-      "sortOrder": 360
+      "sortOrder": 360,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-jeep",
@@ -297,7 +405,10 @@
       "nameEn": "Jeep",
       "nameAr": "جيب",
       "status": "active",
-      "sortOrder": 370
+      "sortOrder": 370,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-ram",
@@ -305,7 +416,10 @@
       "nameEn": "Ram",
       "nameAr": "رام",
       "status": "active",
-      "sortOrder": 380
+      "sortOrder": 380,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-tesla",
@@ -313,7 +427,10 @@
       "nameEn": "Tesla",
       "nameAr": "تسلا",
       "status": "active",
-      "sortOrder": 390
+      "sortOrder": 390,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-rivian",
@@ -321,7 +438,10 @@
       "nameEn": "Rivian",
       "nameAr": "ريفيان",
       "status": "active",
-      "sortOrder": 400
+      "sortOrder": 400,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-lucid",
@@ -329,7 +449,10 @@
       "nameEn": "Lucid",
       "nameAr": "لوسيد",
       "status": "active",
-      "sortOrder": 410
+      "sortOrder": 410,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-ferrari",
@@ -337,7 +460,10 @@
       "nameEn": "Ferrari",
       "nameAr": "فيراري",
       "status": "active",
-      "sortOrder": 420
+      "sortOrder": 420,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-lamborghini",
@@ -345,7 +471,10 @@
       "nameEn": "Lamborghini",
       "nameAr": "لامبورغيني",
       "status": "active",
-      "sortOrder": 430
+      "sortOrder": 430,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-maserati",
@@ -353,7 +482,10 @@
       "nameEn": "Maserati",
       "nameAr": "مازيراتي",
       "status": "active",
-      "sortOrder": 440
+      "sortOrder": 440,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-alfa-romeo",
@@ -361,7 +493,10 @@
       "nameEn": "Alfa Romeo",
       "nameAr": "ألفا روميو",
       "status": "active",
-      "sortOrder": 450
+      "sortOrder": 450,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-fiat",
@@ -369,7 +504,10 @@
       "nameEn": "Fiat",
       "nameAr": "فيات",
       "status": "active",
-      "sortOrder": 460
+      "sortOrder": 460,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-abarth",
@@ -377,7 +515,10 @@
       "nameEn": "Abarth",
       "nameAr": "أبارث",
       "status": "active",
-      "sortOrder": 470
+      "sortOrder": 470,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-pagani",
@@ -385,7 +526,10 @@
       "nameEn": "Pagani",
       "nameAr": "باجاني",
       "status": "active",
-      "sortOrder": 480
+      "sortOrder": 480,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-peugeot",
@@ -393,7 +537,10 @@
       "nameEn": "Peugeot",
       "nameAr": "بيجو",
       "status": "active",
-      "sortOrder": 490
+      "sortOrder": 490,
+      "countryCode": "FR",
+      "countryNameEn": "France",
+      "countryNameAr": "فرنسا"
     },
     {
       "id": "make-citroen",
@@ -401,7 +548,10 @@
       "nameEn": "Citroen",
       "nameAr": "سيتروين",
       "status": "active",
-      "sortOrder": 500
+      "sortOrder": 500,
+      "countryCode": "FR",
+      "countryNameEn": "France",
+      "countryNameAr": "فرنسا"
     },
     {
       "id": "make-renault",
@@ -409,7 +559,10 @@
       "nameEn": "Renault",
       "nameAr": "رينو",
       "status": "active",
-      "sortOrder": 510
+      "sortOrder": 510,
+      "countryCode": "FR",
+      "countryNameEn": "France",
+      "countryNameAr": "فرنسا"
     },
     {
       "id": "make-dacia",
@@ -417,7 +570,10 @@
       "nameEn": "Dacia",
       "nameAr": "داسيا",
       "status": "active",
-      "sortOrder": 520
+      "sortOrder": 520,
+      "countryCode": "RO",
+      "countryNameEn": "Romania",
+      "countryNameAr": "رومانيا"
     },
     {
       "id": "make-ds-automobiles",
@@ -425,7 +581,10 @@
       "nameEn": "DS Automobiles",
       "nameAr": "دي إس",
       "status": "active",
-      "sortOrder": 530
+      "sortOrder": 530,
+      "countryCode": "FR",
+      "countryNameEn": "France",
+      "countryNameAr": "فرنسا"
     },
     {
       "id": "make-bugatti",
@@ -433,7 +592,10 @@
       "nameEn": "Bugatti",
       "nameAr": "بوجاتي",
       "status": "active",
-      "sortOrder": 540
+      "sortOrder": 540,
+      "countryCode": "FR",
+      "countryNameEn": "France",
+      "countryNameAr": "فرنسا"
     },
     {
       "id": "make-volvo",
@@ -441,7 +603,10 @@
       "nameEn": "Volvo",
       "nameAr": "فولفو",
       "status": "active",
-      "sortOrder": 550
+      "sortOrder": 550,
+      "countryCode": "SE",
+      "countryNameEn": "Sweden",
+      "countryNameAr": "السويد"
     },
     {
       "id": "make-polestar",
@@ -449,7 +614,10 @@
       "nameEn": "Polestar",
       "nameAr": "بولستار",
       "status": "active",
-      "sortOrder": 560
+      "sortOrder": 560,
+      "countryCode": "SE",
+      "countryNameEn": "Sweden",
+      "countryNameAr": "السويد"
     },
     {
       "id": "make-saab",
@@ -457,7 +625,10 @@
       "nameEn": "Saab",
       "nameAr": "ساب",
       "status": "active",
-      "sortOrder": 570
+      "sortOrder": 570,
+      "countryCode": "SE",
+      "countryNameEn": "Sweden",
+      "countryNameAr": "السويد"
     },
     {
       "id": "make-koenigsegg",
@@ -465,7 +636,10 @@
       "nameEn": "Koenigsegg",
       "nameAr": "كوينيجسيج",
       "status": "active",
-      "sortOrder": 580
+      "sortOrder": 580,
+      "countryCode": "SE",
+      "countryNameEn": "Sweden",
+      "countryNameAr": "السويد"
     },
     {
       "id": "make-hyundai",
@@ -473,7 +647,10 @@
       "nameEn": "Hyundai",
       "nameAr": "هيونداي",
       "status": "active",
-      "sortOrder": 590
+      "sortOrder": 590,
+      "countryCode": "KR",
+      "countryNameEn": "South Korea",
+      "countryNameAr": "كوريا الجنوبية"
     },
     {
       "id": "make-genesis",
@@ -481,7 +658,10 @@
       "nameEn": "Genesis",
       "nameAr": "جينيسيس",
       "status": "active",
-      "sortOrder": 600
+      "sortOrder": 600,
+      "countryCode": "KR",
+      "countryNameEn": "South Korea",
+      "countryNameAr": "كوريا الجنوبية"
     },
     {
       "id": "make-kia",
@@ -489,7 +669,10 @@
       "nameEn": "Kia",
       "nameAr": "كيا",
       "status": "active",
-      "sortOrder": 610
+      "sortOrder": 610,
+      "countryCode": "KR",
+      "countryNameEn": "South Korea",
+      "countryNameAr": "كوريا الجنوبية"
     },
     {
       "id": "make-kgm",
@@ -497,7 +680,10 @@
       "nameEn": "KGM",
       "nameAr": "كي جي إم",
       "status": "active",
-      "sortOrder": 620
+      "sortOrder": 620,
+      "countryCode": "KR",
+      "countryNameEn": "South Korea",
+      "countryNameAr": "كوريا الجنوبية"
     },
     {
       "id": "make-byd",
@@ -505,7 +691,10 @@
       "nameEn": "BYD",
       "nameAr": "بي واي دي",
       "status": "active",
-      "sortOrder": 630
+      "sortOrder": 630,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-geely",
@@ -513,7 +702,10 @@
       "nameEn": "Geely",
       "nameAr": "جيلي",
       "status": "active",
-      "sortOrder": 640
+      "sortOrder": 640,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-zeekr",
@@ -521,7 +713,10 @@
       "nameEn": "Zeekr",
       "nameAr": "زيكر",
       "status": "active",
-      "sortOrder": 650
+      "sortOrder": 650,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-chery",
@@ -529,7 +724,10 @@
       "nameEn": "Chery",
       "nameAr": "شيري",
       "status": "active",
-      "sortOrder": 660
+      "sortOrder": 660,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-exeed",
@@ -537,7 +735,10 @@
       "nameEn": "Exeed",
       "nameAr": "إكسيد",
       "status": "active",
-      "sortOrder": 670
+      "sortOrder": 670,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-jetour",
@@ -545,7 +746,10 @@
       "nameEn": "Jetour",
       "nameAr": "جيتور",
       "status": "active",
-      "sortOrder": 680
+      "sortOrder": 680,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-haval",
@@ -553,7 +757,10 @@
       "nameEn": "Haval",
       "nameAr": "هافال",
       "status": "active",
-      "sortOrder": 690
+      "sortOrder": 690,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-gwm",
@@ -561,7 +768,10 @@
       "nameEn": "GWM",
       "nameAr": "جي دبليو إم",
       "status": "active",
-      "sortOrder": 700
+      "sortOrder": 700,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-tank",
@@ -569,7 +779,10 @@
       "nameEn": "Tank",
       "nameAr": "تانك",
       "status": "active",
-      "sortOrder": 710
+      "sortOrder": 710,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-hongqi",
@@ -577,7 +790,10 @@
       "nameEn": "Hongqi",
       "nameAr": "هونغتشي",
       "status": "active",
-      "sortOrder": 720
+      "sortOrder": 720,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-nio",
@@ -585,7 +801,10 @@
       "nameEn": "NIO",
       "nameAr": "نيو",
       "status": "active",
-      "sortOrder": 730
+      "sortOrder": 730,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-xpeng",
@@ -593,7 +812,10 @@
       "nameEn": "XPeng",
       "nameAr": "إكس بنج",
       "status": "active",
-      "sortOrder": 740
+      "sortOrder": 740,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-li-auto",
@@ -601,7 +823,10 @@
       "nameEn": "Li Auto",
       "nameAr": "لي أوتو",
       "status": "active",
-      "sortOrder": 750
+      "sortOrder": 750,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-changan",
@@ -609,7 +834,10 @@
       "nameEn": "Changan",
       "nameAr": "شانجان",
       "status": "active",
-      "sortOrder": 760
+      "sortOrder": 760,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-deepal",
@@ -617,7 +845,10 @@
       "nameEn": "Deepal",
       "nameAr": "ديبال",
       "status": "active",
-      "sortOrder": 770
+      "sortOrder": 770,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-jac",
@@ -625,7 +856,10 @@
       "nameEn": "JAC",
       "nameAr": "جاك",
       "status": "active",
-      "sortOrder": 780
+      "sortOrder": 780,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-baic",
@@ -633,7 +867,10 @@
       "nameEn": "BAIC",
       "nameAr": "بايك",
       "status": "active",
-      "sortOrder": 790
+      "sortOrder": 790,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-dongfeng",
@@ -641,7 +878,10 @@
       "nameEn": "Dongfeng",
       "nameAr": "دونغفينغ",
       "status": "active",
-      "sortOrder": 800
+      "sortOrder": 800,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-forthing",
@@ -649,7 +889,10 @@
       "nameEn": "Forthing",
       "nameAr": "فورثينج",
       "status": "active",
-      "sortOrder": 810
+      "sortOrder": 810,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-gac",
@@ -657,7 +900,10 @@
       "nameEn": "GAC",
       "nameAr": "جي إيه سي",
       "status": "active",
-      "sortOrder": 820
+      "sortOrder": 820,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-aion",
@@ -665,7 +911,10 @@
       "nameEn": "Aion",
       "nameAr": "أيون",
       "status": "active",
-      "sortOrder": 830
+      "sortOrder": 830,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-rox",
@@ -673,7 +922,10 @@
       "nameEn": "Rox",
       "nameAr": "روكس",
       "status": "active",
-      "sortOrder": 840
+      "sortOrder": 840,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-jaecoo",
@@ -681,7 +933,10 @@
       "nameEn": "Jaecoo",
       "nameAr": "جايكو",
       "status": "active",
-      "sortOrder": 850
+      "sortOrder": 850,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-omoda",
@@ -689,7 +944,10 @@
       "nameEn": "Omoda",
       "nameAr": "أومودا",
       "status": "active",
-      "sortOrder": 860
+      "sortOrder": 860,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-leapmotor",
@@ -697,7 +955,10 @@
       "nameEn": "Leapmotor",
       "nameAr": "ليب موتور",
       "status": "active",
-      "sortOrder": 870
+      "sortOrder": 870,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-mahindra",
@@ -705,7 +966,10 @@
       "nameEn": "Mahindra",
       "nameAr": "ماهيندرا",
       "status": "active",
-      "sortOrder": 880
+      "sortOrder": 880,
+      "countryCode": "IN",
+      "countryNameEn": "India",
+      "countryNameAr": "الهند"
     },
     {
       "id": "make-tata",
@@ -713,7 +977,10 @@
       "nameEn": "Tata",
       "nameAr": "تاتا",
       "status": "active",
-      "sortOrder": 890
+      "sortOrder": 890,
+      "countryCode": "IN",
+      "countryNameEn": "India",
+      "countryNameAr": "الهند"
     },
     {
       "id": "make-proton",
@@ -721,7 +988,10 @@
       "nameEn": "Proton",
       "nameAr": "بروتون",
       "status": "active",
-      "sortOrder": 900
+      "sortOrder": 900,
+      "countryCode": "MY",
+      "countryNameEn": "Malaysia",
+      "countryNameAr": "ماليزيا"
     },
     {
       "id": "make-perodua",
@@ -729,7 +999,10 @@
       "nameEn": "Perodua",
       "nameAr": "بيرودوا",
       "status": "active",
-      "sortOrder": 910
+      "sortOrder": 910,
+      "countryCode": "MY",
+      "countryNameEn": "Malaysia",
+      "countryNameAr": "ماليزيا"
     },
     {
       "id": "make-skoda",
@@ -737,7 +1010,10 @@
       "nameEn": "Skoda",
       "nameAr": "سكودا",
       "status": "active",
-      "sortOrder": 920
+      "sortOrder": 920,
+      "countryCode": "CZ",
+      "countryNameEn": "Czech Republic",
+      "countryNameAr": "التشيك"
     },
     {
       "id": "make-seat",
@@ -745,7 +1021,10 @@
       "nameEn": "Seat",
       "nameAr": "سيات",
       "status": "active",
-      "sortOrder": 930
+      "sortOrder": 930,
+      "countryCode": "ES",
+      "countryNameEn": "Spain",
+      "countryNameAr": "إسبانيا"
     },
     {
       "id": "make-cupra",
@@ -753,7 +1032,10 @@
       "nameEn": "Cupra",
       "nameAr": "كوبرا",
       "status": "active",
-      "sortOrder": 940
+      "sortOrder": 940,
+      "countryCode": "ES",
+      "countryNameEn": "Spain",
+      "countryNameAr": "إسبانيا"
     },
     {
       "id": "make-hummer",
@@ -761,7 +1043,10 @@
       "nameEn": "Hummer",
       "nameAr": "همر",
       "status": "active",
-      "sortOrder": 950
+      "sortOrder": 950,
+      "countryCode": "US",
+      "countryNameEn": "United States",
+      "countryNameAr": "الولايات المتحدة"
     },
     {
       "id": "make-iveco",
@@ -769,7 +1054,10 @@
       "nameEn": "Iveco",
       "nameAr": "إيفيكو",
       "status": "active",
-      "sortOrder": 960
+      "sortOrder": 960,
+      "countryCode": "IT",
+      "countryNameEn": "Italy",
+      "countryNameAr": "إيطاليا"
     },
     {
       "id": "make-man",
@@ -777,7 +1065,10 @@
       "nameEn": "MAN",
       "nameAr": "مان",
       "status": "active",
-      "sortOrder": 970
+      "sortOrder": 970,
+      "countryCode": "DE",
+      "countryNameEn": "Germany",
+      "countryNameAr": "ألمانيا"
     },
     {
       "id": "make-hino",
@@ -785,7 +1076,10 @@
       "nameEn": "Hino",
       "nameAr": "هينو",
       "status": "active",
-      "sortOrder": 980
+      "sortOrder": 980,
+      "countryCode": "JP",
+      "countryNameEn": "Japan",
+      "countryNameAr": "اليابان"
     },
     {
       "id": "make-foton",
@@ -793,7 +1087,10 @@
       "nameEn": "Foton",
       "nameAr": "فوتون",
       "status": "active",
-      "sortOrder": 990
+      "sortOrder": 990,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-maxus",
@@ -801,7 +1098,10 @@
       "nameEn": "Maxus",
       "nameAr": "ماكسوس",
       "status": "active",
-      "sortOrder": 1000
+      "sortOrder": 1000,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-great-wall",
@@ -809,7 +1109,10 @@
       "nameEn": "Great Wall",
       "nameAr": "جريت وول",
       "status": "active",
-      "sortOrder": 1010
+      "sortOrder": 1010,
+      "countryCode": "CN",
+      "countryNameEn": "China",
+      "countryNameAr": "الصين"
     },
     {
       "id": "make-ssangyong",
@@ -817,7 +1120,10 @@
       "nameEn": "SsangYong",
       "nameAr": "سانج يونج",
       "status": "active",
-      "sortOrder": 1020
+      "sortOrder": 1020,
+      "countryCode": "KR",
+      "countryNameEn": "South Korea",
+      "countryNameAr": "كوريا الجنوبية"
     }
   ],
   "models": [
@@ -5842,6 +6148,16 @@
       "sortOrder": 50
     },
     {
+      "id": "model-byd-song",
+      "makeId": "make-byd",
+      "makeSlug": "byd",
+      "slug": "song",
+      "nameEn": "Song",
+      "nameAr": "Song",
+      "active": true,
+      "sortOrder": 60
+    },
+    {
       "id": "model-byd-song-plus",
       "makeId": "make-byd",
       "makeSlug": "byd",
@@ -5849,7 +6165,7 @@
       "nameEn": "Song Plus",
       "nameAr": "Song Plus",
       "active": true,
-      "sortOrder": 60
+      "sortOrder": 70
     },
     {
       "id": "model-byd-tang",
@@ -5859,7 +6175,7 @@
       "nameEn": "Tang",
       "nameAr": "Tang",
       "active": true,
-      "sortOrder": 70
+      "sortOrder": 80
     },
     {
       "id": "model-byd-han",
@@ -5869,7 +6185,7 @@
       "nameEn": "Han",
       "nameAr": "Han",
       "active": true,
-      "sortOrder": 80
+      "sortOrder": 90
     },
     {
       "id": "model-byd-yangwang-u8",
@@ -5879,7 +6195,7 @@
       "nameEn": "Yangwang U8",
       "nameAr": "Yangwang U8",
       "active": true,
-      "sortOrder": 90
+      "sortOrder": 100
     },
     {
       "id": "model-byd-shark",
@@ -5889,7 +6205,7 @@
       "nameEn": "Shark",
       "nameAr": "Shark",
       "active": true,
-      "sortOrder": 100
+      "sortOrder": 110
     },
     {
       "id": "model-geely-emgrand",

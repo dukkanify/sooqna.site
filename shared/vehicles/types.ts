@@ -7,6 +7,9 @@ export type VehicleMake = {
   nameAr: string;
   status: VehicleMakeStatus;
   sortOrder: number;
+  countryCode?: string;
+  countryNameEn?: string;
+  countryNameAr?: string;
 };
 
 export type VehicleModel = {

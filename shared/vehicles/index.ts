@@ -152,9 +152,11 @@ export function vehicleCatalogStats() {
   const duplicateModelKeys =
     models.length -
     new Set(models.map((model) => `${model.makeId}::${model.slug}`)).size;
+  const makesWithCountry = makes.filter((make) => Boolean(make.countryCode)).length;
   return {
     makesTotal: makes.length,
     makesActive: activeMakes.length,
+    makesWithCountry,
     modelsTotal: models.length,
     orphanModels: orphanModels.length,
     duplicateMakeSlugs,
