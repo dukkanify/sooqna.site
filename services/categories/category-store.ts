@@ -11,12 +11,28 @@ import {
   countListingsByCategory,
   countActiveListingsByCategory,
 } from "@/services/listings/listing-queries";
-import { LISTINGS_CACHE_TAG, CATEGORY_COUNTS_REVALIDATE_SECONDS } from "@/services/listings/listings-cache";
+import {
+  LISTINGS_CACHE_TAG,
+  CATEGORY_COUNTS_REVALIDATE_SECONDS,
+} from "@/services/listings/listings-cache";
 import { unstable_cache } from "next/cache";
+import {
+  BUILTIN_CATEGORY_PROFILES,
+  getCategoryFeatureProfileMeta,
+  getFormTemplateFields,
+  resolveCategoryFeatureProfile,
+  slugifyCategoryName,
+  type CategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
+import { replaceCategoryFormFields } from "@/services/admin/category-form-store";
 
 const FILE = "categories.json";
 
-type StoredCategory = Category & { enabled: boolean; sortOrder: number };
+type StoredCategory = Category & {
+  enabled: boolean;
+  sortOrder: number;
+  featureProfile?: CategoryFeatureProfile;
+};
 
 let cacheRows: StoredCategory[] | null = null;
 let inflight: Promise<StoredCategory[]> | null = null;
@@ -27,6 +43,10 @@ function seedCategories(): StoredCategory[] {
     listingCount: 0,
     enabled: true,
     sortOrder: index + 1,
+    featureProfile:
+      category.featureProfile ??
+      BUILTIN_CATEGORY_PROFILES[category.id] ??
+      "general",
   }));
 }
 
@@ -40,6 +60,13 @@ function cloneCategories(rows: StoredCategory[]) {
 function setCache(rows: StoredCategory[]) {
   cacheRows = cloneCategories(rows);
   return cacheRows;
+}
+
+function withResolvedProfile(row: StoredCategory): StoredCategory {
+  return {
+    ...row,
+    featureProfile: resolveCategoryFeatureProfile(row.id, row.featureProfile),
+  };
 }
 
 async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
@@ -56,10 +83,13 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
         return setCache(seeded);
       }
       return setCache(
-        stored.map((row, index) => ({
-          ...row,
-          sortOrder: typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
-        })),
+        stored.map((row, index) =>
+          withResolvedProfile({
+            ...row,
+            sortOrder:
+              typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
+          }),
+        ),
       );
     })().finally(() => {
       inflight = null;
@@ -69,9 +99,11 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
   return cloneCategories(await inflight);
 }
 
-export const getAllCategoryRecords = cache(async (): Promise<StoredCategory[]> => {
-  return loadCategoryRecordsUncached();
-});
+export const getAllCategoryRecords = cache(
+  async (): Promise<StoredCategory[]> => {
+    return loadCategoryRecordsUncached();
+  },
+);
 
 const getActiveListingCountsCached = unstable_cache(
   async () => {
@@ -91,7 +123,10 @@ export const getEnabledCategories = cache(async (): Promise<Category[]> => {
 
   return categories
     .filter((category) => category.enabled)
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "ar"))
+    .sort(
+      (a, b) =>
+        a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "ar"),
+    )
     .map((category) => ({
       id: category.id,
       name: category.name,
@@ -101,6 +136,10 @@ export const getEnabledCategories = cache(async (): Promise<Category[]> => {
       subcategories: [...category.subcategories],
       imageUrl: category.imageUrl,
       featuredListingSlug: category.featuredListingSlug,
+      featureProfile: resolveCategoryFeatureProfile(
+        category.id,
+        category.featureProfile,
+      ),
     }));
 });
 
@@ -111,6 +150,13 @@ export async function getCategoryBySlug(
   return categories.find((category) => category.slug === slug);
 }
 
+export async function getCategoryById(
+  id: string,
+): Promise<Category | undefined> {
+  const categories = await getEnabledCategories();
+  return categories.find((category) => category.id === id);
+}
+
 export async function getAdminCategoryRecords(): Promise<AdminCategoryRecord[]> {
   const [categories, counts] = await Promise.all([
     getAllCategoryRecords(),
@@ -119,41 +165,97 @@ export async function getAdminCategoryRecords(): Promise<AdminCategoryRecord[]> 
 
   return categories
     .slice()
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "ar"))
+    .sort(
+      (a, b) =>
+        a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "ar"),
+    )
     .map((category) => ({
-    id: category.id,
-    name: category.name,
-    slug: category.slug,
-    icon: category.icon,
-    listingCount: counts.get(category.id) ?? 0,
-    enabled: category.enabled,
-    sortOrder: category.sortOrder,
-    subcategories: [...category.subcategories],
-  }));
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      icon: category.icon,
+      listingCount: counts.get(category.id) ?? 0,
+      enabled: category.enabled,
+      sortOrder: category.sortOrder,
+      subcategories: [...category.subcategories],
+      featureProfile: resolveCategoryFeatureProfile(
+        category.id,
+        category.featureProfile,
+      ),
+    }));
+}
+
+async function seedFormForProfile(
+  categoryId: string,
+  profile: CategoryFeatureProfile,
+) {
+  const defaults = getFormTemplateFields(profile);
+  if (defaults.length === 0) return;
+  await replaceCategoryFormFields(
+    categoryId,
+    defaults.map((field, index) => ({
+      fieldKey: field.key,
+      label: field.label,
+      type: field.type,
+      required: Boolean(field.required),
+      enabled: true,
+      sortOrder: index,
+      placeholder: field.placeholder,
+      note: field.note,
+      options: field.options,
+      showWhen: field.showWhen,
+      titlePart: field.titlePart,
+      searchable: field.searchable,
+    })),
+  );
 }
 
 export async function createCategoryRecord(
   input: AdminCategoryCreateInput,
 ): Promise<AdminCategoryRecord> {
   const categories = await loadCategoryRecordsUncached();
-  const slug = input.slug.trim().toLowerCase().replace(/\s+/g, "-");
+  const slug = (input.slug.trim() || slugifyCategoryName(input.name))
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  if (!slug) {
+    throw new Error("INVALID_SLUG");
+  }
+  if (categories.some((row) => row.slug === slug || row.id === slug)) {
+    throw new Error("SLUG_TAKEN");
+  }
+
+  const profile = resolveCategoryFeatureProfile(
+    slug,
+    input.featureProfile ?? "general",
+  );
+  const meta = getCategoryFeatureProfileMeta(profile);
   const maxOrder = categories.reduce(
     (max, row) => Math.max(max, row.sortOrder ?? 0),
     0,
   );
   const record: StoredCategory = {
-    id: `cat-${Date.now()}`,
+    id: slug,
     name: input.name.trim(),
     slug,
-    icon: input.icon ?? "wrench",
+    icon: input.icon ?? meta.defaultIcon,
     listingCount: 0,
     subcategories: [],
     enabled: true,
     sortOrder: input.sortOrder ?? maxOrder + 1,
+    featureProfile: profile,
   };
   categories.unshift(record);
   await saveCollection(FILE, categories);
   setCache(categories);
+
+  if (input.seedForm !== false) {
+    await seedFormForProfile(record.id, profile);
+  }
+
   return {
     id: record.id,
     name: record.name,
@@ -163,6 +265,7 @@ export async function createCategoryRecord(
     enabled: true,
     sortOrder: record.sortOrder,
     subcategories: [],
+    featureProfile: profile,
   };
 }
 
@@ -173,9 +276,14 @@ export async function patchCategoryRecord(
   const categories = await loadCategoryRecordsUncached();
   const index = categories.findIndex((item) => item.id === id);
   if (index < 0) return undefined;
+  const nextProfile =
+    patch.featureProfile !== undefined
+      ? resolveCategoryFeatureProfile(id, patch.featureProfile)
+      : categories[index].featureProfile;
   categories[index] = {
     ...categories[index],
     ...patch,
+    featureProfile: nextProfile,
     subcategories: [...categories[index].subcategories],
   };
   await saveCollection(FILE, categories);
@@ -190,5 +298,6 @@ export async function patchCategoryRecord(
     enabled: row.enabled,
     sortOrder: row.sortOrder,
     subcategories: [...row.subcategories],
+    featureProfile: resolveCategoryFeatureProfile(row.id, row.featureProfile),
   };
 }

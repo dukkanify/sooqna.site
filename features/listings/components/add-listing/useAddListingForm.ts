@@ -6,6 +6,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useImagePreviews } from "./useImagePreviews";
 import { cities, countries } from "@/shared/constants/locations";
 import { isDynamicCategory } from "@/shared/constants/category-fields";
+import {
+  getCategoryFeatureProfileMeta,
+  resolveCategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
 import type { Category, Listing } from "@/types";
 import {
   getAccountGatePath,
@@ -193,7 +197,12 @@ export function useAddListingForm(categories: Category[]) {
     () => categories.find((category) => category.id === selectedCategoryId),
     [categories, selectedCategoryId],
   );
-  const isJobsCategory = selectedCategoryId === "jobs";
+  const selectedProfile = resolveCategoryFeatureProfile(
+    selectedCategoryId,
+    selectedCategory?.featureProfile,
+  );
+  const isJobsCategory = selectedProfile === "jobs";
+  const imagesRequired = getCategoryFeatureProfileMeta(selectedProfile).imagesRequired;
 
   const publishListing = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -218,7 +227,29 @@ export function useAddListingForm(categories: Category[]) {
       const videoUrl = String(formData.get("videoUrl") ?? "").trim();
       const listingPackage = String(formData.get("package") ?? "free");
       const wantsFeatured = listingPackage === "featured_pending";
-      const parsed = parseCategoryForm(formData, categoryId);
+      const category = categories.find((item) => item.id === categoryId);
+      const featureProfile = resolveCategoryFeatureProfile(
+        categoryId,
+        category?.featureProfile,
+      );
+      const profileMeta = getCategoryFeatureProfileMeta(featureProfile);
+
+      let remoteFields: import("@/types").CategoryFieldDefinition[] = [];
+      try {
+        const fieldsResponse = await fetch(
+          `/api/category-fields?categoryId=${encodeURIComponent(categoryId)}`,
+        );
+        if (fieldsResponse.ok) {
+          const fieldsData = await fieldsResponse.json();
+          if (Array.isArray(fieldsData.fields)) {
+            remoteFields = fieldsData.fields;
+          }
+        }
+      } catch {
+        remoteFields = [];
+      }
+
+      const parsed = parseCategoryForm(formData, categoryId, remoteFields);
       const nextErrors: AddListingErrors & Record<string, string | undefined> = {
         ...parsed.errors,
       };
@@ -229,7 +260,7 @@ export function useAddListingForm(categories: Category[]) {
       if (!/^(\+971|971|0)?5\d{8}$/.test(contact)) {
         nextErrors.contact = "اكتب رقم تواصل إماراتي صحيح.";
       }
-      if (!isJobsCategory && imageFiles.length === 0) {
+      if (profileMeta.imagesRequired && imageFiles.length === 0) {
         nextErrors.images = "أضف صورة حقيقية واحدة على الأقل للمنتج.";
       }
       if (
@@ -270,11 +301,13 @@ export function useAddListingForm(categories: Category[]) {
         }
       }
 
-      const cityName = isDynamicCategory(categoryId)
+      const usesDynamicFields =
+        remoteFields.length > 0 || isDynamicCategory(categoryId);
+      const cityName = usesDynamicFields
         ? parsed.city
         : cities.find((city) => city.id === parsed.city)?.name ?? "دبي";
 
-      const title = isDynamicCategory(categoryId)
+      const title = usesDynamicFields
         ? parsed.title
         : String(formData.get("title") ?? "").trim();
       const id = `local-${Date.now()}`;
@@ -285,6 +318,7 @@ export function useAddListingForm(categories: Category[]) {
         slug: createListingSlug({ id, title }),
         description,
         categoryId,
+        featureProfile,
         city: cityName,
         country: countries[0].name,
         price,
@@ -299,7 +333,7 @@ export function useAddListingForm(categories: Category[]) {
         seller: buildSellerFromSession(user),
         imageTone: "gold",
         postedAt,
-        categorySpecs: isDynamicCategory(categoryId) ? parsed.categorySpecs : undefined,
+        categorySpecs: usesDynamicFields ? parsed.categorySpecs : undefined,
         features: parsed.features.length > 0 ? parsed.features : undefined,
         negotiable: parsed.negotiable,
         emirate: parsed.emirate,
@@ -401,7 +435,7 @@ export function useAddListingForm(categories: Category[]) {
 
       router.push(`/listings/local/${id}`);
     },
-    [featuredCheckoutAvailable, imageFiles, isJobsCategory, router, selectedCategoryId],
+    [categories, featuredCheckoutAvailable, imageFiles, router, selectedCategoryId],
   );
 
   const { isLoading: isSubmitting, run: submitListing } =
@@ -439,6 +473,7 @@ export function useAddListingForm(categories: Category[]) {
     imagePreviews,
     isAllowed,
     isJobsCategory,
+    imagesRequired,
     isSubmitting,
     preview,
     selectedCategory,

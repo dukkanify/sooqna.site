@@ -1,7 +1,6 @@
 import type { CategoryFieldDefinition, CategorySpecs, ListingCondition } from "@/types";
 import {
   getCategoryFields,
-  isDynamicCategory,
 } from "@/shared/constants/category-fields";
 
 export type CategoryFormResult = {
@@ -54,6 +53,7 @@ function normalizeCondition(value: string): ListingCondition {
 export function parseCategoryForm(
   formData: FormData,
   categoryId: string,
+  fieldsOverride?: CategoryFieldDefinition[],
 ): CategoryFormResult {
   const errors: Record<string, string> = {};
   const categorySpecs: CategorySpecs = {};
@@ -62,7 +62,12 @@ export function parseCategoryForm(
   let city = "";
   let emirate: string | undefined;
 
-  if (!isDynamicCategory(categoryId)) {
+  const fields =
+    fieldsOverride && fieldsOverride.length > 0
+      ? fieldsOverride
+      : getCategoryFields(categoryId);
+
+  if (fields.length === 0) {
     const title = String(formData.get("title") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
     const price = Number(formData.get("price") ?? 0);
@@ -82,8 +87,6 @@ export function parseCategoryForm(
       emirate: undefined,
     };
   }
-
-  const fields = getCategoryFields(categoryId);
   const visibilitySpecs: Record<string, string> = {};
   for (const field of fields) {
     if (field.type === "checkbox-group") continue;

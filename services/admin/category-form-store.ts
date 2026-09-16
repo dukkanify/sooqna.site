@@ -59,12 +59,12 @@ export async function listCategoryFormFields(categoryId: string) {
 export async function resolveCategoryFields(
   categoryId: string,
 ): Promise<CategoryFieldDefinition[]> {
-  if (!isDynamicCategory(categoryId)) return [];
   const stored = await listCategoryFormFields(categoryId);
   const enabled = stored.filter((row) => row.enabled);
   if (enabled.length > 0) {
     return enabled.map(toDefinition);
   }
+  if (!isDynamicCategory(categoryId)) return [];
   return getCategoryFields(categoryId);
 }
 

@@ -7,7 +7,7 @@ export default function AdminCategoriesPage() {
   return (
     <AdminShell
       activePath="/admin/categories"
-      description="إدارة أقسام السوق وتفعيلها أو إيقافها، مع منشئ النماذج الديناميكية وكتالوج السيارات المرجعي."
+      description="أضف أقساماً جديدة بسلوك برمجي ذكي (وظائف، عقارات، سلع، خدمات…)، مع منشئ النماذج الديناميكية وكتالوج السيارات."
       title="التصنيفات"
     >
       <div className="grid gap-6">

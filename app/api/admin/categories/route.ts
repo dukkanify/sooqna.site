@@ -7,6 +7,7 @@ import {
   createCategoryRecord,
   getAdminCategoryRecords,
 } from "@/services/categories/category-store";
+import { isCategoryFeatureProfile } from "@/shared/constants/category-feature-profiles";
 import type { AdminCategoryCreateInput } from "@/types";
 
 export async function GET() {
@@ -24,15 +25,31 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as AdminCategoryCreateInput;
-  if (!body?.name?.trim() || !body?.slug?.trim()) {
+  if (!body?.name?.trim()) {
     return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 });
   }
+  if (body.featureProfile && !isCategoryFeatureProfile(body.featureProfile)) {
+    return NextResponse.json({ error: "INVALID_PROFILE" }, { status: 400 });
+  }
 
-  const category = await createCategoryRecord({
-    name: body.name,
-    slug: body.slug,
-    icon: body.icon,
-  });
-
-  return NextResponse.json({ category }, { status: 201 });
+  try {
+    const category = await createCategoryRecord({
+      name: body.name,
+      slug: body.slug ?? "",
+      icon: body.icon,
+      featureProfile: body.featureProfile,
+      seedForm: body.seedForm,
+      sortOrder: body.sortOrder,
+    });
+    return NextResponse.json({ category }, { status: 201 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "CREATE_FAILED";
+    if (message === "SLUG_TAKEN") {
+      return NextResponse.json({ error: "SLUG_TAKEN" }, { status: 409 });
+    }
+    if (message === "INVALID_SLUG") {
+      return NextResponse.json({ error: "INVALID_SLUG" }, { status: 400 });
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

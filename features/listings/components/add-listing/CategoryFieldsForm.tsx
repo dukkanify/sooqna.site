@@ -195,18 +195,21 @@ export function CategoryFieldsForm({
     categoryId: string;
     fields: CategoryFieldDefinition[];
   } | null>(null);
-
   useEffect(() => {
-    if (!isDynamicCategory(categoryId)) return;
+    if (!categoryId) return;
     let cancelled = false;
     void fetch(`/api/category-fields?categoryId=${encodeURIComponent(categoryId)}`)
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
-        if (cancelled || !Array.isArray(data?.fields) || data.fields.length === 0) return;
-        setRemoteFields({
-          categoryId,
-          fields: data.fields as CategoryFieldDefinition[],
-        });
+        if (cancelled) return;
+        if (Array.isArray(data?.fields) && data.fields.length > 0) {
+          setRemoteFields({
+            categoryId,
+            fields: data.fields as CategoryFieldDefinition[],
+          });
+        } else if (!isDynamicCategory(categoryId)) {
+          setRemoteFields({ categoryId, fields: [] });
+        }
       })
       .catch(() => undefined);
     return () => {
@@ -215,7 +218,9 @@ export function CategoryFieldsForm({
   }, [categoryId]);
 
   const allFields =
-    remoteFields?.categoryId === categoryId ? remoteFields.fields : fallbackFields;
+    remoteFields?.categoryId === categoryId
+      ? remoteFields.fields
+      : fallbackFields;
 
   const [specs, setSpecs] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -226,7 +231,17 @@ export function CategoryFieldsForm({
     return initial;
   });
 
-  if (!isDynamicCategory(categoryId)) {
+  if (!categoryId) {
+    return null;
+  }
+  if (
+    remoteFields?.categoryId === categoryId &&
+    remoteFields.fields.length === 0 &&
+    !isDynamicCategory(categoryId)
+  ) {
+    return null;
+  }
+  if (allFields.length === 0 && !isDynamicCategory(categoryId)) {
     return null;
   }
 

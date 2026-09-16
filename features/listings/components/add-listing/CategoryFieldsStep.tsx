@@ -1,6 +1,5 @@
 import type { CategoryFieldsDefaults, CategoryFieldErrors } from "./CategoryFieldsForm";
 import { CategoryFieldsForm } from "./CategoryFieldsForm";
-import { isDynamicCategory } from "@/shared/constants/category-fields";
 import type { AddListingErrors } from "./types";
 
 type CategoryFieldsStepProps = {
@@ -9,7 +8,7 @@ type CategoryFieldsStepProps = {
 };
 
 export function CategoryFieldsStep({ categoryId, errors }: CategoryFieldsStepProps) {
-  if (!isDynamicCategory(categoryId)) {
+  if (!categoryId) {
     return null;
   }
 

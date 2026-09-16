@@ -1,7 +1,13 @@
 import { isShowcaseListing, type ShowcaseListingRef } from "@/shared/listings/showcase-listing";
+import {
+  getCategoryFeatureProfileMeta,
+  resolveCategoryFeatureProfile,
+  type CategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
 
 export type PurchaseEligibilityInput = ShowcaseListingRef & {
   categoryId: string;
+  featureProfile?: CategoryFeatureProfile;
   status?: string;
   price: number;
   currency?: string;
@@ -9,7 +15,7 @@ export type PurchaseEligibilityInput = ShowcaseListingRef & {
 };
 
 /**
- * Categories that MAY support direct online purchase when checkout is operational.
+ * Built-in categories that MAY support direct online purchase when checkout is operational.
  * Cars, real estate, jobs, and quote services are never checkout listings.
  */
 export const PURCHASABLE_CATEGORY_IDS = new Set([
@@ -30,14 +36,23 @@ export function isCheckoutOperational(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim());
 }
 
-export function isPurchasableCategory(categoryId: string): boolean {
+export function isPurchasableCategory(
+  categoryId: string,
+  featureProfile?: CategoryFeatureProfile | null,
+): boolean {
   if (CONTACT_ONLY_CATEGORIES.has(categoryId)) return false;
-  return PURCHASABLE_CATEGORY_IDS.has(categoryId);
+  if (PURCHASABLE_CATEGORY_IDS.has(categoryId)) return true;
+  const profile = resolveCategoryFeatureProfile(categoryId, featureProfile);
+  return getCategoryFeatureProfileMeta(profile).purchasable;
 }
 
 export function isWholesaleFoodListing(listing: PurchaseEligibilityInput): boolean {
+  const profile = resolveCategoryFeatureProfile(
+    listing.categoryId,
+    listing.featureProfile,
+  );
   return (
-    listing.categoryId === "food" &&
+    (listing.categoryId === "food" || profile === "food") &&
     listing.categorySpecs?.saleType === "wholesale"
   );
 }
@@ -47,7 +62,9 @@ export function isWholesaleFoodListing(listing: PurchaseEligibilityInput): boole
  * Does not inspect button copy — category, type, status, price, and provenance only.
  */
 export function listingMeetsPurchaseRules(listing: PurchaseEligibilityInput): boolean {
-  if (!isPurchasableCategory(listing.categoryId)) return false;
+  if (!isPurchasableCategory(listing.categoryId, listing.featureProfile)) {
+    return false;
+  }
   if (listing.status && listing.status !== "active") return false;
   if (isShowcaseListing(listing)) return false;
   if (!Number.isFinite(listing.price) || listing.price <= 0) return false;

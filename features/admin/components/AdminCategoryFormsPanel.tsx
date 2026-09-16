@@ -3,11 +3,15 @@
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useCallback, useEffect, useState } from "react";
 import { getSessionUser } from "@/services/storage";
-import { DYNAMIC_CATEGORY_IDS } from "@/shared/constants/category-fields";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
+import type { AdminCategoryRecord } from "@/types";
+import {
+  getCategoryFeatureProfileMeta,
+  resolveCategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
 
 type StoredField = {
   id?: string;
@@ -43,13 +47,18 @@ const TYPE_OPTIONS = [
 ];
 
 export function AdminCategoryFormsPanel() {
-  const [categoryId, setCategoryId] = useState<string>(DYNAMIC_CATEGORY_IDS[0]);
+  const [categories, setCategories] = useState<AdminCategoryRecord[]>([]);
+  const [categoryId, setCategoryId] = useState<string>("");
   const [fields, setFields] = useState<StoredField[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const loadFields = useCallback(async (id: string) => {
+    if (!id) {
+      setFields([]);
+      return;
+    }
     const response = await adminFetch(
       `/api/admin/category-forms?categoryId=${encodeURIComponent(id)}`,
     );
@@ -81,6 +90,26 @@ export function AdminCategoryFormsPanel() {
   useEffect(() => {
     const user = getSessionUser();
     if (!user || user.role !== "admin") return;
+    let cancelled = false;
+    void adminFetch("/api/admin/categories")
+      .then((response) => response.json())
+      .then((data) => {
+        if (cancelled) return;
+        const rows = (data.categories ?? []) as AdminCategoryRecord[];
+        setCategories(rows);
+        setCategoryId((prev) => prev || rows[0]?.id || "");
+      })
+      .catch(() => {
+        if (!cancelled) setCategories([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const user = getSessionUser();
+    if (!user || user.role !== "admin" || !categoryId) return;
     let cancelled = false;
     void adminFetch(
       `/api/admin/category-forms?categoryId=${encodeURIComponent(categoryId)}`,
@@ -122,6 +151,7 @@ export function AdminCategoryFormsPanel() {
   }, [categoryId]);
 
   async function saveFields() {
+    if (!categoryId) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -176,20 +206,40 @@ export function AdminCategoryFormsPanel() {
     ]);
   }
 
+  const activeCategory = categories.find((item) => item.id === categoryId);
+  const profileMeta = activeCategory
+    ? getCategoryFeatureProfileMeta(
+        resolveCategoryFeatureProfile(
+          activeCategory.id,
+          activeCategory.featureProfile,
+        ),
+      )
+    : null;
+
   return (
     <div className="grid gap-5">
       <Card className="grid gap-3 p-5" variant="flat">
         <h3 className="text-base font-bold text-ink">منشئ النماذج الديناميكية</h3>
         <p className="text-sm text-muted">
-          عدّل حقول إضافة/تعديل الإعلان حسب التصنيف دون تغيير الكود. التغييرات تُحفظ في قاعدة
-          البيانات.
+          عدّل حقول إضافة/تعديل الإعلان حسب التصنيف دون تغيير الكود. الفئات الجديدة تُزرع
+          تلقائياً حسب سلوك السوق الذي اخترته عند الإنشاء.
         </p>
         <Select
           label="التصنيف"
           onChange={(event) => setCategoryId(event.target.value)}
-          options={DYNAMIC_CATEGORY_IDS.map((id) => ({ label: id, value: id }))}
+          options={categories.map((category) => ({
+            label: `${category.name} (${category.slug})`,
+            value: category.id,
+          }))}
           value={categoryId}
         />
+        {profileMeta ? (
+          <p className="text-xs text-muted">
+            السلوك: <span className="font-semibold text-ink">{profileMeta.label}</span>
+            {" — "}
+            {profileMeta.capabilities.join(" · ")}
+          </p>
+        ) : null}
         <div className="grid gap-3">
           {fields.map((field, index) => (
             <div

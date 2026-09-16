@@ -1,3 +1,5 @@
+import type { CategoryFeatureProfile } from "@/shared/constants/category-feature-profiles";
+
 export type CategoryIconName =
   | "car"
   | "home"
@@ -22,4 +24,6 @@ export type Category = {
   subcategories: string[];
   imageUrl?: string;
   featuredListingSlug?: string;
+  /** Marketplace behavior profile (jobs, goods, vehicles, …). */
+  featureProfile?: CategoryFeatureProfile;
 };
