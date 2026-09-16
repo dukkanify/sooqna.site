@@ -1,5 +1,6 @@
 "use client";
 
+import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ShareButton } from "@/shared/components/ShareButton";
 import type { Listing } from "@/types";
 import type { ListingReportReceipt } from "@/types/domain/listing-report";
@@ -31,6 +32,9 @@ export function ListingDetailToolbar({ listing }: ListingDetailToolbarProps) {
   return (
     <LocalizedTree>
     <div className="mt-4 flex flex-wrap items-center gap-2">
+      <span className="lg:hidden">
+        <FavoriteButton className="!min-h-9" listing={listing} />
+      </span>
       <ShareButton className="!min-h-9" listing={listing} />
       <Button className="!min-h-9" onClick={handlePrint} size="sm" variant="secondary">
         <Icon name="photo" size={14} />

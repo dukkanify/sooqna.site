@@ -15,6 +15,7 @@ import { useToast } from "@/shared/components/ToastProvider";
 import {
   getListingActionConfig,
   getListingActionLabel,
+  type ListingActionType,
 } from "@/shared/constants/listingActionConfig";
 import { isGuestCheckoutEnabled } from "@/shared/constants/feature-flags";
 import { LISTING_ERRORS } from "@/shared/constants/listing-errors";
@@ -181,6 +182,16 @@ function MobileContactIconButton({
   );
 }
 
+/** Primary intents that need a visible CTA on mobile (desktop sticky panel parity). */
+const MOBILE_PRIMARY_CTA_ACTIONS = new Set<ListingActionType>([
+  "APPLY_JOB",
+  "BOOK_SERVICE",
+  "BOOK_VIEWING",
+  "BUY_NOW",
+  "REQUEST_QUOTE",
+  "RESERVE",
+]);
+
 export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -190,8 +201,11 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const tel = getTelHref(listing);
   const whatsapp = getWhatsAppHref(listing, getListingCanonicalUrl(listing));
   const primaryLabel = getListingActionLabel(listing, config.primaryAction);
-  const showGoldCta = !isOwn && config.showBuyNow;
+  const showGoldCta =
+    !isOwn && MOBILE_PRIMARY_CTA_ACTIONS.has(config.primaryAction);
   const showContactIcons = !isOwn;
+  const isCheckoutCta =
+    config.primaryAction === "BUY_NOW" || config.primaryAction === "RESERVE";
 
   function handleBuyNow() {
     if (listing.status !== "active") {
@@ -218,14 +232,24 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
         className={`mobile-sticky-bar__inner${showGoldCta ? "" : " mobile-sticky-bar__inner--icons-only"}`}
       >
         {showGoldCta ? (
-          <button
-            className="focus-ring mobile-sticky-bar__cta"
-            onClick={handleBuyNow}
-            type="button"
-          >
-            <Icon name="package" size={18} />
-            {primaryLabel}
-          </button>
+          isCheckoutCta ? (
+            <button
+              className="focus-ring mobile-sticky-bar__cta"
+              onClick={handleBuyNow}
+              type="button"
+            >
+              <Icon name="package" size={18} />
+              {primaryLabel}
+            </button>
+          ) : (
+            <ListingPrimaryAction
+              action={config.primaryAction}
+              className="mobile-sticky-bar__cta"
+              listing={listing}
+              size="md"
+              variant="accent"
+            />
+          )
         ) : null}
 
         {showContactIcons ? (
