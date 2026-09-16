@@ -37,7 +37,7 @@ function escapeHtml(value: string): string {
 
 function getFromAddress(): string {
   const name = process.env.EMAIL_FROM_NAME?.trim() || "Sooqna | سوقنا";
-  const address = process.env.EMAIL_FROM_ADDRESS?.trim() || "no-reply@sooqna.site";
+  const address = process.env.EMAIL_FROM_ADDRESS?.trim() || "no-reply@sooqnauae.com";
   return `${name} <${address}>`;
 }
 
@@ -136,7 +136,7 @@ async function sendWithResend(input: SendEmailInput): Promise<boolean> {
   const primaryFrom = getFromAddress();
   const fromAddress = extractEmailAddress(primaryFrom);
   if (fromAddress.endsWith("@resend.dev")) {
-    console.error("[Sooqna Email] production sender must use verified sooqna.site domain", {
+    console.error("[Sooqna Email] production sender must use verified sooqnauae.com domain", {
       ...emailLogBase(input, primaryFrom),
     });
     return false;

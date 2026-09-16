@@ -1,4 +1,4 @@
-const PRODUCTION_SITE_URL = "https://sooqna.site";
+const PRODUCTION_SITE_URL = "https://sooqnauae.com";
 const DEVELOPMENT_SITE_URL = "http://localhost:3000";
 
 function vercelPreviewUrl(): string | null {
@@ -28,7 +28,7 @@ export function getSiteDomain(): string {
   try {
     return new URL(getAppUrl()).hostname.replace(/^www\./, "");
   } catch {
-    return "sooqna.site";
+    return "sooqnauae.com";
   }
 }
 

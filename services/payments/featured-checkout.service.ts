@@ -73,7 +73,7 @@ export async function initiateFeaturedCheckout(
   }
 
   const user = await findUserById(userId);
-  const email = user?.email?.trim() || `${userId}@users.sooqna.site`;
+  const email = user?.email?.trim() || `${userId}@users.sooqnauae.com`;
 
   const session = await createFeaturedCheckoutSession({
     listingId,

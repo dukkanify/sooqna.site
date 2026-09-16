@@ -113,7 +113,7 @@ export function isProductionLike(): boolean {
 /**
  * Server-side guard for forced/automatic mock checkout.
  * Never allow silent mock on production-like hosts unless ALLOW_MOCK_CHECKOUT=true
- * (emergency/preview only — do not set on sooqna.site).
+ * (emergency/preview only — do not set on sooqnauae.com).
  */
 export function isMockCheckoutAllowed(): boolean {
   if (process.env.ALLOW_MOCK_CHECKOUT === "true") return true;
