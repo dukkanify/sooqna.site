@@ -94,3 +94,13 @@
 | LIVE INTEGRATED | Pending Production SHA match after merge |
 
 **Do not claim full PRODUCTION READY for all 50 phases.** This PR closes critical data-integrity and catalog gaps identified in the live baseline.
+
+## HOTFIX — BYD Song media (follow-up)
+
+Preview of #69 still showed Tesla Roadster Unsplash photos because the
+`byd_suv` pool IDs were wrong vehicles.
+
+Fix: replace Unsplash pool with local Wikimedia CC-BY-SA BYD Song Plus EV
+images under `/public/media/vehicles/byd/` and allow absolute/local paths
+in `galleryForListingProduct`.
+
