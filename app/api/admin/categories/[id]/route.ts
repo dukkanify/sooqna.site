@@ -41,6 +41,7 @@ export async function PATCH(request: Request, context: RouteParams) {
       body.name ? `اسم ${body.name}` : null,
       body.featureProfile ? `سلوك ${body.featureProfile}` : null,
       body.icon ? `أيقونة ${body.icon}` : null,
+      body.subcategories ? `تصنيفات فرعية ${body.subcategories.length}` : null,
       typeof body.enabled === "boolean"
         ? body.enabled
           ? "مفعّل"

@@ -156,6 +156,7 @@ export type AdminCategoryPatch = Partial<
     | "icon"
     | "sortOrder"
     | "featureProfile"
+    | "subcategories"
   >
 > & {
   /** When featureProfile changes, rebuild add-listing fields from the new template. */
@@ -168,6 +169,7 @@ export type AdminCategoryCreateInput = {
   icon?: CategoryIconName;
   sortOrder?: number;
   featureProfile?: CategoryFeatureProfile;
+  subcategories?: string[];
   /** When true (default), seed add-listing form fields from the profile template. */
   seedForm?: boolean;
 };

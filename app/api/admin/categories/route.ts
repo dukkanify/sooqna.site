@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       featureProfile: body.featureProfile,
       seedForm: body.seedForm,
       sortOrder: body.sortOrder,
+      subcategories: body.subcategories,
     });
     return NextResponse.json({ category }, { status: 201 });
   } catch (error) {

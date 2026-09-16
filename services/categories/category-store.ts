@@ -37,6 +37,20 @@ type StoredCategory = Category & {
 let cacheRows: StoredCategory[] | null = null;
 let inflight: Promise<StoredCategory[]> | null = null;
 
+/** Trim, drop empties, and dedupe while preserving first-seen order. */
+function normalizeSubcategories(input?: string[] | null): string[] {
+  if (!input?.length) return [];
+  const seen = new Set<string>();
+  const next: string[] = [];
+  for (const raw of input) {
+    const value = String(raw ?? "").trim();
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    next.push(value);
+  }
+  return next;
+}
+
 function seedCategories(): StoredCategory[] {
   return mockCategories.map((category, index) => ({
     ...category,
@@ -237,13 +251,14 @@ export async function createCategoryRecord(
     (max, row) => Math.max(max, row.sortOrder ?? 0),
     0,
   );
+  const subcategories = normalizeSubcategories(input.subcategories);
   const record: StoredCategory = {
     id: slug,
     name: input.name.trim(),
     slug,
     icon: input.icon ?? meta.defaultIcon,
     listingCount: 0,
-    subcategories: [],
+    subcategories,
     enabled: true,
     sortOrder: input.sortOrder ?? maxOrder + 1,
     featureProfile: profile,
@@ -264,7 +279,7 @@ export async function createCategoryRecord(
     listingCount: 0,
     enabled: true,
     sortOrder: record.sortOrder,
-    subcategories: [],
+    subcategories: [...subcategories],
     featureProfile: profile,
   };
 }
@@ -280,16 +295,20 @@ export async function patchCategoryRecord(
     id,
     categories[index].featureProfile,
   );
-  const { reseedForm, ...persistPatch } = patch;
+  const { reseedForm, subcategories: patchSubs, ...persistPatch } = patch;
   const nextProfile =
     persistPatch.featureProfile !== undefined
       ? resolveCategoryFeatureProfile(id, persistPatch.featureProfile)
       : categories[index].featureProfile;
+  const nextSubcategories =
+    patchSubs !== undefined
+      ? normalizeSubcategories(patchSubs)
+      : [...categories[index].subcategories];
   categories[index] = {
     ...categories[index],
     ...persistPatch,
     featureProfile: nextProfile,
-    subcategories: [...categories[index].subcategories],
+    subcategories: nextSubcategories,
   };
   await saveCollection(FILE, categories);
   setCache(categories);

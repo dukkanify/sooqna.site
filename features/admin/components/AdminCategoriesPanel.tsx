@@ -11,6 +11,7 @@ import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
+import { Textarea } from "@/shared/ui/Textarea";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { useLocale } from "@/shared/i18n/useLocale";
 import {
@@ -40,6 +41,9 @@ export function AdminCategoriesPanel() {
   const [editIcon, setEditIcon] = useState<CategoryIconName>("sofa");
   const [editProfile, setEditProfile] = useState<CategoryFeatureProfile>("general");
   const [reseedForm, setReseedForm] = useState(true);
+  const [editSubs, setEditSubs] = useState<string[]>([]);
+  const [editSubDraft, setEditSubDraft] = useState("");
+  const [createSubsText, setCreateSubsText] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -119,8 +123,30 @@ export function AdminCategoriesPanel() {
     setEditIcon(category.icon);
     setEditProfile(category.featureProfile ?? "general");
     setReseedForm(true);
+    setEditSubs([...category.subcategories]);
+    setEditSubDraft("");
     setError(null);
     setSuccess(null);
+  }
+
+  function moveEditSub(index: number, direction: -1 | 1) {
+    setEditSubs((current) => {
+      const next = [...current];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return current;
+      const [row] = next.splice(index, 1);
+      next.splice(target, 0, row);
+      return next;
+    });
+  }
+
+  function addEditSub() {
+    const value = editSubDraft.trim();
+    if (!value) return;
+    setEditSubs((current) =>
+      current.includes(value) ? current : [...current, value],
+    );
+    setEditSubDraft("");
   }
 
   async function saveEdit(category: AdminCategoryRecord) {
@@ -136,6 +162,9 @@ export function AdminCategoriesPanel() {
           name: editName.trim(),
           icon: editIcon,
           featureProfile: editProfile,
+          subcategories: editSubs
+            .map((item) => item.trim())
+            .filter(Boolean),
           reseedForm:
             reseedForm &&
             editProfile !== (category.featureProfile ?? "general"),
@@ -199,6 +228,10 @@ export function AdminCategoriesPanel() {
           icon,
           featureProfile,
           seedForm: true,
+          subcategories: createSubsText
+            .split(/[\n,،]+/)
+            .map((item) => item.trim())
+            .filter(Boolean),
         }),
       });
       const data = await response.json();
@@ -217,6 +250,7 @@ export function AdminCategoriesPanel() {
         setName("");
         setSlug("");
         setSlugTouched(false);
+        setCreateSubsText("");
         setFeatureProfile("general");
         setSuccess(
           `تم إنشاء «${data.category.name}» مع نموذج الإعلان وسلوك ${PROFILE_LABELS[data.category.featureProfile as CategoryFeatureProfile] ?? "عام"}.`,
@@ -277,6 +311,19 @@ export function AdminCategoriesPanel() {
             options={CATEGORY_ICON_OPTIONS}
             value={icon}
           />
+        </div>
+
+        <div className="mt-4">
+          <Textarea
+            label="تصنيفات فرعية (اختياري)"
+            onChange={(event) => setCreateSubsText(event.target.value)}
+            placeholder={"سطر أو فاصلة لكل تصنيف\nمثال: فاخرة، اقتصادية، دفع رباعي"}
+            rows={3}
+            value={createSubsText}
+          />
+          <p className="mt-1 text-xs text-muted">
+            تظهر كشرائح فلترة في صفحة الفئة وفي نموذج إضافة الإعلان.
+          </p>
         </div>
 
         <div className="mt-4 rounded-[var(--radius-xl)] border border-border/80 bg-[#f8f6f1] p-4">
@@ -352,6 +399,90 @@ export function AdminCategoriesPanel() {
                         />
                         إعادة تهيئة نموذج الإعلان عند تغيير السلوك
                       </label>
+                      <div className="sm:col-span-2 grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
+                        <p className="text-sm font-semibold text-ink">
+                          التصنيفات الفرعية
+                        </p>
+                        {editSubs.length === 0 ? (
+                          <p className="text-xs text-muted">لا توجد تصنيفات فرعية.</p>
+                        ) : (
+                          <ul className="grid gap-2">
+                            {editSubs.map((sub, index) => (
+                              <li
+                                className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center"
+                                key={`${sub}-${index}`}
+                              >
+                                <Input
+                                  aria-label={`تصنيف فرعي ${index + 1}`}
+                                  onChange={(event) => {
+                                    const value = event.target.value;
+                                    setEditSubs((current) =>
+                                      current.map((item, rowIndex) =>
+                                        rowIndex === index ? value : item,
+                                      ),
+                                    );
+                                  }}
+                                  value={sub}
+                                />
+                                <div className="flex flex-wrap gap-1">
+                                  <Button
+                                    disabled={index === 0}
+                                    onClick={() => moveEditSub(index, -1)}
+                                    size="sm"
+                                    type="button"
+                                    variant="ghost"
+                                  >
+                                    أعلى
+                                  </Button>
+                                  <Button
+                                    disabled={index === editSubs.length - 1}
+                                    onClick={() => moveEditSub(index, 1)}
+                                    size="sm"
+                                    type="button"
+                                    variant="ghost"
+                                  >
+                                    أسفل
+                                  </Button>
+                                  <Button
+                                    onClick={() =>
+                                      setEditSubs((current) =>
+                                        current.filter((_, rowIndex) => rowIndex !== index),
+                                      )
+                                    }
+                                    size="sm"
+                                    type="button"
+                                    variant="ghost"
+                                  >
+                                    حذف
+                                  </Button>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
+                          <Input
+                            label="إضافة تصنيف فرعي"
+                            onChange={(event) => setEditSubDraft(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                addEditSub();
+                              }
+                            }}
+                            placeholder="مثال: سيارات فاخرة"
+                            value={editSubDraft}
+                          />
+                          <Button
+                            onClick={addEditSub}
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            إضافة
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <>
