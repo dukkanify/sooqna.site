@@ -1,4 +1,5 @@
 import { BRAND } from "@/shared/constants/brand";
+import type { AppLocale } from "@/shared/i18n/locale";
 import { getEmirateImageUrl, heroBackgroundUrl } from "@/shared/constants/image-fallbacks";
 
 export type MarketEscrowStep = {
@@ -7,23 +8,45 @@ export type MarketEscrowStep = {
   title: string;
 };
 
+export type MarketQuickSearch = {
+  href: string;
+  label: string;
+};
+
 export async function getMarketHeroBackground(): Promise<string> {
   return heroBackgroundUrl;
 }
 
-export async function getMarketQuickSearches() {
-  return [
-    { href: "/search?q=مرسيدس", label: "مرسيدس" },
-    { href: "/search?q=باترول", label: "باترول" },
-    { href: "/search?q=جزيرة+ياس", label: "جزيرة ياس" },
-    { href: "/search?q=كورنيش+أبوظبي", label: "كورنيش أبوظبي" },
-    { href: "/search?q=شقة", label: "شقة" },
-    { href: "/search?q=فيلا", label: "فيلا" },
-    { href: "/search?q=آيفون", label: "آيفون" },
-    { href: "/search?q=مكتب", label: "مكتب" },
-    { href: "/search?q=ماك+بوك", label: "ماك بوك" },
-    { href: "/search?q=لاند+كروزر", label: "لاند كروزر" },
-  ];
+const QUICK_SEARCHES_AR: MarketQuickSearch[] = [
+  { href: "/search?q=مرسيدس", label: "مرسيدس" },
+  { href: "/search?q=باترول", label: "باترول" },
+  { href: "/search?q=جزيرة+ياس", label: "جزيرة ياس" },
+  { href: "/search?q=كورنيش+أبوظبي", label: "كورنيش أبوظبي" },
+  { href: "/search?q=شقة", label: "شقة" },
+  { href: "/search?q=فيلا", label: "فيلا" },
+  { href: "/search?q=آيفون", label: "آيفون" },
+  { href: "/search?q=مكتب", label: "مكتب" },
+  { href: "/search?q=ماك+بوك", label: "ماك بوك" },
+  { href: "/search?q=لاند+كروزر", label: "لاند كروزر" },
+];
+
+const QUICK_SEARCHES_EN: MarketQuickSearch[] = [
+  { href: "/search?q=Mercedes", label: "Mercedes" },
+  { href: "/search?q=Patrol", label: "Patrol" },
+  { href: "/search?q=Yas+Island", label: "Yas Island" },
+  { href: "/search?q=Abu+Dhabi+Corniche", label: "Abu Dhabi Corniche" },
+  { href: "/search?q=Apartment", label: "Apartment" },
+  { href: "/search?q=Villa", label: "Villa" },
+  { href: "/search?q=iPhone", label: "iPhone" },
+  { href: "/search?q=Office", label: "Office" },
+  { href: "/search?q=MacBook", label: "MacBook" },
+  { href: "/search?q=Land+Cruiser", label: "Land Cruiser" },
+];
+
+export async function getMarketQuickSearches(
+  locale: AppLocale = "ar",
+): Promise<MarketQuickSearch[]> {
+  return locale === "en" ? QUICK_SEARCHES_EN : QUICK_SEARCHES_AR;
 }
 
 export async function getMarketEscrowSteps(): Promise<MarketEscrowStep[]> {
