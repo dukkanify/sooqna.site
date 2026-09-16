@@ -363,27 +363,46 @@ export function AdminListingsPanel() {
 
     if (dynamic && formElement) {
       const formData = new FormData(formElement);
-      formData.set(
-        "description",
-        String(formData.get("description") ?? description),
-      );
-      formData.set("price", String(formData.get("price") ?? price));
+      if (!String(formData.get("description") ?? "").trim() && description) {
+        formData.set("description", description);
+      }
+      if (!String(formData.get("price") ?? "").trim()) {
+        formData.set("price", String(price || listing.price));
+      }
       const parsed = parseCategoryForm(formData, listing.categoryId);
-      if (Object.keys(parsed.errors).length > 0) {
-        setEditFieldErrors(parsed.errors);
-        window.alert("أكمل حقول القسم المطلوبة قبل الحفظ.");
+      const submittedPrice = Number(formData.get("price") ?? listing.price);
+      if (!Number.isFinite(submittedPrice) || submittedPrice <= 0) {
+        setEditFieldErrors({ price: "اكتب سعراً صحيحاً." });
+        window.alert("السعر مطلوب لحفظ التعديل.");
+        return;
+      }
+      // Admin edit is corrective: accept partial specs and merge onto the listing.
+      // Surface field errors as hints only when the admin typed an invalid number.
+      const hintErrors: CategoryFieldErrors = {};
+      for (const [key, message] of Object.entries(parsed.errors)) {
+        if (key === "price" || key === "title" || key === "description") continue;
+        const submitted = String(formData.get(`spec_${key}`) ?? "").trim();
+        if (submitted && message) hintErrors[key] = message;
+      }
+      if (Object.keys(hintErrors).length > 0) {
+        setEditFieldErrors(hintErrors);
+        window.alert("راجع القيم غير الصحيحة في حقول القسم.");
         return;
       }
       setEditFieldErrors({});
-      title = parsed.title;
-      description = String(formData.get("description") ?? "").trim();
-      price = Number(formData.get("price") ?? 0);
-      city = parsed.city || city;
-      condition = parsed.condition;
-      emirate = parsed.emirate;
-      categorySpecs = parsed.categorySpecs;
-      features = parsed.features;
-      negotiable = parsed.negotiable;
+      title = parsed.title.trim() || listing.title;
+      description =
+        String(formData.get("description") ?? "").trim() || description;
+      price = submittedPrice;
+      city = parsed.city || city || listing.city;
+      condition = parsed.condition || condition;
+      emirate = parsed.emirate || listing.emirate;
+      categorySpecs = {
+        ...(listing.categorySpecs ?? {}),
+        ...parsed.categorySpecs,
+      };
+      features = parsed.features.length ? parsed.features : listing.features;
+      negotiable = parsed.negotiable ?? listing.negotiable;
       contactPhone =
         String(formData.get("contact") ?? contactPhone ?? "").trim() ||
         undefined;
@@ -895,6 +914,7 @@ export function AdminListingsPanel() {
                 {editingId === listing.id ? (
                   <form
                     className="grid gap-3"
+                    noValidate
                     onSubmit={(event) => {
                       event.preventDefault();
                       void saveEdit(listing, event.currentTarget);
