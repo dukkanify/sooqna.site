@@ -31,14 +31,19 @@ import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { useLocale } from "@/shared/i18n/useLocale";
 
 const statusFilterOptions: { label: string; value: string }[] = [
-  { label: "كل الحالات", value: "all" },
+  { label: "إعلانات السوق", value: "marketplace" },
+  { label: "الكل (مع التجريبي)", value: "all" },
   { label: listingStatusLabels.pending_review, value: "pending_review" },
   { label: listingStatusLabels.active, value: "active" },
   { label: listingStatusLabels.rejected, value: "rejected" },
   { label: listingStatusLabels.draft, value: "draft" },
   { label: listingStatusLabels.expired, value: "expired" },
-  { label: "تجريبي", value: "demo" },
+  { label: "تجريبي فقط", value: "demo" },
 ];
+
+function isDemoAdminListing(listing: AdminListingRecord): boolean {
+  return listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE";
+}
 
 const conditionOptions = [
   { label: "مستعمل", value: "used" },
@@ -80,7 +85,7 @@ export function AdminListingsPanel() {
   const locale = useLocale();
   const [listings, setListings] = useState<AdminListingRecord[]>([]);
   const [categories, setCategories] = useState<AdminCategoryRecord[]>([]);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("marketplace");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
@@ -159,10 +164,12 @@ export function AdminListingsPanel() {
 
     return listings
       .filter((listing) => {
-        if (statusFilter === "demo") {
-          return listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE";
-        }
-        return statusFilter === "all" ? true : listing.status === statusFilter;
+        const demo = isDemoAdminListing(listing);
+        if (statusFilter === "demo") return demo;
+        if (statusFilter === "marketplace") return !demo;
+        if (statusFilter === "all") return true;
+        // Status filters show real marketplace ads only (not showcase).
+        return listing.status === statusFilter && !demo;
       })
       .filter((listing) =>
         categoryFilter === "all" ? true : listing.categoryId === categoryFilter,
@@ -208,11 +215,20 @@ export function AdminListingsPanel() {
   }, [listings]);
 
   const pendingCount = useMemo(
-    () => listings.filter((listing) => listing.status === "pending_review").length,
+    () =>
+      listings.filter(
+        (listing) =>
+          listing.status === "pending_review" && !isDemoAdminListing(listing),
+      ).length,
     [listings],
   );
 
-  const defaultStatusFilter = "all";
+  const marketplaceCount = useMemo(
+    () => listings.filter((listing) => !isDemoAdminListing(listing)).length,
+    [listings],
+  );
+
+  const defaultStatusFilter = "marketplace";
 
   const hasActiveFilters =
     statusFilter !== defaultStatusFilter ||
@@ -920,9 +936,14 @@ export function AdminListingsPanel() {
           ) : null}
           <p className="pb-2 text-xs text-muted">
             <Icon className="ms-1 inline" name="package" size={14} />
-            {hasActiveFilters
-              ? `${filtered.length} من ${listings.length}`
-              : listingCountLabel(filtered.length, locale)}
+            {statusFilter === "marketplace"
+              ? `${listingCountLabel(filtered.length, locale)} في السوق`
+              : hasActiveFilters
+                ? `${filtered.length} من ${listings.length}`
+                : listingCountLabel(filtered.length, locale)}
+            {marketplaceCount > 0 && statusFilter !== "marketplace" ? (
+              <span className="ms-2">· سوق: {marketplaceCount}</span>
+            ) : null}
           </p>
         </div>
       </Card>
@@ -938,7 +959,8 @@ export function AdminListingsPanel() {
                   : "."}
               </p>
               <p className="mt-2 text-xs text-muted">
-                المجموع في المخزون: {listings.length}
+                إعلانات السوق الحقيقية: {marketplaceCount} · المخزون كامل:{" "}
+                {listings.length}
               </p>
               <Button
                 className="mt-4"
@@ -947,7 +969,7 @@ export function AdminListingsPanel() {
                 type="button"
                 variant="secondary"
               >
-                عرض كل الإعلانات
+                عرض إعلانات السوق
               </Button>
             </>
           ) : (

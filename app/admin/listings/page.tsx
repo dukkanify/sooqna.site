@@ -5,7 +5,7 @@ export default function AdminListingsPage() {
   return (
     <AdminShell
       activePath="/admin/listings"
-      description="راجع الإعلانات: اعتماد، رفض، تعديل، وتمييز."
+      description="إعلانات السوق الحقيقية أولاً — التجريبي منفصل تحت «تجريبي فقط»."
       title="الإعلانات"
     >
       <AdminListingsPanel />
