@@ -1,9 +1,6 @@
 import Image from "next/image";
 import { getMarketHeroBackground } from "@/services/content/homepage-marketplace.content";
-import {
-  MarketHeroBadge,
-  MarketHeroCopy,
-} from "@/features/home/components/marketplace/MarketHeroCopy";
+import { MarketHeroCopy } from "@/features/home/components/marketplace/MarketHeroCopy";
 
 export async function MobileHeroSection() {
   const backgroundUrl = await getMarketHeroBackground();
@@ -23,7 +20,6 @@ export async function MobileHeroSection() {
           />
         </div>
         <div aria-hidden className="mobile-home-hero__media-overlay" />
-        <MarketHeroBadge />
       </div>
 
       <div className="mobile-home-hero__content">
