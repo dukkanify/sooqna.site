@@ -82,3 +82,29 @@ test("live EV fuel type uses canonical كهربائي", () => {
   assert.match(src, /fuelType = .*كهربائي/);
   assert.doesNotMatch(src, /fuelType = .*\"كهرباء\"/);
 });
+
+test("every make has country of origin", () => {
+  for (const make of catalog.makes) {
+    assert.ok(make.countryCode, `${make.nameEn} missing countryCode`);
+    assert.ok(make.countryNameEn, `${make.nameEn} missing countryNameEn`);
+    assert.ok(make.countryNameAr, `${make.nameEn} missing countryNameAr`);
+  }
+});
+
+test("BYD includes Song model", () => {
+  const byd = catalog.makes.find((m) => m.slug === "byd");
+  assert.ok(byd);
+  const song = catalog.models.find(
+    (m) => m.makeId === byd.id && m.slug === "song",
+  );
+  assert.ok(song, "BYD Song model missing");
+});
+
+test("listing media has BYD-specific pool hint", () => {
+  const src = readFileSync(
+    path.join(root, "shared/constants/listing-product-media.ts"),
+    "utf8",
+  );
+  assert.match(src, /byd_suv/);
+  assert.match(src, /byd\|بي/);
+});

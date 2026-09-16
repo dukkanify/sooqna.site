@@ -122,6 +122,12 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1556189250-72ba954cfc2b",
     "photo-1609184166822-bd1f1b991a06",
   ],
+  byd_suv: [
+    "photo-1619767886558-efdc259cde1a",
+    "photo-1617788138017-80ad40651399",
+    "photo-1593941707882-a5bba14938c7",
+    "photo-1554744512-d6c603f27c54",
+  ],
   sedan: [
     "photo-1492144534655-ae79c964c9d7",
     "photo-1609521263047-f8f205293f24",
@@ -147,6 +153,11 @@ const PRODUCT_HINTS: Array<{ kind: ProductKind; pattern: RegExp }> = [
   {
     kind: "bmw",
     pattern: /\b(bmw|بي\s*ام\s*دبليو|بي ام|x5|x7|x3|m3|m5)\b/i,
+  },
+  {
+    kind: "byd_suv",
+    pattern:
+      /\b(byd|بي\s*واي\s*دي|بي\s*واي|song(\s*plus)?|atto\s*3|seal(ion)?|dolphin|han|tang|seagull)\b/i,
   },
   {
     kind: "mercedes_suv",

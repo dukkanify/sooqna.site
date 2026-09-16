@@ -1,11 +1,11 @@
 import type { CategoryFieldOption } from "@/types";
-import { getVehicleMakes } from "@/shared/vehicles";
+import { getVehicleMakes, vehicleMakeOptions } from "@/shared/vehicles";
 
 function toOptions(brands: readonly string[]): CategoryFieldOption[] {
   return brands.map((brand) => ({ label: brand, value: brand }));
 }
 
-/** Canonical car makes from shared/vehicles catalog. */
+/** Snapshot of car makes (prefer vehicleMakeOptions() for live override-aware lists). */
 export const CAR_BRANDS: readonly string[] = getVehicleMakes().map(
   (make) => make.nameEn,
 );
@@ -104,7 +104,7 @@ export function getBrandOptionsForCategory(
 ): CategoryFieldOption[] {
   switch (categoryId) {
     case "cars":
-      return carBrandOptions;
+      return vehicleMakeOptions();
     case "mobiles":
       return mobileBrandOptions;
     case "electronics":
