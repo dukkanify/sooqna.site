@@ -977,8 +977,13 @@ export function AdminListingsPanel() {
           )}
         </Card>
       ) : (
-        filtered.map((listing) => (
-          <Card key={listing.id} className="p-5" variant="flat">
+        <div className="admin-boxes__grid">
+        {filtered.map((listing) => (
+          <Card
+            key={listing.id}
+            className={`p-5${editingId === listing.id ? " admin-boxes__card--wide" : ""}`}
+            variant="flat"
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 {editingId === listing.id ? (
@@ -1384,7 +1389,8 @@ export function AdminListingsPanel() {
             </div>
             )}
           </Card>
-        ))
+        ))}
+        </div>
       )}
 
       <Link className="text-sm font-semibold text-primary" href="/admin">

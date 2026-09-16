@@ -547,24 +547,47 @@ export function AdminCategoriesPanel() {
                     </div>
                   </div>
                 ) : (
-                  <div className="admin-categories__row">
-                    <div className="admin-categories__row-id">
+                  <>
+                    <div className="admin-categories__card-top">
                       <div className="admin-categories__icon" aria-hidden>
                         <CategoryIcon
                           category={{ icon: category.icon }}
-                          size={26}
+                          size={28}
                         />
                       </div>
                       <div className="admin-categories__identity">
                         <p className="admin-categories__name">{category.name}</p>
                         <p className="admin-categories__slug" dir="ltr">
                           {category.slug}
-                          {category.subcategories.length > 0
-                            ? ` · ${category.subcategories.slice(0, 4).join(" · ")}${
-                                category.subcategories.length > 4 ? "…" : ""
-                              }`
-                            : ""}
                         </p>
+                      </div>
+                      <div className="admin-categories__order">
+                        <Button
+                          aria-label="تقديم في الترتيب"
+                          disabled={index === 0 || busyId === category.id}
+                          onClick={() => void moveCategory(category, -1)}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          ‹
+                        </Button>
+                        <span className="admin-categories__order-num">
+                          {index + 1}
+                        </span>
+                        <Button
+                          aria-label="تأخير في الترتيب"
+                          disabled={
+                            index === sorted.length - 1 ||
+                            busyId === category.id
+                          }
+                          onClick={() => void moveCategory(category, 1)}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          ›
+                        </Button>
                       </div>
                     </div>
 
@@ -582,33 +605,14 @@ export function AdminCategoriesPanel() {
                       </Badge>
                     </div>
 
-                    <div className="admin-categories__order">
-                      <Button
-                        aria-label="تقديم في الترتيب"
-                        disabled={index === 0 || busyId === category.id}
-                        onClick={() => void moveCategory(category, -1)}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        ‹
-                      </Button>
-                      <span className="admin-categories__order-num">
-                        {index + 1}
-                      </span>
-                      <Button
-                        aria-label="تأخير في الترتيب"
-                        disabled={
-                          index === sorted.length - 1 || busyId === category.id
-                        }
-                        onClick={() => void moveCategory(category, 1)}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        ›
-                      </Button>
-                    </div>
+                    {category.subcategories.length > 0 ? (
+                      <p className="admin-categories__subs">
+                        {category.subcategories.slice(0, 3).join(" · ")}
+                        {category.subcategories.length > 3 ? "…" : ""}
+                      </p>
+                    ) : (
+                      <p className="admin-categories__subs">بدون فرعيات</p>
+                    )}
 
                     <div className="admin-categories__actions">
                       <Button
@@ -635,7 +639,7 @@ export function AdminCategoriesPanel() {
                         حذف
                       </Button>
                     </div>
-                  </div>
+                  </>
                 )}
               </li>
             );
