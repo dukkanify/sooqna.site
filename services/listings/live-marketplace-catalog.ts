@@ -1614,9 +1614,19 @@ function buildCategorySpecs(def: SeedDef): Record<string, string> {
     specs.fuelType = /Tesla|كهرب|Electric/i.test(text) ? "كهربائي" : "بنزين";
     specs.mileage = String(12000 + (def.price % 90000));
     specs.regionalSpecs =
-      /مستورد|US Spec|American|European|imported/i.test(text)
-        ? "مستورد"
-        : "خليجي";
+      /US Spec|American|كندي|Canadian/i.test(text)
+        ? /Canadian|كندي/i.test(text)
+          ? "كندي"
+          : "أمريكي"
+        : /European|أوروبي/i.test(text)
+          ? "أوروبي"
+          : /Japanese|ياباني/i.test(text)
+            ? "ياباني"
+            : /Korean|كوري/i.test(text)
+              ? "كوري"
+              : /مستورد|imported/i.test(text)
+                ? "أخرى"
+                : "خليجي";
   }
 
   if (def.categoryId === "mobiles") {

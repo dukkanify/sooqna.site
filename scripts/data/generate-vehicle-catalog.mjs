@@ -13,11 +13,11 @@ const out = path.join(root, "shared/vehicles/catalog.json");
 
 /** @type {Array<{ nameEn: string, nameAr: string, models: string[] }>} */
 const RAW = [
-  { nameEn: "Toyota", nameAr: "تويوتا", models: ["Yaris","Corolla","Camry","Avalon","Crown","RAV4","Highlander","Prado","Land Cruiser","Fortuner","Hilux","Supra","C-HR","Corolla Cross","Sequoia","Tundra","4Runner","bZ4X","Alphard","Hiace"] },
+  { nameEn: "Toyota", nameAr: "تويوتا", models: ["Yaris","Corolla","Camry","Avalon","Crown","Raize","Urban Cruiser","RAV4","Highlander","Prado","Land Cruiser","Fortuner","Hilux","Supra","GR86","86","C-HR","Corolla Cross","Sequoia","Tundra","4Runner","bZ4X","Alphard","Hiace"] },
   { nameEn: "Lexus", nameAr: "لكزس", models: ["UX","NX","RX","GX","LX","ES","IS","GS","LS","RC","LC","LM","TX","LX 600"] },
-  { nameEn: "Nissan", nameAr: "نيسان", models: ["Sunny","Altima","Maxima","Kicks","X-Trail","Pathfinder","Patrol","Patrol Safari","Navara","GT-R","Ariya","Juke","Sentra","Terra","Urvan"] },
+  { nameEn: "Nissan", nameAr: "نيسان", models: ["Sunny","Altima","Maxima","Kicks","X-Trail","Pathfinder","Patrol","Patrol Safari","Navara","GT-R","Ariya","Juke","Sentra","Terra","X-Terra","Urvan","Z","370Z","350Z"] },
   { nameEn: "Infiniti", nameAr: "إنفينيتي", models: ["Q50","Q60","QX50","QX55","QX60","QX80"] },
-  { nameEn: "Honda", nameAr: "هوندا", models: ["City","Civic","Accord","CR-V","HR-V","ZR-V","Pilot","Odyssey","e:Ny1"] },
+  { nameEn: "Honda", nameAr: "هوندا", models: ["City","Civic","Accord","CR-V","HR-V","ZR-V","Pilot","Odyssey","e:Ny1","Elevate"] },
   { nameEn: "Acura", nameAr: "أكيورا", models: ["ADX","Integra","MDX","RDX","TLX","ZDX"] },
   { nameEn: "Mazda", nameAr: "مازدا", models: ["Mazda2","Mazda3","Mazda6","CX-3","CX-30","CX-5","CX-60","CX-90","CX-9","MX-5","MX-30"] },
   { nameEn: "Mitsubishi", nameAr: "ميتسوبيشي", models: ["Attrage","Lancer","ASX","Eclipse Cross","Outlander","Pajero","Pajero Sport","L200","Montero","Xpander"] },
@@ -75,7 +75,7 @@ const RAW = [
   { nameEn: "Genesis", nameAr: "جينيسيس", models: ["G70","G80","G90","GV60","GV70","GV80"] },
   { nameEn: "Kia", nameAr: "كيا", models: ["Picanto","Pegas","Cerato","K5","K8","Sportage","Sorento","Telluride","Seltos","Carnival","EV6","EV9","Niro","Rio"] },
   { nameEn: "KGM", nameAr: "كي جي إم", models: ["Tivoli","Korando","Rexton","Torres","Musso"] },
-  { nameEn: "BYD", nameAr: "بي واي دي", models: ["Seagull","Dolphin","Seal","Sealion 7","Atto 3","Song","Song Plus","Tang","Han","Yangwang U8","Shark"] },
+  { nameEn: "BYD", nameAr: "بي واي دي", models: ["Seagull","Dolphin","Seal","Sealion 7","Atto 3","Song","Song Plus","Qin","Tang","Han","Yangwang U8","Shark"] },
   { nameEn: "Geely", nameAr: "جيلي", models: ["Emgrand","Coolray","Monjaro","Okavango","Geometry C","Preface","Galaxy E8"] },
   { nameEn: "Zeekr", nameAr: "زيكر", models: ["001","007","X","009","7X"] },
   { nameEn: "Chery", nameAr: "شيري", models: ["Arrizo 5","Arrizo 8","Tiggo 4","Tiggo 7","Tiggo 8","Tiggo 9","eQ7"] },

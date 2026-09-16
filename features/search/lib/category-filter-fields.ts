@@ -1,20 +1,24 @@
 import type { Category, CategoryFieldDefinition, CategoryFieldOption } from "@/types";
 import { getCategoryFields } from "@/shared/constants/category-fields";
 import { getModelsForBrand } from "@/shared/constants/product-brand-models";
+import { vehicleYearOptions } from "@/shared/vehicles";
 
-const currentYear = new Date().getFullYear();
-
-export const SEARCH_YEAR_OPTIONS: CategoryFieldOption[] = Array.from(
-  { length: currentYear - 1989 },
-  (_, index) => {
-    const year = String(currentYear - index);
-    return { label: year, value: year };
-  },
-);
+export const SEARCH_YEAR_OPTIONS: CategoryFieldOption[] = vehicleYearOptions();
 
 /** Exact spec keys shown in search, sourced from real category field definitions. */
 export const CATEGORY_SEARCH_KEYS: Record<string, readonly string[]> = {
-  cars: ["brand", "model", "year", "mileage", "transmission", "fuelType"],
+  cars: [
+    "brand",
+    "model",
+    "year",
+    "mileage",
+    "condition",
+    "regionalSpecs",
+    "bodyType",
+    "transmission",
+    "fuelType",
+    "drivetrain",
+  ],
   mobiles: ["brand", "model", "storage"],
   electronics: ["brand", "model", "warranty"],
   "real-estate": [
@@ -43,7 +47,9 @@ const SKIP_FIELD_KEYS = new Set([
   "features",
   "emirate",
   "city",
-  "condition",
+  "modelOther",
+  "exteriorColorOther",
+  "interiorColorOther",
 ]);
 
 const RANGE_KEYS = new Set(["year", "mileage", "bedrooms", "bathrooms", "area"]);
