@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
 import { resolveCategoryFields } from "@/services/admin/category-form-store";
 import { listApprovedFieldOptions } from "@/services/admin/approved-field-options-store";
+import { getVehicleCatalogOverrides } from "@/services/admin/vehicle-catalog-overrides-store";
+import { setVehicleCatalogOverrides } from "@/shared/vehicles";
 
 /** Public resolved category fields for Add/Edit Listing (code defaults + admin overrides + approved options). */
 export async function GET(request: Request) {
   const categoryId = new URL(request.url).searchParams.get("categoryId") ?? "";
   if (!categoryId) {
     return NextResponse.json({ fields: [] });
+  }
+
+  if (categoryId === "cars") {
+    const overrides = await getVehicleCatalogOverrides();
+    setVehicleCatalogOverrides({
+      disabledMakeSlugs: overrides.disabledMakeSlugs,
+      disabledModelIds: overrides.disabledModelIds,
+    });
   }
 
   const fields = await resolveCategoryFields(categoryId);

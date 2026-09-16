@@ -217,6 +217,25 @@ export function CategoryFieldsForm({
     };
   }, [categoryId]);
 
+  useEffect(() => {
+    if (categoryId !== "cars") return;
+    let cancelled = false;
+    void fetch("/api/vehicle-catalog/overrides")
+      .then((response) => (response.ok ? response.json() : null))
+      .then(async (data) => {
+        if (cancelled || !data) return;
+        const { setVehicleCatalogOverrides } = await import("@/shared/vehicles");
+        setVehicleCatalogOverrides({
+          disabledMakeSlugs: data.disabledMakeSlugs ?? [],
+          disabledModelIds: data.disabledModelIds ?? [],
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId]);
+
   const allFields =
     remoteFields?.categoryId === categoryId
       ? remoteFields.fields
