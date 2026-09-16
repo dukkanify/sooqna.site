@@ -1526,3 +1526,141 @@
 [dir="rtl"] .admin-dash__table td {
   text-align: right;
 }
+
+/* ── Admin users: simple single-column rows ───────────────────── */
+.admin-users__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-users__row {
+  border: 1px solid var(--admin-line);
+  border-radius: 0.55rem;
+  background: #fafbfc;
+  padding: 0.7rem 0.85rem;
+}
+
+.admin-users__row:hover {
+  background: #fff;
+  border-color: #c8ccd4;
+}
+
+.admin-users__row-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+}
+
+.admin-users__identity {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.admin-users__name {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 750;
+  color: var(--admin-ink);
+}
+
+.admin-users__role {
+  margin-inline-start: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--admin-muted);
+}
+
+.admin-users__email {
+  margin: 0.15rem 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-muted);
+}
+
+.admin-users__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-users__more {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.7rem;
+  border-top: 1px solid var(--admin-line);
+  padding-top: 0.7rem;
+}
+
+.admin-users__meta,
+.admin-users__empty {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-muted);
+}
+
+.admin-users__empty {
+  padding: 1.5rem 0;
+  text-align: center;
+}
+
+.admin-users__more-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-users__perms {
+  border: 1px solid var(--admin-line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 0.65rem 0.75rem;
+}
+
+.admin-users__perms-title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: var(--admin-ink);
+}
+
+.admin-users__perms-grid {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.admin-users__perm-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 650;
+  color: var(--admin-ink);
+}
+
+.admin-users__perm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+  padding-inline-start: 1.2rem;
+}
+
+.admin-users__perm-action {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--admin-muted);
+}

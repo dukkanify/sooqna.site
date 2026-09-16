@@ -328,32 +328,30 @@ export function AdminUsersPanel() {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="admin-ops__queue-meta py-6 text-center">
-          لا يوجد مستخدمون مطابقون.
-        </p>
+        <p className="admin-users__empty">لا يوجد مستخدمون مطابقون.</p>
       ) : (
-        <ul className="admin-ops__queue admin-ops__queue--dense">
+        <ul className="admin-users__list">
           {filtered.map((user) => {
             const status = rowStatus(user);
             const action = primaryAction(user);
             const open = openId === user.id;
             return (
-              <li key={user.id} className="admin-ops__queue-item">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="admin-ops__queue-label truncate">
+              <li key={user.id} className="admin-users__row">
+                <div className="admin-users__row-main">
+                  <div className="admin-users__identity">
+                    <p className="admin-users__name">
                       {user.fullName}
                       {user.role !== "user" ? (
-                        <span className="ms-2 text-[11px] font-normal text-muted">
+                        <span className="admin-users__role">
                           · {roleLabels[user.role]}
                         </span>
                       ) : null}
                     </p>
-                    <p className="admin-ops__queue-meta truncate" dir="ltr">
+                    <p className="admin-users__email" dir="ltr">
                       {user.email}
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="admin-users__actions">
                     <Badge variant={status.variant}>{status.label}</Badge>
                     {action ? (
                       <Button
@@ -381,14 +379,19 @@ export function AdminUsersPanel() {
                 </div>
 
                 {open ? (
-                  <div className="mt-3 grid gap-3 border-t border-border/60 pt-3">
-                    <p className="admin-ops__queue-meta">
-                      {[user.phone, user.city, `انضم ${user.joinedAt}`, `${user.listingsCount} إعلان`]
+                  <div className="admin-users__more">
+                    <p className="admin-users__meta">
+                      {[
+                        user.phone,
+                        user.city,
+                        `انضم ${user.joinedAt}`,
+                        `${user.listingsCount} إعلان`,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="admin-users__more-actions">
                       {!user.emailVerifiedAt ? (
                         <Button
                           loading={busyId === user.id}
@@ -470,9 +473,9 @@ export function AdminUsersPanel() {
                     {user.role === "admin" &&
                     sessionIsSuper &&
                     !(isSuperAdminRecord(user) && user.id !== session?.id) ? (
-                      <div className="rounded-[var(--radius-lg)] border border-border/70 bg-surface-muted/30 p-3">
-                        <p className="text-xs font-semibold text-ink">صلاحيات المدير</p>
-                        <div className="mt-2 grid gap-2">
+                      <div className="admin-users__perms">
+                        <p className="admin-users__perms-title">صلاحيات المدير</p>
+                        <div className="admin-users__perms-grid">
                           {ALL_ADMIN_PERMISSIONS.map((permission) => {
                             const checked = draftFor(user).includes(permission);
                             const actions =
@@ -481,7 +484,7 @@ export function AdminUsersPanel() {
                               ];
                             return (
                               <div key={permission}>
-                                <label className="flex items-center gap-2 text-xs text-ink">
+                                <label className="admin-users__perm-label">
                                   <input
                                     checked={checked}
                                     disabled={
@@ -496,11 +499,11 @@ export function AdminUsersPanel() {
                                   {ADMIN_PERMISSION_LABELS[permission]}
                                 </label>
                                 {checked ? (
-                                  <div className="mt-1 flex flex-wrap gap-2 ps-5">
+                                  <div className="admin-users__perm-actions">
                                     {ALL_ADMIN_ACTIONS.map((item) => (
                                       <label
                                         key={item}
-                                        className="flex items-center gap-1 text-[11px] text-muted"
+                                        className="admin-users__perm-action"
                                       >
                                         <input
                                           checked={actions.includes(item)}
@@ -523,7 +526,7 @@ export function AdminUsersPanel() {
                             );
                           })}
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
+                        <div className="admin-users__more-actions">
                           <Button
                             disabled={!hasUnsavedPermissions(user)}
                             loading={busyId === user.id}
