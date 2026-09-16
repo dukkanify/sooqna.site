@@ -18,6 +18,7 @@ import {
   type CategoryFieldErrors,
 } from "@/features/listings/components/add-listing/CategoryFieldsForm";
 import { parseCategoryForm } from "@/features/listings/components/add-listing/category-form-utils";
+import { AdminListingImageGallery } from "@/features/admin/components/AdminListingImageGallery";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -77,6 +78,7 @@ const emptyForm = {
   sellerName: "",
   contactPhone: "",
   imageUrl: "",
+  images: [] as string[],
   isFeatured: false,
 };
 
@@ -113,7 +115,6 @@ export function AdminListingsPanel() {
     {},
   );
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [galleryUrlDraft, setGalleryUrlDraft] = useState("");
   const [showTools, setShowTools] = useState(false);
   const [openRowActions, setOpenRowActions] = useState<string | null>(null);
 
@@ -323,7 +324,6 @@ export function AdminListingsPanel() {
       (listing.imageUrl ? [listing.imageUrl] : []);
     setEditingId(listing.id);
     setEditFieldErrors({});
-    setGalleryUrlDraft("");
     setEditDraft({
       title: listing.title,
       description: listing.description ?? "",
@@ -346,18 +346,13 @@ export function AdminListingsPanel() {
     }));
   }
 
-  function addEditImage(url: string) {
-    const trimmed = url.trim();
-    if (!trimmed) return;
-    setEditDraft((current) => {
-      if (current.images.includes(trimmed)) return current;
-      const cleaned = [...current.images, trimmed];
-      return {
-        ...current,
-        images: cleaned,
-        imageUrl: cleaned[0] ?? "",
-      };
-    });
+  function setCreateImages(next: string[]) {
+    const cleaned = next.filter(Boolean);
+    setForm((current) => ({
+      ...current,
+      images: cleaned,
+      imageUrl: cleaned[0] ?? "",
+    }));
   }
 
   async function saveEdit(
@@ -443,21 +438,6 @@ export function AdminListingsPanel() {
       negotiable,
     });
     setEditingId(null);
-    setGalleryUrlDraft("");
-  }
-
-  async function uploadListingImage(file: File): Promise<string | null> {
-    const body = new FormData();
-    body.set("file", file);
-    body.set("folder", "listings");
-    const response = await fetch("/api/uploads", {
-      method: "POST",
-      credentials: "include",
-      body,
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return typeof data.url === "string" ? data.url : null;
   }
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
@@ -540,8 +520,13 @@ export function AdminListingsPanel() {
             isFeatured: form.isFeatured,
             sellerName: form.sellerName.trim() || undefined,
             contactPhone: contactPhone || undefined,
-            imageUrl: form.imageUrl.trim() || undefined,
-            images: form.imageUrl.trim() ? [form.imageUrl.trim()] : undefined,
+            imageUrl: form.images[0] || form.imageUrl.trim() || undefined,
+            images:
+              form.images.length > 0
+                ? form.images
+                : form.imageUrl.trim()
+                  ? [form.imageUrl.trim()]
+                  : undefined,
             categorySpecs: isDynamic ? parsed.categorySpecs : undefined,
             features: parsed.features.length > 0 ? parsed.features : undefined,
             negotiable: parsed.negotiable,
@@ -809,51 +794,15 @@ export function AdminListingsPanel() {
             value={form.sellerName}
           />
 
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-            <Input
-              label="رابط صورة الغلاف (اختياري)"
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  imageUrl: event.target.value,
-                }))
-              }
-              placeholder="https://… أو ارفع ملفاً"
-              value={form.imageUrl}
+          <div className="grid gap-2">
+            <p className="text-sm font-semibold text-ink">صور الإعلان</p>
+            <AdminListingImageGallery
+              images={form.images}
+              onChange={setCreateImages}
+              onUploadingChange={setUploadingImage}
+              uploading={uploadingImage}
             />
-            <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[var(--radius-xl)] border border-border bg-surface px-4 text-sm font-semibold text-ink">
-              {uploadingImage ? "جاري الرفع…" : "رفع صورة"}
-              <input
-                accept="image/*"
-                className="hidden"
-                disabled={uploadingImage}
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  event.target.value = "";
-                  if (!file) return;
-                  setUploadingImage(true);
-                  void uploadListingImage(file)
-                    .then((url) => {
-                      if (url) {
-                        setForm((current) => ({ ...current, imageUrl: url }));
-                      } else {
-                        window.alert("تعذر رفع الصورة.");
-                      }
-                    })
-                    .finally(() => setUploadingImage(false));
-                }}
-                type="file"
-              />
-            </label>
           </div>
-          {form.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              alt=""
-              className="mt-1 h-24 w-24 rounded-xl object-cover"
-              src={form.imageUrl}
-            />
-          ) : null}
 
           <div className="flex flex-wrap gap-4 text-sm text-ink">
             <label className="inline-flex items-center gap-2">
@@ -1109,130 +1058,16 @@ export function AdminListingsPanel() {
                       />
                     ) : null}
 
-                    <div className="grid gap-3 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
+                    <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
                       <p className="text-sm font-semibold text-ink">
                         معرض الصور
                       </p>
-                      {editDraft.images.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {editDraft.images.map((url, index) => (
-                            <div
-                              className="relative size-20 overflow-hidden rounded-xl border border-border bg-surface"
-                              key={`${url}-${index}`}
-                            >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                alt=""
-                                className="size-full object-cover"
-                                src={url}
-                              />
-                              {index === 0 ? (
-                                <span className="absolute inset-x-0 bottom-0 bg-ink/70 px-1 py-0.5 text-center text-[10px] font-bold text-white">
-                                  غلاف
-                                </span>
-                              ) : null}
-                              <div className="absolute inset-x-0 top-0 flex justify-between gap-0.5 p-0.5">
-                                {index > 0 ? (
-                                  <button
-                                    className="rounded bg-surface/90 px-1 text-[10px] font-bold text-ink"
-                                    onClick={() =>
-                                      setEditImages([
-                                        url,
-                                        ...editDraft.images.filter(
-                                          (item) => item !== url,
-                                        ),
-                                      ])
-                                    }
-                                    type="button"
-                                  >
-                                    غلاف
-                                  </button>
-                                ) : (
-                                  <span />
-                                )}
-                                <button
-                                  className="rounded bg-surface/90 px-1 text-[10px] font-bold text-red-700"
-                                  onClick={() =>
-                                    setEditImages(
-                                      editDraft.images.filter(
-                                        (item) => item !== url,
-                                      ),
-                                    )
-                                  }
-                                  type="button"
-                                >
-                                  حذف
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-muted">لا توجد صور بعد.</p>
-                      )}
-                      <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-end">
-                        <Input
-                          label="إضافة رابط صورة"
-                          onChange={(event) =>
-                            setGalleryUrlDraft(event.target.value)
-                          }
-                          placeholder="https://…"
-                          value={galleryUrlDraft}
-                        />
-                        <Button
-                          onClick={() => {
-                            addEditImage(galleryUrlDraft);
-                            setGalleryUrlDraft("");
-                          }}
-                          size="sm"
-                          type="button"
-                          variant="secondary"
-                        >
-                          إضافة
-                        </Button>
-                        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[var(--radius-xl)] border border-border bg-surface px-4 text-sm font-semibold text-ink">
-                          {uploadingImage ? "جاري الرفع…" : "رفع"}
-                          <input
-                            accept="image/*"
-                            className="hidden"
-                            disabled={uploadingImage}
-                            multiple
-                            onChange={(event) => {
-                              const files = Array.from(
-                                event.target.files ?? [],
-                              );
-                              event.target.value = "";
-                              if (!files.length) return;
-                              setUploadingImage(true);
-                              void Promise.all(
-                                files.map((file) => uploadListingImage(file)),
-                              )
-                                .then((urls) => {
-                                  const next = urls.filter(
-                                    (url): url is string => Boolean(url),
-                                  );
-                                  if (!next.length) return;
-                                  setEditDraft((current) => {
-                                    const cleaned = [
-                                      ...current.images,
-                                      ...next.filter(
-                                        (url) =>
-                                          !current.images.includes(url),
-                                      ),
-                                    ];
-                                    return {
-                                      ...current,
-                                      images: cleaned,
-                                      imageUrl: cleaned[0] ?? "",
-                                    };
-                                  });
-                                })
-                                .finally(() => setUploadingImage(false));
-                            }}
-                            type="file"
-                          />
-                        </label>
-                      </div>
+                      <AdminListingImageGallery
+                        images={editDraft.images}
+                        onChange={setEditImages}
+                        onUploadingChange={setUploadingImage}
+                        uploading={uploadingImage}
+                      />
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -1248,7 +1083,6 @@ export function AdminListingsPanel() {
                         onClick={() => {
                           setEditingId(null);
                           setEditFieldErrors({});
-                          setGalleryUrlDraft("");
                         }}
                         size="sm"
                         type="button"
