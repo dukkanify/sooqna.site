@@ -295,12 +295,10 @@ export async function patchCategoryRecord(
   setCache(categories);
   const row = categories[index];
   const resolvedProfile = resolveCategoryFeatureProfile(row.id, row.featureProfile);
-  const shouldReseed =
-    reseedForm === true ||
-    (reseedForm !== false &&
-      persistPatch.featureProfile !== undefined &&
-      resolvedProfile !== previousProfile);
-  if (shouldReseed) {
+  const profileChanged =
+    persistPatch.featureProfile !== undefined &&
+    resolvedProfile !== previousProfile;
+  if (reseedForm === true || (profileChanged && reseedForm !== false)) {
     await seedFormForProfile(row.id, resolvedProfile);
   }
   return {
