@@ -11,7 +11,7 @@ export async function MarketEscrow() {
     <MarketSectionShell variant="white">
       <MarketSectionHeader
         description="نظام ضمان مالي يحمي المشتري والبائع — من الدفع حتى التسليم."
-        eyebrow="Trust"
+        eyebrow="ثقة"
         title="الضمان المالي"
       />
 
