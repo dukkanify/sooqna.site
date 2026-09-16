@@ -5,7 +5,7 @@ export default function AdminCategoriesPage() {
   return (
     <AdminShell
       activePath="/admin/categories"
-      description="إدارة الأقسام والشرائح. النماذج وكتالوج السيارات من التبويبات أعلاه."
+      description="أقسام السوق بشبكة عرض — رتّب بالأسهم وعدّل عند الحاجة."
       title="التصنيفات"
     >
       <AdminCategoriesWorkspace />
