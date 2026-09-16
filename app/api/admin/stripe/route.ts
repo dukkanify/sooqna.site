@@ -48,7 +48,7 @@ async function buildStripePayload() {
       publishableKeyMasked: maskSecret(getStripePublishableKey()),
       webhookSecretMasked: maskSecret(getStripeWebhookSecret()),
       updatedAt: config.updatedAt ?? null,
-      webhookEndpoint: "https://sooqna.site/api/webhooks/stripe",
+      webhookEndpoint: "https://sooqnauae.com/api/webhooks/stripe",
     },
     links: {
       dashboard: base,

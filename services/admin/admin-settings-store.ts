@@ -38,7 +38,7 @@ const DEFAULT_SETTINGS: AdminSiteSettings = {
   listingActiveDays: 30,
   featuredListingFeeAed: 49,
   featuredListingDays: 14,
-  supportEmail: "support@sooqna.site",
+  supportEmail: "support@sooqnauae.com",
   stripeDashboardUrl: "https://dashboard.stripe.com",
   updatedAt: new Date().toISOString(),
 };

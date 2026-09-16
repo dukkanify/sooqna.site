@@ -3,7 +3,20 @@ import type { NextRequest } from "next/server";
 import { SESSION_COOKIE_NAME } from "@/services/auth/session-cookie";
 import { peekSessionRoleFromCookieValue } from "@/services/auth/session-token";
 
-const APEX_HOST = "sooqna.site";
+/** Canonical apex — follows NEXT_PUBLIC_APP_URL so cutover is safe before DNS flips. */
+function resolveApexHost(): string {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configured) {
+    try {
+      return new URL(configured).hostname.replace(/^www\./, "");
+    } catch {
+      /* fall through */
+    }
+  }
+  return "sooqnauae.com";
+}
+
+const LEGACY_HOSTS = new Set(["sooqna.site", "www.sooqna.site"]);
 
 function readSessionRole(request: NextRequest): string | null {
   const raw = request.cookies.get(SESSION_COOKIE_NAME)?.value;
@@ -18,14 +31,20 @@ function redirectToLogin(request: NextRequest, nextPath: string) {
 }
 
 export function proxy(request: NextRequest) {
-  const host = request.headers.get("host") ?? "";
+  const hostHeader = request.headers.get("host") ?? "";
+  const host = hostHeader.split(":")[0]?.toLowerCase() ?? "";
+  const apexHost = resolveApexHost();
   const forwardedProto = request.headers.get("x-forwarded-proto");
   const isProduction = process.env.NODE_ENV === "production";
   const { pathname } = request.nextUrl;
 
-  if (isProduction && host.startsWith("www.")) {
+  if (
+    isProduction &&
+    host !== apexHost &&
+    (host.startsWith("www.") || LEGACY_HOSTS.has(host))
+  ) {
     const url = request.nextUrl.clone();
-    url.hostname = APEX_HOST;
+    url.hostname = apexHost;
     url.protocol = "https:";
     url.port = "";
     return NextResponse.redirect(url, 308);

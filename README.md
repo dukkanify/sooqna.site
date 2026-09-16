@@ -4,7 +4,7 @@
 
 ## Current Status
 
-**Live marketplace** on [sooqna.site](https://sooqna.site) — `v0.1.0-beta` going public.
+**Live marketplace** on [sooqnauae.com](https://sooqnauae.com) — `v0.1.0-beta` going public.
 
 Customer flows that are live in this codebase:
 
@@ -14,7 +14,7 @@ Customer flows that are live in this codebase:
 - Checkout + Stripe escrow, orders, disputes, wallet (real zeros until payments exist)
 - Admin cockpit, support form, chat
 
-Production env checklist: `STRIPE_*` per [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md), `RESEND_API_KEY`, `EMAIL_FROM_ADDRESS`, `NEXT_PUBLIC_APP_URL=https://sooqna.site`.
+Production env checklist: `STRIPE_*` per [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md), `RESEND_API_KEY`, `EMAIL_FROM_ADDRESS`, `NEXT_PUBLIC_APP_URL=https://sooqnauae.com`.
 
 | Document | Purpose |
 |----------|---------|

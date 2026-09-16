@@ -9,8 +9,8 @@ export const BRAND = {
     "A trusted UAE marketplace — buy and sell with confidence, with escrow protection, a secure wallet, and support around the clock.",
   copyright: "© 2026 Sooqna. جميع الحقوق محفوظة.",
   copyrightEn: "© 2026 Sooqna. All rights reserved.",
-  domain: "sooqna.site",
-  supportEmail: "support@sooqna.site",
+  domain: "sooqnauae.com",
+  supportEmail: "support@sooqnauae.com",
 } as const;
 
 export const DEVELOPER = {
