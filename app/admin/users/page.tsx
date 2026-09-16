@@ -5,7 +5,7 @@ export default function AdminUsersPage() {
   return (
     <AdminShell
       activePath="/admin/users"
-      description="اعتماد الحسابات بعد التحقق من الشخص، توثيق البائعين، وإيقاف المخالفين."
+      description="اعتمد الحسابات العالقة بضغطة — التفاصيل تحت المزيد."
       title="المستخدمون"
     >
       <AdminUsersPanel />
