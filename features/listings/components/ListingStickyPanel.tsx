@@ -183,7 +183,7 @@ function MobileContactIconButton({
 }
 
 /** Primary intents that need a visible CTA on mobile (desktop sticky panel parity). */
-const MOBILE_PRIMARY_CTA_ACTIONS = new Set([
+const MOBILE_PRIMARY_CTA_ACTIONS = new Set<ListingActionType>([
   "APPLY_JOB",
   "BOOK_SERVICE",
   "BOOK_VIEWING",
