@@ -31,7 +31,7 @@ export function LocalListingDetails({
       <EmptyState
         actionHref="/dashboard/listings"
         actionLabel="إعلاناتي"
-        description="الإعلان غير موجود في هذا المتصفح."
+        description="تم حذف هذا الإعلان أو لم يعد متاحاً في السوق."
         icon="package"
         title="الإعلان غير موجود"
       />

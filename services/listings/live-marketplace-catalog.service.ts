@@ -1,5 +1,6 @@
 import { getLiveMarketplaceCatalogListings } from "@/services/listings/live-marketplace-catalog";
 import {
+  getDeletedListingIds,
   getMarketplaceFlag,
   insertListingsIfMissing,
   setMarketplaceFlag,
@@ -15,6 +16,7 @@ let ensureInflight: Promise<number> | null = null;
 /**
  * Publish the professional live marketplace listings.
  * Inserts missing rows, and force-refreshes when catalog version bumps.
+ * Never resurrects owner-deleted listing ids.
  */
 export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
   if (process.env.SOOQNA_LIVE_CATALOG === "false") return 0;
@@ -23,17 +25,19 @@ export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
   ensureInflight = (async () => {
     try {
       const listings = getLiveMarketplaceCatalogListings();
+      const deletedIds = await getDeletedListingIds();
+      const eligible = listings.filter((listing) => !deletedIds.has(listing.id));
       const currentVersion = await getMarketplaceFlag(LIVE_CATALOG_VERSION_KEY);
       if (currentVersion !== LIVE_CATALOG_VERSION) {
-        for (const listing of listings) {
+        for (const listing of eligible) {
           await upsertListingRow(listing);
         }
         await setMarketplaceFlag(LIVE_CATALOG_VERSION_KEY, LIVE_CATALOG_VERSION);
         await bumpListingsCache();
-        return listings.length;
+        return eligible.length;
       }
 
-      const inserted = await insertListingsIfMissing(listings);
+      const inserted = await insertListingsIfMissing(eligible);
       if (inserted > 0) {
         await bumpListingsCache();
       }

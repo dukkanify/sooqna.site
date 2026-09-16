@@ -48,17 +48,20 @@ export function MyListingsDashboard({
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [featuredSuccess] = useState(readFeaturedSuccessFlag);
+  const [removedIds, setRemovedIds] = useState<string[]>([]);
 
   const allListings = useMemo(() => {
     const byId = new Map<string, Listing>();
     for (const listing of listings) {
+      if (removedIds.includes(listing.id)) continue;
       byId.set(listing.id, overrides[listing.id] ?? listing);
     }
     for (const listing of localListings) {
+      if (removedIds.includes(listing.id)) continue;
       byId.set(listing.id, overrides[listing.id] ?? listing);
     }
     return Array.from(byId.values());
-  }, [listings, localListings, overrides]);
+  }, [listings, localListings, overrides, removedIds]);
 
   const categoryNames = new Map(
     categories.map((category) => [category.id, category.name]),
@@ -130,6 +133,42 @@ export function MyListingsDashboard({
       setActionMessage("تم إرسال الإعلان للتجديد وهو قيد المراجعة.");
     } catch {
       setActionError("تعذر تجديد الإعلان.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleDelete(listing: Listing) {
+    const confirmed = window.confirm(
+      "حذف الإعلان نهائياً من السوق؟ لن يظهر في الرئيسية أو البحث.",
+    );
+    if (!confirmed) return;
+
+    setBusyId(listing.id);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(
+        `/api/listings/${encodeURIComponent(listing.id)}`,
+        { method: "DELETE", credentials: "include" },
+      );
+      if (!response.ok && response.status !== 404) {
+        setActionError("تعذر حذف الإعلان. حاول مرة أخرى.");
+        return;
+      }
+      deleteLocalListing(listing.id);
+      setOverrides((prev) => {
+        const next = { ...prev };
+        delete next[listing.id];
+        return next;
+      });
+      setLocalListings((prev) => prev.filter((item) => item.id !== listing.id));
+      setRemovedIds((prev) =>
+        prev.includes(listing.id) ? prev : [...prev, listing.id],
+      );
+      setActionMessage("تم حذف الإعلان من السوق.");
+    } catch {
+      setActionError("تعذر حذف الإعلان. تحقق من الشبكة وحاول مرة أخرى.");
     } finally {
       setBusyId(null);
     }
@@ -245,9 +284,11 @@ export function MyListingsDashboard({
                 <div className="flex flex-wrap gap-2">
                 <Button
                   href={
-                    listing.id.startsWith("local-")
-                      ? `/listings/local/${listing.id}`
-                      : `/listings/${listing.slug}`
+                    listing.slug?.trim()
+                      ? `/listings/${listing.slug}`
+                      : listing.id.startsWith("local-")
+                        ? `/listings/local/${listing.id}`
+                        : `/listings/${listing.id}`
                   }
                   size="sm"
                   variant="secondary"
@@ -285,18 +326,14 @@ export function MyListingsDashboard({
                     تمييز الإعلان
                   </Button>
                 ) : null}
-                {listing.id.startsWith("local-") ? (
-                  <Button
-                    onClick={() => {
-                      deleteLocalListing(listing.id);
-                      setActionMessage("تم حذف الإعلان.");
-                    }}
-                    size="sm"
-                    variant="secondary"
-                  >
-                    حذف
-                  </Button>
-                ) : null}
+                <Button
+                  loading={busyId === listing.id}
+                  onClick={() => handleDelete(listing)}
+                  size="sm"
+                  variant="secondary"
+                >
+                  حذف
+                </Button>
                 </div>
               </div>
             </div>

@@ -184,7 +184,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v14-arabic-eyebrows"],
+  ["sooqna-home-feed-v15-delete-expire"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

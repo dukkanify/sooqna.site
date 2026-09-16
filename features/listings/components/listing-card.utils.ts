@@ -10,9 +10,14 @@ export const listingPriceFormatter = new Intl.NumberFormat("ar-AE", {
 });
 
 export function getListingHref(listing: Listing): string {
+  // Prefer slug routes so synced local-* ads resolve from the server catalog
+  // (localStorage-only pages 404 after delete while homepage cards still linked).
+  if (listing.slug?.trim()) {
+    return `/listings/${listing.slug}`;
+  }
   return listing.id.startsWith("local-")
     ? `/listings/local/${listing.id}`
-    : `/listings/${listing.slug}`;
+    : `/listings/${listing.id}`;
 }
 
 export function getListingLocation(listing: Listing): string {

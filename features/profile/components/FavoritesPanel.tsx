@@ -11,9 +11,12 @@ import { useLocale } from "@/shared/i18n/useLocale";
 import { intlLocale } from "@/shared/i18n/locale";
 
 function getFavoriteHref(item: { listingId: string; slug: string }) {
+  if (item.slug?.trim()) {
+    return `/listings/${item.slug}`;
+  }
   return item.listingId.startsWith("local-")
     ? `/listings/local/${item.listingId}`
-    : `/listings/${item.slug}`;
+    : `/listings/${item.listingId}`;
 }
 
 export function FavoritesPanel() {
