@@ -64,6 +64,10 @@ export type AdminListingRecord = {
   condition?: ListingCondition;
   contactPhone?: string;
   imageUrl?: string;
+  images?: string[];
+  categorySpecs?: CategorySpecs;
+  features?: string[];
+  negotiable?: boolean;
   isDemo?: boolean;
   source?: string;
 };
@@ -103,10 +107,13 @@ export type AdminListingPatch = Partial<
     | "contactPhone"
     | "imageUrl"
     | "sellerName"
+    | "images"
+    | "categorySpecs"
+    | "features"
+    | "negotiable"
   >
 > & {
   rejectReason?: string;
-  images?: string[];
 };
 
 export type AdminDisputeRecord = {

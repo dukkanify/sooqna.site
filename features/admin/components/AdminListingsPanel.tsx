@@ -105,9 +105,14 @@ export function AdminListingsPanel() {
     condition: "used",
     contactPhone: "",
     imageUrl: "",
+    images: [] as string[],
     sellerName: "",
   });
+  const [editFieldErrors, setEditFieldErrors] = useState<CategoryFieldErrors>(
+    {},
+  );
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [galleryUrlDraft, setGalleryUrlDraft] = useState("");
 
   useEffect(() => {
     const user = getSessionUser();
@@ -247,7 +252,12 @@ export function AdminListingsPanel() {
         | "condition"
         | "contactPhone"
         | "imageUrl"
+        | "images"
         | "sellerName"
+        | "categorySpecs"
+        | "features"
+        | "negotiable"
+        | "emirate"
       >
     > & {
       rejectReason?: string;
@@ -293,7 +303,12 @@ export function AdminListingsPanel() {
 
 
   function startEdit(listing: AdminListingRecord) {
+    const images =
+      listing.images?.filter(Boolean) ??
+      (listing.imageUrl ? [listing.imageUrl] : []);
     setEditingId(listing.id);
+    setEditFieldErrors({});
+    setGalleryUrlDraft("");
     setEditDraft({
       title: listing.title,
       description: listing.description ?? "",
@@ -301,28 +316,100 @@ export function AdminListingsPanel() {
       city: listing.city,
       condition: listing.condition ?? "used",
       contactPhone: listing.contactPhone ?? "",
-      imageUrl: listing.imageUrl ?? "",
+      imageUrl: images[0] ?? listing.imageUrl ?? "",
+      images,
       sellerName: listing.sellerName,
     });
   }
 
-  async function saveEdit(listing: AdminListingRecord) {
-    const price = Number(editDraft.price);
-    if (!editDraft.title.trim() || !Number.isFinite(price) || price <= 0) {
+  function setEditImages(next: string[]) {
+    const cleaned = next.filter(Boolean);
+    setEditDraft((current) => ({
+      ...current,
+      images: cleaned,
+      imageUrl: cleaned[0] ?? "",
+    }));
+  }
+
+  function addEditImage(url: string) {
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    setEditDraft((current) => {
+      if (current.images.includes(trimmed)) return current;
+      const cleaned = [...current.images, trimmed];
+      return {
+        ...current,
+        images: cleaned,
+        imageUrl: cleaned[0] ?? "",
+      };
+    });
+  }
+
+  async function saveEdit(
+    listing: AdminListingRecord,
+    formElement?: HTMLFormElement | null,
+  ) {
+    const dynamic = isDynamicCategory(listing.categoryId);
+    let title = editDraft.title.trim();
+    let description = editDraft.description.trim();
+    let price = Number(editDraft.price);
+    let city = editDraft.city.trim();
+    let condition = editDraft.condition as AdminListingRecord["condition"];
+    let contactPhone = editDraft.contactPhone.trim() || undefined;
+    let emirate: string | undefined;
+    let categorySpecs = listing.categorySpecs;
+    let features = listing.features;
+    let negotiable = listing.negotiable;
+
+    if (dynamic && formElement) {
+      const formData = new FormData(formElement);
+      formData.set(
+        "description",
+        String(formData.get("description") ?? description),
+      );
+      formData.set("price", String(formData.get("price") ?? price));
+      const parsed = parseCategoryForm(formData, listing.categoryId);
+      if (Object.keys(parsed.errors).length > 0) {
+        setEditFieldErrors(parsed.errors);
+        window.alert("أكمل حقول القسم المطلوبة قبل الحفظ.");
+        return;
+      }
+      setEditFieldErrors({});
+      title = parsed.title;
+      description = String(formData.get("description") ?? "").trim();
+      price = Number(formData.get("price") ?? 0);
+      city = parsed.city || city;
+      condition = parsed.condition;
+      emirate = parsed.emirate;
+      categorySpecs = parsed.categorySpecs;
+      features = parsed.features;
+      negotiable = parsed.negotiable;
+      contactPhone =
+        String(formData.get("contact") ?? contactPhone ?? "").trim() ||
+        undefined;
+    } else if (!title || !Number.isFinite(price) || price <= 0) {
       window.alert("العنوان والسعر مطلوبان.");
       return;
     }
+
+    const images = editDraft.images.filter(Boolean);
     await patchListing(listing.id, {
-      title: editDraft.title.trim(),
-      description: editDraft.description.trim(),
+      title,
+      description,
       price,
-      city: editDraft.city.trim(),
-      condition: editDraft.condition as AdminListingRecord["condition"],
-      contactPhone: editDraft.contactPhone.trim() || undefined,
-      imageUrl: editDraft.imageUrl.trim() || undefined,
+      city,
+      emirate,
+      condition,
+      contactPhone,
+      imageUrl: images[0] || editDraft.imageUrl.trim() || undefined,
+      images,
       sellerName: editDraft.sellerName.trim() || undefined,
+      categorySpecs,
+      features,
+      negotiable,
     });
     setEditingId(null);
+    setGalleryUrlDraft("");
   }
 
   async function uploadListingImage(file: File): Promise<string | null> {
@@ -806,124 +893,276 @@ export function AdminListingsPanel() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 {editingId === listing.id ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Input
-                      label="العنوان"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          title: event.target.value,
-                        }))
-                      }
-                      value={editDraft.title}
-                    />
-                    <Input
-                      label="السعر"
-                      inputMode="numeric"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          price: event.target.value,
-                        }))
-                      }
-                      value={editDraft.price}
-                    />
-                    <Select
-                      label="المدينة"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          city: event.target.value,
-                        }))
-                      }
-                      options={cities.map((city) => ({
-                        label: city.name,
-                        value: city.name,
-                      }))}
-                      value={editDraft.city}
-                    />
-                    <Select
-                      label="الحالة"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          condition: event.target.value,
-                        }))
-                      }
-                      options={conditionOptions}
-                      value={editDraft.condition}
-                    />
-                    <Input
-                      label="هاتف التواصل"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          contactPhone: event.target.value,
-                        }))
-                      }
-                      value={editDraft.contactPhone}
-                    />
-                    <Input
-                      label="اسم البائع"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          sellerName: event.target.value,
-                        }))
-                      }
-                      value={editDraft.sellerName}
-                    />
-                    <div className="sm:col-span-2 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                      <Input
-                        label="صورة الغلاف"
-                        onChange={(event) =>
-                          setEditDraft((current) => ({
-                            ...current,
-                            imageUrl: event.target.value,
-                          }))
-                        }
-                        value={editDraft.imageUrl}
+                  <form
+                    className="grid gap-3"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void saveEdit(listing, event.currentTarget);
+                    }}
+                  >
+                    {isDynamicCategory(listing.categoryId) ? (
+                      <CategoryFieldsForm
+                        key={`edit-${listing.id}`}
+                        categoryId={listing.categoryId}
+                        defaults={{
+                          categorySpecs: listing.categorySpecs,
+                          condition: listing.condition,
+                          contactPhone: listing.contactPhone,
+                          description: listing.description,
+                          features: listing.features,
+                          negotiable: listing.negotiable,
+                          price: listing.price,
+                        }}
+                        errors={editFieldErrors}
+                        heading="تفاصيل القسم"
+                        showContact
                       />
-                      <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[var(--radius-xl)] border border-border bg-surface px-4 text-sm font-semibold text-ink">
-                        {uploadingImage ? "جاري الرفع…" : "رفع"}
-                        <input
-                          accept="image/*"
-                          className="hidden"
-                          disabled={uploadingImage}
-                          onChange={(event) => {
-                            const file = event.target.files?.[0];
-                            event.target.value = "";
-                            if (!file) return;
-                            setUploadingImage(true);
-                            void uploadListingImage(file)
-                              .then((url) => {
-                                if (url) {
-                                  setEditDraft((current) => ({
-                                    ...current,
-                                    imageUrl: url,
-                                  }));
-                                }
-                              })
-                              .finally(() => setUploadingImage(false));
-                          }}
-                          type="file"
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Input
+                          label="العنوان"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              title: event.target.value,
+                            }))
+                          }
+                          value={editDraft.title}
                         />
-                      </label>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Textarea
-                        label="الوصف"
+                        <Input
+                          label="السعر"
+                          inputMode="numeric"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              price: event.target.value,
+                            }))
+                          }
+                          value={editDraft.price}
+                        />
+                        <Select
+                          label="المدينة"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              city: event.target.value,
+                            }))
+                          }
+                          options={cities.map((city) => ({
+                            label: city.name,
+                            value: city.name,
+                          }))}
+                          value={editDraft.city}
+                        />
+                        <Select
+                          label="الحالة"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              condition: event.target.value,
+                            }))
+                          }
+                          options={conditionOptions}
+                          value={editDraft.condition}
+                        />
+                        <Input
+                          label="هاتف التواصل"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              contactPhone: event.target.value,
+                            }))
+                          }
+                          value={editDraft.contactPhone}
+                        />
+                        <Input
+                          label="اسم البائع"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              sellerName: event.target.value,
+                            }))
+                          }
+                          value={editDraft.sellerName}
+                        />
+                        <div className="sm:col-span-2">
+                          <Textarea
+                            label="الوصف"
+                            onChange={(event) =>
+                              setEditDraft((current) => ({
+                                ...current,
+                                description: event.target.value,
+                              }))
+                            }
+                            rows={3}
+                            value={editDraft.description}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {isDynamicCategory(listing.categoryId) ? (
+                      <Input
+                        label="اسم البائع"
                         onChange={(event) =>
                           setEditDraft((current) => ({
                             ...current,
-                            description: event.target.value,
+                            sellerName: event.target.value,
                           }))
                         }
-                        rows={3}
-                        value={editDraft.description}
+                        value={editDraft.sellerName}
                       />
+                    ) : null}
+
+                    <div className="grid gap-3 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
+                      <p className="text-sm font-semibold text-ink">
+                        معرض الصور
+                      </p>
+                      {editDraft.images.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {editDraft.images.map((url, index) => (
+                            <div
+                              className="relative size-20 overflow-hidden rounded-xl border border-border bg-surface"
+                              key={`${url}-${index}`}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                alt=""
+                                className="size-full object-cover"
+                                src={url}
+                              />
+                              {index === 0 ? (
+                                <span className="absolute inset-x-0 bottom-0 bg-ink/70 px-1 py-0.5 text-center text-[10px] font-bold text-white">
+                                  غلاف
+                                </span>
+                              ) : null}
+                              <div className="absolute inset-x-0 top-0 flex justify-between gap-0.5 p-0.5">
+                                {index > 0 ? (
+                                  <button
+                                    className="rounded bg-surface/90 px-1 text-[10px] font-bold text-ink"
+                                    onClick={() =>
+                                      setEditImages([
+                                        url,
+                                        ...editDraft.images.filter(
+                                          (item) => item !== url,
+                                        ),
+                                      ])
+                                    }
+                                    type="button"
+                                  >
+                                    غلاف
+                                  </button>
+                                ) : (
+                                  <span />
+                                )}
+                                <button
+                                  className="rounded bg-surface/90 px-1 text-[10px] font-bold text-red-700"
+                                  onClick={() =>
+                                    setEditImages(
+                                      editDraft.images.filter(
+                                        (item) => item !== url,
+                                      ),
+                                    )
+                                  }
+                                  type="button"
+                                >
+                                  حذف
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted">لا توجد صور بعد.</p>
+                      )}
+                      <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+                        <Input
+                          label="إضافة رابط صورة"
+                          onChange={(event) =>
+                            setGalleryUrlDraft(event.target.value)
+                          }
+                          placeholder="https://…"
+                          value={galleryUrlDraft}
+                        />
+                        <Button
+                          onClick={() => {
+                            addEditImage(galleryUrlDraft);
+                            setGalleryUrlDraft("");
+                          }}
+                          size="sm"
+                          type="button"
+                          variant="secondary"
+                        >
+                          إضافة
+                        </Button>
+                        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[var(--radius-xl)] border border-border bg-surface px-4 text-sm font-semibold text-ink">
+                          {uploadingImage ? "جاري الرفع…" : "رفع"}
+                          <input
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingImage}
+                            multiple
+                            onChange={(event) => {
+                              const files = Array.from(
+                                event.target.files ?? [],
+                              );
+                              event.target.value = "";
+                              if (!files.length) return;
+                              setUploadingImage(true);
+                              void Promise.all(
+                                files.map((file) => uploadListingImage(file)),
+                              )
+                                .then((urls) => {
+                                  const next = urls.filter(
+                                    (url): url is string => Boolean(url),
+                                  );
+                                  if (!next.length) return;
+                                  setEditDraft((current) => {
+                                    const cleaned = [
+                                      ...current.images,
+                                      ...next.filter(
+                                        (url) =>
+                                          !current.images.includes(url),
+                                      ),
+                                    ];
+                                    return {
+                                      ...current,
+                                      images: cleaned,
+                                      imageUrl: cleaned[0] ?? "",
+                                    };
+                                  });
+                                })
+                                .finally(() => setUploadingImage(false));
+                            }}
+                            type="file"
+                          />
+                        </label>
+                      </div>
                     </div>
-                  </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        loading={busyId === listing.id}
+                        size="sm"
+                        type="submit"
+                        variant="primary"
+                      >
+                        حفظ التعديل
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditingId(null);
+                          setEditFieldErrors({});
+                          setGalleryUrlDraft("");
+                        }}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        إلغاء
+                      </Button>
+                    </div>
+                  </form>
                 ) : (
                   <>
                     <div className="flex items-start gap-3">
@@ -966,27 +1205,8 @@ export function AdminListingsPanel() {
               </div>
               )}
             </div>
+            {editingId === listing.id ? null : (
             <div className="mt-4 flex flex-wrap gap-2">
-              {editingId === listing.id ? (
-                <>
-                  <Button
-                    loading={busyId === listing.id}
-                    onClick={() => void saveEdit(listing)}
-                    size="sm"
-                    variant="primary"
-                  >
-                    حفظ التعديل
-                  </Button>
-                  <Button
-                    onClick={() => setEditingId(null)}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    إلغاء
-                  </Button>
-                </>
-              ) : (
-                <>
                   <Button
                     onClick={() => startEdit(listing)}
                     size="sm"
@@ -1055,9 +1275,8 @@ export function AdminListingsPanel() {
               >
                 حذف
               </Button>
-                </>
-              )}
             </div>
+            )}
           </Card>
         ))
       )}

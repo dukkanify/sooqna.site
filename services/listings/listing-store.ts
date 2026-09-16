@@ -409,6 +409,15 @@ export async function patchListingRecord(
           },
         }
       : {}),
+    ...(patch.categorySpecs !== undefined
+      ? { categorySpecs: patch.categorySpecs }
+      : {}),
+    ...(patch.features !== undefined
+      ? { features: patch.features.length ? patch.features : undefined }
+      : {}),
+    ...(typeof patch.negotiable === "boolean"
+      ? { negotiable: patch.negotiable }
+      : {}),
     ...(patch.status ? { status: patch.status } : {}),
     ...(typeof patch.isFeatured === "boolean" ? { isFeatured: patch.isFeatured } : {}),
     ...(patch.status === "rejected"
@@ -574,6 +583,14 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     condition: listing.condition,
     contactPhone: listing.contactPhone,
     imageUrl: listing.imageUrl ?? listing.images?.[0],
+    images: listing.images?.length
+      ? listing.images
+      : listing.imageUrl
+        ? [listing.imageUrl]
+        : undefined,
+    categorySpecs: listing.categorySpecs,
+    features: listing.features,
+    negotiable: listing.negotiable,
     isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
     source: listing.source,
   };

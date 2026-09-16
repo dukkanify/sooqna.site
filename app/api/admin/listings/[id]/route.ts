@@ -52,7 +52,8 @@ export async function PATCH(request: Request, context: RouteParams) {
       body.title ? `عنوان` : null,
       typeof body.price === "number" ? `سعر ${body.price}` : null,
       body.city ? `مدينة ${body.city}` : null,
-      body.imageUrl ? "صورة" : null,
+      body.imageUrl || body.images?.length ? "صورة" : null,
+      body.categorySpecs ? "مواصفات" : null,
       body.status ? `حالة ${body.status}` : null,
       typeof body.isFeatured === "boolean"
         ? body.isFeatured
