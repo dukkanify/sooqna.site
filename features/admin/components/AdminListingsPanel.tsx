@@ -80,11 +80,7 @@ export function AdminListingsPanel() {
   const locale = useLocale();
   const [listings, setListings] = useState<AdminListingRecord[]>([]);
   const [categories, setCategories] = useState<AdminCategoryRecord[]>([]);
-  const [statusFilter, setStatusFilter] = useState(
-    statusFilterOptions.some((option) => option.value === "pending_review")
-      ? "pending_review"
-      : "all",
-  );
+  const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
@@ -211,11 +207,12 @@ export function AdminListingsPanel() {
     ];
   }, [listings]);
 
-  const defaultStatusFilter = statusFilterOptions.some(
-    (option) => option.value === "pending_review",
-  )
-    ? "pending_review"
-    : "all";
+  const pendingCount = useMemo(
+    () => listings.filter((listing) => listing.status === "pending_review").length,
+    [listings],
+  );
+
+  const defaultStatusFilter = "all";
 
   const hasActiveFilters =
     statusFilter !== defaultStatusFilter ||
@@ -906,6 +903,16 @@ export function AdminListingsPanel() {
               value={cityFilter}
             />
           </div>
+          {pendingCount > 0 ? (
+            <Button
+              onClick={() => setStatusFilter("pending_review")}
+              size="sm"
+              type="button"
+              variant={statusFilter === "pending_review" ? "primary" : "ghost"}
+            >
+              قيد المراجعة ({pendingCount})
+            </Button>
+          ) : null}
           {hasActiveFilters ? (
             <Button onClick={clearFilters} size="sm" type="button" variant="ghost">
               مسح الفلاتر
@@ -913,14 +920,39 @@ export function AdminListingsPanel() {
           ) : null}
           <p className="pb-2 text-xs text-muted">
             <Icon className="ms-1 inline" name="package" size={14} />
-            {listingCountLabel(filtered.length, locale)}
+            {hasActiveFilters
+              ? `${filtered.length} من ${listings.length}`
+              : listingCountLabel(filtered.length, locale)}
           </p>
         </div>
       </Card>
 
       {filtered.length === 0 ? (
         <Card className="p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">لا توجد إعلانات مطابقة.</p>
+          {listings.length > 0 ? (
+            <>
+              <p className="text-sm text-muted">
+                لا توجد إعلانات مطابقة لهذه التصفية
+                {statusFilter === "pending_review"
+                  ? " — لا يوجد شيء بانتظار المراجعة حالياً."
+                  : "."}
+              </p>
+              <p className="mt-2 text-xs text-muted">
+                المجموع في المخزون: {listings.length}
+              </p>
+              <Button
+                className="mt-4"
+                onClick={clearFilters}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                عرض كل الإعلانات
+              </Button>
+            </>
+          ) : (
+            <p className="text-sm text-muted">لا توجد إعلانات في المخزون بعد.</p>
+          )}
         </Card>
       ) : (
         filtered.map((listing) => (
