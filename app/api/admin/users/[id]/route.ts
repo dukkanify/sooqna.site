@@ -102,6 +102,7 @@ export async function PATCH(request: Request, context: RouteParams) {
       fullName: current.fullName,
       userId: current.id,
       accountType: current.accountType ?? "individual",
+      skipCooldown: true,
     });
     await logAdminAction({
       actorId: admin.id,
