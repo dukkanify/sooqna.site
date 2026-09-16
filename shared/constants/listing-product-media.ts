@@ -122,11 +122,11 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1556189250-72ba954cfc2b",
     "photo-1609184166822-bd1f1b991a06",
   ],
+  // Local Wikimedia CC-BY-SA BYD Song Plus EV shots (not Unsplash Tesla/Hyundai).
   byd_suv: [
-    "photo-1619767886558-efdc259cde1a",
-    "photo-1617788138017-80ad40651399",
-    "photo-1593941707882-a5bba14938c7",
-    "photo-1554744512-d6c603f27c54",
+    "/media/vehicles/byd/byd-song-plus-ev-champion-edition-001.jpg",
+    "/media/vehicles/byd/byd-song-plus-ev-champion-edition-002.jpg",
+    "/media/vehicles/byd/byd-song-plus-ev-champion-edition-003.jpg",
   ],
   sedan: [
     "photo-1492144534655-ae79c964c9d7",
@@ -262,6 +262,17 @@ function seedOffset(seed: string, length: number): number {
   return offset;
 }
 
+function mediaUrl(photoIdOrPath: string, width: number): string {
+  if (
+    photoIdOrPath.startsWith("/") ||
+    photoIdOrPath.startsWith("http://") ||
+    photoIdOrPath.startsWith("https://")
+  ) {
+    return photoIdOrPath;
+  }
+  return unsplashUrl(photoIdOrPath, width);
+}
+
 function galleryFromPhotoIds(
   photoIds: readonly string[],
   seed: string,
@@ -271,8 +282,8 @@ function galleryFromPhotoIds(
   if (photoIds.length === 0) return [];
   const offset = seedOffset(seed, photoIds.length);
   const urls: string[] = [];
-  for (let i = 0; i < photoIds.length && urls.length < count; i += 1) {
-    const url = unsplashUrl(photoIds[(offset + i) % photoIds.length], width);
+  for (let i = 0; i < Math.max(photoIds.length, count) && urls.length < count; i += 1) {
+    const url = mediaUrl(photoIds[(offset + i) % photoIds.length], width);
     if (!urls.includes(url)) urls.push(url);
   }
   return urls;

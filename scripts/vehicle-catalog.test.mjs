@@ -2,7 +2,7 @@
  * Vehicle catalog integrity + Make→Model cascade guards.
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -107,4 +107,21 @@ test("listing media has BYD-specific pool hint", () => {
   );
   assert.match(src, /byd_suv/);
   assert.match(src, /byd\|بي/);
+  assert.match(src, /\/media\/vehicles\/byd\/byd-song-plus-ev-champion-edition-001\.jpg/);
+  // Former Unsplash pool included a Tesla Roadster — must not return.
+  assert.doesNotMatch(src, /photo-1617788138017-80ad40651399/);
+  assert.doesNotMatch(src, /photo-1619767886558-efdc259cde1a/);
+});
+
+test("BYD Song showcase media files exist on disk", () => {
+  for (const name of [
+    "byd-song-plus-ev-champion-edition-001.jpg",
+    "byd-song-plus-ev-champion-edition-002.jpg",
+    "byd-song-plus-ev-champion-edition-003.jpg",
+  ]) {
+    assert.ok(
+      existsSync(path.join(root, "public/media/vehicles/byd", name)),
+      name,
+    );
+  }
 });
