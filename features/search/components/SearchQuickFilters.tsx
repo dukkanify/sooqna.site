@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Category } from "@/types";
-import { cities } from "@/shared/constants/locations";
+import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { DragScrollRow } from "@/shared/components/DragScrollRow";
 import {
   buildSearchUrl,
@@ -62,6 +62,7 @@ export function SearchQuickFilters({
   categories,
   selectedFilters,
 }: SearchQuickFiltersProps) {
+  const cities = useMarketplaceLocations();
   const hrefFor = (patch: Partial<SearchFilterState>) =>
     buildSearchUrl(mergeSearchFilters(selectedFilters, patch), undefined, basePath);
 

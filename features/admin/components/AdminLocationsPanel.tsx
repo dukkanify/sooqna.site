@@ -134,6 +134,7 @@ export function AdminLocationsPanel() {
           <Icon name="plus" size={16} />
           إضافة موقع / مدينة
         </h2>
+        <p className="mt-2 text-sm text-muted">المواقع المفعّلة تظهر فوراً في البحث، الهيرو، إضافة الإعلان، والملف الشخصي.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Input
             label="اسم المدينة"

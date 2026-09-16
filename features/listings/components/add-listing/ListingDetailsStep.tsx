@@ -1,5 +1,5 @@
 import type { ListingCondition } from "@/types";
-import { cities } from "@/shared/constants/locations";
+import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
@@ -21,6 +21,7 @@ export function ListingDetailsStep({
   errors,
   onPreviewChange,
 }: ListingDetailsStepProps) {
+  const cities = useMarketplaceLocations();
   return (
     <Card className={addListingStepCardClass}>
       <h2 className={addListingStepTitleClass}>2. تفاصيل الإعلان</h2>

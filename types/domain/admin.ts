@@ -129,7 +129,10 @@ export type AdminCategoryPatch = Partial<
     | "sortOrder"
     | "featureProfile"
   >
->;
+> & {
+  /** When featureProfile changes, rebuild add-listing fields from the new template. */
+  reseedForm?: boolean;
+};
 
 export type AdminCategoryCreateInput = {
   name: string;

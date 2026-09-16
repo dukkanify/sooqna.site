@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cities } from "@/shared/constants/locations";
+import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import type { UserProfile } from "@/types";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
@@ -27,6 +27,7 @@ const accountTypeLabels: Record<UserProfile["accountType"], string> = {
 };
 
 export function ProfileForm({ user }: ProfileFormProps) {
+  const cities = useMarketplaceLocations();
   const [displayUser, setDisplayUser] = useState(() =>
     typeof window !== "undefined" ? (getSessionUser() ?? user) : user,
   );
