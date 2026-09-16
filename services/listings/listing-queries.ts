@@ -6,6 +6,7 @@ import {
   specMatchCandidates,
   specSqlPaths,
 } from "@/shared/listings/listing-filter-match";
+import { categoryIdsMatchingQuery } from "@/shared/listings/search-text";
 import {
   getOptionalPostgresPool,
   isPostgresQuotaOrUnavailableError,
@@ -242,18 +243,31 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
   }
 
   if (query.query?.trim()) {
-    const pattern = likePattern(query.query);
+    const rawQuery = query.query.trim();
+    const pattern = likePattern(rawQuery);
     values.push(pattern);
-    const idx = values.length;
+    const textIdx = values.length;
+    const matchedCategoryIds = categoryIdsMatchingQuery(rawQuery);
+    let categoryClause = "";
+    if (matchedCategoryIds.length > 0) {
+      values.push(matchedCategoryIds);
+      const categoryIdx = values.length;
+      // Generic Arabic queries like «سيارات» must hit the cars vertical even when
+      // titles are brand/model only (تويوتا كامري) and never contain the word.
+      categoryClause = ` OR category_id = ANY($${categoryIdx}::text[])`;
+    }
     where.push(`(
-      payload->>'title' ILIKE $${idx} ESCAPE '\\'
-      OR payload->>'titleEnglish' ILIKE $${idx} ESCAPE '\\'
-      OR payload->>'description' ILIKE $${idx} ESCAPE '\\'
-      OR slug ILIKE $${idx} ESCAPE '\\'
-      OR payload->>'city' ILIKE $${idx} ESCAPE '\\'
-      OR payload->>'emirate' ILIKE $${idx} ESCAPE '\\'
-      OR payload->>'area' ILIKE $${idx} ESCAPE '\\'
-      OR COALESCE(payload->'categorySpecs','{}'::jsonb)::text ILIKE $${idx} ESCAPE '\\'
+      payload->>'title' ILIKE $${textIdx} ESCAPE '\\'
+      OR payload->>'titleEnglish' ILIKE $${textIdx} ESCAPE '\\'
+      OR payload->>'description' ILIKE $${textIdx} ESCAPE '\\'
+      OR payload->>'descriptionEnglish' ILIKE $${textIdx} ESCAPE '\\'
+      OR slug ILIKE $${textIdx} ESCAPE '\\'
+      OR payload->>'city' ILIKE $${textIdx} ESCAPE '\\'
+      OR payload->>'emirate' ILIKE $${textIdx} ESCAPE '\\'
+      OR payload->>'area' ILIKE $${textIdx} ESCAPE '\\'
+      OR payload->>'subcategory' ILIKE $${textIdx} ESCAPE '\\'
+      OR COALESCE(payload->'categorySpecs','{}'::jsonb)::text ILIKE $${textIdx} ESCAPE '\\'
+      ${categoryClause}
     )`);
   }
 

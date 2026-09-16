@@ -45,6 +45,19 @@ export function searchTextMatches(haystack: string, query: string): boolean {
   if (!normalizedQuery) return true;
 
   const normalizedHaystack = normalizeSearchText(haystack);
+  if (matchesNormalized(normalizedHaystack, normalizedQuery)) return true;
+
+  // Tolerate accidental spaces inside Arabic words (سيار ات → سيارات).
+  const compactQuery = normalizedQuery.replace(/\s+/g, "");
+  if (compactQuery.length >= 3 && compactQuery !== normalizedQuery) {
+    const compactHaystack = normalizedHaystack.replace(/\s+/g, "");
+    if (matchesNormalized(compactHaystack, compactQuery)) return true;
+  }
+
+  return false;
+}
+
+function matchesNormalized(normalizedHaystack: string, normalizedQuery: string): boolean {
   if (normalizedHaystack.includes(normalizedQuery)) return true;
 
   if (normalizedQuery.length < 3) return false;
@@ -71,6 +84,22 @@ export function searchTextMatches(haystack: string, query: string): boolean {
   }
 
   return false;
+}
+
+/** Category ids whose keyword aliases match a free-text marketplace query. */
+export function categoryIdsMatchingQuery(query: string): string[] {
+  const normalized = normalizeSearchText(query);
+  if (!normalized) return [];
+
+  return Object.entries(CATEGORY_SEARCH_KEYWORDS)
+    .filter(([, keywords]) =>
+      keywords.some(
+        (keyword) =>
+          searchTextMatches(keyword, normalized) ||
+          searchTextMatches(normalized, keyword),
+      ),
+    )
+    .map(([categoryId]) => categoryId);
 }
 
 /** Category keyword aliases so generic queries like «سياره» find the cars vertical. */
