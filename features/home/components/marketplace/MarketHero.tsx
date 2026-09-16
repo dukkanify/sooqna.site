@@ -1,11 +1,11 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { Category } from "@/types";
 import {
   getMarketHeroBackground,
   getMarketQuickSearches,
 } from "@/services/content/homepage-marketplace.content";
 import { MarketHeroCopy } from "./MarketHeroCopy";
+import { MarketHeroPills } from "./MarketHeroPills";
 import { MarketHeroSearch } from "./MarketHeroSearch";
 
 type MarketHeroProps = {
@@ -13,9 +13,10 @@ type MarketHeroProps = {
 };
 
 export async function MarketHero({ categories }: MarketHeroProps) {
-  const [backgroundUrl, quickSearches] = await Promise.all([
+  const [backgroundUrl, searchesAr, searchesEn] = await Promise.all([
     getMarketHeroBackground(),
-    getMarketQuickSearches(),
+    getMarketQuickSearches("ar"),
+    getMarketQuickSearches("en"),
   ]);
 
   return (
@@ -50,17 +51,7 @@ export async function MarketHero({ categories }: MarketHeroProps) {
               <MarketHeroSearch categories={categories} />
             </div>
 
-            <div className="market-hero-pills">
-              {quickSearches.map((tag) => (
-                <Link
-                  key={tag.href}
-                  className="market-hero-pill"
-                  href={tag.href}
-                >
-                  {tag.label}
-                </Link>
-              ))}
-            </div>
+            <MarketHeroPills searchesAr={searchesAr} searchesEn={searchesEn} />
           </div>
         </div>
       </div>
