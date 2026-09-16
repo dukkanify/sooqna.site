@@ -8,6 +8,15 @@ import { loadCollection, saveCollection } from "@/services/payments/data-store";
 
 const FILE = "listing-reports.json";
 
+export type ListingReportResolvePatch = {
+  status: ListingReportStatus;
+  resolutionNote?: string;
+  resolvedAt?: string;
+  resolvedByName?: string;
+  listingRejected?: boolean;
+  sellerSuspended?: boolean;
+};
+
 function toReceipt(report: ListingReport): ListingReportReceipt {
   return {
     id: report.id,
@@ -70,10 +79,17 @@ export async function updateListingReportStatus(
   id: string,
   status: ListingReportStatus,
 ): Promise<ListingReport | undefined> {
+  return patchListingReport(id, { status });
+}
+
+export async function patchListingReport(
+  id: string,
+  patch: ListingReportResolvePatch,
+): Promise<ListingReport | undefined> {
   const all = await loadCollection<ListingReport>(FILE);
   const index = all.findIndex((item) => item.id === id);
   if (index < 0) return undefined;
-  all[index] = { ...all[index], status };
+  all[index] = { ...all[index], ...patch };
   await saveCollection(FILE, all);
   return all[index];
 }

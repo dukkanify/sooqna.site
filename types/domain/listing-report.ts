@@ -5,7 +5,11 @@ export type ListingReportReason =
   | "prohibited"
   | "other";
 
-export type ListingReportStatus = "open" | "reviewed";
+export type ListingReportStatus =
+  | "open"
+  | "reviewed"
+  | "dismissed"
+  | "resolved";
 
 export const LISTING_REPORT_REASON_LABELS: Record<ListingReportReason, string> = {
   misleading: "محتوى مضلل",
@@ -13,6 +17,13 @@ export const LISTING_REPORT_REASON_LABELS: Record<ListingReportReason, string> =
   duplicate: "إعلان مكرر",
   prohibited: "محتوى ممنوع",
   other: "سبب آخر",
+};
+
+export const LISTING_REPORT_STATUS_LABELS: Record<ListingReportStatus, string> = {
+  open: "جديد",
+  reviewed: "تمت المراجعة",
+  dismissed: "مرفوض / لا إجراء",
+  resolved: "تم اتخاذ إجراء",
 };
 
 export type ListingReport = {
@@ -32,6 +43,11 @@ export type ListingReport = {
   publicToken?: string;
   status: ListingReportStatus;
   createdAt: string;
+  resolutionNote?: string;
+  resolvedAt?: string;
+  resolvedByName?: string;
+  listingRejected?: boolean;
+  sellerSuspended?: boolean;
 };
 
 export type ListingReportReceipt = Pick<
