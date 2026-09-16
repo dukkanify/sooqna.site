@@ -1,25 +1,48 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { AdminCategoryRecord } from "@/types";
+import type { AdminCategoryRecord, CategoryIconName } from "@/types";
 import { getSessionUser } from "@/services/storage";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { Input } from "@/shared/ui/Input";
+import { Select } from "@/shared/ui/Select";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { useLocale } from "@/shared/i18n/useLocale";
+import {
+  CATEGORY_FEATURE_PROFILES,
+  CATEGORY_ICON_OPTIONS,
+  getCategoryFeatureProfileMeta,
+  slugifyCategoryName,
+  type CategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
+
+const PROFILE_LABELS = Object.fromEntries(
+  CATEGORY_FEATURE_PROFILES.map((profile) => [profile.id, profile.label]),
+) as Record<CategoryFeatureProfile, string>;
 
 export function AdminCategoriesPanel() {
   const locale = useLocale();
   const [categories, setCategories] = useState<AdminCategoryRecord[]>([]);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [featureProfile, setFeatureProfile] =
+    useState<CategoryFeatureProfile>("general");
+  const [icon, setIcon] = useState<CategoryIconName>("sofa");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const selectedProfile = useMemo(
+    () => getCategoryFeatureProfileMeta(featureProfile),
+    [featureProfile],
+  );
 
   useEffect(() => {
     const user = getSessionUser();
@@ -29,6 +52,8 @@ export function AdminCategoriesPanel() {
       .then((data) => setCategories(data.categories ?? []))
       .catch(() => setCategories([]));
   }, []);
+
+  const effectiveSlug = slugTouched ? slug : slugifyCategoryName(name);
 
   async function toggleEnabled(category: AdminCategoryRecord) {
     const session = getSessionUser();
@@ -84,21 +109,44 @@ export function AdminCategoriesPanel() {
 
   async function handleCreate() {
     const session = getSessionUser();
-    if (!session || !name.trim() || !slug.trim()) return;
+    if (!session || !name.trim()) return;
     setCreating(true);
+    setError(null);
+    setSuccess(null);
     try {
       const response = await adminFetch("/api/admin/categories", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: name.trim(), slug: slug.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          slug: effectiveSlug.trim(),
+          icon,
+          featureProfile,
+          seedForm: true,
+        }),
       });
       const data = await response.json();
-      if (response.ok && data.category) {
+      if (!response.ok) {
+        if (data.error === "SLUG_TAKEN") {
+          setError("المعرّف مستخدم مسبقاً — غيّر الاسم أو الـ slug.");
+        } else if (data.error === "INVALID_SLUG") {
+          setError("معرّف غير صالح — استخدم حروفاً إنجليزية وأرقاماً.");
+        } else {
+          setError("تعذر حفظ الفئة. حاول مرة أخرى.");
+        }
+        return;
+      }
+      if (data.category) {
         setCategories((prev) => [data.category, ...prev]);
         setName("");
         setSlug("");
+        setSlugTouched(false);
+        setFeatureProfile("general");
+        setSuccess(
+          `تم إنشاء «${data.category.name}» مع نموذج الإعلان وسلوك ${PROFILE_LABELS[data.category.featureProfile as CategoryFeatureProfile] ?? "عام"}.`,
+        );
       }
     } finally {
       setCreating(false);
@@ -110,8 +158,13 @@ export function AdminCategoriesPanel() {
       <Card className="p-5" variant="flat">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Icon name="plus" size={16} />
-          إضافة فئة
+          إضافة فئة ذكية
         </h2>
+        <p className="mt-2 text-sm text-muted">
+          اختر نوع السلوك البرمجي للفئة — يتحدد زر الإعلان (تقديم وظيفة، شراء الآن، معاينة…)
+          ويُزرع نموذج إضافة الإعلان تلقائياً.
+        </p>
+
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <Input
             label="اسم الفئة"
@@ -121,21 +174,61 @@ export function AdminCategoriesPanel() {
           />
           <Input
             label="المعرّف (slug)"
-            onChange={(event) => setSlug(event.target.value)}
+            onChange={(event) => {
+              setSlugTouched(true);
+              setSlug(event.target.value);
+            }}
             placeholder="office-supplies"
-            value={slug}
+            value={effectiveSlug}
           />
         </div>
-        <div className="mt-4">
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Select
+            label="سلوك السوق / الميزة"
+            onChange={(event) => {
+              const next = event.target.value as CategoryFeatureProfile;
+              setFeatureProfile(next);
+              setIcon(getCategoryFeatureProfileMeta(next).defaultIcon);
+            }}
+            options={CATEGORY_FEATURE_PROFILES.map((profile) => ({
+              label: profile.label,
+              value: profile.id,
+            }))}
+            value={featureProfile}
+          />
+          <Select
+            label="الأيقونة"
+            onChange={(event) => setIcon(event.target.value as CategoryIconName)}
+            options={CATEGORY_ICON_OPTIONS}
+            value={icon}
+          />
+        </div>
+
+        <div className="mt-4 rounded-[var(--radius-xl)] border border-border/80 bg-[#f8f6f1] p-4">
+          <p className="text-sm font-bold text-ink">{selectedProfile.label}</p>
+          <p className="mt-1 text-sm text-muted">{selectedProfile.description}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {selectedProfile.capabilities.map((cap) => (
+              <Badge key={cap} variant="muted">
+                {cap}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button
-            disabled={!name.trim() || !slug.trim()}
+            disabled={!name.trim()}
             loading={creating}
-            onClick={handleCreate}
+            onClick={() => void handleCreate()}
             size="sm"
             variant="primary"
           >
-            حفظ الفئة
+            حفظ الفئة وتهيئة النموذج
           </Button>
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {success ? <p className="text-sm text-emerald-700">{success}</p> : null}
         </div>
       </Card>
 
@@ -144,53 +237,59 @@ export function AdminCategoriesPanel() {
           <p className="text-sm text-muted">لا توجد فئات.</p>
         </Card>
       ) : (
-        categories.map((category) => (
-          <Card key={category.id} className="p-5" variant="flat">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="font-semibold text-ink">{category.name}</p>
-                <p className="mt-1 text-xs text-muted">{category.slug}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge variant={category.enabled ? "verified" : "rejected"}>
-                    {category.enabled ? "مفعّلة" : "معطّلة"}
-                  </Badge>
-                  <Badge variant="muted">
-                    {listingCountLabel(category.listingCount, locale)}
-                  </Badge>
-                  <label className="flex items-center gap-1 text-xs text-muted">
-                    ترتيب
-                    <input
-                      className="w-16 rounded border border-border bg-surface px-2 py-1 text-ink"
-                      defaultValue={category.sortOrder ?? 0}
-                      key={`${category.id}-${category.sortOrder}`}
-                      onBlur={(event) => {
-                        const next = Number(event.target.value);
-                        if (next !== category.sortOrder) {
-                          void patchSortOrder(category, next);
-                        }
-                      }}
-                      type="number"
-                    />
-                  </label>
+        categories.map((category) => {
+          const profile = category.featureProfile ?? "general";
+          return (
+            <Card key={category.id} className="p-5" variant="flat">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-ink">{category.name}</p>
+                  <p className="mt-1 text-xs text-muted">{category.slug}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge variant={category.enabled ? "verified" : "rejected"}>
+                      {category.enabled ? "مفعّلة" : "معطّلة"}
+                    </Badge>
+                    <Badge variant="premium">
+                      {PROFILE_LABELS[profile] ?? profile}
+                    </Badge>
+                    <Badge variant="muted">
+                      {listingCountLabel(category.listingCount, locale)}
+                    </Badge>
+                    <label className="flex items-center gap-1 text-xs text-muted">
+                      ترتيب
+                      <input
+                        className="w-16 rounded border border-border bg-surface px-2 py-1 text-ink"
+                        defaultValue={category.sortOrder ?? 0}
+                        key={`${category.id}-${category.sortOrder}`}
+                        onBlur={(event) => {
+                          const next = Number(event.target.value);
+                          if (next !== category.sortOrder) {
+                            void patchSortOrder(category, next);
+                          }
+                        }}
+                        type="number"
+                      />
+                    </label>
+                  </div>
+                  {category.subcategories.length > 0 ? (
+                    <p className="mt-2 text-xs text-muted">
+                      {category.subcategories.slice(0, 4).join(" · ")}
+                      {category.subcategories.length > 4 ? "…" : ""}
+                    </p>
+                  ) : null}
                 </div>
-                {category.subcategories.length > 0 ? (
-                  <p className="mt-2 text-xs text-muted">
-                    {category.subcategories.slice(0, 4).join(" · ")}
-                    {category.subcategories.length > 4 ? "…" : ""}
-                  </p>
-                ) : null}
+                <Button
+                  loading={busyId === category.id}
+                  onClick={() => void toggleEnabled(category)}
+                  size="sm"
+                  variant={category.enabled ? "ghost" : "secondary"}
+                >
+                  {category.enabled ? "تعطيل" : "تفعيل"}
+                </Button>
               </div>
-              <Button
-                loading={busyId === category.id}
-                onClick={() => toggleEnabled(category)}
-                size="sm"
-                variant={category.enabled ? "ghost" : "secondary"}
-              >
-                {category.enabled ? "تعطيل" : "تفعيل"}
-              </Button>
-            </div>
-          </Card>
-        ))
+            </Card>
+          );
+        })
       )}
 
       <Link className="text-sm font-semibold text-primary" href="/admin">

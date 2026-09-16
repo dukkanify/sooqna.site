@@ -65,6 +65,7 @@ export type ElectronicsSpecs = {
 export type ListingImageTone = "gold" | "amber" | "sky" | "rose" | "slate";
 
 import type { CategorySpecs } from "./category-fields";
+import type { CategoryFeatureProfile } from "@/shared/constants/category-feature-profiles";
 
 export type Listing = {
   id: string;
@@ -72,6 +73,8 @@ export type Listing = {
   slug: string;
   description: string;
   categoryId: string;
+  /** Copied from category at publish time so CTAs resolve without a category lookup. */
+  featureProfile?: CategoryFeatureProfile;
   city: string;
   country: string;
   price: number;

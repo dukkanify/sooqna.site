@@ -32,6 +32,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
     imagePreviews,
     isAllowed,
     isJobsCategory,
+    imagesRequired,
     isSubmitting,
     preview,
     selectedCategory,
@@ -77,7 +78,10 @@ export function AddListingForm({ categories }: AddListingFormProps) {
     );
   }
 
-  const useDynamicFields = isDynamicCategory(selectedCategoryId);
+  const useDynamicFields =
+    Boolean(selectedCategoryId) &&
+    (isDynamicCategory(selectedCategoryId) ||
+      Boolean(selectedCategory?.featureProfile));
 
   return (
     <LocalizedTree>
@@ -116,7 +120,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
           errors={errors}
           featuredCheckoutAvailable={featuredCheckoutAvailable}
           imagePreviews={imagePreviews}
-          imagesRequired={!isJobsCategory}
+          imagesRequired={imagesRequired}
           onImageChange={handleImageChange}
           onPackageChange={setSelectedPackage}
           onSetCover={setCover}

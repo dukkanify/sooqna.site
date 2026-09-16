@@ -7,6 +7,7 @@ import type {
   AdminPermission,
   UserRole,
 } from "./user";
+import type { CategoryFeatureProfile } from "@/shared/constants/category-feature-profiles";
 
 export type DisputeStatus =
   | "open"
@@ -114,12 +115,19 @@ export type AdminCategoryRecord = {
   enabled: boolean;
   sortOrder: number;
   subcategories: string[];
+  featureProfile?: CategoryFeatureProfile;
 };
 
 export type AdminCategoryPatch = Partial<
   Pick<
     AdminCategoryRecord,
-    "name" | "slug" | "enabled" | "listingCount" | "icon" | "sortOrder"
+    | "name"
+    | "slug"
+    | "enabled"
+    | "listingCount"
+    | "icon"
+    | "sortOrder"
+    | "featureProfile"
   >
 >;
 
@@ -128,6 +136,9 @@ export type AdminCategoryCreateInput = {
   slug: string;
   icon?: CategoryIconName;
   sortOrder?: number;
+  featureProfile?: CategoryFeatureProfile;
+  /** When true (default), seed add-listing form fields from the profile template. */
+  seedForm?: boolean;
 };
 
 export type AdminModerationSummary = {
