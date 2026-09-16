@@ -276,19 +276,33 @@ export async function patchCategoryRecord(
   const categories = await loadCategoryRecordsUncached();
   const index = categories.findIndex((item) => item.id === id);
   if (index < 0) return undefined;
+  const previousProfile = resolveCategoryFeatureProfile(
+    id,
+    categories[index].featureProfile,
+  );
+  const { reseedForm, ...persistPatch } = patch;
   const nextProfile =
-    patch.featureProfile !== undefined
-      ? resolveCategoryFeatureProfile(id, patch.featureProfile)
+    persistPatch.featureProfile !== undefined
+      ? resolveCategoryFeatureProfile(id, persistPatch.featureProfile)
       : categories[index].featureProfile;
   categories[index] = {
     ...categories[index],
-    ...patch,
+    ...persistPatch,
     featureProfile: nextProfile,
     subcategories: [...categories[index].subcategories],
   };
   await saveCollection(FILE, categories);
   setCache(categories);
   const row = categories[index];
+  const resolvedProfile = resolveCategoryFeatureProfile(row.id, row.featureProfile);
+  const shouldReseed =
+    reseedForm === true ||
+    (reseedForm !== false &&
+      persistPatch.featureProfile !== undefined &&
+      resolvedProfile !== previousProfile);
+  if (shouldReseed) {
+    await seedFormForProfile(row.id, resolvedProfile);
+  }
   return {
     id: row.id,
     name: row.name,
@@ -298,6 +312,20 @@ export async function patchCategoryRecord(
     enabled: row.enabled,
     sortOrder: row.sortOrder,
     subcategories: [...row.subcategories],
-    featureProfile: resolveCategoryFeatureProfile(row.id, row.featureProfile),
+    featureProfile: resolvedProfile,
   };
+}
+
+export async function deleteCategoryRecord(id: string): Promise<boolean> {
+  const categories = await loadCategoryRecordsUncached();
+  const next = categories.filter((item) => item.id !== id);
+  if (next.length === categories.length) return false;
+  await saveCollection(FILE, next);
+  setCache(next);
+  try {
+    await replaceCategoryFormFields(id, []);
+  } catch {
+    /* form cleanup is optional */
+  }
+  return true;
 }

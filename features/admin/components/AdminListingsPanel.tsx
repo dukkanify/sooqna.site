@@ -8,7 +8,7 @@ import type {
   AdminListingRecord,
   ListingStatus,
 } from "@/types";
-import { cities } from "@/shared/constants/locations";
+import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { isDynamicCategory } from "@/shared/constants/category-fields";
 import { listingStatusLabels } from "@/shared/constants/listingStatuses";
 import { getLocalListings, getSessionUser } from "@/services/storage";
@@ -75,6 +75,7 @@ const emptyForm = {
 };
 
 export function AdminListingsPanel() {
+  const cities = useMarketplaceLocations();
   const locale = useLocale();
   const [listings, setListings] = useState<AdminListingRecord[]>([]);
   const [categories, setCategories] = useState<AdminCategoryRecord[]>([]);
@@ -181,10 +182,12 @@ export function AdminListingsPanel() {
   }, [categories, listings]);
 
   const cityFilterOptions = useMemo(() => {
-    const cities = [...new Set(listings.map((listing) => listing.city).filter(Boolean))].sort();
+    const listingCities = [
+      ...new Set(listings.map((listing) => listing.city).filter(Boolean)),
+    ].sort();
     return [
       { label: "كل المدن", value: "all" },
-      ...cities.map((city) => ({ label: city, value: city })),
+      ...listingCities.map((city) => ({ label: city, value: city })),
     ];
   }, [listings]);
 
@@ -239,6 +242,22 @@ export function AdminListingsPanel() {
         setListings((prev) =>
           prev.map((listing) => (listing.id === id ? data.listing : listing)),
         );
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function deleteListing(id: string) {
+    const session = getSessionUser();
+    if (!session) return;
+    setBusyId(id);
+    try {
+      const response = await adminFetch(`/api/admin/listings/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setListings((prev) => prev.filter((listing) => listing.id !== id));
       }
     } finally {
       setBusyId(null);
@@ -734,6 +753,20 @@ export function AdminListingsPanel() {
                 variant="ghost"
               >
                 عرض
+              </Button>
+              <Button
+                loading={busyId === listing.id}
+                onClick={() => {
+                  const ok = window.confirm(
+                    `حذف الإعلان «${listing.title}» نهائياً من السوق؟`,
+                  );
+                  if (!ok) return;
+                  void deleteListing(listing.id);
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                حذف
               </Button>
             </div>
           </Card>

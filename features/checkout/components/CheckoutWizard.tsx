@@ -39,7 +39,7 @@ import { Select } from "@/shared/ui/Select";
 import { PageHero } from "@/shared/ui/PageHero";
 import { AppImage } from "@/shared/components/AppImage";
 import { getListingImageUrl } from "@/features/listings/components/listing-card.utils";
-import { cities } from "@/shared/constants/locations";
+import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { CheckoutLiveLocation } from "@/features/checkout/components/CheckoutLiveLocation";
 import type { CheckoutLiveLocationValue } from "@/features/checkout/lib/checkout-live-location";
 
@@ -99,6 +99,7 @@ export function CheckoutWizard({
   paymentCancelled,
   fromOrderId,
 }: CheckoutWizardProps) {
+  const cities = useMarketplaceLocations();
   const router = useRouter();
   const panelRef = useRef<HTMLDivElement>(null);
   const transitionLockRef = useRef(false);

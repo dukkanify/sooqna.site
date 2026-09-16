@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { BRAND } from "@/shared/constants/brand";
 import { notFound } from "next/navigation";
-import { cities, countries } from "@/shared/constants/locations";
+import { countries } from "@/shared/constants/locations";
+import { getLocations } from "@/services/locations/location-store";
 import { CategoryHero } from "@/features/categories/components/CategoryHero";
 import { MobileBottomNav } from "@/features/home/components/mobile/MobileBottomNav";
 import { RecordRecentSearch } from "@/features/search/components/RecordRecentSearch";
@@ -92,13 +93,16 @@ export default async function CategoryPage({
   };
   const listingFilters = toListingSearchFilters(selectedFilters);
 
-  const [categories, listings, total, suggestionTitles, locale] = await Promise.all([
-    getCategories(),
-    searchListings(listingFilters),
-    countSearchListings(listingFilters),
-    getSearchSuggestionTitles(),
-    getRequestLocale(),
-  ]);
+  const [categories, listings, total, suggestionTitles, locale, locationRows] =
+    await Promise.all([
+      getCategories(),
+      searchListings(listingFilters),
+      countSearchListings(listingFilters),
+      getSearchSuggestionTitles(),
+      getRequestLocale(),
+      getLocations({ enabledOnly: true }),
+    ]);
+  const cities = locationRows.map((loc) => ({ id: loc.id, name: loc.name }));
 
   const suggestions = buildSearchSuggestions({
     categories,

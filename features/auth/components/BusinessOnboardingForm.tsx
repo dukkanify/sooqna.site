@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { cities } from "@/shared/constants/locations";
+import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
@@ -22,6 +22,7 @@ const categories = [
 ];
 
 export function BusinessOnboardingForm() {
+  const cities = useMarketplaceLocations();
   const router = useRouter();
   const [error, setError] = useState("");
 

@@ -35,6 +35,11 @@ export function AdminCategoriesPanel() {
     useState<CategoryFeatureProfile>("general");
   const [icon, setIcon] = useState<CategoryIconName>("sofa");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editIcon, setEditIcon] = useState<CategoryIconName>("sofa");
+  const [editProfile, setEditProfile] = useState<CategoryFeatureProfile>("general");
+  const [reseedForm, setReseedForm] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -102,6 +107,75 @@ export function AdminCategoriesPanel() {
             .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
         );
       }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+
+  function startEdit(category: AdminCategoryRecord) {
+    setEditingId(category.id);
+    setEditName(category.name);
+    setEditIcon(category.icon);
+    setEditProfile(category.featureProfile ?? "general");
+    setReseedForm(true);
+    setError(null);
+    setSuccess(null);
+  }
+
+  async function saveEdit(category: AdminCategoryRecord) {
+    const session = getSessionUser();
+    if (!session || !editName.trim()) return;
+    setBusyId(category.id);
+    setError(null);
+    try {
+      const response = await adminFetch(`/api/admin/categories/${category.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          icon: editIcon,
+          featureProfile: editProfile,
+          reseedForm:
+            reseedForm &&
+            editProfile !== (category.featureProfile ?? "general"),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.category) {
+        setError("تعذر حفظ تعديلات الفئة.");
+        return;
+      }
+      setCategories((prev) =>
+        prev.map((item) => (item.id === category.id ? data.category : item)),
+      );
+      setEditingId(null);
+      setSuccess(`تم تحديث «${data.category.name}».`);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function deleteCategory(category: AdminCategoryRecord) {
+    const session = getSessionUser();
+    if (!session) return;
+    const ok = window.confirm(
+      `حذف الفئة «${category.name}» نهائياً؟ لن تظهر في السوق ولن يمكن التراجع.`,
+    );
+    if (!ok) return;
+    setBusyId(category.id);
+    setError(null);
+    try {
+      const response = await adminFetch(`/api/admin/categories/${category.id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        setError("تعذر حذف الفئة.");
+        return;
+      }
+      setCategories((prev) => prev.filter((item) => item.id !== category.id));
+      if (editingId === category.id) setEditingId(null);
+      setSuccess(`تم حذف «${category.name}».`);
     } finally {
       setBusyId(null);
     }
@@ -239,18 +313,58 @@ export function AdminCategoriesPanel() {
       ) : (
         categories.map((category) => {
           const profile = category.featureProfile ?? "general";
+          const isEditing = editingId === category.id;
           return (
             <Card key={category.id} className="p-5" variant="flat">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-ink">{category.name}</p>
-                  <p className="mt-1 text-xs text-muted">{category.slug}</p>
+                <div className="min-w-0 flex-1">
+                  {isEditing ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input
+                        label="اسم الفئة"
+                        onChange={(event) => setEditName(event.target.value)}
+                        value={editName}
+                      />
+                      <Select
+                        label="الأيقونة"
+                        onChange={(event) =>
+                          setEditIcon(event.target.value as CategoryIconName)
+                        }
+                        options={CATEGORY_ICON_OPTIONS}
+                        value={editIcon}
+                      />
+                      <Select
+                        label="سلوك السوق"
+                        onChange={(event) =>
+                          setEditProfile(event.target.value as CategoryFeatureProfile)
+                        }
+                        options={CATEGORY_FEATURE_PROFILES.map((item) => ({
+                          label: item.label,
+                          value: item.id,
+                        }))}
+                        value={editProfile}
+                      />
+                      <label className="flex items-end gap-2 pb-2 text-xs text-ink">
+                        <input
+                          checked={reseedForm}
+                          onChange={(event) => setReseedForm(event.target.checked)}
+                          type="checkbox"
+                        />
+                        إعادة تهيئة نموذج الإعلان عند تغيير السلوك
+                      </label>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="font-semibold text-ink">{category.name}</p>
+                      <p className="mt-1 text-xs text-muted">{category.slug}</p>
+                    </>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Badge variant={category.enabled ? "verified" : "rejected"}>
                       {category.enabled ? "مفعّلة" : "معطّلة"}
                     </Badge>
                     <Badge variant="premium">
-                      {PROFILE_LABELS[profile] ?? profile}
+                      {PROFILE_LABELS[isEditing ? editProfile : profile] ?? profile}
                     </Badge>
                     <Badge variant="muted">
                       {listingCountLabel(category.listingCount, locale)}
@@ -271,21 +385,60 @@ export function AdminCategoriesPanel() {
                       />
                     </label>
                   </div>
-                  {category.subcategories.length > 0 ? (
+                  {!isEditing && category.subcategories.length > 0 ? (
                     <p className="mt-2 text-xs text-muted">
                       {category.subcategories.slice(0, 4).join(" · ")}
                       {category.subcategories.length > 4 ? "…" : ""}
                     </p>
                   ) : null}
                 </div>
-                <Button
-                  loading={busyId === category.id}
-                  onClick={() => void toggleEnabled(category)}
-                  size="sm"
-                  variant={category.enabled ? "ghost" : "secondary"}
-                >
-                  {category.enabled ? "تعطيل" : "تفعيل"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        loading={busyId === category.id}
+                        onClick={() => void saveEdit(category)}
+                        size="sm"
+                        variant="primary"
+                      >
+                        حفظ
+                      </Button>
+                      <Button
+                        onClick={() => setEditingId(null)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        إلغاء
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => startEdit(category)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        تعديل
+                      </Button>
+                      <Button
+                        loading={busyId === category.id}
+                        onClick={() => void toggleEnabled(category)}
+                        size="sm"
+                        variant={category.enabled ? "ghost" : "secondary"}
+                      >
+                        {category.enabled ? "تعطيل" : "تفعيل"}
+                      </Button>
+                      <Button
+                        loading={busyId === category.id}
+                        onClick={() => void deleteCategory(category)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        حذف
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </Card>
           );

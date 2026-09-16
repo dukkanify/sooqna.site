@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Category } from "@/types";
-import { cities } from "@/shared/constants/locations";
+import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { Icon } from "@/shared/ui/Icon";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { txLocation } from "@/shared/i18n/tx";
@@ -19,6 +19,7 @@ type MobileSearchCardProps = {
 
 export function MobileSearchCard({ categories }: MobileSearchCardProps) {
   const locale = useLocale();
+  const cities = useMarketplaceLocations();
   const labels = getHomeSearchLabels(locale);
   const priceOptions = getHomeSearchPriceOptions(locale);
   const [category, setCategory] = useState("");
