@@ -13,11 +13,11 @@ export async function MobileHeroSection() {
       <div className="mobile-home-hero__media">
         <div className="mobile-home-hero__bg">
           <Image
-            alt="أفق أبوظبي — أبراج الاتحاد والكورنيش"
+            alt="أفق أبوظبي عند الغروب — أبراج الاتحاد والكورنيش"
             className="object-cover"
             fill
             priority
-            quality={72}
+            quality={80}
             sizes="(max-width: 430px) 100vw, 480px"
             src={backgroundUrl}
           />

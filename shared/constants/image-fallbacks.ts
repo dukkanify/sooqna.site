@@ -239,7 +239,8 @@ export function galleryFromPool(
   return urls;
 }
 
-export const heroBackgroundUrl = unsplashUrl(emiratePhotoIds["abu-dhabi"], 1600);
+/** Full-bleed homepage hero — branded Abu Dhabi Corniche dusk plate. */
+export const heroBackgroundUrl = "/brand/abu-dhabi-hero.png";
 
 /** Verified seller portrait URLs */
 export const sellerAvatarUrls = {
