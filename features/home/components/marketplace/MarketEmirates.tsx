@@ -17,7 +17,7 @@ export async function MarketEmirates() {
     <section className="bg-background py-8 md:py-10">
       <div className="app-container">
         <div className="mb-3 max-w-2xl md:mb-4">
-          <p className="text-xs font-bold text-[#B8955F]">Emirates</p>
+          <p className="text-xs font-bold text-[#B8955F]">الإمارات</p>
           <h2 className="mt-0.5 text-xl font-bold tracking-tight text-ink md:text-2xl">
             {tx(locale, "الإمارات الأكثر شعبية")}
           </h2>

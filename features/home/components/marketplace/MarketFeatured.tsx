@@ -22,7 +22,7 @@ export function MarketFeatured({ categories, listings }: MarketFeaturedProps) {
         actionHref="/featured"
         actionLabel="عرض جميع الإعلانات"
         description="إعلانات مختارة من سوقنا — صور حقيقية وأسعار واضحة من بائعين موثوقين."
-        eyebrow="Featured"
+        eyebrow="مميز"
         title="إعلانات مميزة"
       />
 
