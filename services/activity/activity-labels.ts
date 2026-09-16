@@ -44,6 +44,31 @@ const ORDER_STATUS: Record<Order["status"], string> = {
   cancelled: "ملغى",
 };
 
+const ESCROW_STATUS: Record<Order["escrowStatus"], string> = {
+  pending: "بانتظار الحجز",
+  held: "محجوز",
+  released: "محرَّر للبائع",
+  refunded: "مسترد",
+};
+
+const PAYMENT_STATUS: Record<Order["paymentStatus"], string> = {
+  pending: "بانتظار الدفع",
+  processing: "جارٍ المعالجة",
+  succeeded: "ناجح",
+  failed: "فشل",
+  refunded: "مسترد",
+};
+
+const PRODUCT_VERIFICATION_STATUS: Record<
+  NonNullable<Order["productVerificationStatus"]>,
+  string
+> = {
+  awaiting_seller: "بانتظار توثيق البائع",
+  awaiting_buyer: "بانتظار تأكيد المشتري",
+  match_confirmed: "توثيق مطابق",
+  mismatch_reported: "عدم مطابقة",
+};
+
 const LISTING_STATUS: Record<Listing["status"], string> = {
   active: "منشور",
   pending_review: "قيد المراجعة",
@@ -90,6 +115,20 @@ export function quoteStatusLabel(status: QuoteRequest["status"]): string {
 
 export function orderStatusLabel(status: Order["status"]): string {
   return ORDER_STATUS[status] ?? status;
+}
+
+export function escrowStatusLabel(status: Order["escrowStatus"]): string {
+  return ESCROW_STATUS[status] ?? status;
+}
+
+export function paymentStatusLabel(status: Order["paymentStatus"]): string {
+  return PAYMENT_STATUS[status] ?? status;
+}
+
+export function productVerificationStatusLabel(
+  status: NonNullable<Order["productVerificationStatus"]>,
+): string {
+  return PRODUCT_VERIFICATION_STATUS[status] ?? status;
 }
 
 export function listingStatusLabel(status: Listing["status"]): string {
