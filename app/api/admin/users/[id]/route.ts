@@ -4,7 +4,13 @@ import {
 import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import { logAdminAction } from "@/services/admin/admin-audit-store";
-import { approvePendingUser } from "@/services/auth/signup-approval";
+import {
+  approvePendingUser,
+  completePersonVerification,
+} from "@/services/auth/signup-approval";
+import { sendRegistrationVerifyOtp } from "@/services/auth/auth-handlers";
+import { issuePasswordResetToken } from "@/services/auth/password-reset-token";
+import { emailPasswordResetLink } from "@/services/email/notification-emails";
 import {
   findUserById,
   toAdminUserRecord,
@@ -60,6 +66,108 @@ export async function PATCH(request: Request, context: RouteParams) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
+  const listings = await getAllListings();
+  const listingsCount = listings.filter((item) => item.seller.id === id).length;
+
+  if (body.recoveryAction === "force_verify") {
+    const { approved, user } = await completePersonVerification(id);
+    await logAdminAction({
+      actorId: admin.id,
+      actorName: admin.fullName,
+      action: "user_update",
+      targetType: "user",
+      targetId: id,
+      detail: approved
+        ? "تحقق يدوي + اعتماد تلقائي"
+        : "تحقق يدوي من البريد",
+    });
+    return NextResponse.json({
+      user: toAdminUserRecord(user, listingsCount),
+      recovery: { action: "force_verify", approved },
+    });
+  }
+
+  if (body.recoveryAction === "resend_verification") {
+    if (current.emailVerifiedAt) {
+      return NextResponse.json(
+        {
+          error: "ALREADY_VERIFIED",
+          message: "الحساب متحقّق مسبقاً.",
+        },
+        { status: 400 },
+      );
+    }
+    const sent = await sendRegistrationVerifyOtp({
+      email: current.email,
+      fullName: current.fullName,
+      userId: current.id,
+      accountType: current.accountType ?? "individual",
+      skipCooldown: true,
+    });
+    await logAdminAction({
+      actorId: admin.id,
+      actorName: admin.fullName,
+      action: "user_update",
+      targetType: "user",
+      targetId: id,
+      detail: sent.delivered
+        ? "إعادة إرسال رمز التحقق"
+        : "إعادة إرسال رمز التحقق (تعذّر التسليم)",
+    });
+    return NextResponse.json({
+      user: toAdminUserRecord(current, listingsCount),
+      recovery: {
+        action: "resend_verification",
+        delivered: sent.delivered,
+      },
+    });
+  }
+
+  if (body.recoveryAction === "send_password_reset") {
+    if (!current.passwordHash) {
+      return NextResponse.json(
+        {
+          error: "NO_PASSWORD",
+          message: "هذا الحساب يدخل برمز OTP وليس بكلمة مرور.",
+        },
+        { status: 400 },
+      );
+    }
+    const rawToken = await issuePasswordResetToken({
+      email: current.email,
+      userId: current.id,
+      passwordHash: current.passwordHash,
+    });
+    try {
+      await emailPasswordResetLink({
+        email: current.email,
+        name: current.fullName,
+        token: rawToken,
+      });
+    } catch (error) {
+      console.error("[Sooqna Admin] password reset email failed", error);
+      return NextResponse.json(
+        {
+          error: "EMAIL_FAILED",
+          message: "تعذر إرسال رابط إعادة كلمة المرور.",
+        },
+        { status: 502 },
+      );
+    }
+    await logAdminAction({
+      actorId: admin.id,
+      actorName: admin.fullName,
+      action: "user_update",
+      targetType: "user",
+      targetId: id,
+      detail: "إرسال رابط إعادة كلمة المرور",
+    });
+    return NextResponse.json({
+      user: toAdminUserRecord(current, listingsCount),
+      recovery: { action: "send_password_reset", delivered: true },
+    });
+  }
+
   if (body.accountStatus === "active" && current.accountStatus === "pending") {
     if (!current.emailVerifiedAt) {
       return NextResponse.json(
@@ -73,13 +181,12 @@ export async function PATCH(request: Request, context: RouteParams) {
     await approvePendingUser(id);
   }
 
-  const user = await updateUserAdmin(id, body);
+  const patch: AdminUserPatch = { ...body };
+  delete patch.recoveryAction;
+  const user = await updateUserAdmin(id, patch);
   if (!user) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
-
-  const listings = await getAllListings();
-  const listingsCount = listings.filter((item) => item.seller.id === id).length;
 
   await logAdminAction({
     actorId: admin.id,

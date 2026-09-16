@@ -44,7 +44,13 @@ export type AdminUserPatch = Partial<
     | "adminPermissions"
     | "adminActionMatrix"
   >
->;
+> & {
+  /** Admin account-recovery helpers for stuck signups. */
+  recoveryAction?:
+    | "force_verify"
+    | "resend_verification"
+    | "send_password_reset";
+};
 
 export type AdminListingRecord = {
   id: string;

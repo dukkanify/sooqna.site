@@ -3,7 +3,13 @@
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { AdminAction, AdminActionMatrix, AdminPermission, AdminUserRecord } from "@/types";
+import type {
+  AdminAction,
+  AdminActionMatrix,
+  AdminPermission,
+  AdminUserPatch,
+  AdminUserRecord,
+} from "@/types";
 import {
   ALL_ADMIN_ACTIONS,
   ALL_ADMIN_PERMISSIONS,
@@ -50,6 +56,7 @@ export function AdminUsersPanel() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending">("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [openRecoveryId, setOpenRecoveryId] = useState<string | null>(null);
   const [draftPermissions, setDraftPermissions] = useState<
     Record<string, AdminPermission[]>
   >({});
@@ -107,19 +114,7 @@ export function AdminUsersPanel() {
       });
   }, [users, query, statusFilter]);
 
-  async function patchUser(
-    id: string,
-    patch: Partial<
-      Pick<
-        AdminUserRecord,
-        | "isVerified"
-        | "accountStatus"
-        | "role"
-        | "adminPermissions"
-        | "adminActionMatrix"
-      >
-    >,
-  ) {
+  async function patchUser(id: string, patch: AdminUserPatch) {
     setBusyId(id);
     setMessage(null);
     try {
@@ -137,7 +132,13 @@ export function AdminUsersPanel() {
               ? "لا يمكن لمدير فرعي تعديل مدير أعلى."
               : data.error === "SELF_ESCALATION"
                 ? "لا يمكنك توسيع صلاحياتك بنفسك."
-                : data.message ?? "تعذر حفظ التغيير.",
+                : data.error === "PERSON_NOT_VERIFIED"
+                  ? "تحقق من الشخص أولاً قبل اعتماد الحساب."
+                  : data.error === "ALREADY_VERIFIED"
+                    ? "الحساب متحقّق مسبقاً."
+                    : data.error === "NO_PASSWORD"
+                      ? "هذا الحساب يدخل برمز OTP وليس بكلمة مرور."
+                      : data.message ?? "تعذر حفظ التغيير.",
         });
         return;
       }
@@ -155,12 +156,31 @@ export function AdminUsersPanel() {
           delete next[id];
           return next;
         });
-        if (patch.adminPermissions || patch.adminActionMatrix) {
-          setMessage({
-            variant: "success",
-            text: "تم حفظ صلاحيات المدير بنجاح.",
-          });
-        }
+      }
+      if (patch.recoveryAction === "force_verify") {
+        setMessage({
+          variant: "success",
+          text: data.recovery?.approved
+            ? "تم التحقق اليدوي واعتماد الحساب."
+            : "تم التحقق اليدوي من البريد.",
+        });
+      } else if (patch.recoveryAction === "resend_verification") {
+        setMessage({
+          variant: "success",
+          text: data.recovery?.delivered
+            ? "أُعيد إرسال رمز التحقق."
+            : "تم إنشاء الرمز لكن التسليم قد يتأخر.",
+        });
+      } else if (patch.recoveryAction === "send_password_reset") {
+        setMessage({
+          variant: "success",
+          text: "أُرسل رابط إعادة كلمة المرور إلى البريد.",
+        });
+      } else if (patch.adminPermissions || patch.adminActionMatrix) {
+        setMessage({
+          variant: "success",
+          text: "تم حفظ صلاحيات المدير بنجاح.",
+        });
       }
     } finally {
       setBusyId(null);
@@ -323,6 +343,18 @@ export function AdminUsersPanel() {
                   اعتماد
                 </Button>
               ) : null}
+              {!user.emailVerifiedAt ? (
+                <Button
+                  loading={busyId === user.id}
+                  onClick={() =>
+                    patchUser(user.id, { recoveryAction: "force_verify" })
+                  }
+                  size="sm"
+                  variant="primary"
+                >
+                  تحقق يدوياً
+                </Button>
+              ) : null}
               {user.accountStatus === "active" && !user.isVerified ? (
                 <Button
                   loading={busyId === user.id}
@@ -356,40 +388,90 @@ export function AdminUsersPanel() {
                   إعادة تفعيل
                 </Button>
               )}
-              {user.role !== "admin" && sessionIsSuper ? (
+              <Button
+                aria-expanded={openRecoveryId === user.id}
+                onClick={() =>
+                  setOpenRecoveryId((prev) =>
+                    prev === user.id ? null : user.id,
+                  )
+                }
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                {openRecoveryId === user.id ? "إخفاء" : "المزيد"}
+              </Button>
+            </div>
+            {openRecoveryId === user.id ? (
+              <div className="mt-3 flex flex-wrap gap-2 rounded-[var(--radius-lg)] border border-border/70 bg-surface-muted/30 p-3">
+                <p className="w-full text-[11px] text-muted">
+                  استرداد الحساب — للتسجيلات العالقة أو نسيان كلمة المرور
+                </p>
+                {!user.emailVerifiedAt ? (
+                  <Button
+                    loading={busyId === user.id}
+                    onClick={() =>
+                      patchUser(user.id, {
+                        recoveryAction: "resend_verification",
+                      })
+                    }
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                  >
+                    إعادة إرسال رمز
+                  </Button>
+                ) : null}
                 <Button
                   loading={busyId === user.id}
                   onClick={() =>
                     patchUser(user.id, {
-                      role: "admin",
-                      adminPermissions: ["listings", "orders"],
+                      recoveryAction: "send_password_reset",
                     })
                   }
                   size="sm"
+                  type="button"
                   variant="secondary"
                 >
-                  إنشاء مدير فرعي
+                  رابط كلمة المرور
                 </Button>
-              ) : null}
-              {user.role === "admin" &&
-              !isSuperAdminRecord(user) &&
-              sessionIsSuper &&
-              user.id !== session?.id ? (
-                <Button
-                  loading={busyId === user.id}
-                  onClick={() =>
-                    patchUser(user.id, {
-                      role: "user",
-                      adminPermissions: [],
-                    })
-                  }
-                  size="sm"
-                  variant="ghost"
-                >
-                  إلغاء صلاحية المدير
-                </Button>
-              ) : null}
-            </div>
+                {user.role !== "admin" && sessionIsSuper ? (
+                  <Button
+                    loading={busyId === user.id}
+                    onClick={() =>
+                      patchUser(user.id, {
+                        role: "admin",
+                        adminPermissions: ["listings", "orders"],
+                      })
+                    }
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                  >
+                    إنشاء مدير فرعي
+                  </Button>
+                ) : null}
+                {user.role === "admin" &&
+                !isSuperAdminRecord(user) &&
+                sessionIsSuper &&
+                user.id !== session?.id ? (
+                  <Button
+                    loading={busyId === user.id}
+                    onClick={() =>
+                      patchUser(user.id, {
+                        role: "user",
+                        adminPermissions: [],
+                      })
+                    }
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    إلغاء صلاحية المدير
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
             {user.role === "admin" &&
             sessionIsSuper &&
             !(isSuperAdminRecord(user) && user.id !== session?.id) ? (

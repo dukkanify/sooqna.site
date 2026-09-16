@@ -144,6 +144,8 @@ export async function createOtpRequest(input: {
   purpose: OtpPurpose;
   userId?: string;
   metadata?: Record<string, string>;
+  /** Admin recovery may bypass the normal resend cooldown. */
+  skipCooldown?: boolean;
 }): Promise<{ record: OtpRecord; code: string }> {
   const email = input.email.trim().toLowerCase();
   const now = Date.now();
@@ -169,19 +171,21 @@ export async function createOtpRequest(input: {
     const pool = await getOptionalPostgresPool();
     if (!pool) throw new Error("OTP_STORE_UNAVAILABLE");
 
-    const active = await pool.query(
-      `SELECT * FROM ${TABLE}
-       WHERE email = $1 AND purpose = $2 AND consumed_at IS NULL
-         AND resend_available_at > NOW()
-       LIMIT 1`,
-      [email, input.purpose],
-    );
-    if (active.rows[0]) {
-      const existing = rowToRecord(active.rows[0]);
-      const waitSeconds = Math.ceil(
-        (new Date(existing.resendAvailableAt).getTime() - now) / 1000,
+    if (!input.skipCooldown) {
+      const active = await pool.query(
+        `SELECT * FROM ${TABLE}
+         WHERE email = $1 AND purpose = $2 AND consumed_at IS NULL
+           AND resend_available_at > NOW()
+         LIMIT 1`,
+        [email, input.purpose],
       );
-      throw new Error(`RESEND_COOLDOWN:${waitSeconds}`);
+      if (active.rows[0]) {
+        const existing = rowToRecord(active.rows[0]);
+        const waitSeconds = Math.ceil(
+          (new Date(existing.resendAvailableAt).getTime() - now) / 1000,
+        );
+        throw new Error(`RESEND_COOLDOWN:${waitSeconds}`);
+      }
     }
 
     await pool.query(
@@ -211,18 +215,20 @@ export async function createOtpRequest(input: {
 
   return enqueueJson(async () => {
     const all = await cleanupExpired(await readJson());
-    const active = all.find(
-      (item) =>
-        item.email === email &&
-        item.purpose === input.purpose &&
-        !item.consumedAt &&
-        new Date(item.resendAvailableAt).getTime() > now,
-    );
-    if (active) {
-      const waitSeconds = Math.ceil(
-        (new Date(active.resendAvailableAt).getTime() - now) / 1000,
+    if (!input.skipCooldown) {
+      const active = all.find(
+        (item) =>
+          item.email === email &&
+          item.purpose === input.purpose &&
+          !item.consumedAt &&
+          new Date(item.resendAvailableAt).getTime() > now,
       );
-      throw new Error(`RESEND_COOLDOWN:${waitSeconds}`);
+      if (active) {
+        const waitSeconds = Math.ceil(
+          (new Date(active.resendAvailableAt).getTime() - now) / 1000,
+        );
+        throw new Error(`RESEND_COOLDOWN:${waitSeconds}`);
+      }
     }
     const withoutStale = all.filter(
       (item) => !(item.email === email && item.purpose === input.purpose),

@@ -91,12 +91,15 @@ export async function sendRegistrationVerifyOtp(input: {
   fullName: string;
   userId: string;
   accountType: string;
+  /** When true, admin recovery bypasses OTP resend cooldown. */
+  skipCooldown?: boolean;
 }): Promise<{ delivered: boolean; code: string }> {
   logProductionConfigIssues("registration-otp");
   const { code } = await createOtpRequest({
     email: input.email,
     purpose: "REGISTER",
     userId: input.userId,
+    skipCooldown: input.skipCooldown,
     metadata: {
       fullName: input.fullName,
       accountType: input.accountType,
