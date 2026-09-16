@@ -185,5 +185,9 @@ export function listingMatchesQuery(listing: Listing, query: string): boolean {
   if (searchTextMatches(haystack, normalized)) return true;
 
   const categoryKeywords = CATEGORY_SEARCH_KEYWORDS[listing.categoryId] ?? [];
-  return categoryKeywords.some((keyword) => searchTextMatches(keyword, normalized));
+  return categoryKeywords.some(
+    (keyword) =>
+      searchTextMatches(keyword, normalized) ||
+      searchTextMatches(normalized, keyword),
+  );
 }
