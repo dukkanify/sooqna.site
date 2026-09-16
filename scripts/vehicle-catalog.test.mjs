@@ -125,3 +125,94 @@ test("BYD Song showcase media files exist on disk", () => {
     );
   }
 });
+
+test("UAE core makes are present", () => {
+  const names = new Set(catalog.makes.map((m) => m.nameEn));
+  for (const name of [
+    "Toyota",
+    "Nissan",
+    "Mercedes-Benz",
+    "BMW",
+    "BYD",
+    "Hyundai",
+    "Kia",
+    "Lexus",
+    "Land Rover",
+    "Tesla",
+    "Lucid",
+    "Geely",
+    "Chery",
+    "Haval",
+    "MG",
+  ]) {
+    assert.ok(names.has(name), name);
+  }
+});
+
+test("UAE-relevant current/used models covered", () => {
+  const bySlug = Object.fromEntries(catalog.makes.map((m) => [m.slug, m]));
+  function has(makeSlug, modelSlug) {
+    const make = bySlug[makeSlug];
+    assert.ok(make, makeSlug);
+    const hit = catalog.models.find(
+      (m) => m.makeId === make.id && m.slug === modelSlug,
+    );
+    assert.ok(hit, `${makeSlug}/${modelSlug}`);
+  }
+  has("toyota", "raize");
+  has("toyota", "urban-cruiser");
+  has("toyota", "land-cruiser");
+  has("nissan", "patrol");
+  has("nissan", "z");
+  has("mercedes-benz", "g-class");
+  has("bmw", "x5");
+  has("byd", "qin");
+  has("byd", "atto-3");
+});
+
+test("year options are dynamic 1990→current+1 from shared helper", () => {
+  const yearSrc = readFileSync(
+    path.join(root, "shared/vehicles/year-options.ts"),
+    "utf8",
+  );
+  assert.match(yearSrc, /VEHICLE_YEAR_MIN = 1990/);
+  assert.match(yearSrc, /getFullYear\(\) \+ 1/);
+  const fields = readFileSync(
+    path.join(root, "shared/constants/category-fields.ts"),
+    "utf8",
+  );
+  assert.match(fields, /vehicleYearOptions/);
+  assert.doesNotMatch(fields, /currentYear - 1989/);
+  const filters = readFileSync(
+    path.join(root, "features/search/lib/category-filter-fields.ts"),
+    "utf8",
+  );
+  assert.match(filters, /vehicleYearOptions/);
+  assert.match(filters, /regionalSpecs/);
+});
+
+test("regional specs include GCC/Canadian/Korean and modelOther suggestion", () => {
+  const yearSrc = readFileSync(
+    path.join(root, "shared/vehicles/year-options.ts"),
+    "utf8",
+  );
+  assert.match(yearSrc, /خليجي/);
+  assert.match(yearSrc, /كندي/);
+  assert.match(yearSrc, /كوري/);
+  const fields = readFileSync(
+    path.join(root, "shared/constants/category-fields.ts"),
+    "utf8",
+  );
+  assert.match(fields, /REGIONAL_SPEC_OPTIONS/);
+  assert.match(fields, /modelOther/);
+  assert.match(fields, /اقتراح موديل/);
+  const form = readFileSync(
+    path.join(
+      root,
+      "features/listings/components/add-listing/useAddListingForm.ts",
+    ),
+    "utf8",
+  );
+  assert.match(form, /fieldKey: "model"/);
+  assert.match(form, /modelOther/);
+});

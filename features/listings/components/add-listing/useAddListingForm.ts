@@ -413,12 +413,13 @@ export function useAddListingForm(categories: Category[]) {
         // Free listings can still proceed from local storage if sync fails.
       }
 
-      // Furniture "Other" custom value → admin approval queue (no hardcoded temp option).
-      const otherValue = String(parsed.categorySpecs?.furnitureTypeOther ?? "").trim();
+      // Custom "Other" values → admin approval queue (no instant global catalog add).
+      const specs = parsed.categorySpecs ?? {};
+      const furnitureOther = String(specs.furnitureTypeOther ?? "").trim();
       if (
         categoryId === "furniture" &&
-        String(parsed.categorySpecs?.furnitureType ?? "") === "other" &&
-        otherValue.length >= 2
+        String(specs.furnitureType ?? "") === "other" &&
+        furnitureOther.length >= 2
       ) {
         void fetch("/api/option-suggestions", {
           method: "POST",
@@ -427,7 +428,26 @@ export function useAddListingForm(categories: Category[]) {
           body: JSON.stringify({
             categoryId: "furniture",
             fieldKey: "furnitureType",
-            value: otherValue,
+            value: furnitureOther,
+            listingId: id,
+          }),
+        }).catch(() => undefined);
+      }
+
+      const modelOther = String(specs.modelOther ?? "").trim();
+      if (
+        categoryId === "cars" &&
+        String(specs.model ?? "") === "أخرى" &&
+        modelOther.length >= 2
+      ) {
+        void fetch("/api/option-suggestions", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            categoryId: "cars",
+            fieldKey: "model",
+            value: `${String(specs.brand ?? "").trim()}: ${modelOther}`.trim(),
             listingId: id,
           }),
         }).catch(() => undefined);

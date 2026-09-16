@@ -7,6 +7,17 @@ import type {
 } from "@/shared/vehicles/types";
 import type { CategoryFieldOption } from "@/types";
 
+export {
+  REGIONAL_SPEC_OPTIONS,
+  VEHICLE_BODY_TYPE_OPTIONS,
+  VEHICLE_DRIVETRAIN_OPTIONS,
+  VEHICLE_FUEL_OPTIONS,
+  VEHICLE_TRANSMISSION_OPTIONS,
+  VEHICLE_YEAR_MIN,
+  getVehicleYearMax,
+  vehicleYearOptions,
+} from "@/shared/vehicles/year-options";
+
 const catalog = catalogJson as VehicleCatalog;
 
 const OTHER_OPTION: CategoryFieldOption = { label: "أخرى", value: "أخرى" };

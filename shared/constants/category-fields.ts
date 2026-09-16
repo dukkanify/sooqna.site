@@ -9,13 +9,16 @@ import {
   carModelOptions,
   mobileModelOptions,
 } from "@/shared/constants/product-models";
+import {
+  REGIONAL_SPEC_OPTIONS,
+  VEHICLE_BODY_TYPE_OPTIONS,
+  VEHICLE_DRIVETRAIN_OPTIONS,
+  VEHICLE_FUEL_OPTIONS,
+  VEHICLE_TRANSMISSION_OPTIONS,
+  vehicleYearOptions,
+} from "@/shared/vehicles";
 
-
-const currentYear = new Date().getFullYear();
-const yearOptions = Array.from({ length: currentYear - 1989 }, (_, index) => {
-  const year = String(currentYear - index);
-  return { label: year, value: year };
-});
+const yearOptions = vehicleYearOptions();
 
 const developerOptions = [
   { label: "إعمار (Emaar)", value: "Emaar" },
@@ -84,6 +87,16 @@ const carFields: CategoryFieldDefinition[] = [
     placeholder: "ابحث عن الموديل (Patrol… Camry…)",
   },
   {
+    key: "modelOther",
+    label: "اقتراح موديل",
+    type: "text",
+    required: true,
+    searchable: true,
+    placeholder: "اكتب اسم الموديل إن لم تجده",
+    showWhen: { key: "model", values: ["أخرى"] },
+    note: "يُرسل كاقتراح لمراجعة الإدارة قبل إضافته لكتالوج الموديلات.",
+  },
+  {
     key: "condition",
     label: "حالة السيارة",
     type: "select",
@@ -105,24 +118,33 @@ const carFields: CategoryFieldDefinition[] = [
     note: "اكتب الحي أو المنطقة داخل الإمارة المختارة.",
   },
   { key: "mileage", label: "العداد (كم)", type: "text", required: true, searchable: true },
-  { key: "transmission", label: "ناقل الحركة", type: "select", required: true, options: [
-    { label: "أوتوماتيك", value: "أوتوماتيك" },
-    { label: "يدوي", value: "يدوي" },
-  ]},
-  { key: "fuelType", label: "نوع الوقود", type: "select", required: true, options: [
-    { label: "بنزين", value: "بنزين" },
-    { label: "ديزل", value: "ديزل" },
-    { label: "هجين", value: "هجين" },
-    { label: "كهربائي", value: "كهربائي" },
-  ]},
+  {
+    key: "bodyType",
+    label: "نوع الهيكل",
+    type: "select",
+    required: false,
+    searchable: true,
+    options: VEHICLE_BODY_TYPE_OPTIONS,
+  },
+  { key: "transmission", label: "ناقل الحركة", type: "select", required: true, options: VEHICLE_TRANSMISSION_OPTIONS },
+  { key: "fuelType", label: "نوع الوقود", type: "select", required: true, options: VEHICLE_FUEL_OPTIONS },
+  {
+    key: "drivetrain",
+    label: "نظام الدفع",
+    type: "select",
+    required: false,
+    searchable: true,
+    options: VEHICLE_DRIVETRAIN_OPTIONS,
+  },
   { key: "engineSize", label: "سعة المحرك", type: "text", required: true },
-  { key: "regionalSpecs", label: "المواصفات الإقليمية", type: "select", required: true, options: [
-    { label: "خليجي", value: "خليجي" },
-    { label: "أمريكي", value: "أمريكي" },
-    { label: "أوروبي", value: "أوروبي" },
-    { label: "ياباني", value: "ياباني" },
-    { label: "أخرى", value: "أخرى" },
-  ]},
+  {
+    key: "regionalSpecs",
+    label: "المواصفات الإقليمية",
+    type: "select",
+    required: true,
+    searchable: true,
+    options: REGIONAL_SPEC_OPTIONS,
+  },
   {
     key: "exteriorColor",
     label: "اللون الخارجي",
