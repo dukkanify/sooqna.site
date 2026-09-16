@@ -84,9 +84,13 @@ export async function PATCH(request: Request, context: RouteParams) {
     action: "dispute_update",
     targetType: "dispute",
     targetId: id,
-    detail: `حالة ${dispute.status}${
-      financialEffect !== "skipped" ? ` · أثر مالي: ${financialEffect}` : ""
-    }`,
+    detail: [
+      `حالة ${dispute.status}`,
+      body.resolutionNote ? `ملاحظة: ${body.resolutionNote.slice(0, 120)}` : null,
+      financialEffect !== "skipped" ? `أثر مالي: ${financialEffect}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
   });
 
   return NextResponse.json({ dispute, financialEffect });
