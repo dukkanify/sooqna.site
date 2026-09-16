@@ -8,7 +8,6 @@ type MarketHeroCopyProps = {
 
 const COPY = {
   ar: {
-    chip: "من الإمارات إلى العالم",
     titleBefore: "بيع وشراء بثقة في",
     titleAccent: "الإمارات",
     leadDesktop:
@@ -17,7 +16,6 @@ const COPY = {
       "بيع وشراء السيارات والعقارات والإلكترونيات والوظائف والخدمات في منصة إماراتية واحدة.",
   },
   en: {
-    chip: "From the UAE to the world",
     titleBefore: "Buy and sell with confidence in",
     titleAccent: "the UAE",
     leadDesktop:
@@ -48,10 +46,6 @@ export function MarketHeroCopy({ variant = "desktop" }: MarketHeroCopyProps) {
         </>
       ) : (
         <div className="market-hero-copy">
-          <span className="market-hero-chip">
-            <span className="market-hero-chip__flag uae-flag-strip" />
-            {copy.chip}
-          </span>
           <h1 className="market-hero-title">
             {copy.titleBefore}{" "}
             <span className="market-hero-title__accent">{copy.titleAccent}</span>
@@ -60,16 +54,5 @@ export function MarketHeroCopy({ variant = "desktop" }: MarketHeroCopyProps) {
         </div>
       )}
     </div>
-  );
-}
-
-export function MarketHeroBadge() {
-  const locale = useLocale();
-  const copy = COPY[locale];
-  return (
-    <span className="mobile-home-hero__badge" data-no-tx>
-      <span className="inline-block h-3 w-4 overflow-hidden rounded-sm uae-flag-strip" />
-      {copy.chip}
-    </span>
   );
 }
