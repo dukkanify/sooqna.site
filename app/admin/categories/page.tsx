@@ -5,7 +5,7 @@ export default function AdminCategoriesPage() {
   return (
     <AdminShell
       activePath="/admin/categories"
-      description="كل الأقسام بسطور عرض كاملة — رتّب بالأسهم وعدّل عند الحاجة."
+      description="أقسام السوق بشبكة بوكسات — رتّب بالأسهم وعدّل عند الحاجة."
       title="التصنيفات"
     >
       <AdminCategoriesWorkspace />

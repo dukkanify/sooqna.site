@@ -174,7 +174,8 @@ export function AdminLocationsPanel() {
           <p className="text-sm text-muted">لا توجد مواقع.</p>
         </Card>
       ) : (
-        locations.map((location) => (
+        <div className="admin-boxes__grid">
+        {locations.map((location) => (
           <Card key={location.id} className="p-5" variant="flat">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -223,7 +224,8 @@ export function AdminLocationsPanel() {
               </div>
             </div>
           </Card>
-        ))
+        ))}
+        </div>
       )}
 
       <Link className="text-sm font-semibold text-primary" href="/admin">

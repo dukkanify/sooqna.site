@@ -336,7 +336,10 @@ export function AdminUsersPanel() {
             const action = primaryAction(user);
             const open = openId === user.id;
             return (
-              <li key={user.id} className="admin-users__row">
+              <li
+                key={user.id}
+                className={`admin-users__row${open ? " admin-boxes__card--wide" : ""}`}
+              >
                 <div className="admin-users__row-main">
                   <div className="admin-users__identity">
                     <p className="admin-users__name">

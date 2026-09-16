@@ -137,7 +137,8 @@ export function AdminDisputesPanel() {
           <p className="text-sm text-muted">لا توجد نزاعات مطابقة.</p>
         </Card>
       ) : (
-        filtered.map((dispute) => (
+        <div className="admin-boxes__grid">
+        {filtered.map((dispute) => (
           <Card key={dispute.id} className="p-5" variant="flat">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -218,7 +219,8 @@ export function AdminDisputesPanel() {
               </div>
             ) : null}
           </Card>
-        ))
+        ))}
+        </div>
       )}
 
       <Link className="text-sm font-semibold text-primary" href="/admin">
