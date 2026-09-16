@@ -27,12 +27,12 @@ export async function MarketHero({ categories }: MarketHeroProps) {
         <span className="market-hero__orb market-hero__orb--mist" />
         <div className="market-hero__photo">
           <Image
-            alt="أفق أبوظبي — أبراج الاتحاد والكورنيش"
+            alt="أفق أبوظبي عند الغروب — أبراج الاتحاد والكورنيش"
             className="object-cover"
             fill
             priority
-            quality={72}
-            sizes="(max-width: 640px) 100vw, (max-width: 1080px) 100vw, 1400px"
+            quality={82}
+            sizes="(max-width: 640px) 100vw, (max-width: 1080px) 100vw, 1600px"
             src={backgroundUrl}
           />
         </div>

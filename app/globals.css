@@ -469,15 +469,15 @@ html[data-theme="dark"] .category-mark {
 
 .market-hero__photo img {
   object-fit: cover;
-  /* Abu Dhabi Corniche: keep Etihad Towers + ADNOC in frame, soft sky above for copy */
-  object-position: center 62%;
-  transform: scale(1.05);
-  filter: saturate(1.08) contrast(1.06) brightness(0.98);
+  /* Branded Abu Dhabi dusk plate: skyline + water low, soft sky for copy */
+  object-position: center 48%;
+  transform: scale(1.04);
+  filter: saturate(1.12) contrast(1.08) brightness(0.96);
 }
 
 @media (min-width: 768px) {
   .market-hero__photo img {
-    object-position: center 58%;
+    object-position: center 42%;
     transform: scale(1.02);
   }
 }
