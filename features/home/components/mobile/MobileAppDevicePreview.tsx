@@ -11,6 +11,7 @@ import {
 } from "@/features/listings/components/listing-card.utils";
 import { listingTitle, sellerName } from "@/shared/i18n/listing-copy";
 import { useLocale } from "@/shared/i18n/useLocale";
+import { tx } from "@/shared/i18n/tx";
 import { getAppPreviewImageUrl } from "./mobile-app-preview.config";
 import { formatCurrencyDisplay } from "@/shared/utils/currency";
 import { Icon } from "@/shared/ui/Icon";
@@ -252,33 +253,34 @@ function SearchScreen({ listings }: { listings: Listing[] }) {
       <StatusBar />
       <div className="app-phone__search">
         <Icon name="search" size={11} />
-        <span>ابحث في سوقنا...</span>
+        <span>{tx(locale, "ابحث في سوقنا...")}</span>
       </div>
       <div className="app-phone__dock">
         <span className="app-phone__dock-filters">
           <Icon name="filter" size={10} />
-          فلاتر
+          {tx(locale, "فلاتر")}
           <em>1</em>
         </span>
         <span className="app-phone__dock-sort">
-          الأحدث
+          {tx(locale, "الأحدث")}
           <Icon name="chevron-left" size={9} />
         </span>
       </div>
       <div className="app-phone__chips">
         {SEARCH_EMIRATES.map((chip, index) => (
           <span key={chip} className={index === 0 ? "is-active" : undefined}>
-            {chip}
+            {tx(locale, chip)}
           </span>
         ))}
       </div>
       <div className="app-phone__chips">
         {SEARCH_PRICES.map((chip) => (
-          <span key={chip}>{chip}</span>
+          <span key={chip}>{tx(locale, chip)}</span>
         ))}
       </div>
       <p className="app-phone__count">
-        <b>{Math.min(listings.length, 2).toLocaleString("ar-AE")}</b> إعلان
+        <b>{Math.min(listings.length, 2).toLocaleString(locale === "en" ? "en-AE" : "ar-AE")}</b>{" "}
+        {tx(locale, "إعلان")}
       </p>
       <div className="app-phone__results">
         {listings.slice(0, 2).map((listing) => (
