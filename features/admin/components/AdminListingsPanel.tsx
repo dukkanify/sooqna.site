@@ -113,6 +113,8 @@ export function AdminListingsPanel() {
   );
   const [uploadingImage, setUploadingImage] = useState(false);
   const [galleryUrlDraft, setGalleryUrlDraft] = useState("");
+  const [showTools, setShowTools] = useState(false);
+  const [openRowActions, setOpenRowActions] = useState<string | null>(null);
 
   useEffect(() => {
     const user = getSessionUser();
@@ -597,11 +599,24 @@ export function AdminListingsPanel() {
 
   return (
     <div className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted">راجع الإعلانات واعتمد أو عدّل مباشرة.</p>
+        <Button
+          onClick={() => setShowTools((open) => !open)}
+          size="sm"
+          type="button"
+          variant="secondary"
+        >
+          {showTools ? "إخفاء الأدوات" : "إضافة إعلان / أدوات"}
+        </Button>
+      </div>
+
+      {showTools ? (
+        <>
       <Card className="p-5" variant="flat">
         <h2 className="text-sm font-semibold text-ink">معرض سوقنا التجريبي</h2>
         <p className="mt-2 text-xs leading-6 text-muted">
-          إعلانات مُعلَّمة كتجريبية (isDemo / SOOQNA_SHOWCASE). ليست إعلانات بائعين
-          مستقلين. يمكن إخفاؤها أو حذفها دون تعديل الشيفرة.
+          إعلانات تجريبية للاختبار. يمكن إخفاؤها أو حذفها دون تعديل الشيفرة.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
@@ -641,15 +656,14 @@ export function AdminListingsPanel() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
             <Icon name="plus" size={16} />
-            إضافة إعلان من لوحة التحكم
+            إضافة إعلان
           </h2>
           <Button href="/listings/new" size="sm" variant="ghost">
             النموذج الكامل للموقع
           </Button>
         </div>
         <p className="mt-2 text-xs text-muted">
-          عند اختيار القسم تظهر حقوله الخاصة (مثل الغرف والحمامات للعقارات، أو
-          العداد والماركة للسيارات) بنفس منطق صفحة إضافة الإعلان.
+          اختر القسم لتظهر حقوله الخاصة بنفس منطق صفحة إضافة الإعلان.
         </p>
 
         <form className="mt-4 grid gap-4" key={formKey} onSubmit={handleCreate}>
@@ -855,6 +869,8 @@ export function AdminListingsPanel() {
           </div>
         </form>
       </Card>
+        </>
+      ) : null}
 
       <Card className="p-4" variant="flat">
         <div className="flex flex-wrap items-end gap-3">
@@ -1246,6 +1262,20 @@ export function AdminListingsPanel() {
                   اعتماد
                 </Button>
               ) : null}
+              <Button
+                onClick={() =>
+                  setOpenRowActions((current) =>
+                    current === listing.id ? null : listing.id,
+                  )
+                }
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                {openRowActions === listing.id ? "إخفاء" : "المزيد"}
+              </Button>
+              {openRowActions === listing.id ? (
+                <>
               {listing.status !== "rejected" ? (
                 <Button
                   loading={busyId === listing.id}
@@ -1295,6 +1325,8 @@ export function AdminListingsPanel() {
               >
                 حذف
               </Button>
+                </>
+              ) : null}
             </div>
             )}
           </Card>

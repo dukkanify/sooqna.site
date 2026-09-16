@@ -192,6 +192,7 @@ export function AdminOpsCockpit() {
   const [data, setData] = useState<DashboardPayload | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
 
   const load = useCallback(async (nextRange: 7 | 30 | 90) => {
     setLoading(true);
@@ -320,8 +321,8 @@ export function AdminOpsCockpit() {
         {/* Executive KPIs */}
         <section className="admin-dash__section">
           <div className="admin-dash__section-head">
-            <h2 className="admin-dash__section-title">ملخص تنفيذي</h2>
-            <p className="admin-dash__section-sub">أهم مؤشرات المنصة بنظرة واحدة</p>
+            <h2 className="admin-dash__section-title">ملخص سريع</h2>
+            <p className="admin-dash__section-sub">أرقام اليوم بلمحة واحدة</p>
           </div>
           <div className="admin-dash__kpi-grid">
             {data.executive.map((card) => (
@@ -356,8 +357,8 @@ export function AdminOpsCockpit() {
         {/* Action Center — prioritize on small screens via CSS order */}
         <section className="admin-dash__section admin-dash__section--action">
           <div className="admin-dash__section-head">
-            <h2 className="admin-dash__section-title">يتطلب إجراء</h2>
-            <p className="admin-dash__section-sub">عناصر تحتاج تدخل إداري الآن</p>
+            <h2 className="admin-dash__section-title">يحتاج متابعة</h2>
+            <p className="admin-dash__section-sub">ابدأ من هنا — أهم ما ينتظرك الآن</p>
           </div>
           {data.actionCenter.length === 0 ? (
             <Card className="p-5" variant="flat">
@@ -386,6 +387,18 @@ export function AdminOpsCockpit() {
           )}
         </section>
 
+        <div className="admin-dash__details-toggle">
+          <button
+            className="admin-dash__range-btn"
+            onClick={() => setShowDetails((open) => !open)}
+            type="button"
+          >
+            {showDetails ? "إخفاء التفاصيل" : "المزيد من المؤشرات"}
+          </button>
+        </div>
+
+        {showDetails ? (
+          <>
         <div className="admin-dash__split">
           {/* Platform */}
           <section className="admin-dash__section">
@@ -701,6 +714,8 @@ export function AdminOpsCockpit() {
             </div>
           </section>
         </div>
+          </>
+        ) : null}
       </div>
     </LocalizedTree>
   );

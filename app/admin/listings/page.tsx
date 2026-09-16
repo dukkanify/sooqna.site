@@ -5,7 +5,7 @@ export default function AdminListingsPage() {
   return (
     <AdminShell
       activePath="/admin/listings"
-      description="أضف إعلانات جديدة، وراجعها: اعتماد، رفض، وتمييز — مع اختيار القسم لكل إعلان."
+      description="راجع الإعلانات: اعتماد، رفض، تعديل، وتمييز."
       title="الإعلانات"
     >
       <AdminListingsPanel />

@@ -136,10 +136,9 @@ export function AdminVehicleCatalogPanel() {
   return (
     <div className="grid gap-4">
       <Card className="p-5">
-        <h2 className="text-lg font-black text-ink">كتالوج السيارات المرجعي</h2>
+        <h2 className="text-lg font-black text-ink">كتالوج السيارات</h2>
         <p className="mt-2 text-sm text-muted">
-          بيانات مرجعية (Make → Model) وليست إعلانات سوق. عطّل ماركة أو موديل من
-          الظهور في نماذج الإضافة/البحث دون حذف السجل.
+          عطّل ماركة أو موديل من الظهور في نماذج الإضافة والبحث دون حذف البيانات.
         </p>
         {stats ? (
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
