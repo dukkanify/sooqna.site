@@ -50,6 +50,7 @@ export type AdminListingRecord = {
   id: string;
   slug: string;
   title: string;
+  description?: string;
   sellerName: string;
   sellerId: string;
   categoryId: string;
@@ -59,6 +60,10 @@ export type AdminListingRecord = {
   isFeatured: boolean;
   postedAt: string;
   city: string;
+  emirate?: string;
+  condition?: ListingCondition;
+  contactPhone?: string;
+  imageUrl?: string;
   isDemo?: boolean;
   source?: string;
 };
@@ -80,12 +85,28 @@ export type AdminListingCreateInput = {
   features?: string[];
   negotiable?: boolean;
   categorySpecs?: CategorySpecs;
+  imageUrl?: string;
+  images?: string[];
 };
 
 export type AdminListingPatch = Partial<
-  Pick<AdminListingRecord, "status" | "isFeatured">
+  Pick<
+    AdminListingRecord,
+    | "status"
+    | "isFeatured"
+    | "title"
+    | "description"
+    | "price"
+    | "city"
+    | "emirate"
+    | "condition"
+    | "contactPhone"
+    | "imageUrl"
+    | "sellerName"
+  >
 > & {
   rejectReason?: string;
+  images?: string[];
 };
 
 export type AdminDisputeRecord = {

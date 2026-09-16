@@ -336,6 +336,12 @@ export async function createListingFromAdmin(
     categorySpecs: input.categorySpecs,
     features: input.features?.length ? input.features : undefined,
     negotiable: input.negotiable,
+    ...(input.imageUrl?.trim()
+      ? { imageUrl: input.imageUrl.trim() }
+      : {}),
+    ...(input.images?.length
+      ? { images: input.images, imageUrl: input.images[0] ?? input.imageUrl }
+      : {}),
   };
 
   return upsertListing(listing);
@@ -358,8 +364,51 @@ export async function patchListingRecord(
       note: patch.rejectReason,
     });
   }
+
+  const nextImages =
+    patch.images !== undefined
+      ? patch.images
+      : patch.imageUrl !== undefined
+        ? [patch.imageUrl, ...(previous.images ?? []).filter((url) => url !== patch.imageUrl)]
+        : previous.images;
+
   listings[index] = {
     ...previous,
+    ...(patch.title !== undefined ? { title: patch.title.trim() } : {}),
+    ...(patch.description !== undefined
+      ? { description: patch.description.trim() }
+      : {}),
+    ...(typeof patch.price === "number" && Number.isFinite(patch.price)
+      ? { price: patch.price }
+      : {}),
+    ...(patch.city !== undefined ? { city: patch.city.trim() } : {}),
+    ...(patch.emirate !== undefined
+      ? { emirate: patch.emirate.trim() || undefined }
+      : {}),
+    ...(patch.condition !== undefined ? { condition: patch.condition } : {}),
+    ...(patch.contactPhone !== undefined
+      ? { contactPhone: patch.contactPhone.trim() || undefined }
+      : {}),
+    ...(patch.imageUrl !== undefined
+      ? { imageUrl: patch.imageUrl.trim() || undefined }
+      : {}),
+    ...(patch.images !== undefined || patch.imageUrl !== undefined
+      ? {
+          images: nextImages?.filter(Boolean),
+          imageUrl:
+            patch.imageUrl?.trim() ||
+            nextImages?.[0] ||
+            previous.imageUrl,
+        }
+      : {}),
+    ...(patch.sellerName !== undefined
+      ? {
+          seller: {
+            ...previous.seller,
+            name: patch.sellerName.trim() || previous.seller.name,
+          },
+        }
+      : {}),
     ...(patch.status ? { status: patch.status } : {}),
     ...(typeof patch.isFeatured === "boolean" ? { isFeatured: patch.isFeatured } : {}),
     ...(patch.status === "rejected"
@@ -511,6 +560,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     id: listing.id,
     slug: listing.slug,
     title: listing.title,
+    description: listing.description,
     sellerName: listing.seller.name,
     sellerId: listing.seller.id,
     categoryId: listing.categoryId,
@@ -520,6 +570,10 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     isFeatured: listing.isFeatured,
     postedAt: listing.postedAt ?? "",
     city: listing.city,
+    emirate: listing.emirate,
+    condition: listing.condition,
+    contactPhone: listing.contactPhone,
+    imageUrl: listing.imageUrl ?? listing.images?.[0],
     isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
     source: listing.source,
   };
