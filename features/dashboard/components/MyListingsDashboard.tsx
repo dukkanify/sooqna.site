@@ -52,12 +52,18 @@ export function MyListingsDashboard({
 
   const allListings = useMemo(() => {
     const byId = new Map<string, Listing>();
+    const serverSlugs = new Set<string>();
+    // Server catalog is the source of truth for synced ads.
     for (const listing of listings) {
       if (removedIds.includes(listing.id)) continue;
       byId.set(listing.id, overrides[listing.id] ?? listing);
+      if (listing.slug) serverSlugs.add(listing.slug);
     }
+    // Local-only drafts may appear; never override a server row with stale localStorage.
     for (const listing of localListings) {
       if (removedIds.includes(listing.id)) continue;
+      if (byId.has(listing.id)) continue;
+      if (listing.slug && serverSlugs.has(listing.slug)) continue;
       byId.set(listing.id, overrides[listing.id] ?? listing);
     }
     return Array.from(byId.values());

@@ -16,7 +16,7 @@ import { uploadListingImages } from "@/services/upload";
 import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { AddListingErrors, ListingPreview } from "./types";
 import { parseCategoryForm } from "./category-form-utils";
-import { createSlug } from "./utils";
+import { createListingSlug } from "./utils";
 
 const defaultPreview: ListingPreview = {
   city: "دبي",
@@ -274,18 +274,15 @@ export function useAddListingForm(categories: Category[]) {
         ? parsed.city
         : cities.find((city) => city.id === parsed.city)?.name ?? "دبي";
 
+      const title = isDynamicCategory(categoryId)
+        ? parsed.title
+        : String(formData.get("title") ?? "").trim();
       const id = `local-${Date.now()}`;
       const postedAt = new Date().toISOString();
       const listing: Listing = {
         id,
-        title: isDynamicCategory(categoryId)
-          ? parsed.title
-          : String(formData.get("title") ?? "").trim(),
-        slug: createSlug(
-          isDynamicCategory(categoryId)
-            ? parsed.title
-            : String(formData.get("title") ?? "").trim(),
-        ) || id,
+        title,
+        slug: createListingSlug({ id, title }),
         description,
         categoryId,
         city: cityName,

@@ -29,3 +29,19 @@ export function createSlug(value: string) {
     .replace(/[^\u0600-\u06FFa-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/** Prefer Latin slug when available so URLs stay stable and unique. */
+export function createListingSlug(input: {
+  id?: string;
+  title: string;
+  titleEnglish?: string;
+}): string {
+  const fromEnglish = createSlug(input.titleEnglish ?? "");
+  const fromTitle = createSlug(input.title);
+  const base = fromEnglish || fromTitle || "listing";
+  const suffix = (input.id ?? "")
+    .replace(/^local-/, "")
+    .replace(/\W+/g, "")
+    .slice(-6);
+  return suffix ? `${base}-${suffix}` : `${base}-${Date.now().toString(36).slice(-5)}`;
+}

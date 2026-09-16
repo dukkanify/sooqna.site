@@ -13,7 +13,7 @@ import { uploadListingImages } from "@/services/upload";
 import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { CategoryFieldErrors } from "./add-listing/CategoryFieldsForm";
 import { parseCategoryForm } from "./add-listing/category-form-utils";
-import { createSlug } from "./add-listing/utils";
+import { createListingSlug } from "./add-listing/utils";
 import {
   buildCategoryFieldsDefaults,
   getListingImages,
@@ -85,7 +85,11 @@ export function useEditListingForm(listingId: string) {
       const updatedListing: Listing = {
         ...currentListing,
         title,
-        slug: createSlug(title) || currentListing.slug,
+        slug: createListingSlug({
+          id: currentListing.id,
+          title,
+          titleEnglish: currentListing.titleEnglish,
+        }),
         description,
         price,
         condition: parsed.condition,

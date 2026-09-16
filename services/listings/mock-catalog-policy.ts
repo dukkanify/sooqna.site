@@ -25,11 +25,18 @@ const QA_SELLER_NAMES = new Set(["Preview E2E User", "QA26 User"]);
 
 /**
  * Live junk rows that must stay out of the public catalog (id/slug evidence only).
- * `local-1789075968004` is keyboard-mash "Sony iPad Pro" — kept in DB / QA blocklist,
- * but must not appear in search, home, or public detail pages.
+ * - `local-1789075968004` / `sony-ipad-pro` — keyboard-mash junk
+ * - `local-1788919686292` / `toyota-patrol-2026` — diverged local/server copy
+ *   (seller card title/price/image disagreed with the localStorage detail page)
  */
-const PUBLIC_HIDDEN_LISTING_IDS = new Set(["local-1789075968004"]);
-const PUBLIC_HIDDEN_LISTING_SLUGS = new Set(["sony-ipad-pro"]);
+const PUBLIC_HIDDEN_LISTING_IDS = new Set([
+  "local-1789075968004",
+  "local-1788919686292",
+]);
+const PUBLIC_HIDDEN_LISTING_SLUGS = new Set([
+  "sony-ipad-pro",
+  "toyota-patrol-2026",
+]);
 
 export type FixtureListingRef = {
   id?: string;
@@ -102,5 +109,7 @@ export const FIXTURE_LISTING_SQL = `(
   OR slug ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR slug = 'office-business-bay'
   OR id = 'local-1789075968004'
+  OR id = 'local-1788919686292'
   OR slug = 'sony-ipad-pro'
+  OR slug = 'toyota-patrol-2026'
 )`;
