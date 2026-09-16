@@ -29,20 +29,32 @@ export async function GET() {
   if (!isSessionUser(admin)) return admin;
 
   const overrides = await applyOverrides();
+  const disabledModels = new Set(overrides.disabledModelIds);
   return NextResponse.json({
     stats: vehicleCatalogStats(),
     overrides,
-    makes: getVehicleMakes({ includeDisabled: true }).map((item) => ({
-      id: item.id,
-      slug: item.slug,
-      nameEn: item.nameEn,
-      nameAr: item.nameAr,
-      status: item.status,
-      disabled: overrides.disabledMakeSlugs.includes(item.slug),
-      modelCount: getVehicleModelsForMake(item.nameEn, {
+    makes: getVehicleMakes({ includeDisabled: true }).map((item) => {
+      const models = getVehicleModelsForMake(item.nameEn, {
         includeInactive: true,
-      }).length,
-    })),
+      }).map((model) => ({
+        id: model.id,
+        slug: model.slug,
+        nameEn: model.nameEn,
+        nameAr: model.nameAr,
+        active: model.active,
+        disabled: disabledModels.has(model.id) || !model.active,
+      }));
+      return {
+        id: item.id,
+        slug: item.slug,
+        nameEn: item.nameEn,
+        nameAr: item.nameAr,
+        status: item.status,
+        disabled: overrides.disabledMakeSlugs.includes(item.slug),
+        modelCount: models.length,
+        models,
+      };
+    }),
     version: getVehicleCatalog().version,
   });
 }
@@ -55,6 +67,7 @@ export async function PATCH(request: Request) {
     disabledMakeSlugs?: string[];
     disabledModelIds?: string[];
     toggleMakeSlug?: string;
+    toggleModelId?: string;
     enabled?: boolean;
   } | null;
 
@@ -74,6 +87,13 @@ export async function PATCH(request: Request) {
     disabledMakeSlugs = enabled
       ? disabledMakeSlugs.filter((item) => item !== slug)
       : [...new Set([...disabledMakeSlugs, slug])];
+  }
+  if (body?.toggleModelId) {
+    const modelId = body.toggleModelId.trim();
+    const enabled = body.enabled !== false;
+    disabledModelIds = enabled
+      ? disabledModelIds.filter((item) => item !== modelId)
+      : [...new Set([...disabledModelIds, modelId])];
   }
 
   const saved = await saveVehicleCatalogOverrides({
