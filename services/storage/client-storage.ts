@@ -104,12 +104,45 @@ export function deleteLocalListing(listingId: string) {
     return;
   }
 
-  const nextListings = getLocalListings().filter(
-    (listing) => listing.id !== listingId,
-  );
+  const existing = getLocalListings();
+  const removed = existing.find((listing) => listing.id === listingId);
+  const nextListings = existing.filter((listing) => listing.id !== listingId);
   if (!safeSetItem(STORAGE_KEYS.localListings, JSON.stringify(nextListings))) {
     return;
   }
+
+  // Drop stale favorites / recently-viewed pointers so deleted ads disappear.
+  try {
+    const favorites = getFavorites().filter(
+      (item) =>
+        item.listingId !== listingId &&
+        item.slug !== removed?.slug &&
+        item.slug !== listingId,
+    );
+    safeSetItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
+    invalidateFavoritesSnapshot();
+    window.dispatchEvent(new Event(STORAGE_EVENTS.favoritesChange));
+  } catch {
+    // ignore
+  }
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.recentlyViewed);
+    if (raw) {
+      const items = JSON.parse(raw) as { slug: string; viewedAt: string }[];
+      const next = Array.isArray(items)
+        ? items.filter(
+            (item) =>
+              item.slug !== listingId &&
+              item.slug !== removed?.slug,
+          )
+        : [];
+      safeSetItem(STORAGE_KEYS.recentlyViewed, JSON.stringify(next));
+      window.dispatchEvent(new Event(STORAGE_EVENTS.recentlyViewedChange));
+    }
+  } catch {
+    // ignore
+  }
+
   window.dispatchEvent(new Event(STORAGE_EVENTS.listingsChange));
 }
 

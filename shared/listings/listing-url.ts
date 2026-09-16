@@ -2,9 +2,12 @@ import type { Listing } from "@/types";
 import { getAppUrl } from "@/shared/constants/site";
 
 export function getListingPath(listing: Listing): string {
+  if (listing.slug?.trim()) {
+    return `/listings/${listing.slug}`;
+  }
   return listing.id.startsWith("local-")
     ? `/listings/local/${listing.id}`
-    : `/listings/${listing.slug}`;
+    : `/listings/${listing.id}`;
 }
 
 export function getListingCanonicalUrl(listing: Listing): string {
