@@ -553,7 +553,13 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             COALESCE((payload->>'isDemo')::boolean, false) AS is_demo,
             payload->>'source' AS source
          FROM ${TABLE}
-         ORDER BY COALESCE(posted_at, updated_at) DESC NULLS LAST`,
+         ORDER BY
+           (CASE
+              WHEN ${SHOWCASE_LISTING_SQL}
+                OR COALESCE((payload->>'isDemo')::boolean, false)
+              THEN 1 ELSE 0
+            END) ASC,
+           COALESCE(posted_at, updated_at) DESC NULLS LAST`,
         );
         return result.rows.map((row) => ({
           id: String(row.id),
@@ -582,20 +588,29 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
   }
 
   const stored = await loadPersistedListings();
-  return stored.map((listing) => ({
-    id: listing.id,
-    slug: listing.slug,
-    title: listing.title,
-    sellerName: listing.seller.name,
-    sellerId: listing.seller.id,
-    categoryId: listing.categoryId,
-    price: listing.price,
-    currency: listing.currency,
-    status: listing.status,
-    isFeatured: listing.isFeatured,
-    postedAt: listing.postedAt ?? "",
-    city: listing.city,
-    isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
-    source: listing.source,
-  }));
+  return stored
+    .map((listing) => ({
+      id: listing.id,
+      slug: listing.slug,
+      title: listing.title,
+      sellerName: listing.seller.name,
+      sellerId: listing.seller.id,
+      categoryId: listing.categoryId,
+      price: listing.price,
+      currency: listing.currency,
+      status: listing.status,
+      isFeatured: listing.isFeatured,
+      postedAt: listing.postedAt ?? "",
+      city: listing.city,
+      isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
+      source: listing.source,
+    }))
+    .sort((a, b) => {
+      const aDemo = a.isDemo ? 1 : 0;
+      const bDemo = b.isDemo ? 1 : 0;
+      if (aDemo !== bDemo) return aDemo - bDemo;
+      const aTime = Date.parse(a.postedAt) || 0;
+      const bTime = Date.parse(b.postedAt) || 0;
+      return bTime - aTime;
+    });
 }
