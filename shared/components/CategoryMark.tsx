@@ -1,4 +1,6 @@
+import Image from "next/image";
 import type { Category, CategoryIconName } from "@/types";
+import { getCategory3dIconSrc } from "@/shared/constants/category-3d-icons";
 import { CategoryGlyph } from "@/shared/components/CategoryGlyph";
 
 type CategoryMarkProps = {
@@ -10,8 +12,8 @@ type CategoryMarkProps = {
 };
 
 /**
- * Elegant Sooqna category mark: navy circle + gold silhouette.
- * Matches the premium circular gold-on-navy icon language.
+ * Premium Sooqna category mark: artistic 3D icon tile (navy + gold).
+ * Falls back to a silhouette glyph only if the asset map is missing a key.
  */
 export function CategoryMark({
   category,
@@ -22,6 +24,7 @@ export function CategoryMark({
 }: CategoryMarkProps) {
   const iconName: CategoryIconName | "grid" =
     variant === "more" ? "grid" : (category?.icon ?? "grid");
+  const src = getCategory3dIconSrc(iconName);
 
   return (
     <span
@@ -31,7 +34,18 @@ export function CategoryMark({
       } ${className}`.trim()}
     >
       <span className="category-mark__glow" />
-      <CategoryGlyph className="category-mark__glyph" name={iconName} size={iconSize} />
+      {src ? (
+        <Image
+          alt=""
+          className="category-mark__image"
+          height={256}
+          sizes="(max-width: 768px) 78px, 92px"
+          src={src}
+          width={256}
+        />
+      ) : (
+        <CategoryGlyph className="category-mark__glyph" name={iconName} size={iconSize} />
+      )}
     </span>
   );
 }

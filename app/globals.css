@@ -280,7 +280,7 @@ textarea {
     );
 }
 
-/* ── Category mark — professional navy disc + crisp gold glyph ── */
+/* ── Category mark — artistic 3D icon tiles (navy + gold) ── */
 .category-mark {
   position: relative;
   display: grid;
@@ -289,61 +289,69 @@ textarea {
   height: 100%;
   overflow: hidden;
   isolation: isolate;
-  border: 1px solid rgb(212 184 122 / 34%);
-  border-radius: 50%;
+  border: 1px solid rgb(201 169 98 / 28%);
+  border-radius: 28%;
   background:
-    radial-gradient(circle at 48% 32%, #243553 0%, #122038 52%, #0a1220 100%);
-  color: #efd28a;
+    linear-gradient(160deg, #fbf7ef 0%, #f3eadc 55%, #ebe1cf 100%);
+  color: #122038;
   box-shadow:
-    0 1px 2px rgb(11 22 40 / 18%),
-    0 10px 22px rgb(11 22 40 / 14%),
-    inset 0 1px 0 rgb(255 255 255 / 12%),
-    inset 0 -8px 14px rgb(0 0 0 / 22%);
+    0 1px 2px rgb(18 32 56 / 8%),
+    0 10px 22px rgb(18 32 56 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 70%);
   transition:
     transform var(--duration-normal) var(--ease-premium),
     box-shadow var(--duration-normal) var(--ease-premium),
-    border-color var(--duration-normal) var(--ease-premium),
-    color var(--duration-normal) var(--ease-premium);
+    border-color var(--duration-normal) var(--ease-premium);
 }
 
 .category-mark__glow {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 22%, rgb(255 255 255 / 14%), transparent 42%),
-    radial-gradient(circle at 50% 78%, rgb(201 169 98 / 10%), transparent 48%);
+    radial-gradient(circle at 50% 18%, rgb(255 255 255 / 35%), transparent 42%),
+    radial-gradient(circle at 50% 88%, rgb(201 169 98 / 12%), transparent 48%);
+}
+
+.category-mark__image {
+  position: relative;
+  z-index: 0;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  object-position: center;
 }
 
 .category-mark__glyph {
   position: relative;
   z-index: 1;
   display: block;
-  width: 72% !important;
-  height: 72% !important;
-  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 40%));
+  width: 58% !important;
+  height: 58% !important;
+  color: #122038;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 18%));
 }
 
 .category-mark--selected {
-  border-color: rgb(239 210 138 / 72%);
+  border-color: rgb(201 169 98 / 72%);
   box-shadow:
-    0 1px 2px rgb(11 22 40 / 18%),
-    0 10px 22px rgb(11 22 40 / 14%),
-    0 0 0 2px rgb(201 169 98 / 28%),
-    inset 0 1px 0 rgb(255 255 255 / 12%);
+    0 1px 2px rgb(18 32 56 / 8%),
+    0 10px 22px rgb(18 32 56 / 12%),
+    0 0 0 2px rgb(201 169 98 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 70%);
 }
 
 .group:hover .category-mark,
 a:hover .category-mark,
 .mobile-home-categories__card:hover .category-mark {
-  transform: translateY(-2px);
-  border-color: rgb(239 210 138 / 55%);
-  color: #f6e2a8;
+  transform: translateY(-3px) scale(1.03);
+  border-color: rgb(201 169 98 / 55%);
   box-shadow:
-    0 4px 10px rgb(11 22 40 / 20%),
-    0 14px 28px rgb(11 22 40 / 16%),
-    inset 0 1px 0 rgb(255 255 255 / 14%),
-    inset 0 -8px 14px rgb(0 0 0 / 20%);
+    0 6px 14px rgb(18 32 56 / 14%),
+    0 18px 32px rgb(18 32 56 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 80%);
 }
 
 .mobile-home-categories__card:active .category-mark {
@@ -351,7 +359,9 @@ a:hover .category-mark,
 }
 
 html[data-theme="dark"] .category-mark {
-  border-color: rgb(228 197 114 / 28%);
+  border-color: rgb(228 197 114 / 32%);
+  background:
+    linear-gradient(160deg, #2a3344 0%, #1c2433 55%, #141b28 100%);
 }
 
 /* ── Sooqna brand identity ── */
