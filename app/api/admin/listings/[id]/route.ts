@@ -49,6 +49,10 @@ export async function PATCH(request: Request, context: RouteParams) {
     targetType: "listing",
     targetId: id,
     detail: [
+      body.title ? `عنوان` : null,
+      typeof body.price === "number" ? `سعر ${body.price}` : null,
+      body.city ? `مدينة ${body.city}` : null,
+      body.imageUrl ? "صورة" : null,
       body.status ? `حالة ${body.status}` : null,
       typeof body.isFeatured === "boolean"
         ? body.isFeatured
