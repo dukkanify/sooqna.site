@@ -266,11 +266,10 @@ export function AdminCategoriesPanel() {
       <Card className="p-5" variant="flat">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Icon name="plus" size={16} />
-          إضافة فئة ذكية
+          إضافة فئة
         </h2>
         <p className="mt-2 text-sm text-muted">
-          اختر نوع السلوك البرمجي للفئة — يتحدد زر الإعلان (تقديم وظيفة، شراء الآن، معاينة…)
-          ويُزرع نموذج إضافة الإعلان تلقائياً.
+          اختر نوع القسم — يتحدد سلوك الإعلان ويُجهَّز النموذج تلقائياً.
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -293,7 +292,7 @@ export function AdminCategoriesPanel() {
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <Select
-            label="سلوك السوق / الميزة"
+            label="نوع القسم"
             onChange={(event) => {
               const next = event.target.value as CategoryFeatureProfile;
               setFeatureProfile(next);
@@ -381,7 +380,7 @@ export function AdminCategoriesPanel() {
                         value={editIcon}
                       />
                       <Select
-                        label="سلوك السوق"
+                        label="نوع القسم"
                         onChange={(event) =>
                           setEditProfile(event.target.value as CategoryFeatureProfile)
                         }

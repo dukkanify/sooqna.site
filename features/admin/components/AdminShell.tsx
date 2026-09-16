@@ -51,7 +51,7 @@ type AdminShellProps = {
   title: string;
 };
 
-type NavGroup = "ops" | "insight" | "moderation" | "money" | "leads" | "system";
+type NavGroup = "primary" | "more";
 
 const adminLinks: {
   href: AdminPath;
@@ -64,71 +64,39 @@ const adminLinks: {
   {
     href: "/admin",
     icon: "home",
-    label: "غرفة التحكم",
-    group: "ops",
-    keywords: "لوحة رئيسية dashboard",
-  },
-  {
-    href: "/admin/analytics",
-    icon: "chart",
-    label: "التحليلات",
-    group: "insight",
-    keywords: "إحصائيات charts trends",
-    permission: "reports",
-  },
-  {
-    href: "/admin/reports",
-    icon: "wallet",
-    label: "التقارير",
-    group: "insight",
-    keywords: "مالية fees volume",
-    permission: "reports",
-  },
-  {
-    href: "/admin/users",
-    icon: "user",
-    label: "المستخدمون",
-    group: "moderation",
-    keywords: "حسابات تعليق تحقق",
-    permission: "users",
+    label: "الرئيسية",
+    group: "primary",
+    keywords: "لوحة رئيسية dashboard غرفة التحكم",
   },
   {
     href: "/admin/listings",
     icon: "grid",
     label: "الإعلانات",
-    group: "moderation",
+    group: "primary",
     keywords: "مراجعة اعتماد إضافة نشر إعلان",
     permission: "listings",
+  },
+  {
+    href: "/admin/users",
+    icon: "user",
+    label: "المستخدمون",
+    group: "primary",
+    keywords: "حسابات تعليق تحقق",
+    permission: "users",
   },
   {
     href: "/admin/disputes",
     icon: "message",
     label: "النزاعات",
-    group: "moderation",
+    group: "primary",
     keywords: "خلاف حكم",
     permission: "disputes",
-  },
-  {
-    href: "/admin/categories",
-    icon: "briefcase",
-    label: "التصنيفات",
-    group: "moderation",
-    keywords: "فئات",
-    permission: "categories",
-  },
-  {
-    href: "/admin/locations",
-    icon: "map",
-    label: "المواقع / المدن",
-    group: "moderation",
-    keywords: "مدن مواقع emirates",
-    permission: "categories",
   },
   {
     href: "/admin/orders",
     icon: "package",
     label: "الطلبات",
-    group: "money",
+    group: "primary",
     keywords: "استرداد checkout",
     permission: "orders",
   },
@@ -136,15 +104,55 @@ const adminLinks: {
     href: "/admin/escrow",
     icon: "shield",
     label: "الضمان",
-    group: "money",
+    group: "primary",
     keywords: "حجز escrow",
     permission: "payments",
+  },
+  {
+    href: "/admin/categories",
+    icon: "briefcase",
+    label: "التصنيفات",
+    group: "primary",
+    keywords: "فئات نماذج سيارات كتالوج",
+    permission: "categories",
+  },
+  {
+    href: "/admin/settings",
+    icon: "filter",
+    label: "الإعدادات",
+    group: "primary",
+    keywords: "رسوم صيانة stripe url إعدادات الموقع",
+    permission: "settings",
+  },
+  {
+    href: "/admin/analytics",
+    icon: "chart",
+    label: "التحليلات",
+    group: "more",
+    keywords: "إحصائيات charts trends",
+    permission: "reports",
+  },
+  {
+    href: "/admin/reports",
+    icon: "wallet",
+    label: "التقارير",
+    group: "more",
+    keywords: "مالية fees volume",
+    permission: "reports",
+  },
+  {
+    href: "/admin/locations",
+    icon: "map",
+    label: "المدن",
+    group: "more",
+    keywords: "مدن مواقع emirates المواقع",
+    permission: "categories",
   },
   {
     href: "/admin/wallets",
     icon: "wallet",
     label: "المحافظ",
-    group: "money",
+    group: "more",
     keywords: "أرصدة",
     permission: "payments",
   },
@@ -152,7 +160,7 @@ const adminLinks: {
     href: "/admin/stripe",
     icon: "star",
     label: "Stripe",
-    group: "money",
+    group: "more",
     keywords: "دفع بوابة webhook payments",
     permission: "payments",
   },
@@ -160,7 +168,7 @@ const adminLinks: {
     href: "/admin/favorites",
     icon: "heart",
     label: "المفضلة",
-    group: "insight",
+    group: "more",
     keywords: "favorites اهتمام",
     permission: "listings",
   },
@@ -168,7 +176,7 @@ const adminLinks: {
     href: "/admin/notifications",
     icon: "bell",
     label: "الإشعارات",
-    group: "leads",
+    group: "more",
     keywords: "تنبيهات notifications",
     permission: "listings",
   },
@@ -176,22 +184,22 @@ const adminLinks: {
     href: "/admin/addresses",
     icon: "map",
     label: "العناوين",
-    group: "leads",
+    group: "more",
     keywords: "توصيل addresses",
     permission: "orders",
   },
   {
     href: "/admin/activities",
     icon: "clock",
-    label: "إدارة الأنشطة",
-    group: "leads",
-    keywords: "activity requests leads jobs bookings quotes",
+    label: "الأنشطة",
+    group: "more",
+    keywords: "activity requests leads jobs bookings quotes إدارة الأنشطة",
   },
   {
     href: "/admin/job-applications",
     icon: "briefcase",
     label: "التوظيف",
-    group: "leads",
+    group: "more",
     keywords: "وظائف",
     permission: "listings",
   },
@@ -199,7 +207,7 @@ const adminLinks: {
     href: "/admin/viewing-bookings",
     icon: "home",
     label: "المعاينات",
-    group: "leads",
+    group: "more",
     keywords: "عقارات",
     permission: "listings",
   },
@@ -207,7 +215,7 @@ const adminLinks: {
     href: "/admin/quote-requests",
     icon: "wrench",
     label: "عروض الأسعار",
-    group: "leads",
+    group: "more",
     keywords: "خدمات",
     permission: "listings",
   },
@@ -215,45 +223,19 @@ const adminLinks: {
     href: "/admin/listing-reports",
     icon: "shield",
     label: "بلاغات الإعلانات",
-    group: "moderation",
+    group: "more",
     keywords: "بلاغ إبلاغ report guest",
     permission: "listings",
-  },
-  {
-    href: "/admin/settings",
-    icon: "filter",
-    label: "إعدادات الموقع",
-    group: "system",
-    keywords: "رسوم صيانة stripe url",
-    permission: "settings",
   },
   {
     href: "/admin/audit",
     icon: "clock",
     label: "سجل العمليات",
-    group: "system",
+    group: "more",
     keywords: "audit log تاريخ",
     permission: "settings",
   },
 ];
-
-const groupOrder: NavGroup[] = [
-  "ops",
-  "insight",
-  "moderation",
-  "money",
-  "leads",
-  "system",
-];
-
-const groupLabels: Record<NavGroup, string> = {
-  ops: "القيادة",
-  insight: "تقارير وتحليلات",
-  moderation: "الإشراف",
-  money: "المال والمدفوعات",
-  leads: "الوارد",
-  system: "النظام",
-};
 
 export function AdminShell({
   activePath,
@@ -266,6 +248,7 @@ export function AdminShell({
   >("loading");
   const [displayUser, setDisplayUser] = useState<UserProfile | null>(null);
   const [query, setQuery] = useState("");
+  const [moreOpen, setMoreOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -297,6 +280,38 @@ export function AdminShell({
         link.href.includes(q),
     );
   }, [query, displayUser]);
+
+  const primaryLinks = useMemo(
+    () => filteredLinks.filter((link) => link.group === "primary"),
+    [filteredLinks],
+  );
+  const moreLinks = useMemo(
+    () => filteredLinks.filter((link) => link.group === "more"),
+    [filteredLinks],
+  );
+  const searching = query.trim().length > 0;
+  const activeInMore = moreLinks.some((link) => link.href === activePath);
+  const showMore = searching || moreOpen || activeInMore;
+
+  const mobileLinks = searching
+    ? filteredLinks
+    : [...primaryLinks, ...(showMore ? moreLinks : [])];
+
+  function renderNavLink(link: (typeof adminLinks)[number]) {
+    const active = link.href === activePath;
+    return (
+      <Link
+        key={link.href}
+        className={`admin-ops__nav-link${
+          active ? " admin-ops__nav-link--active" : ""
+        }`}
+        href={link.href}
+      >
+        <Icon name={link.icon} size={16} />
+        <span>{link.label}</span>
+      </Link>
+    );
+  }
 
   async function handleLogout() {
     clearSessionUser();
@@ -335,58 +350,40 @@ export function AdminShell({
             />
             <div className="admin-ops__brand-copy">
               <p className="admin-ops__brand-name">{BRAND.nameAr}</p>
-              <p className="admin-ops__brand-sub">Admin</p>
+              <p className="admin-ops__brand-sub">لوحة التحكم</p>
             </div>
           </div>
           <label className="admin-ops__search">
             <Icon name="search" size={14} />
             <input
               aria-label="بحث في أقسام اللوحة"
-              placeholder="بحث في الأقسام..."
+              placeholder="بحث سريع…"
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
           <nav className="admin-ops__nav">
-            {groupOrder.map((group) => {
-              const links = filteredLinks.filter(
-                (link) => link.group === group,
-              );
-              if (links.length === 0) return null;
-              return (
-                <div key={group} className="admin-ops__nav-group">
-                  <p className="admin-ops__nav-group-label">
-                    {groupLabels[group]}
-                  </p>
-                  {links.map((link) => {
-                    const active = link.href === activePath;
-                    return (
-                      <Link
-                        key={link.href}
-                        className={`admin-ops__nav-link${
-                          active ? " admin-ops__nav-link--active" : ""
-                        }`}
-                        href={link.href}
-                      >
-                        <Icon name={link.icon} size={16} />
-                        <span>{link.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              );
-            })}
+            <div className="admin-ops__nav-group">
+              <p className="admin-ops__nav-group-label">اليومي</p>
+              {primaryLinks.map(renderNavLink)}
+            </div>
+            {moreLinks.length > 0 ? (
+              <div className="admin-ops__nav-group">
+                <button
+                  aria-expanded={showMore}
+                  className="admin-ops__nav-more-toggle"
+                  onClick={() => setMoreOpen((open) => !open)}
+                  type="button"
+                >
+                  <span>المزيد</span>
+                  <span aria-hidden>{showMore ? "▾" : "▸"}</span>
+                </button>
+                {showMore ? moreLinks.map(renderNavLink) : null}
+              </div>
+            ) : null}
           </nav>
           <div className="admin-ops__sidebar-footer">
-            <a
-              className="admin-ops__back"
-              href="https://dashboard.stripe.com"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Stripe Dashboard ↗
-            </a>
             <Link className="admin-ops__back" href="/">
               العودة إلى السوق
             </Link>
@@ -414,20 +411,16 @@ export function AdminShell({
               />
               <div className="admin-ops__brand-copy">
                 <p className="admin-ops__brand-name">{BRAND.nameAr}</p>
-                <p className="admin-ops__brand-sub">Admin</p>
+                <p className="admin-ops__brand-sub">لوحة التحكم</p>
               </div>
             </div>
             <div className="admin-ops__top-actions">
               <LanguageSwitch variant="compact" />
-              <span className="admin-ops__live" aria-live="polite">
-                <span className="admin-ops__live-dot" aria-hidden />
-                مباشر
-              </span>
               <div className="admin-ops__who">
                 <p className="admin-ops__who-name">
                   {displayUser?.fullName ?? "Admin"}
                 </p>
-                <p className="admin-ops__who-role">مدير النظام</p>
+                <p className="admin-ops__who-role">مدير</p>
               </div>
               <Button
                 onClick={handleLogout}
@@ -441,7 +434,7 @@ export function AdminShell({
           </header>
 
           <div className="admin-ops__mobile-nav" aria-label="تنقل سريع">
-            {filteredLinks.map((link) => {
+            {mobileLinks.map((link) => {
               const active = link.href === activePath;
               return (
                 <Link
@@ -453,25 +446,23 @@ export function AdminShell({
                 </Link>
               );
             })}
+            {!searching && !showMore && moreLinks.length > 0 ? (
+              <button
+                className="admin-ops__pill"
+                onClick={() => setMoreOpen(true)}
+                type="button"
+              >
+                المزيد
+              </button>
+            ) : null}
           </div>
 
           <div className="admin-ops__pagehead">
             <div>
-              <p className="admin-ops__eyebrow">Sooqna Admin</p>
               <h1 className="admin-ops__title">{title}</h1>
-              <p className="admin-ops__desc">{description}</p>
-            </div>
-            <div className="admin-ops__pagehead-meta">
-              <span className="admin-ops__live" aria-live="polite">
-                <span className="admin-ops__live-dot" aria-hidden />
-                النظام يعمل
-              </span>
-              <div className="admin-ops__who">
-                <p className="admin-ops__who-name">
-                  {displayUser?.fullName ?? "Admin"}
-                </p>
-                <p className="admin-ops__who-role">مدير النظام</p>
-              </div>
+              {description ? (
+                <p className="admin-ops__desc">{description}</p>
+              ) : null}
             </div>
           </div>
 
