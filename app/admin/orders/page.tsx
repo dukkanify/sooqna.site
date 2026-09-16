@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AdminOrdersPanel } from "@/features/admin/components/AdminOrdersPanel";
 import { AdminShell } from "@/features/admin/components/AdminShell";
 
@@ -8,7 +9,9 @@ export default function AdminOrdersPage() {
       description="كل الطلبات مع معرفات Stripe وحالة الاسترداد — تحرّك بسرعة على الحالات الحرجة."
       title="الطلبات والمدفوعات"
     >
-      <AdminOrdersPanel />
+      <Suspense fallback={<p className="text-sm text-muted">جاري التحميل...</p>}>
+        <AdminOrdersPanel />
+      </Suspense>
     </AdminShell>
   );
 }

@@ -387,7 +387,7 @@ export async function buildAdminDashboard(
       id: "incomplete-evidence",
       label: "توثيق منتج ناقص",
       count: incompleteEvidence.length,
-      href: "/admin/orders",
+      href: "/admin/orders?filter=evidence",
       severity: "high",
       meta: "Evidence مطلوب",
     });
@@ -417,7 +417,7 @@ export async function buildAdminDashboard(
       id: "pending-payments",
       label: "معاملات معلّقة",
       count: pendingPayments.length,
-      href: "/admin/orders",
+      href: "/admin/orders?filter=pending_payment",
       severity: severityForCount(pendingPayments.length, 10, 3),
       meta: "بانتظار إكمال الدفع",
     });
@@ -427,7 +427,7 @@ export async function buildAdminDashboard(
       id: "failed-payments",
       label: "دفعات فاشلة تحتاج متابعة",
       count: failedPayments.length,
-      href: "/admin/orders",
+      href: "/admin/orders?filter=failed",
       severity: "high",
       meta: "مراجعة بوابة الدفع",
     });
@@ -493,7 +493,7 @@ export async function buildAdminDashboard(
               10,
               3,
             ),
-            href: "/admin/orders",
+            href: "/admin/orders?filter=pending_payment",
             actionLabel: "فتح الطلبات",
           }
         : null,
@@ -573,7 +573,7 @@ export async function buildAdminDashboard(
               label: "Evidence ناقص",
               count: incompleteEvidence.length,
               severity: severityForCount(incompleteEvidence.length, 5, 2),
-              href: "/admin/orders",
+              href: "/admin/orders?filter=evidence",
             }
           : null,
         canUsers
