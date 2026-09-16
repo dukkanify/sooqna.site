@@ -246,8 +246,21 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
       byUserId: listing.seller.id,
     });
   }
+
+  // Keep slug unique across rows — colliding slugs made seller cards and detail
+  // pages resolve to different payloads for the "same" URL.
+  let slug = (listing.slug || slugifyTitle(listing.title)).trim();
+  const slugOwner = listings.find(
+    (item) => item.slug === slug && item.id !== listing.id,
+  );
+  if (slugOwner) {
+    const suffix = listing.id.replace(/\W+/g, "").slice(-8) || String(Date.now()).slice(-6);
+    slug = `${slugifyTitle(listing.title) || "listing"}-${suffix}`;
+  }
+
   const next: Listing = {
     ...listing,
+    slug,
     postedAt,
     expiresAt:
       listing.expiresAt ??

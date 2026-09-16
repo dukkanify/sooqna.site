@@ -24,6 +24,9 @@ type SellerPageProps = {
   params: Promise<{ id: string }>;
 };
 
+/** Always fresh — seller cards must match listing detail payloads. */
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: SellerPageProps): Promise<Metadata> {

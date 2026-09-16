@@ -115,6 +115,7 @@ export const BLOCKED_LISTING_IDS = [
   "qa26-el-be50a099",
   "qa26-car-be50a099",
   "local-1789075968004",
+  "local-1788919686292",
 ] as const;
 
 export const BLOCKED_USER_IDS = [
