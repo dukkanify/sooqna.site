@@ -49,9 +49,13 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
 
           <label className="market-hero-search__slot">
             <span className="market-hero-search__label">{labels.category}</span>
-            <span className="market-hero-search__chip">
-              <Icon aria-hidden className="market-hero-search__chip-icon" name="grid" size={14} />
-              <span className="market-hero-search__chip-text">{labels.category}</span>
+            <span className="market-hero-search__control">
+              <Icon
+                aria-hidden
+                className="market-hero-search__control-icon"
+                name="grid"
+                size={14}
+              />
               <select
                 aria-label={labels.category}
                 className="market-hero-search__field market-hero-search__select"
@@ -71,9 +75,13 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
 
           <label className="market-hero-search__slot">
             <span className="market-hero-search__label">{labels.city}</span>
-            <span className="market-hero-search__chip">
-              <Icon aria-hidden className="market-hero-search__chip-icon" name="map" size={14} />
-              <span className="market-hero-search__chip-text">{labels.city}</span>
+            <span className="market-hero-search__control">
+              <Icon
+                aria-hidden
+                className="market-hero-search__control-icon"
+                name="map"
+                size={14}
+              />
               <select
                 aria-label={labels.city}
                 className="market-hero-search__field market-hero-search__select"
@@ -93,9 +101,13 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
 
           <label className="market-hero-search__slot">
             <span className="market-hero-search__label">{labels.price}</span>
-            <span className="market-hero-search__chip">
-              <Icon aria-hidden className="market-hero-search__chip-icon" name="wallet" size={14} />
-              <span className="market-hero-search__chip-text">{labels.price}</span>
+            <span className="market-hero-search__control">
+              <Icon
+                aria-hidden
+                className="market-hero-search__control-icon"
+                name="wallet"
+                size={14}
+              />
               <select
                 aria-label={labels.price}
                 className="market-hero-search__field market-hero-search__select"
