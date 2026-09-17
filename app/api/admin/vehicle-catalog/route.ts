@@ -4,12 +4,17 @@ import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import {
   getVehicleCatalogOverrides,
   saveVehicleCatalogOverrides,
+  slugifyVehicleModelName,
+  type AddedVehicleModel,
 } from "@/services/admin/vehicle-catalog-overrides-store";
+import { applyVehicleCatalogOverridesRuntime } from "@/services/admin/apply-vehicle-catalog-overrides";
 import {
   getVehicleCatalog,
+  getVehicleMakeByName,
+  getVehicleMakeBySlug,
   getVehicleMakes,
   getVehicleModelsForMake,
-  setVehicleCatalogOverrides,
+  resolveVehicleMakeName,
   vehicleCatalogStats,
 } from "@/shared/vehicles";
 
@@ -17,10 +22,7 @@ export const runtime = "nodejs";
 
 async function applyOverrides() {
   const overrides = await getVehicleCatalogOverrides();
-  setVehicleCatalogOverrides({
-    disabledMakeSlugs: overrides.disabledMakeSlugs,
-    disabledModelIds: overrides.disabledModelIds,
-  });
+  applyVehicleCatalogOverridesRuntime(overrides);
   return overrides;
 }
 
@@ -30,6 +32,7 @@ export async function GET() {
 
   const overrides = await applyOverrides();
   const disabledModels = new Set(overrides.disabledModelIds);
+  const addedIds = new Set(overrides.addedModels.map((row) => row.id));
   return NextResponse.json({
     stats: vehicleCatalogStats(),
     overrides,
@@ -43,6 +46,7 @@ export async function GET() {
         nameAr: model.nameAr,
         active: model.active,
         disabled: disabledModels.has(model.id) || !model.active,
+        added: addedIds.has(model.id),
       }));
       return {
         id: item.id,
@@ -72,11 +76,20 @@ export async function PATCH(request: Request) {
     toggleMakeSlug?: string;
     toggleModelId?: string;
     enabled?: boolean;
+    addModel?: {
+      makeSlug?: string;
+      makeName?: string;
+      nameEn?: string;
+      nameAr?: string;
+      sourceSuggestionId?: string;
+    };
   } | null;
 
   const current = await getVehicleCatalogOverrides();
+  applyVehicleCatalogOverridesRuntime(current);
   let disabledMakeSlugs = [...current.disabledMakeSlugs];
   let disabledModelIds = [...current.disabledModelIds];
+  let addedModels = [...current.addedModels];
 
   if (Array.isArray(body?.disabledMakeSlugs)) {
     disabledMakeSlugs = body.disabledMakeSlugs;
@@ -99,14 +112,67 @@ export async function PATCH(request: Request) {
       : [...new Set([...disabledModelIds, modelId])];
   }
 
+  if (body?.addModel) {
+    const make =
+      (body.addModel.makeSlug
+        ? getVehicleMakeBySlug(body.addModel.makeSlug)
+        : undefined) ??
+      (body.addModel.makeName
+        ? getVehicleMakeByName(
+            resolveVehicleMakeName(body.addModel.makeName) ??
+              body.addModel.makeName,
+          )
+        : undefined);
+    const nameEn = String(body.addModel.nameEn ?? "").trim();
+    if (!make || !nameEn) {
+      return NextResponse.json(
+        { error: "INVALID_MODEL_INPUT" },
+        { status: 400 },
+      );
+    }
+    const slug = slugifyVehicleModelName(nameEn);
+    if (!slug) {
+      return NextResponse.json({ error: "INVALID_MODEL_SLUG" }, { status: 400 });
+    }
+    const existing = getVehicleModelsForMake(make.nameEn, {
+      includeInactive: true,
+    });
+    if (
+      existing.some(
+        (model) =>
+          model.slug === slug ||
+          model.nameEn.toLowerCase() === nameEn.toLowerCase(),
+      )
+    ) {
+      return NextResponse.json({ error: "MODEL_EXISTS" }, { status: 409 });
+    }
+    if (
+      addedModels.some(
+        (row) => row.makeSlug === make.slug && row.slug === slug,
+      )
+    ) {
+      return NextResponse.json({ error: "MODEL_EXISTS" }, { status: 409 });
+    }
+    const row: AddedVehicleModel = {
+      id: `model-added-${make.slug}-${slug}`,
+      makeSlug: make.slug,
+      slug,
+      nameEn,
+      nameAr: String(body.addModel.nameAr ?? nameEn).trim() || nameEn,
+      active: true,
+      sortOrder: 9000 + addedModels.length,
+      createdAt: new Date().toISOString(),
+      sourceSuggestionId: body.addModel.sourceSuggestionId,
+    };
+    addedModels = [...addedModels, row];
+  }
+
   const saved = await saveVehicleCatalogOverrides({
     disabledMakeSlugs,
     disabledModelIds,
+    addedModels,
   });
-  setVehicleCatalogOverrides({
-    disabledMakeSlugs: saved.disabledMakeSlugs,
-    disabledModelIds: saved.disabledModelIds,
-  });
+  applyVehicleCatalogOverridesRuntime(saved);
 
   return NextResponse.json({
     ok: true,

@@ -228,6 +228,7 @@ export function CategoryFieldsForm({
         setVehicleCatalogOverrides({
           disabledMakeSlugs: data.disabledMakeSlugs ?? [],
           disabledModelIds: data.disabledModelIds ?? [],
+          addedModels: data.addedModels ?? [],
         });
       })
       .catch(() => undefined);

@@ -88,6 +88,7 @@ export function CategorySmartFields({
         setVehicleCatalogOverrides({
           disabledMakeSlugs: data.disabledMakeSlugs ?? [],
           disabledModelIds: data.disabledModelIds ?? [],
+          addedModels: data.addedModels ?? [],
         });
       })
       .catch(() => undefined);
