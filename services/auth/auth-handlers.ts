@@ -8,7 +8,7 @@ import {
 import { attachOtpDisplayCookie } from "@/services/auth/otp-display-cookie";
 import { checkRateLimit, getClientIp } from "@/services/auth/rate-limit";
 import { canRevealOtpToClient } from "@/services/otp/otp-config";
-import { createOtpRequest, invalidateOtpRecord, maskEmail, verifyOtpCode } from "@/services/otp/otp.service";
+import { createOtpRequest, clearOtpResendCooldown, invalidateOtpRecord, maskEmail, verifyOtpCode } from "@/services/otp/otp.service";
 import { logProductionConfigIssues } from "@/services/auth/production-config";
 import type { OtpPurpose } from "@/types/domain/otp";
 
@@ -114,8 +114,9 @@ export async function sendRegistrationVerifyOtp(input: {
     otp: code,
   });
 
-  if (!delivered && !canRevealOtpToClient(false)) {
-    // Keep OTP so the user can resend after RESEND_API_KEY is configured.
+  if (!delivered) {
+    // Failed delivery must not block the next resend behind a 60s cooldown.
+    await clearOtpResendCooldown({ email: input.email, purpose: "REGISTER" });
     return { delivered: false, code };
   }
 
@@ -160,7 +161,8 @@ export async function sendOtpForPurpose(input: {
       delivered = await senders.sendLoginOtp(payload);
   }
 
-  if (!delivered && input.purpose === "REGISTER" && !canRevealOtpToClient(false)) {
+  if (!delivered && input.purpose === "REGISTER") {
+    await clearOtpResendCooldown({ email: input.email, purpose: "REGISTER" });
     return { delivered: false, code };
   }
 

@@ -77,10 +77,12 @@ export function OtpVerification({
     serverOtp ? serverOtp.split("") : ["", "", "", "", "", ""],
   );
   const [otpError, setOtpError] = useState("");
-  const [cooldown, setCooldown] = useState(COOLDOWN_SECONDS);
+  // If delivery already failed, allow immediate resend instead of a fake 60s wait.
+  const [cooldown, setCooldown] = useState(emailDeliveryFailed ? 0 : COOLDOWN_SECONDS);
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const autoSubmittedRef = useRef(serverOtp ?? "");
   const toastedRef = useRef(false);
+  const autoResendTriedRef = useRef(false);
   const displayEmail = maskedEmail ?? maskEmail(email);
   const endpoint = verifyEndpoint ?? DEFAULT_VERIFY_ENDPOINTS[purpose] ?? "/api/auth/otp/verify";
 
@@ -185,6 +187,7 @@ export function OtpVerification({
         setOtpError(
           data.message ?? "تعذر إرسال رمز التحقق حاليًا. يرجى المحاولة مرة أخرى.",
         );
+        setCooldown(0);
       }
       if (demoOtpEnabled && typeof data.otp === "string" && /^\d{6}$/.test(data.otp)) {
         saveOtpFallback(email, data.otp);
@@ -195,6 +198,15 @@ export function OtpVerification({
       trackAuthEventClient("otp_resend", { purpose });
     }, [cooldown, demoOtpEnabled, email, fullName, purpose]),
   );
+
+  // If the previous send failed, retry once immediately so the user is not
+  // stuck staring at an empty OTP screen with a fake cooldown.
+  useEffect(() => {
+    if (!emailDeliveryFailed || autoResendTriedRef.current) return;
+    if (cooldown > 0 || isResending) return;
+    autoResendTriedRef.current = true;
+    void resendOtp();
+  }, [cooldown, emailDeliveryFailed, isResending, resendOtp]);
 
   function applyDigits(nextDigits: string[]) {
     setDigits(nextDigits);
