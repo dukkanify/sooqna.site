@@ -110,7 +110,11 @@ function FilterFields({
       {!easy ? (
         <p className="pt-1 text-[0.7rem] font-bold text-muted">الموقع</p>
       ) : null}
-      <div className="grid grid-cols-2 gap-2">
+      <div
+        className={
+          easy && !showCategory ? "grid gap-2" : "grid grid-cols-2 gap-2"
+        }
+      >
         <Select
           compact={compact}
           label="الإمارة"
