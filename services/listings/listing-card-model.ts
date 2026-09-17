@@ -7,9 +7,11 @@ function coverImage(listing: Listing): string | undefined {
   return cover || undefined;
 }
 
-/** Card-sized listing: bilingual titles, cover only, no descriptions/specs/history. */
+/** Card-sized listing: bilingual titles, cover only, no descriptions/history.
+ *  Keeps a tiny categorySpecs subset so cars cards can show year · mileage. */
 export function slimListingForCard(listing: Listing): Listing {
   const cover = coverImage(listing);
+  const slimSpecs = slimCategorySpecsForCard(listing);
   return {
     id: listing.id,
     title: listing.title,
@@ -46,7 +48,33 @@ export function slimListingForCard(listing: Listing): Listing {
     featuredUntil: listing.featuredUntil,
     isDemo: listing.isDemo,
     source: listing.source,
+    ...(slimSpecs ? { categorySpecs: slimSpecs } : {}),
   };
+}
+
+const CARD_SPEC_KEYS = [
+  "brand",
+  "model",
+  "year",
+  "mileage",
+  "transmission",
+  "fuelType",
+  "regionalSpecs",
+] as const;
+
+function slimCategorySpecsForCard(
+  listing: Listing,
+): Listing["categorySpecs"] | undefined {
+  const specs = listing.categorySpecs;
+  if (!specs || Object.keys(specs).length === 0) return undefined;
+  const next: Record<string, string | number | boolean> = {};
+  for (const key of CARD_SPEC_KEYS) {
+    const value = specs[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      next[key] = value;
+    }
+  }
+  return Object.keys(next).length > 0 ? next : undefined;
 }
 
 /** Autocomplete docs need brand/model specs, not gallery/history blobs. */
