@@ -7,6 +7,8 @@ export type VehicleMake = {
   nameAr: string;
   status: VehicleMakeStatus;
   sortOrder: number;
+  /** Alternate spellings / legacy marque names that resolve to this make. */
+  aliases?: string[];
   countryCode?: string;
   countryNameEn?: string;
   countryNameAr?: string;
