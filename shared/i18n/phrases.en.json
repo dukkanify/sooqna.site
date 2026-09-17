@@ -2173,5 +2173,7 @@
   "تم حفظ البحث — سنشعرّك عند ظهور إعلان مطابق.": "Search saved — we will notify you when a matching listing appears.",
   "إعلان مطابق لبحثك المحفوظ": "New listing matches your saved search",
   "إعلان جديد من بائع تتابعه": "New listing from a seller you follow",
-  "إعادة كمتاح": "Mark available again"
+  "إعادة كمتاح": "Mark available again",
+  "جاري تحميل الموديلات...": "Loading models...",
+  "لا يوجد موديل مطابق — اختر «أخرى» أو اكتب اقتراحاً.": "No matching model — choose “Other” or type a suggestion."
 }

@@ -79,12 +79,17 @@ function toOptions(models: readonly string[]): CategoryFieldOption[] {
   return [...models.map((model) => ({ label: model, value: model })), OTHER];
 }
 
+/**
+ * Model options for a brand.
+ * Empty brand → empty list (caller shows "pick make first" / loading — never
+ * flash «أخرى» alone as a temporary placeholder).
+ */
 export function getModelsForBrand(
   categoryId: string | undefined,
   brand: string | undefined,
 ): CategoryFieldOption[] {
   const key = brand?.trim();
-  if (!key) return [OTHER];
+  if (!key) return [];
 
   if (categoryId === "cars") {
     const canonical = resolveVehicleMakeName(key) ?? key;

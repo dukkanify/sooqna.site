@@ -74,6 +74,7 @@ function renderField(
   optionsOverride?: CategoryFieldOption[],
   remountKey?: string,
   currentValue?: string,
+  comboboxLoading = false,
 ) {
   const name = `spec_${field.key}`;
   const defaultValue =
@@ -113,16 +114,22 @@ function renderField(
   }
 
   if (field.type === "combobox") {
+    const modelNeedsBrand =
+      field.key === "model" && options.length === 0 && !comboboxLoading;
     return (
       <BrandCombobox
         key={remountKey ?? field.key}
         compact
         defaultValue={defaultValue !== undefined ? String(defaultValue) : undefined}
         label={field.label}
+        loading={comboboxLoading}
         name={name}
         onValueChange={(value) => onSpecChange(field.key, value)}
+        optionKind={field.key === "model" ? "model" : "brand"}
         options={options}
-        placeholder={field.placeholder}
+        placeholder={
+          modelNeedsBrand ? "اختر الماركة أولاً" : field.placeholder
+        }
         required={field.required}
       />
     );
@@ -196,6 +203,10 @@ export function CategoryFieldsForm({
     categoryId: string;
     fields: CategoryFieldDefinition[];
   } | null>(null);
+  /** Bumps after catalog overrides apply so model options re-render once (no Other flash). */
+  const [catalogEpoch, setCatalogEpoch] = useState(0);
+  const catalogLoading = categoryId === "cars" && catalogEpoch === 0;
+
   useEffect(() => {
     if (!categoryId) return;
     let cancelled = false;
@@ -224,15 +235,23 @@ export function CategoryFieldsForm({
     void fetch("/api/vehicle-catalog/overrides")
       .then((response) => (response.ok ? response.json() : null))
       .then(async (data) => {
-        if (cancelled || !data) return;
-        const { setVehicleCatalogOverrides } = await import("@/shared/vehicles");
-        setVehicleCatalogOverrides({
-          disabledMakeSlugs: data.disabledMakeSlugs ?? [],
-          disabledModelIds: data.disabledModelIds ?? [],
-          addedModels: data.addedModels ?? [],
-        });
+        if (cancelled) return;
+        if (data) {
+          const { setVehicleCatalogOverrides } = await import("@/shared/vehicles");
+          if (cancelled) return;
+          setVehicleCatalogOverrides({
+            disabledMakeSlugs: data.disabledMakeSlugs ?? [],
+            disabledModelIds: data.disabledModelIds ?? [],
+            addedModels: data.addedModels ?? [],
+          });
+        }
+        if (cancelled) return;
+        setCatalogEpoch((epoch) => epoch + 1);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (cancelled) return;
+        setCatalogEpoch((epoch) => epoch + 1);
+      });
     return () => {
       cancelled = true;
     };
@@ -279,9 +298,10 @@ export function CategoryFieldsForm({
   function onSpecChange(key: string, value: string) {
     setSpecs((prev) => {
       const next = { ...prev, [key]: value };
-      // Cars/mobiles/electronics: changing brand clears a stale model.
+      // Cars/mobiles/electronics: changing brand clears a stale model + Other text.
       if (key === "brand") {
         next.model = "";
+        next.modelOther = "";
       }
       return next;
     });
@@ -298,6 +318,10 @@ export function CategoryFieldsForm({
         categoryId === "mobiles" ||
         categoryId === "electronics")
     ) {
+      // Touch catalogEpoch so overrides re-render once they land.
+      void catalogEpoch;
+      if (!specs.brand?.trim()) return [];
+      // While overrides hydrate, still show sync catalog models — never Other-only.
       return getModelsForBrand(categoryId, specs.brand);
     }
     return undefined;
@@ -361,6 +385,11 @@ export function CategoryFieldsForm({
                   field.key === "brand" || field.key === "model"
                     ? (specs[field.key] ?? "")
                     : undefined,
+                  field.key === "model" &&
+                    categoryId === "cars" &&
+                    catalogLoading &&
+                    Boolean(specs.brand?.trim()) &&
+                    (optionsForField(field)?.length ?? 0) === 0,
                 )}
                 {field.note ? (
                   <p className="mt-1 text-xs text-muted">{field.note}</p>
