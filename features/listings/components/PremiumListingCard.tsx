@@ -119,6 +119,21 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </h3>
       </Link>
 
+      {listing.categoryId === "cars" ? (
+        <p className="text-[0.7rem] font-medium text-muted">
+          {[
+            listing.categorySpecs?.year ?? listing.carSpecs?.year,
+            listing.categorySpecs?.mileage ?? listing.carSpecs?.mileage
+              ? `${Number(
+                  listing.categorySpecs?.mileage ?? listing.carSpecs?.mileage,
+                ).toLocaleString("en-AE")} كم`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      ) : null}
+
       <div>
         <CurrencyAmount amount={listing.price} size="sm" />
       </div>

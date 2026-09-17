@@ -99,6 +99,8 @@ export function SearchResultsList({
 
   if (visibleListings.length === 0) {
     const hasActiveFilters = activeFilterCount(selectedFilters) > 0;
+    const isCars = categoryId === "cars" || selectedFilters.category === "cars";
+    const clearHref = basePath.split("?")[0] || "/search";
     return (
       <>
         <SearchResultsToolbar
@@ -108,18 +110,34 @@ export function SearchResultsList({
           selectedFilters={selectedFilters}
         />
         <EmptyState
-          actionHref={hasActiveFilters ? "/search" : "/listings/new"}
-          actionLabel={hasActiveFilters ? "عرض كل الإعلانات" : "أضف إعلاناً"}
+          actionHref={
+            hasActiveFilters
+              ? isCars
+                ? clearHref
+                : "/search"
+              : "/listings/new"
+          }
+          actionLabel={
+            hasActiveFilters
+              ? isCars
+                ? "مسح الفلاتر"
+                : "عرض كل الإعلانات"
+              : "أضف إعلاناً"
+          }
           description={
             hasActiveFilters
-              ? "جرّب تعديل الفلاتر أو البحث بكلمات مختلفة."
+              ? isCars
+                ? "عدّل الماركة أو السعر أو الموقع، أو امسح الفلاتر للبدء من جديد."
+                : "جرّب تعديل الفلاتر أو البحث بكلمات مختلفة."
               : "لا نعرض بيانات تجريبية لملء السوق. ستظهر الإعلانات الحقيقية هنا عند نشرها."
           }
           eyebrow="لا نتائج"
           icon="search"
           title={
             hasActiveFilters
-              ? "لم نجد إعلانات مطابقة"
+              ? isCars
+                ? "لا توجد سيارات مطابقة للفلاتر المحددة"
+                : "لم نجد إعلانات مطابقة"
               : "لا توجد إعلانات متاحة حالياً."
           }
         />
@@ -139,11 +157,12 @@ export function SearchResultsList({
         selectedFilters={selectedFilters}
       />
       <div className={`${MARKETPLACE_LISTING_GRID_CLASS} page-enter`}>
-        {pageItems.map((listing) => (
+        {pageItems.map((listing, index) => (
           <ListingCard
             key={listing.id}
             categoryName={categoryNames.get(listing.categoryId)}
             listing={listing}
+            priority={index < 2}
           />
         ))}
       </div>

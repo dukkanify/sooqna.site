@@ -63,7 +63,56 @@ export const getFeaturedListings = cache(async (): Promise<Listing[]> => {
 export async function getRelatedListings(
   categoryId: string,
   excludedId: string,
+  seed?: Pick<Listing, "categorySpecs" | "carSpecs" | "price">,
 ): Promise<Listing[]> {
+  const brand =
+    seed?.categorySpecs?.brand ?? seed?.carSpecs?.brand ?? undefined;
+  const model =
+    seed?.categorySpecs?.model ?? seed?.carSpecs?.model ?? undefined;
+
+  if (categoryId === "cars" && brand) {
+    const sameModel = model
+      ? await queryListings({
+          categoryId,
+          categorySpecs: { brand, model },
+          excludeId: excludedId,
+          limit: RELATED_LIMIT,
+          slim: "card",
+          sort: "newest",
+          status: "active",
+        })
+      : [];
+    if (sameModel.length >= RELATED_LIMIT) return sameModel;
+
+    const sameBrand = await queryListings({
+      categoryId,
+      categorySpecs: { brand },
+      excludeId: excludedId,
+      limit: RELATED_LIMIT * 2,
+      slim: "card",
+      sort: "newest",
+      status: "active",
+    });
+    const merged = [
+      ...sameModel,
+      ...sameBrand.filter((row) => !sameModel.some((hit) => hit.id === row.id)),
+    ];
+    if (merged.length >= RELATED_LIMIT) return merged.slice(0, RELATED_LIMIT);
+
+    const fallback = await queryListings({
+      categoryId,
+      excludeId: excludedId,
+      limit: RELATED_LIMIT * 2,
+      slim: "card",
+      sort: "newest",
+      status: "active",
+    });
+    return [
+      ...merged,
+      ...fallback.filter((row) => !merged.some((hit) => hit.id === row.id)),
+    ].slice(0, RELATED_LIMIT);
+  }
+
   return queryListings({
     categoryId,
     excludeId: excludedId,
