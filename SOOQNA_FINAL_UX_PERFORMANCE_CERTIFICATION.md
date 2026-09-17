@@ -116,9 +116,10 @@ After lab metrics: `/opt/cursor/artifacts/after-metrics.json` (local `http://loc
 | Field | Value |
 |-------|-------|
 | Main SHA | `a843319` (pre-merge base) |
-| Branch SHA | see latest push on `cursor/cars-ux-performance-f438` |
+| Branch SHA | `412301b1661ae43272a642d8e32665eec8446e8e` |
 | Production SHA | unchanged until merge |
-| Deployment ID | Vercel Preview on PR #80 (SUCCESS) |
+| Preview Deployment | `6496812917` — https://sooqna-rj140ydj4-dukkanify-technology-llcs-projects.vercel.app |
+| Preview CI | SUCCESS (2/2 checks, 2026-09-17) |
 | Domain | sooqnauae.com |
 
 ## Catalog repair note
@@ -138,7 +139,8 @@ Live marketplace catalog version bumped to `v8-car-specs-hydrate` to re-upsert s
 | MOBILE | **PASS** |
 | RTL/LTR | **PASS** |
 | REGRESSION | **PASS** (scoped) |
-| MAIN = PRODUCTION | **HOLD** — merge only after Preview visual PASS |
+| PREVIEW CI | **PASS** |
+| MAIN = PRODUCTION | **READY TO MERGE** — Preview CI green; merge when approved |
 | SOOQNA UX/PERFORMANCE LIVE | **HOLD** — awaiting Production deploy + live metrics |
 
 ### Screenshots
