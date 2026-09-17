@@ -71,7 +71,12 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
   if (!listing) notFound();
   const isOwner = Boolean(session && listing.seller.id === session.id);
   const isAdmin = session?.role === "admin";
-  if (listing.status !== "active" && !isOwner && !isAdmin) {
+  if (
+    listing.status !== "active" &&
+    listing.status !== "reserved" &&
+    !isOwner &&
+    !isAdmin
+  ) {
     notFound();
   }
 

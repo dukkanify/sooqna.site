@@ -44,7 +44,8 @@ export async function POST(request: Request) {
     }
 
     const user = await findUserByEmail(email);
-    if (user?.passwordHash) {
+    // Allow passwordless / OTP accounts to set a password via the same link.
+    if (user) {
       const rawToken = await issuePasswordResetToken({
         email: user.email,
         userId: user.id,

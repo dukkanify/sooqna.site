@@ -37,8 +37,36 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
     const result = saveCurrentSearch({ label: currentLabel, url: currentUrl });
     setSaved(result.items);
     setOpen(true);
-    setMessage(result.alreadySaved ? "هذا البحث محفوظ مسبقاً." : "تم حفظ البحث.");
-    window.setTimeout(() => setMessage(""), 3000);
+    setMessage(
+      result.alreadySaved
+        ? "هذا البحث محفوظ مسبقاً."
+        : "تم حفظ البحث — سنشعرّك عند ظهور إعلان مطابق.",
+    );
+    window.setTimeout(() => setMessage(""), 4000);
+
+    // Sync to server so matching notifications can fire when new ads go live.
+    try {
+      const parsed = new URL(currentUrl, window.location.origin);
+      void fetch("/api/saved-searches", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: currentLabel,
+          url: currentUrl.startsWith("http")
+            ? parsed.pathname + parsed.search
+            : currentUrl,
+          query: parsed.searchParams.get("q") || undefined,
+          categoryId: parsed.searchParams.get("category") || undefined,
+          city:
+            parsed.searchParams.get("city") ||
+            parsed.searchParams.get("emirate") ||
+            undefined,
+        }),
+      }).catch(() => undefined);
+    } catch {
+      // ignore URL parse errors
+    }
   }
 
   function handleRemove(id: string) {

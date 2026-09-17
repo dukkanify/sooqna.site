@@ -30,6 +30,9 @@ export default async function ProfilePage() {
           </div>
           <Card className="mt-6 scroll-mt-24 p-5" id="favorites" variant="flat">
             <h2 className="text-sm font-semibold text-ink">المفضلة</h2>
+            <p className="mt-1 text-xs leading-6 text-muted">
+              الإعلانات التي حفظتها من زر القلب — يمكنك الرجوع إليها من هنا في أي وقت.
+            </p>
             <div className="mt-4">
               <FavoritesPanel />
             </div>
@@ -37,7 +40,7 @@ export default async function ProfilePage() {
           <Card className="mt-6 scroll-mt-24 p-5" id="saved-searches" variant="flat">
             <h2 className="text-sm font-semibold text-ink">عمليات البحث المحفوظة</h2>
             <p className="mt-1 text-xs leading-6 text-muted">
-              نفس القائمة التي تظهر تحت زر «حفظ البحث» في صفحة النتائج.
+              احفظ بحثاً من صفحة النتائج — سنرسل إشعاراً عند ظهور إعلان مطابق.
             </p>
             <div className="mt-4">
               <ProfileSavedSearches />

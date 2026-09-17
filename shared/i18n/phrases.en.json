@@ -2163,5 +2163,15 @@
   "بيك أب": "Pickup",
   "فان": "Van",
   "ميني فان": "Minivan",
-  "تجاري": "Commercial"
+  "تجاري": "Commercial",
+  "البحث المحفوظ": "Saved searches",
+  "متابعة البائع": "Follow seller",
+  "إلغاء المتابعة": "Unfollow",
+  "مباع": "Sold",
+  "تقييم مطلوب": "Rating needed",
+  "قيّم البائع الآن": "Rate the seller now",
+  "تم حفظ البحث — سنشعرّك عند ظهور إعلان مطابق.": "Search saved — we will notify you when a matching listing appears.",
+  "إعلان مطابق لبحثك المحفوظ": "New listing matches your saved search",
+  "إعلان جديد من بائع تتابعه": "New listing from a seller you follow",
+  "إعادة كمتاح": "Mark available again"
 }

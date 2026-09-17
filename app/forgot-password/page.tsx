@@ -3,9 +3,11 @@ import { AuthShell } from "@/features/auth/components/AuthShell";
 import { ForgotPasswordForm } from "@/features/auth/components/ForgotPasswordForm";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 
 export default function ForgotPasswordPage() {
   return (
+    <LocalizedTree>
     <>
       <SiteHeader />
       <main className="auth-page">
@@ -25,5 +27,6 @@ export default function ForgotPasswordPage() {
       </main>
       <SiteFooter />
     </>
+    </LocalizedTree>
   );
 }

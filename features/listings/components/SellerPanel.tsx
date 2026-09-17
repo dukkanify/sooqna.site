@@ -10,6 +10,7 @@ import { sellerName } from "@/shared/i18n/listing-copy";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { getSellerHref } from "@/shared/listings/seller-href";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
+import { FollowSellerButton } from "@/features/listings/components/FollowSellerButton";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 
@@ -110,6 +111,10 @@ export function SellerPanel({ listing }: SellerPanelProps) {
           </div>
           <Icon className="shrink-0 text-muted" name="chevron-left" size={16} />
         </Link>
+
+        <div className="mt-4">
+          <FollowSellerButton className="w-full" sellerId={listing.seller.id} />
+        </div>
 
         {showResponseTime || showJoinedAt || showTransactions ? (
           <div className="mt-5 grid gap-2 text-sm">

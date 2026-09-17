@@ -21,7 +21,9 @@ export type NotificationType =
   | "listing_featured"
   | "stripe_active"
   | "stripe_requirements"
-  | "escrow_auto_released";
+  | "escrow_auto_released"
+  | "saved_search_match"
+  | "seller_followed_listing";
 
 export type AppNotification = {
   id: string;

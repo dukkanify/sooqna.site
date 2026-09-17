@@ -71,6 +71,8 @@ const PRODUCT_VERIFICATION_STATUS: Record<
 
 const LISTING_STATUS: Record<Listing["status"], string> = {
   active: "منشور",
+  reserved: "محجوز",
+  sold: "مباع",
   pending_review: "قيد المراجعة",
   rejected: "مرفوض",
   expired: "منتهي",
