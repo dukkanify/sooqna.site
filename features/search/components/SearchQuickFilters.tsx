@@ -130,7 +130,7 @@ export function SearchQuickFilters({
     : [];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:hidden">
       <ChipRail ariaLabel="الإمارة" chips={emirateChips} />
       <ChipRail ariaLabel="السعر" chips={priceChips} />
       {categoryChips.length > 0 ? (

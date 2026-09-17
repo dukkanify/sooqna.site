@@ -414,7 +414,7 @@ export function SearchFilters({
           <div
             aria-labelledby={titleId}
             aria-modal="true"
-            className="fixed inset-0 z-[100] lg:hidden"
+            className="fixed inset-0 z-[100] md:hidden"
             role="dialog"
           >
             <button
@@ -458,7 +458,7 @@ export function SearchFilters({
 
   return (
     <LocalizedTree>
-      <div className="sticky top-[4.25rem] z-30 lg:hidden">
+      <div className="sticky top-[4.25rem] z-30 md:hidden">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-[var(--shadow-card)] backdrop-blur">
           <button
             aria-expanded={sheetOpen}
@@ -505,7 +505,7 @@ export function SearchFilters({
         </div>
       </div>
 
-      <div className="marketplace-panel hidden max-h-[calc(100vh-6.5rem)] flex-col overflow-hidden p-0 lg:flex">
+      <div className="marketplace-panel hidden max-h-[calc(100vh-6.5rem)] flex-col overflow-hidden p-0 md:flex">
         <form action={action} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 pt-4">
             <h2 className="text-sm font-bold text-ink">صفِّ بحثك</h2>

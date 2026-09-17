@@ -93,8 +93,8 @@ export default async function SearchPage({
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[18rem_1fr] lg:gap-6 xl:grid-cols-[20rem_1fr]">
-            <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="grid gap-4 md:grid-cols-[16rem_1fr] md:gap-5 lg:grid-cols-[18rem_1fr] lg:gap-6 xl:grid-cols-[20rem_1fr]">
+            <aside className="md:sticky md:top-24 md:self-start">
               <SearchFilters
                 categories={categories}
                 cities={cities}

@@ -21,8 +21,8 @@ export async function CategoryHero({ category }: CategoryHeroProps) {
 
   return (
     <div className="mb-5 overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-white shadow-[var(--shadow-card)]">
-      <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="relative min-h-[8.5rem] lg:min-h-[11rem]">
+      <div className={featuredListing ? "grid lg:grid-cols-[1.15fr_0.85fr]" : ""}>
+        <div className="relative min-h-[7.5rem] md:min-h-[8.5rem] lg:min-h-[11rem]">
           <AppImage
             alt={categoryName}
             className="object-cover"
@@ -45,7 +45,7 @@ export async function CategoryHero({ category }: CategoryHeroProps) {
         </div>
 
         {featuredListing ? (
-          <div className="border-t border-border p-3 lg:border-s lg:border-t-0 lg:p-4">
+          <div className="hidden border-border p-3 lg:block lg:border-s lg:p-4">
             <p className="mb-2 text-xs font-bold text-[#B8955F]">إعلان مميز</p>
             <PremiumListingCard listing={featuredListing} />
             <Link
@@ -55,11 +55,7 @@ export async function CategoryHero({ category }: CategoryHeroProps) {
               عرض التفاصيل الكاملة
             </Link>
           </div>
-        ) : (
-          <div className="grid place-items-center border-t border-border p-5 lg:border-s lg:border-t-0">
-            <p className="text-sm text-muted">تصفح أحدث الإعلانات في هذا القسم</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
