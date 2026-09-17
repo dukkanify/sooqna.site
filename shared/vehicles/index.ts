@@ -22,15 +22,28 @@ const catalog = catalogJson as VehicleCatalog;
 
 const OTHER_OPTION: CategoryFieldOption = { label: "أخرى", value: "أخرى" };
 
+type RuntimeAddedModel = {
+  id: string;
+  makeSlug: string;
+  slug: string;
+  nameEn: string;
+  nameAr: string;
+  active: boolean;
+  sortOrder: number;
+};
+
 let disabledMakeSlugs = new Set<string>();
 let disabledModelIds = new Set<string>();
+let addedModels: RuntimeAddedModel[] = [];
 
 export function setVehicleCatalogOverrides(input: {
   disabledMakeSlugs?: string[];
   disabledModelIds?: string[];
+  addedModels?: RuntimeAddedModel[];
 }): void {
   disabledMakeSlugs = new Set(input.disabledMakeSlugs ?? []);
   disabledModelIds = new Set(input.disabledModelIds ?? []);
+  addedModels = Array.isArray(input.addedModels) ? input.addedModels : [];
 }
 
 export function getVehicleCatalog(): VehicleCatalog {
@@ -102,14 +115,43 @@ export function getVehicleModelsForMake(
     getVehicleMakeByName(resolveVehicleMakeName(makeRef) ?? "");
   if (!make) return [];
   const includeInactive = options?.includeInactive === true;
-  return catalog.models
-    .filter((model) => {
-      if (model.makeId !== make.id) return false;
-      if (!includeInactive && !model.active) return false;
-      if (!includeInactive && disabledModelIds.has(model.id)) return false;
+  const fromCatalog = catalog.models.filter((model) => {
+    if (model.makeId !== make.id) return false;
+    if (!includeInactive && !model.active) return false;
+    if (!includeInactive && disabledModelIds.has(model.id)) return false;
+    if (!includeInactive && disabledMakeSlugs.has(make.slug)) return false;
+    return true;
+  });
+
+  const fromOverrides = addedModels
+    .filter((row) => row.makeSlug === make.slug)
+    .filter((row) => {
+      if (!includeInactive && !row.active) return false;
+      if (!includeInactive && disabledModelIds.has(row.id)) return false;
       if (!includeInactive && disabledMakeSlugs.has(make.slug)) return false;
       return true;
     })
+    .map(
+      (row): VehicleModel => ({
+        id: row.id,
+        makeId: make.id,
+        makeSlug: make.slug,
+        slug: row.slug,
+        nameEn: row.nameEn,
+        nameAr: row.nameAr,
+        active: row.active,
+        sortOrder: row.sortOrder,
+      }),
+    );
+
+  // Prefer catalog rows when slug collides with an override.
+  const catalogSlugs = new Set(fromCatalog.map((model) => model.slug));
+  const merged = [
+    ...fromCatalog,
+    ...fromOverrides.filter((model) => !catalogSlugs.has(model.slug)),
+  ];
+
+  return merged
     .slice()
     .sort(
       (a, b) =>
@@ -164,11 +206,14 @@ export function vehicleCatalogStats() {
     models.length -
     new Set(models.map((model) => `${model.makeId}::${model.slug}`)).size;
   const makesWithCountry = makes.filter((make) => Boolean(make.countryCode)).length;
+  const addedActive = addedModels.filter((row) => row.active).length;
   return {
     makesTotal: makes.length,
     makesActive: activeMakes.length,
     makesWithCountry,
-    modelsTotal: models.length,
+    modelsTotal: models.length + addedModels.length,
+    modelsAdded: addedModels.length,
+    modelsAddedActive: addedActive,
     orphanModels: orphanModels.length,
     duplicateMakeSlugs,
     duplicateModelKeys,

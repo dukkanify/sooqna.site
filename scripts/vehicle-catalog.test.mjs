@@ -216,3 +216,36 @@ test("regional specs include GCC/Canadian/Korean and modelOther suggestion", () 
   assert.match(form, /fieldKey: "model"/);
   assert.match(form, /modelOther/);
 });
+
+test("admin can add models and approve car model suggestions into catalog", () => {
+  const store = readFileSync(
+    path.join(root, "services/admin/vehicle-catalog-overrides-store.ts"),
+    "utf8",
+  );
+  assert.match(store, /addedModels/);
+  assert.match(store, /parseMakeModelSuggestion/);
+  const api = readFileSync(
+    path.join(root, "app/api/admin/vehicle-catalog/route.ts"),
+    "utf8",
+  );
+  assert.match(api, /addModel/);
+  const review = readFileSync(
+    path.join(root, "services/admin/option-suggestion-store.ts"),
+    "utf8",
+  );
+  assert.match(review, /categoryId === "cars"/);
+  assert.match(review, /fieldKey === "model"/);
+  assert.match(review, /saveVehicleCatalogOverrides/);
+  const panel = readFileSync(
+    path.join(root, "features/admin/components/AdminVehicleCatalogPanel.tsx"),
+    "utf8",
+  );
+  assert.match(panel, /اقتراحات موديلات/);
+  assert.match(panel, /addModel/);
+  const runtime = readFileSync(
+    path.join(root, "shared/vehicles/index.ts"),
+    "utf8",
+  );
+  assert.match(runtime, /fromOverrides/);
+  assert.match(runtime, /addedModels/);
+});

@@ -68,16 +68,76 @@ export async function reviewOptionSuggestion(input: {
   await store.upsert(next);
 
   if (input.status === "approved") {
-    const { upsertApprovedFieldOption } = await import(
-      "@/services/admin/approved-field-options-store"
-    );
-    await upsertApprovedFieldOption({
-      categoryId: current.categoryId,
-      fieldKey: current.fieldKey,
-      label: current.value,
-      value: current.value,
-      approvedByAdminId: input.adminId,
-    });
+    if (current.categoryId === "cars" && current.fieldKey === "model") {
+      const {
+        parseMakeModelSuggestion,
+        getVehicleCatalogOverrides,
+        saveVehicleCatalogOverrides,
+        slugifyVehicleModelName,
+      } = await import("@/services/admin/vehicle-catalog-overrides-store");
+      const {
+        getVehicleMakeByName,
+        getVehicleModelsForMake,
+        resolveVehicleMakeName,
+      } = await import("@/shared/vehicles");
+      const { applyVehicleCatalogOverridesRuntime } = await import(
+        "@/services/admin/apply-vehicle-catalog-overrides"
+      );
+
+      const parsed = parseMakeModelSuggestion(current.value);
+      if (parsed) {
+        const make = getVehicleMakeByName(
+          resolveVehicleMakeName(parsed.makeName) ?? parsed.makeName,
+        );
+        if (make) {
+          const overrides = await getVehicleCatalogOverrides();
+          applyVehicleCatalogOverridesRuntime(overrides);
+          const slug = slugifyVehicleModelName(parsed.modelName);
+          const exists = getVehicleModelsForMake(make.nameEn, {
+            includeInactive: true,
+          }).some(
+            (model) =>
+              model.slug === slug ||
+              model.nameEn.toLowerCase() === parsed.modelName.toLowerCase(),
+          );
+          const alreadyAdded = overrides.addedModels.some(
+            (row) => row.makeSlug === make.slug && row.slug === slug,
+          );
+          if (slug && !exists && !alreadyAdded) {
+            const saved = await saveVehicleCatalogOverrides({
+              disabledMakeSlugs: overrides.disabledMakeSlugs,
+              disabledModelIds: overrides.disabledModelIds,
+              addedModels: [
+                ...overrides.addedModels,
+                {
+                  id: `model-added-${make.slug}-${slug}`,
+                  makeSlug: make.slug,
+                  slug,
+                  nameEn: parsed.modelName,
+                  nameAr: parsed.modelName,
+                  active: true,
+                  sortOrder: 9000 + overrides.addedModels.length,
+                  createdAt: new Date().toISOString(),
+                  sourceSuggestionId: current.id,
+                },
+              ],
+            });
+            applyVehicleCatalogOverridesRuntime(saved);
+          }
+        }
+      }
+    } else {
+      const { upsertApprovedFieldOption } = await import(
+        "@/services/admin/approved-field-options-store"
+      );
+      await upsertApprovedFieldOption({
+        categoryId: current.categoryId,
+        fieldKey: current.fieldKey,
+        label: current.value,
+        value: current.value,
+        approvedByAdminId: input.adminId,
+      });
+    }
   }
 
   return next;

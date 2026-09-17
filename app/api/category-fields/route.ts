@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     setVehicleCatalogOverrides({
       disabledMakeSlugs: overrides.disabledMakeSlugs,
       disabledModelIds: overrides.disabledModelIds,
+      addedModels: overrides.addedModels,
     });
   }
 
