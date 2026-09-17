@@ -20,6 +20,7 @@ import {
 } from "@/services/auth/password.service";
 import { STRONG_PASSWORD_HINT } from "@/shared/utils/password-rules";
 import { clearSessionCookie } from "@/services/auth/session-cookie";
+import { completePersonVerification } from "@/services/auth/signup-approval";
 import { findUserById, setUserPassword } from "@/services/auth/user-store";
 import {
   AuthStoreError,
@@ -142,6 +143,19 @@ export async function POST(request: Request) {
         },
         { status: 503 },
       );
+    }
+
+    // Clicking the reset link already proves email ownership — never force
+    // REGISTER OTP after password recovery. OTP remains for first-time signup only.
+    if (!user.emailVerifiedAt) {
+      try {
+        await completePersonVerification(user.id);
+      } catch (error) {
+        console.error(
+          "[Sooqna Auth] password reset email verification failed",
+          error,
+        );
+      }
     }
 
     await markPasswordResetTokenConsumed(resolved.jti);

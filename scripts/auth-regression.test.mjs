@@ -72,6 +72,11 @@ class FakeAuthStore {
     const user = this.users.get(email);
     assert.ok(user);
     user.passwordHash = hashPassword(password);
+    // Reset-link ownership proves email — mirror production completePersonVerification.
+    if (!user.emailVerifiedAt) {
+      user.emailVerifiedAt = new Date().toISOString();
+      user.accountStatus = "active";
+    }
   }
 }
 
@@ -104,6 +109,16 @@ test("password reset → old fails → new succeeds → logout → new succeeds"
   store.resetPassword(email, "NewSecure2");
   assert.equal(store.login(email, "OldSecure1").error, "INVALID_CREDENTIALS");
   assert.equal(store.login(email, "NewSecure2").ok, true);
+  assert.equal(store.login(email, "NewSecure2").ok, true);
+});
+
+test("password reset without prior OTP verifies email — login skips ACCOUNT_UNVERIFIED", () => {
+  const store = new FakeAuthStore();
+  const email = "qa.auth.reset-unverified@example.com";
+  store.register(email, "OldSecure1");
+  assert.equal(store.login(email, "OldSecure1").error, "ACCOUNT_UNVERIFIED");
+  store.resetPassword(email, "NewSecure2");
+  assert.equal(store.login(email, "OldSecure1").error, "INVALID_CREDENTIALS");
   assert.equal(store.login(email, "NewSecure2").ok, true);
 });
 

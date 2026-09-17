@@ -61,6 +61,20 @@ export async function POST(request: Request) {
   }
 
   await setUserPassword(user.id, hashPassword(newPassword));
+  // Reset-link ownership proves the email — skip REGISTER OTP after recovery.
+  if (!user.emailVerifiedAt) {
+    try {
+      const { completePersonVerification } = await import(
+        "@/services/auth/signup-approval"
+      );
+      await completePersonVerification(user.id);
+    } catch (error) {
+      console.error(
+        "[Sooqna Auth] legacy OTP reset email verification failed",
+        error,
+      );
+    }
+  }
   await clearSessionCookie();
   return NextResponse.json({
     ok: true,

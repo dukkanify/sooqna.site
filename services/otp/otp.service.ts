@@ -339,4 +339,40 @@ export async function invalidateOtpRecord(recordId: string): Promise<void> {
   });
 }
 
+/** Allow immediate resend after a failed email delivery. */
+export async function clearOtpResendCooldown(input: {
+  email: string;
+  purpose: OtpPurpose;
+}): Promise<void> {
+  const email = input.email.trim().toLowerCase();
+  const past = new Date(0).toISOString();
+  if (await ensurePostgres()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) return;
+    await pool.query(
+      `UPDATE ${TABLE}
+       SET resend_available_at = $1::timestamptz
+       WHERE email = $2 AND purpose = $3 AND consumed_at IS NULL`,
+      [past, email, input.purpose],
+    );
+    return;
+  }
+  await enqueueJson(async () => {
+    const all = await readJson();
+    let changed = false;
+    const next = all.map((item) => {
+      if (
+        item.email === email &&
+        item.purpose === input.purpose &&
+        !item.consumedAt
+      ) {
+        changed = true;
+        return { ...item, resendAvailableAt: past };
+      }
+      return item;
+    });
+    if (changed) await writeJson(next);
+  });
+}
+
 export { maskEmail };

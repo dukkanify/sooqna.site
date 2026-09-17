@@ -19,8 +19,10 @@ import {
   ACCOUNT_SUSPENDED_MESSAGE,
   AUTH_STORE_UNAVAILABLE_MESSAGE,
 } from "@/services/auth/auth-messages";
+import { sendRegistrationVerifyOtp } from "@/services/auth/auth-handlers";
 import { AuthStoreError } from "@/services/auth/user-persistence";
 import { findAuthUserInMirrorByEmail } from "@/services/auth/auth-user-mirror";
+import { maskEmail } from "@/shared/utils/mask-email";
 import { getSafeNextPath, optionalRedirectPathSchema } from "@/shared/utils/safe-next";
 import type { StoredUser } from "@/types/domain/user";
 
@@ -132,15 +134,40 @@ export async function POST(request: Request) {
         );
       }
       if (stored.accountStatus === "pending" && !stored.emailVerifiedAt) {
+        // First-time registration only: send a fresh REGISTER OTP so the
+        // verify-email screen never waits on a code that was never delivered.
+        let emailDelivered = false;
+        try {
+          const sent = await sendRegistrationVerifyOtp({
+            email,
+            fullName: stored.fullName,
+            userId: stored.id,
+            accountType: stored.accountType,
+            // Password-gated login: always issue a fresh code so the verify
+            // screen is not waiting on a never-delivered earlier OTP.
+            skipCooldown: true,
+          });
+          emailDelivered = sent.delivered;
+        } catch (error) {
+          console.error(
+            "[Sooqna Auth] login REGISTER OTP send failed",
+            error,
+          );
+        }
         const params = new URLSearchParams({
           email,
           purpose: "REGISTER",
+          masked: maskEmail(email),
         });
+        if (!emailDelivered) {
+          params.set("emailDelivered", "0");
+        }
         return NextResponse.json(
           {
             error: "ACCOUNT_UNVERIFIED",
             message: ACCOUNT_UNVERIFIED_MESSAGE,
             redirectTo: `/verify-email?${params.toString()}`,
+            emailDelivered,
           },
           { status: 403 },
         );
