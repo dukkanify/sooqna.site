@@ -76,9 +76,10 @@ export function getVehicleMakeBySlug(slug: string): VehicleMake | undefined {
 export function resolveVehicleMakeName(raw: string | undefined): string | null {
   if (!raw?.trim()) return null;
   const trimmed = raw.trim();
+  const lower = trimmed.toLowerCase();
 
   const direct = catalog.makes.find(
-    (make) => make.nameEn.toLowerCase() === trimmed.toLowerCase(),
+    (make) => make.nameEn.toLowerCase() === lower,
   );
   if (direct) return direct.nameEn;
 
@@ -87,11 +88,16 @@ export function resolveVehicleMakeName(raw: string | undefined): string | null {
   );
   if (bySlug) return bySlug.nameEn;
 
-  const alias = VEHICLE_MAKE_ALIASES[trimmed.toLowerCase()];
+  const alias = VEHICLE_MAKE_ALIASES[lower];
   if (alias) return alias;
 
   const arHit = catalog.makes.find((make) => make.nameAr === trimmed);
   if (arHit) return arHit.nameEn;
+
+  const aliasHit = catalog.makes.find((make) =>
+    (make.aliases ?? []).some((item) => item.toLowerCase() === lower),
+  );
+  if (aliasHit) return aliasHit.nameEn;
 
   return null;
 }

@@ -8,8 +8,8 @@
 
 | Field | Result |
 |-------|--------|
-| UAE-RELEVANT MAKES | **102** active (all required core brands present) |
-| UAE-RELEVANT MODELS | **696** |
+| UAE-RELEVANT MAKES | **135** active (Dubizzle-benchmark expansion 2026-09-17; see `SOOQNA_UAE_MAKE_DUBIZZLE_COVERAGE_REPORT.md`) |
+| UAE-RELEVANT MODELS | **803** |
 | CURRENT MODELS COVERED | PASS (e.g. Toyota Raize/Urban Cruiser/GR86, Nissan Z/X-Terra, BYD Qin/Atto 3/Song) |
 | COMMON USED MODELS COVERED | PASS (Patrol, Land Cruiser, Camry, C/E/S-Class, X5, etc.) |
 | COUNTRY METADATA | PASS (every make has countryCode / EN / AR) |

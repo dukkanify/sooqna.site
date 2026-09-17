@@ -13,8 +13,8 @@ const catalog = JSON.parse(
 );
 
 test("vehicle catalog has comprehensive makes and models", () => {
-  assert.ok(catalog.makes.length >= 80, `makes=${catalog.makes.length}`);
-  assert.ok(catalog.models.length >= 400, `models=${catalog.models.length}`);
+  assert.ok(catalog.makes.length >= 130, `makes=${catalog.makes.length}`);
+  assert.ok(catalog.models.length >= 750, `models=${catalog.models.length}`);
 });
 
 test("every model points at a valid make", () => {
@@ -160,8 +160,57 @@ test("UAE core makes are present", () => {
     "Chery",
     "Haval",
     "MG",
+    "Xiaomi",
+    "Avatr",
+    "Denza",
+    "BRABUS",
+    "YangWang",
+    "INEOS",
+    "KGM",
+    "GWM",
   ]) {
     assert.ok(names.has(name), name);
+  }
+});
+
+test("duplicate marque names are normalized via aliases not separate makes", () => {
+  const names = new Set(catalog.makes.map((m) => m.nameEn));
+  assert.equal(names.has("Range Rover"), false);
+  assert.equal(names.has("SsangYong"), false);
+  assert.equal(names.has("Great Wall"), false);
+  assert.equal(names.has("Mercedes-Maybach"), false);
+  const landRover = catalog.makes.find((m) => m.nameEn === "Land Rover");
+  assert.ok(landRover?.aliases?.some((a) => /range rover/i.test(a)));
+  assert.ok(
+    catalog.models.some(
+      (m) => m.makeId === landRover.id && m.slug === "range-rover",
+    ),
+  );
+  const kgm = catalog.makes.find((m) => m.nameEn === "KGM");
+  assert.ok(kgm?.aliases?.some((a) => /ssangyong/i.test(a)));
+  const gwm = catalog.makes.find((m) => m.nameEn === "GWM");
+  assert.ok(gwm?.aliases?.some((a) => /great wall/i.test(a)));
+  const mb = catalog.makes.find((m) => m.nameEn === "Mercedes-Benz");
+  assert.ok(mb?.aliases?.some((a) => /maybach/i.test(a)));
+  const aliases = readFileSync(
+    path.join(root, "shared/vehicles/aliases.ts"),
+    "utf8",
+  );
+  assert.match(aliases, /"range rover": "Land Rover"/);
+  assert.match(aliases, /ssangyong: "KGM"/);
+  assert.match(aliases, /"great wall": "GWM"/);
+});
+
+test("popular UAE makes sort ahead of long-tail alphabetics", () => {
+  const head = catalog.makes.slice(0, 8).map((m) => m.nameEn);
+  assert.deepEqual(head.slice(0, 4), [
+    "Toyota",
+    "Nissan",
+    "Mercedes-Benz",
+    "BMW",
+  ]);
+  for (const make of catalog.makes) {
+    assert.ok(Array.isArray(make.aliases) && make.aliases.length > 0, make.nameEn);
   }
 });
 
