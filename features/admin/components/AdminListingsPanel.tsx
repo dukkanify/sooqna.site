@@ -36,6 +36,8 @@ const statusFilterOptions: { label: string; value: string }[] = [
   { label: "الكل (مع التجريبي)", value: "all" },
   { label: listingStatusLabels.pending_review, value: "pending_review" },
   { label: listingStatusLabels.active, value: "active" },
+  { label: listingStatusLabels.reserved, value: "reserved" },
+  { label: listingStatusLabels.sold, value: "sold" },
   { label: listingStatusLabels.rejected, value: "rejected" },
   { label: listingStatusLabels.draft, value: "draft" },
   { label: listingStatusLabels.expired, value: "expired" },
