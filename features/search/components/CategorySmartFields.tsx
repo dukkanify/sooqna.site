@@ -278,11 +278,8 @@ export function CategorySmartFields({
               label={field.label}
               name={name}
               onValueChange={(next) => onChange(setSpec(draft, field.key, next, categoryId))}
-              options={
-                options.length > 0
-                  ? options
-                  : [{ label: "أخرى", value: "أخرى" }]
-              }
+              optionKind={field.key === "model" ? "model" : "brand"}
+              options={options}
               placeholder={
                 modelLocked ? "اختر الماركة أولاً" : field.placeholder
               }

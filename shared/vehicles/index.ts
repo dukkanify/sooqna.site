@@ -83,6 +83,15 @@ export function resolveVehicleMakeName(raw: string | undefined): string | null {
   );
   if (direct) return direct.nameEn;
 
+  // Combobox may briefly expose bilingual labels ("تويوتا · Toyota").
+  if (trimmed.includes("·")) {
+    const parts = trimmed.split("·").map((part) => part.trim()).filter(Boolean);
+    for (const part of parts) {
+      const hit = resolveVehicleMakeName(part);
+      if (hit) return hit;
+    }
+  }
+
   const bySlug = getVehicleMakeBySlug(
     trimmed.toLowerCase().replace(/\s+/g, "-"),
   );
@@ -179,7 +188,10 @@ export function vehicleMakeOptions(): CategoryFieldOption[] {
 export function vehicleModelOptionsForMake(
   makeName: string | undefined,
 ): CategoryFieldOption[] {
+  if (!makeName?.trim()) return [];
   const models = getVehicleModelsForMake(makeName);
+  // Known make with zero active models (or unresolved make): still offer Other
+  // once — never as a loading placeholder for an empty brand string.
   if (models.length === 0) return [OTHER_OPTION];
   return [
     ...models.map((model) => ({

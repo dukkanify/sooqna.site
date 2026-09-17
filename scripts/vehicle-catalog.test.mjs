@@ -79,9 +79,10 @@ test("brand combobox lists all makes without a 12-item cap", () => {
     path.join(root, "shared/ui/BrandCombobox.tsx"),
     "utf8",
   );
-  assert.doesNotMatch(src, /filtered\.slice\(0,\s*12\)/);
+  assert.match(src, /ماركة — مرّر أو اكتب للبحث|موديل — مرّر أو اكتب للبحث/);
+  assert.match(src, /filterModelOptions|filterBrandOptions/);
   assert.match(src, /filtered\.map/);
-  assert.match(src, /ماركة — مرّر أو اكتب للبحث/);
+  assert.doesNotMatch(src, /filtered\.slice\(0,\s*12\)/);
   const opts = readFileSync(
     path.join(root, "shared/vehicles/index.ts"),
     "utf8",

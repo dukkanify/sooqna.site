@@ -116,6 +116,14 @@ export function getBrandOptionsForCategory(
   }
 }
 
+/** Canonical "Other" option value used across brand/model cascades. */
+export const OTHER_OPTION_VALUE = "أخرى";
+
+export function isOtherOptionValue(value: string | undefined): boolean {
+  const trimmed = value?.trim() ?? "";
+  return trimmed === OTHER_OPTION_VALUE || trimmed.toLowerCase() === "other";
+}
+
 /** Match brands by Latin/Arabic prefix or substring (case-insensitive). */
 export function filterBrandOptions(
   options: CategoryFieldOption[],
@@ -138,4 +146,19 @@ export function filterBrandOptions(
   }
 
   return [...starts, ...contains];
+}
+
+/**
+ * Filter model options while keeping «أخرى / Other» pinned at the bottom.
+ * Prevents Other from flashing in/out as the search query changes.
+ */
+export function filterModelOptions(
+  options: CategoryFieldOption[],
+  query: string,
+): CategoryFieldOption[] {
+  const other = options.find((option) => isOtherOptionValue(option.value));
+  const rest = options.filter((option) => !isOtherOptionValue(option.value));
+  const filtered = filterBrandOptions(rest, query);
+  if (!other) return filtered;
+  return [...filtered, other];
 }
