@@ -122,6 +122,31 @@ test("password reset without prior OTP verifies email — login skips ACCOUNT_UN
   assert.equal(store.login(email, "NewSecure2").ok, true);
 });
 
+test("legacy sooqna.site app/from env remaps to sooqnauae.com", async () => {
+  const prevNode = process.env.NODE_ENV;
+  const prevApp = process.env.NEXT_PUBLIC_APP_URL;
+  const prevFrom = process.env.EMAIL_FROM_ADDRESS;
+  const prevVercel = process.env.VERCEL_ENV;
+  process.env.NODE_ENV = "production";
+  process.env.NEXT_PUBLIC_APP_URL = "https://sooqna.site";
+  process.env.EMAIL_FROM_ADDRESS = "no-reply@sooqna.site";
+  delete process.env.VERCEL_ENV;
+  const mod = await import("../shared/constants/site.ts");
+  assert.equal(mod.canonicalizeAppUrl("https://sooqna.site"), "https://sooqnauae.com");
+  assert.equal(mod.canonicalizeAppUrl("https://www.sooqna.site/"), "https://sooqnauae.com");
+  assert.equal(mod.getAppUrl(), "https://sooqnauae.com");
+  assert.equal(mod.getPasswordResetAppUrl(), "https://sooqnauae.com");
+  assert.equal(mod.resolveEmailFromAddress(), "no-reply@sooqnauae.com");
+  if (prevNode === undefined) delete process.env.NODE_ENV;
+  else process.env.NODE_ENV = prevNode;
+  if (prevApp === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+  else process.env.NEXT_PUBLIC_APP_URL = prevApp;
+  if (prevFrom === undefined) delete process.env.EMAIL_FROM_ADDRESS;
+  else process.env.EMAIL_FROM_ADDRESS = prevFrom;
+  if (prevVercel === undefined) delete process.env.VERCEL_ENV;
+  else process.env.VERCEL_ENV = prevVercel;
+});
+
 /**
  * Regression for emergency-mirror split-brain:
  * reset wrote a newer hash to the mirror while Postgres kept the old hash.
