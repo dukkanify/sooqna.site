@@ -160,11 +160,16 @@ export function BrandCombobox({
 
       {showList ? (
         <ul
-          className="absolute inset-x-0 top-full z-30 mt-1 max-h-56 overflow-auto rounded-xl border border-border bg-surface py-1 shadow-[0_12px_32px_rgb(15_20_25/14%)]"
+          className="absolute inset-x-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-xl border border-border bg-surface py-1 shadow-[0_12px_32px_rgb(15_20_25/14%)]"
           id={listId}
           role="listbox"
         >
-          {filtered.slice(0, 12).map((option, index) => {
+          {!query.trim() && filtered.length > 12 ? (
+            <li className="sticky top-0 z-10 border-b border-border/70 bg-surface px-3 py-1.5 text-[0.7rem] font-bold text-muted">
+              {t(`${filtered.length} ماركة — مرّر أو اكتب للبحث`)}
+            </li>
+          ) : null}
+          {filtered.map((option, index) => {
             const active = index === activeIndex;
             return (
               <li key={option.value} role="option" aria-selected={active}>
@@ -181,11 +186,6 @@ export function BrandCombobox({
               </li>
             );
           })}
-          {filtered.length > 12 ? (
-            <li className="px-3 py-1.5 text-xs text-muted">
-              {t("اكتب المزيد من الحروف لتضييق النتائج…")}
-            </li>
-          ) : null}
         </ul>
       ) : null}
 

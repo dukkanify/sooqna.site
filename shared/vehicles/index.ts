@@ -161,7 +161,11 @@ export function getVehicleModelsForMake(
 
 export function vehicleMakeOptions(): CategoryFieldOption[] {
   return getVehicleMakes().map((make) => ({
-    label: make.nameEn,
+    // Arabic-first label for RTL UI; English kept for search + stored value.
+    label:
+      make.nameAr && make.nameAr !== make.nameEn
+        ? `${make.nameAr} · ${make.nameEn}`
+        : make.nameEn,
     value: make.nameEn,
   }));
 }
