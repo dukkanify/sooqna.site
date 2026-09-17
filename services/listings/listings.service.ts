@@ -65,10 +65,10 @@ export async function getRelatedListings(
   excludedId: string,
   seed?: Pick<Listing, "categorySpecs" | "carSpecs" | "price">,
 ): Promise<Listing[]> {
-  const brand =
-    seed?.categorySpecs?.brand ?? seed?.carSpecs?.brand ?? undefined;
-  const model =
-    seed?.categorySpecs?.model ?? seed?.carSpecs?.model ?? undefined;
+  const brandRaw = seed?.categorySpecs?.brand;
+  const modelRaw = seed?.categorySpecs?.model;
+  const brand = typeof brandRaw === "string" ? brandRaw : undefined;
+  const model = typeof modelRaw === "string" ? modelRaw : undefined;
 
   if (categoryId === "cars" && brand) {
     const sameModel = model

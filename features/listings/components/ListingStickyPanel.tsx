@@ -30,6 +30,7 @@ import {
   isShowcaseListing,
   showsListingCondition,
 } from "@/shared/listings/showcase-listing";
+import { getCarKeySpecRows } from "@/shared/listings/listing-specs";
 import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
 import { Badge } from "@/shared/ui/Badge";
 import { Card } from "@/shared/ui/Card";
@@ -92,58 +93,15 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
 
         {listing.categoryId === "cars" ? (
           <ul className="mt-4 grid grid-cols-2 gap-2">
-            {[
-              {
-                label: "السنة",
-                value: listing.categorySpecs?.year ?? listing.carSpecs?.year,
-              },
-              {
-                label: "العداد",
-                value:
-                  listing.categorySpecs?.mileage ?? listing.carSpecs?.mileage
-                    ? `${Number(
-                        listing.categorySpecs?.mileage ??
-                          listing.carSpecs?.mileage,
-                      ).toLocaleString("en-AE")} كم`
-                    : undefined,
-              },
-              {
-                label: "الحالة",
-                value:
-                  listing.categorySpecs?.condition ??
-                  listing.carSpecs?.condition ??
-                  (showsListingCondition(listing)
-                    ? conditionLabels[listing.condition]
-                    : undefined),
-              },
-              {
-                label: "ناقل الحركة",
-                value:
-                  listing.categorySpecs?.transmission ??
-                  listing.carSpecs?.transmission,
-              },
-              {
-                label: "الوقود",
-                value:
-                  listing.categorySpecs?.fuelType ?? listing.carSpecs?.fuelType,
-              },
-              {
-                label: "المواصفات",
-                value:
-                  listing.categorySpecs?.regionalSpecs ??
-                  listing.carSpecs?.regionalSpecs,
-              },
-            ]
-              .filter((row) => row.value)
-              .map((row) => (
-                <li
-                  key={row.label}
-                  className="rounded-xl border border-border/80 bg-surface-muted/50 px-3 py-2"
-                >
-                  <p className="text-[0.65rem] font-bold text-muted">{row.label}</p>
-                  <p className="mt-0.5 text-sm font-bold text-ink">{row.value}</p>
-                </li>
-              ))}
+            {getCarKeySpecRows(listing).map((row) => (
+              <li
+                key={row.label}
+                className="rounded-xl border border-border/80 bg-surface-muted/50 px-3 py-2"
+              >
+                <p className="text-[0.65rem] font-bold text-muted">{row.label}</p>
+                <p className="mt-0.5 text-sm font-bold text-ink">{row.value}</p>
+              </li>
+            ))}
           </ul>
         ) : null}
 

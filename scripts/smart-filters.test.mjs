@@ -135,7 +135,7 @@ test("mobile drawer still has apply and reset", () => {
   assert.match(src, /إعادة تعيين/);
   assert.match(src, /عرض النتائج/);
   assert.match(src, /مسح الكل/);
-  assert.match(src, /المزيد من الفلاتر/);
+  assert.match(src, /المواصفات والموقع/);
   assert.match(src, /CategorySmartFields/);
   assert.match(src, /variant="essential"/);
   assert.match(src, /variant="advanced"/);

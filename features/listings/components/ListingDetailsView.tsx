@@ -21,6 +21,7 @@ import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
+import { getCarKeySpecRows } from "@/shared/listings/listing-specs";
 import {
   formatPostedTime,
   MARKETPLACE_LISTING_GRID_CLASS,
@@ -107,62 +108,19 @@ export function ListingDetailsView({
                   </span>
                 ) : null}
               </div>
-              {listing.categoryId === "cars" ? (
-                <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {[
-                    {
-                      label: "السنة",
-                      value: listing.categorySpecs?.year ?? listing.carSpecs?.year,
-                    },
-                    {
-                      label: "العداد",
-                      value:
-                        listing.categorySpecs?.mileage ?? listing.carSpecs?.mileage
-                          ? `${Number(
-                              listing.categorySpecs?.mileage ??
-                                listing.carSpecs?.mileage,
-                            ).toLocaleString("en-AE")} كم`
-                          : undefined,
-                    },
-                    {
-                      label: "الحالة",
-                      value:
-                        listing.categorySpecs?.condition ??
-                        listing.carSpecs?.condition ??
-                        listing.condition,
-                    },
-                    {
-                      label: "ناقل الحركة",
-                      value:
-                        listing.categorySpecs?.transmission ??
-                        listing.carSpecs?.transmission,
-                    },
-                    {
-                      label: "الوقود",
-                      value:
-                        listing.categorySpecs?.fuelType ?? listing.carSpecs?.fuelType,
-                    },
-                    {
-                      label: "المواصفات",
-                      value:
-                        listing.categorySpecs?.regionalSpecs ??
-                        listing.carSpecs?.regionalSpecs,
-                    },
-                  ]
-                    .filter((row) => row.value)
-                    .map((row) => (
-                      <li
-                        key={row.label}
-                        className="rounded-xl border border-border/80 bg-surface-muted/50 px-3 py-2"
-                      >
-                        <p className="text-[0.65rem] font-bold text-muted">
-                          {row.label}
-                        </p>
-                        <p className="mt-0.5 text-sm font-bold text-ink">{row.value}</p>
-                      </li>
-                    ))}
-                </ul>
-              ) : null}
+      {listing.categoryId === "cars" ? (
+        <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {getCarKeySpecRows(listing).map((row) => (
+            <li
+              key={row.label}
+              className="rounded-xl border border-border/80 bg-surface-muted/50 px-3 py-2"
+            >
+              <p className="text-[0.65rem] font-bold text-muted">{row.label}</p>
+              <p className="mt-0.5 text-sm font-bold text-ink">{row.value}</p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
             </div>
 
             <ListingDetailToolbar listing={listing} />

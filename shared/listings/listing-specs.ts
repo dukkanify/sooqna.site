@@ -143,6 +143,63 @@ export function getListingSpecEntries(listing: Listing): SpecEntry[] {
   return getMockSpecEntries(listing);
 }
 
+/** High-value car fields for above-the-fold strips (cards / sticky / mobile). */
+export function getCarKeySpecRows(
+  listing: Listing,
+): { label: string; value: string }[] {
+  const specs = listing.categorySpecs;
+  const car = listing.carSpecs;
+  const mileageRaw = specs?.mileage ?? car?.mileage;
+  const condition =
+    typeof specs?.condition === "string" ? specs.condition : "";
+
+  return [
+    {
+      label: "السنة",
+      value:
+        typeof specs?.year === "string" || typeof specs?.year === "number"
+          ? String(specs.year)
+          : "",
+    },
+    {
+      label: "العداد",
+      value: mileageRaw
+        ? `${Number(mileageRaw).toLocaleString("en-AE")} كم`
+        : "",
+    },
+    {
+      label: "الحالة",
+      value: condition,
+    },
+    {
+      label: "ناقل الحركة",
+      value: String(specs?.transmission ?? car?.transmission ?? ""),
+    },
+    {
+      label: "الوقود",
+      value: String(specs?.fuelType ?? car?.fuel ?? ""),
+    },
+    {
+      label: "المواصفات",
+      value: String(specs?.regionalSpecs ?? car?.regionalSpecs ?? ""),
+    },
+  ].filter((row) => row.value.trim().length > 0);
+}
+
+export function getCarCardMetaLine(listing: Listing): string {
+  const specs = listing.categorySpecs;
+  const car = listing.carSpecs;
+  const year =
+    typeof specs?.year === "string" || typeof specs?.year === "number"
+      ? String(specs.year)
+      : "";
+  const mileageRaw = specs?.mileage ?? car?.mileage;
+  const mileage = mileageRaw
+    ? `${Number(mileageRaw).toLocaleString("en-AE")} كم`
+    : "";
+  return [year, mileage].filter(Boolean).join(" · ");
+}
+
 export function getListingFeatureItems(listing: Listing): string[] {
   if (listing.features?.length) {
     return listing.features;
