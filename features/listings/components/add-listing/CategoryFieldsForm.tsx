@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CategoryFieldDefinition, CategorySpecs, Listing, ListingCondition } from "@/types";
 import { getCategoryFields, isDynamicCategory } from "@/shared/constants/category-fields";
 import { getModelsForBrand } from "@/shared/constants/product-brand-models";
+import { getBrandOptionsForCategory } from "@/shared/constants/product-brands";
 import { BrandCombobox } from "@/shared/ui/BrandCombobox";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
@@ -287,6 +288,10 @@ export function CategoryFieldsForm({
   }
 
   function optionsForField(field: CategoryFieldDefinition): CategoryFieldOption[] | undefined {
+    if (field.key === "brand") {
+      const brands = getBrandOptionsForCategory(categoryId);
+      if (brands.length > 0) return brands;
+    }
     if (
       field.key === "model" &&
       (categoryId === "cars" ||

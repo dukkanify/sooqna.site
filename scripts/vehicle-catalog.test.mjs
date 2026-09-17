@@ -74,6 +74,22 @@ test("product-brands car list is catalog-backed", () => {
   assert.doesNotMatch(src, /"Hummer",\s*\n\] as const/);
 });
 
+test("brand combobox lists all makes without a 12-item cap", () => {
+  const src = readFileSync(
+    path.join(root, "shared/ui/BrandCombobox.tsx"),
+    "utf8",
+  );
+  assert.doesNotMatch(src, /filtered\.slice\(0,\s*12\)/);
+  assert.match(src, /filtered\.map/);
+  assert.match(src, /ماركة — مرّر أو اكتب للبحث/);
+  const opts = readFileSync(
+    path.join(root, "shared/vehicles/index.ts"),
+    "utf8",
+  );
+  assert.match(opts, /vehicleMakeOptions/);
+  assert.match(opts, /nameAr/);
+});
+
 test("live EV fuel type uses canonical كهربائي", () => {
   const src = readFileSync(
     path.join(root, "services/listings/live-marketplace-catalog.ts"),

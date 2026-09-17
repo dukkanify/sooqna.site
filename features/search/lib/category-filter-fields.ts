@@ -1,5 +1,6 @@
 import type { Category, CategoryFieldDefinition, CategoryFieldOption } from "@/types";
 import { getCategoryFields } from "@/shared/constants/category-fields";
+import { getBrandOptionsForCategory } from "@/shared/constants/product-brands";
 import { getModelsForBrand } from "@/shared/constants/product-brand-models";
 import { vehicleYearOptions } from "@/shared/vehicles";
 
@@ -95,6 +96,10 @@ export function optionsForSearchField(
   field: CategoryFieldDefinition,
   specs: Record<string, string>,
 ): CategoryFieldOption[] {
+  if (field.key === "brand") {
+    const brands = getBrandOptionsForCategory(categoryId);
+    if (brands.length > 0) return brands;
+  }
   if (field.key === "model" && (categoryId === "cars" || categoryId === "mobiles" || categoryId === "electronics")) {
     return getModelsForBrand(categoryId, specs.brand);
   }
