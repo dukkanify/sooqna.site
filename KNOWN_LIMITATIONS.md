@@ -9,8 +9,8 @@ Product flows (register, listings, checkout, orders, disputes, admin, support, e
 | Need | Variable | If missing |
 |------|----------|------------|
 | Card payments | `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | Checkout cannot charge; mock pay is blocked in production |
-| Emails | `RESEND_API_KEY`, verified `EMAIL_FROM_ADDRESS=no-reply@sooqna.site` | In-app notifications still work; Resend mail is logged as failed |
-| Canonical URLs | `NEXT_PUBLIC_APP_URL=https://sooqna.site` | Email links may point at localhost |
+| Emails | `RESEND_API_KEY`, verified `EMAIL_FROM_ADDRESS=no-reply@sooqnauae.com` | In-app notifications still work; Resend mail is logged as failed |
+| Canonical URLs | `NEXT_PUBLIC_APP_URL=https://sooqnauae.com` | Email/SEO links fall back to `https://sooqnauae.com` (legacy `sooqna.site` env is remapped) |
 | Session HMAC | `SESSION_SECRET` (or `NEXTAUTH_SECRET`) | Weak/default signing if unset |
 | Dispute cron | `CRON_SECRET` + Vercel Cron (`vercel.json` hourly → `/api/cron/dispute-reminders`) | Without secret Production returns `CRON_SECRET_REQUIRED` (fail-closed) |
 
@@ -32,4 +32,4 @@ See [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md).
 
 ## Production redeploy note (2026-08-27)
 
-After changing Vercel Production env vars for project **sooqna** (e.g. `CRON_SECRET`), Production must be redeployed so https://sooqna.site picks up the new runtime. Env var edits alone do not update the active deployment.
+After changing Vercel Production env vars for project **sooqna** (e.g. `CRON_SECRET`, `EMAIL_FROM_ADDRESS`, `NEXT_PUBLIC_APP_URL`), Production must be redeployed so https://sooqnauae.com picks up the new runtime. Env var edits alone do not update the active deployment.
