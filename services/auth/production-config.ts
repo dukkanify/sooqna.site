@@ -1,4 +1,4 @@
-import { getAppUrl } from "@/shared/constants/site";
+import { getAppUrl, resolveEmailFromAddress } from "@/shared/constants/site";
 import {
   ensureStripeConfigLoaded,
   getStripePublishableKey,
@@ -23,9 +23,15 @@ export type ProductionConfigSnapshot = {
   resendConfigured: boolean;
   resendKeySource: string | null;
   emailProvider: string;
+  /** Effective From used when sending (legacy @sooqna.site remapped). */
   emailFromAddress: string | null;
+  /** Raw EMAIL_FROM_ADDRESS env before remapping (never a secret). */
+  emailFromAddressConfigured: string | null;
   emailFromName: string | null;
+  /** Effective public app URL after legacy-domain remapping. */
   appUrl: string | null;
+  /** Raw NEXT_PUBLIC_APP_URL before remapping (never a secret). */
+  appUrlConfigured: string | null;
   demoOtpServerEnabled: boolean;
   demoOtpClientEnabled: boolean;
   stripeConfigured: boolean;
@@ -93,8 +99,10 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
   const resendKey = resolveResendApiKey();
   const resendConfigured = Boolean(resendKey.value);
   const emailProvider = (process.env.EMAIL_PROVIDER ?? "resend").trim().toLowerCase();
-  const emailFromAddress = process.env.EMAIL_FROM_ADDRESS?.trim() || null;
+  const emailFromAddressConfigured = process.env.EMAIL_FROM_ADDRESS?.trim() || null;
+  const emailFromAddress = resolveEmailFromAddress();
   const emailFromName = process.env.EMAIL_FROM_NAME?.trim() || null;
+  const appUrlConfigured = process.env.NEXT_PUBLIC_APP_URL?.trim() || null;
   const appUrl = getAppUrl();
   const demoOtpServerEnabled = process.env.ENABLE_DEMO_OTP === "true";
   const demoOtpClientEnabled = process.env.NEXT_PUBLIC_ENABLE_DEMO_OTP === "true";
@@ -122,7 +130,7 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
   if (!resendConfigured) {
     missing.push("RESEND_API_KEY");
   }
-  if (!emailFromAddress) {
+  if (!emailFromAddressConfigured && !emailFromAddress) {
     missing.push("EMAIL_FROM_ADDRESS");
   }
   if (!appUrl) {
@@ -155,8 +163,10 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
     resendKeySource: resendKey.source,
     emailProvider,
     emailFromAddress,
+    emailFromAddressConfigured,
     emailFromName,
     appUrl,
+    appUrlConfigured,
     demoOtpServerEnabled,
     demoOtpClientEnabled,
     stripeConfigured,

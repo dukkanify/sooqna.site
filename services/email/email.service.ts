@@ -1,5 +1,5 @@
 import { BRAND, BRAND_COLORS } from "@/shared/constants/brand";
-import { getAppUrl } from "@/shared/constants/site";
+import { getAppUrl, resolveEmailFromAddress } from "@/shared/constants/site";
 import {
   logProductionConfigIssues,
   resolveResendApiKey,
@@ -37,7 +37,7 @@ function escapeHtml(value: string): string {
 
 function getFromAddress(): string {
   const name = process.env.EMAIL_FROM_NAME?.trim() || "Sooqna | سوقنا";
-  const address = process.env.EMAIL_FROM_ADDRESS?.trim() || "no-reply@sooqnauae.com";
+  const address = resolveEmailFromAddress();
   return `${name} <${address}>`;
 }
 

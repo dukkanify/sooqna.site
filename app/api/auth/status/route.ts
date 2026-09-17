@@ -5,10 +5,12 @@ import {
   getAuthPersistenceInfo,
 } from "@/services/auth/user-persistence";
 import { isPostgresTemporarilyUnavailable } from "@/services/db/postgres";
+import { getResendPrimaryDomainStatus } from "@/services/email/resend-domain-status";
 
 export async function GET() {
   const config = await getProductionConfigSnapshotAsync();
   const postgresDegraded = isPostgresTemporarilyUnavailable();
+  const resendDomain = await getResendPrimaryDomainStatus();
 
   try {
     const persistence = await getAuthPersistenceInfo();
@@ -19,6 +21,7 @@ export async function GET() {
       degraded: emergency,
       postgresDegraded,
       config,
+      resendDomain,
       persistence,
       warning: emergency
         ? "AUTH_EMERGENCY_MIRROR: Postgres quota/connectivity is degraded. Upgrade Neon data-transfer plan so login and password-reset emails can reach real accounts."
@@ -38,6 +41,7 @@ export async function GET() {
         degraded: true,
         postgresDegraded,
         config,
+        resendDomain,
         persistence: null,
         error: message,
       },
