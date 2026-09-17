@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { resolveCategoryFields } from "@/services/admin/category-form-store";
 import { listApprovedFieldOptions } from "@/services/admin/approved-field-options-store";
 import { getVehicleCatalogOverrides } from "@/services/admin/vehicle-catalog-overrides-store";
-import { setVehicleCatalogOverrides } from "@/shared/vehicles";
+import { setVehicleCatalogOverrides, vehicleMakeOptions } from "@/shared/vehicles";
 
 /** Public resolved category fields for Add/Edit Listing (code defaults + admin overrides + approved options). */
 export async function GET(request: Request) {
@@ -24,6 +24,12 @@ export async function GET(request: Request) {
   const approved = await listApprovedFieldOptions({ categoryId });
 
   const merged = fields.map((field) => {
+    // Cars brand options always come from the live vehicle catalog — never a
+    // frozen admin form snapshot (those drift when Makes are expanded).
+    if (categoryId === "cars" && field.key === "brand") {
+      return { ...field, options: vehicleMakeOptions() };
+    }
+
     const extras = approved
       .filter((row) => row.fieldKey === field.key)
       .map((row) => ({ label: row.label, value: row.value }));
