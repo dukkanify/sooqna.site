@@ -73,6 +73,37 @@ export async function emailListingApproved(listing: Listing): Promise<void> {
     ctaHref: href,
     ctaLabel: english ? "View listing" : "عرض الإعلان",
   });
+
+  // Best-effort: alert saved-search subscribers and seller followers.
+  try {
+    const { notifySavedSearchMatches } = await import(
+      "@/services/saved-searches/saved-search-store"
+    );
+    await notifySavedSearchMatches(listing);
+  } catch (error) {
+    console.error("[Sooqna Notify] saved-search match failed", error);
+  }
+  try {
+    const { listFollowerIds } = await import("@/services/follows/follow-store");
+    const { dispatchPlatformNotification } = await import(
+      "@/services/notifications/platform-notify"
+    );
+    const followers = await listFollowerIds(listing.seller.id);
+    for (const followerId of followers) {
+      await dispatchPlatformNotification({
+        userId: followerId,
+        type: "seller_followed_listing",
+        title: "إعلان جديد من بائع تتابعه",
+        titleEn: "New listing from a seller you follow",
+        body: `${listing.seller.name} نشر: ${listing.title}`,
+        bodyEn: `${listing.seller.nameEnglish || listing.seller.name} posted: ${listing.titleEnglish || listing.title}`,
+        href: `/listings/${listing.slug}`,
+        dedupeKey: `follow:${followerId}:${listing.id}`,
+      });
+    }
+  } catch (error) {
+    console.error("[Sooqna Notify] follower notify failed", error);
+  }
 }
 
 export async function emailListingRejected(
@@ -330,9 +361,9 @@ export async function emailPasswordResetLink(input: {
 }): Promise<void> {
   const locale = await resolveEmailLocale({ email: input.email });
   const english = locale === "en";
-  const href = emailSiteUrl(
-    `/reset-password?token=${encodeURIComponent(input.token)}`,
-  );
+  const { getPasswordResetAppUrl } = await import("@/shared/constants/site");
+  const base = getPasswordResetAppUrl();
+  const href = `${base}/reset-password?token=${encodeURIComponent(input.token)}`;
   const name = input.name || (english ? "Sooqna customer" : "عميل سوقنا");
   await sendTransactionalEmail({
     type: "password_reset",

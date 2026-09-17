@@ -26,6 +26,12 @@ type DashboardShellProps = {
 
 const dashboardLinks = [
   { href: "/profile", icon: "user" as const, label: "الملف الشخصي" },
+  { href: "/profile#favorites", icon: "heart" as const, label: "المفضلة" },
+  {
+    href: "/profile#saved-searches",
+    icon: "search" as const,
+    label: "البحث المحفوظ",
+  },
   { href: "/orders", icon: "package" as const, label: "طلباتي" },
   { href: "/dashboard/listings", icon: "grid" as const, label: "إعلاناتي" },
   { href: "/listings/new", icon: "plus" as const, label: "إضافة إعلان" },
@@ -36,6 +42,7 @@ const dashboardLinks = [
 
 function isDashboardLinkActive(pathname: string, href: string) {
   if (href === "/profile") return pathname === "/profile";
+  if (href.startsWith("/profile#")) return pathname === "/profile";
   if (href === "/listings/new") return pathname.startsWith("/listings/new");
   return pathname === href || pathname.startsWith(`${href}/`);
 }

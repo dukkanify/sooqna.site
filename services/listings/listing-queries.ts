@@ -98,7 +98,13 @@ function sortListings(listings: Listing[], sort?: ListingSearchFilters["sort"]) 
 }
 
 function matchesStructured(listing: Listing, query: ListingQuery): boolean {
-  if (query.status && listing.status !== query.status) return false;
+  if (query.status) {
+    const ok =
+      listing.status === query.status ||
+      (query.status === "active" &&
+        (listing.status === "active" || listing.status === "reserved"));
+    if (!ok) return false;
+  }
   if (query.categoryId && listing.categoryId !== query.categoryId) return false;
   if (query.sellerId && listing.seller.id !== query.sellerId) return false;
   if (query.excludeId && listing.id === query.excludeId) return false;
@@ -458,7 +464,7 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
         const result = await pool.query(
           `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
          FROM ${TABLE}
-         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
+         WHERE status IN ('active', 'reserved') AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
         );
         for (const row of result.rows) {
           if (typeof row.emirate === "string") add(row.emirate);
@@ -488,7 +494,7 @@ export async function countActivePublicListings(): Promise<number> {
       if (pool) {
         const result = await pool.query(
           `SELECT COUNT(*)::int AS c FROM ${TABLE}
-         WHERE status = 'active' AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
+         WHERE status IN ('active', 'reserved') AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
         );
         return Number(result.rows[0]?.c) || 0;
       }
@@ -500,7 +506,8 @@ export async function countActivePublicListings(): Promise<number> {
   const stored = await loadPersistedListings();
   return stored.filter(
     (listing) =>
-      listing.status === "active" && !isHiddenFromPublicCatalog(listing),
+      (listing.status === "active" || listing.status === "reserved") &&
+        !isHiddenFromPublicCatalog(listing),
   ).length;
 }
 

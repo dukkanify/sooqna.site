@@ -1,6 +1,8 @@
 export type ListingStatus =
   | "draft"
   | "active"
+  | "reserved"
+  | "sold"
   | "pending_review"
   | "expired"
   | "rejected";

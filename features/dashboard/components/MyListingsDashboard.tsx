@@ -26,6 +26,8 @@ type MyListingsDashboardProps = {
 
 const statusOrder: ListingStatus[] = [
   "active",
+  "reserved",
+  "sold",
   "pending_review",
   "draft",
   "expired",
@@ -119,6 +121,37 @@ export function MyListingsDashboard({
     setOverrides((prev) => ({ ...prev, [updated.id]: updated }));
     if (updated.id.startsWith("local-")) {
       saveLocalListing(updated);
+    }
+  }
+
+  async function handleStatusChange(
+    listing: Listing,
+    status: "active" | "reserved" | "sold" | "expired",
+  ) {
+    setBusyId(listing.id);
+    setActionError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(
+        `/api/listings/${encodeURIComponent(listing.id)}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setActionError("تعذر تحديث حالة الإعلان.");
+        return;
+      }
+      applyListingUpdate(data.listing as Listing);
+      setActionMessage(`تم تحديث الحالة إلى: ${listingStatusLabels[status]}`);
+    } catch {
+      setActionError("تعذر تحديث حالة الإعلان.");
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -320,6 +353,48 @@ export function MyListingsDashboard({
                     variant="accent"
                   >
                     تجديد
+                  </Button>
+                ) : null}
+                {listing.status === "active" || listing.status === "reserved" ? (
+                  <>
+                    {listing.status !== "active" ? (
+                      <Button
+                        loading={busyId === listing.id}
+                        onClick={() => handleStatusChange(listing, "active")}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        متاح
+                      </Button>
+                    ) : null}
+                    {listing.status !== "reserved" ? (
+                      <Button
+                        loading={busyId === listing.id}
+                        onClick={() => handleStatusChange(listing, "reserved")}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        محجوز
+                      </Button>
+                    ) : null}
+                    <Button
+                      loading={busyId === listing.id}
+                      onClick={() => handleStatusChange(listing, "sold")}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      مباع
+                    </Button>
+                  </>
+                ) : null}
+                {listing.status === "sold" ? (
+                  <Button
+                    loading={busyId === listing.id}
+                    onClick={() => handleStatusChange(listing, "active")}
+                    size="sm"
+                    variant="secondary"
+                  >
+                    إعادة كمتاح
                   </Button>
                 ) : null}
                 {!listing.isFeatured && listing.status !== "expired" ? (

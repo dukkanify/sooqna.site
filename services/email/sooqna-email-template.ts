@@ -43,12 +43,16 @@ export function buildSooqnaEmailHtml(input: {
   const preview = input.preview
     ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeEmailHtml(input.preview)}</div>`
     : "";
+  const safeHref = input.ctaHref ? escapeEmailHtml(input.ctaHref) : "";
   const cta =
     input.ctaHref && input.ctaLabel
       ? `<p style="text-align:center;margin:28px 0 8px;">
-           <a href="${input.ctaHref}" style="display:inline-block;padding:13px 28px;background:${gold};color:${navy};text-decoration:none;border-radius:12px;font-weight:700;font-size:15px;">
+           <a href="${safeHref}" style="display:inline-block;padding:13px 28px;background:${gold};color:${navy};text-decoration:none;border-radius:12px;font-weight:700;font-size:15px;">
              ${escapeEmailHtml(input.ctaLabel)}
            </a>
+         </p>
+         <p style="font-size:12px;line-height:1.7;margin:8px 0 0;color:#6b6560;word-break:break-all;">
+           ${safeHref}
          </p>`
       : "";
 

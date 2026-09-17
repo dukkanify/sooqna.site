@@ -178,12 +178,18 @@ function classifyPayload(
 export async function inspectPasswordResetToken(
   rawToken: string,
 ): Promise<PasswordResetTokenStatus> {
-  if (!rawToken || rawToken.length < 16) return "invalid";
-  const payload = decodePayload(rawToken);
+  const token = normalizePasswordResetToken(rawToken);
+  if (!token || token.length < 16) return "invalid";
+  const payload = decodePayload(token);
   const status = classifyPayload(payload);
   if (status !== "valid" || !payload) return status;
   if (await wasConsumed(payload.jti)) return "invalid";
   return "valid";
+}
+
+/** Strip email-client wrapping / copy-paste whitespace from reset tokens. */
+export function normalizePasswordResetToken(raw: string | null | undefined): string {
+  return (raw ?? "").replace(/\s+/g, "").trim();
 }
 
 /** Validate token and return claims without burning it. Call mark after password write succeeds. */
@@ -197,11 +203,12 @@ export async function resolvePasswordResetToken(rawToken: string): Promise<
     }
   | { ok: false; status: Exclude<PasswordResetTokenStatus, "valid"> }
 > {
-  if (!rawToken || rawToken.length < 16) {
+  const token = normalizePasswordResetToken(rawToken);
+  if (!token || token.length < 16) {
     return { ok: false, status: "invalid" };
   }
 
-  const payload = decodePayload(rawToken);
+  const payload = decodePayload(token);
   const status = classifyPayload(payload);
   if (!payload || status !== "valid") {
     return {

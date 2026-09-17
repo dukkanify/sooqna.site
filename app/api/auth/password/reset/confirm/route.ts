@@ -46,7 +46,12 @@ function tokenErrorResponse(status: "expired" | "invalid") {
 }
 
 export async function GET(request: Request) {
-  const token = new URL(request.url).searchParams.get("token")?.trim() ?? "";
+  const { normalizePasswordResetToken } = await import(
+    "@/services/auth/password-reset-token"
+  );
+  const token = normalizePasswordResetToken(
+    new URL(request.url).searchParams.get("token"),
+  );
   const status = await inspectPasswordResetToken(token);
   if (status === "valid") {
     return NextResponse.json(
@@ -87,7 +92,12 @@ export async function POST(request: Request) {
     }
 
     // Resolve without burning — only consume after a durable write is verified.
-    const resolved = await resolvePasswordResetToken(parsed.data.token.trim());
+    const { normalizePasswordResetToken } = await import(
+      "@/services/auth/password-reset-token"
+    );
+    const resolved = await resolvePasswordResetToken(
+      normalizePasswordResetToken(parsed.data.token),
+    );
     if (!resolved.ok) {
       return tokenErrorResponse(resolved.status);
     }

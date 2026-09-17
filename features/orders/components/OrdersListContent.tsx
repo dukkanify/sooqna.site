@@ -23,15 +23,37 @@ const statusLabels: Record<Order["status"], string> = {
   cancelled: "ملغى",
 };
 
+type OrderRow = Order & { canRate?: boolean };
+
 export function OrdersListContent() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
 
   useEffect(() => {
     const user = getSessionUser();
     if (!user) return;
     fetch(`/api/orders?userId=${encodeURIComponent(user.id)}`)
       .then((res) => res.json())
-      .then((data) => setOrders(data.orders ?? []))
+      .then(async (data) => {
+        const list = (data.orders ?? []) as Order[];
+        const enriched = await Promise.all(
+          list.map(async (order) => {
+            if (order.status !== "released" || order.buyerId !== user.id) {
+              return { ...order, canRate: false };
+            }
+            try {
+              const res = await fetch(`/api/orders/${order.id}/rate`, {
+                credentials: "include",
+              });
+              if (!res.ok) return { ...order, canRate: false };
+              const info = await res.json();
+              return { ...order, canRate: Boolean(info.canRate) };
+            } catch {
+              return { ...order, canRate: false };
+            }
+          }),
+        );
+        setOrders(enriched);
+      })
       .catch(() => setOrders([]));
   }, []);
 
@@ -55,8 +77,16 @@ export function OrdersListContent() {
               <div>
                 <p className="font-semibold text-ink" data-ugc>{order.listingTitle}</p>
                 <p className="mt-0.5 text-xs text-muted">{order.id}</p>
+                {order.canRate ? (
+                  <p className="mt-1 text-xs font-bold text-secondary">
+                    قيّم البائع الآن
+                  </p>
+                ) : null}
               </div>
               <div className="flex items-center gap-3">
+                {order.canRate ? (
+                  <Badge variant="escrow">تقييم مطلوب</Badge>
+                ) : null}
                 <Badge variant="muted">{statusLabels[order.status]}</Badge>
                 <CurrencyAmount amount={order.fees.total} size="sm" />
               </div>

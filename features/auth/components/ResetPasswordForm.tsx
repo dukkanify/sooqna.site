@@ -22,7 +22,7 @@ import {
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get("token") ?? "";
+  const token = (searchParams.get("token") ?? "").replace(/\s+/g, "").trim();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
