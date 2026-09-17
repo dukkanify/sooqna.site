@@ -23,7 +23,14 @@ type SessionCookieOptions = {
 
 async function resolveCookieDomain(): Promise<string | undefined> {
   const configuredDomain = process.env.SESSION_COOKIE_DOMAIN?.trim();
-  if (configuredDomain) return configuredDomain;
+  if (configuredDomain) {
+    const host = configuredDomain.replace(/^\./, "").toLowerCase();
+    // Retired domain must not pin sessions off sooqnauae.com.
+    if (host === "sooqna.site" || host === "www.sooqna.site") {
+      return ".sooqnauae.com";
+    }
+    return configuredDomain;
+  }
   if (process.env.NODE_ENV !== "production") return undefined;
 
   try {

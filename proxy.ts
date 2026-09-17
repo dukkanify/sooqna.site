@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE_NAME } from "@/services/auth/session-cookie";
 import { peekSessionRoleFromCookieValue } from "@/services/auth/session-token";
+import { canonicalizeAppUrl } from "@/shared/constants/site";
 
-/** Canonical apex — follows NEXT_PUBLIC_APP_URL so cutover is safe before DNS flips. */
+/** Canonical apex — never follow retired sooqna.site env as the redirect target. */
 function resolveApexHost(): string {
   const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (configured) {
     try {
-      return new URL(configured).hostname.replace(/^www\./, "");
+      return new URL(canonicalizeAppUrl(configured)).hostname.replace(/^www\./, "");
     } catch {
       /* fall through */
     }
