@@ -30,6 +30,7 @@ import {
   isShowcaseListing,
   showsListingCondition,
 } from "@/shared/listings/showcase-listing";
+import { getCarKeySpecRows } from "@/shared/listings/listing-specs";
 import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
 import { Badge } from "@/shared/ui/Badge";
 import { Card } from "@/shared/ui/Card";
@@ -90,6 +91,20 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
           <CurrencyAmount amount={listing.price} size="xl" />
         </div>
 
+        {listing.categoryId === "cars" ? (
+          <ul className="mt-4 grid grid-cols-2 gap-2">
+            {getCarKeySpecRows(listing).map((row) => (
+              <li
+                key={row.label}
+                className="rounded-xl border border-border/80 bg-surface-muted/50 px-3 py-2"
+              >
+                <p className="text-[0.65rem] font-bold text-muted">{row.label}</p>
+                <p className="mt-0.5 text-sm font-bold text-ink">{row.value}</p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
         <div className="mt-6 grid gap-3 text-sm">
         <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
           <span className="shrink-0 font-medium text-muted">الموقع</span>
@@ -99,20 +114,11 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
           </span>
         </div>
         {listing.postedAt ? (
-          <div className="flex items-center justify-between border-b border-border pb-3">
+          <div className="flex items-center justify-between">
             <span className="font-medium text-muted">تاريخ النشر</span>
             <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
               <Icon name="clock" size={14} />
               {formatPostedTime(listing.postedAt)}
-            </span>
-          </div>
-        ) : null}
-        {listing.views > 0 ? (
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-muted">المشاهدات</span>
-            <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
-              <Icon name="eye" size={14} />
-              {listing.views.toLocaleString("ar-AE")}
             </span>
           </div>
         ) : null}

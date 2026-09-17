@@ -36,8 +36,8 @@ type SearchFiltersProps = {
 
 const sortOptions = [
   { label: "الأحدث", value: "newest" },
-  { label: "الأقل سعراً", value: "price_asc" },
-  { label: "الأعلى سعراً", value: "price_desc" },
+  { label: "السعر: الأقل إلى الأعلى", value: "price_asc" },
+  { label: "السعر: الأعلى إلى الأقل", value: "price_desc" },
 ];
 
 const conditionOptions = [
@@ -67,6 +67,8 @@ type FilterFieldsProps = {
   suggestions: SearchSuggestion[];
   /** Mobile bottom sheet: fewer fields up front, rest behind «المزيد». */
   easy?: boolean;
+  /** Cars desktop sidebar: essentials open, advanced collapsed (keeps sort). */
+  carsGrouped?: boolean;
 };
 
 function hasAdvancedDraft(draft: SearchFilterState): boolean {
@@ -87,12 +89,13 @@ function FilterFields({
   showCategory,
   suggestions,
   easy = false,
+  carsGrouped = false,
 }: FilterFieldsProps) {
   const selectedCategory =
     categories.find((category) => category.id === (draft.category || "")) ??
     undefined;
   const isCars = (draft.category || selectedCategory?.id) === "cars";
-  const useEasyCars = easy && isCars;
+  const useEasyCars = (easy || carsGrouped) && isCars;
   const [moreOpen, setMoreOpen] = useState(() => hasAdvancedDraft(draft));
 
   return (
@@ -100,19 +103,24 @@ function FilterFields({
       <SearchTypeahead
         compact={compact}
         defaultValue={draft.query}
-        label={easy ? "ابحث" : "كلمة البحث"}
+        label={easy || carsGrouped ? "ابحث" : "كلمة البحث"}
         name="q"
         placeholder="سيارة، هاتف، عقار..."
         selectedFilters={draft}
         suggestions={suggestions}
       />
 
-      {!easy ? (
+      {!easy && !carsGrouped ? (
         <p className="pt-1 text-[0.7rem] font-bold text-muted">الموقع</p>
+      ) : null}
+      {useEasyCars || carsGrouped ? (
+        <p className="pt-0.5 text-[0.7rem] font-bold text-muted">أساسيات</p>
       ) : null}
       <div
         className={
-          easy && !showCategory ? "grid gap-2" : "grid grid-cols-2 gap-2"
+          easy && !showCategory && !carsGrouped
+            ? "grid gap-2"
+            : "grid grid-cols-2 gap-2"
         }
       >
         <Select
@@ -155,7 +163,7 @@ function FilterFields({
         ) : (
           <>
             <input name="category" type="hidden" value={draft.category ?? ""} />
-            {!easy ? (
+            {!easy || carsGrouped ? (
               <Select
                 compact={compact}
                 defaultValue={draft.sort}
@@ -179,6 +187,7 @@ function FilterFields({
             onChange={setDraft}
             variant="essential"
           />
+          <p className="pt-0.5 text-[0.7rem] font-bold text-muted">السعر</p>
           <div className="grid grid-cols-2 gap-2">
             <Input
               compact={compact}
@@ -209,7 +218,7 @@ function FilterFields({
               onClick={() => setMoreOpen((open) => !open)}
               type="button"
             >
-              <span>المزيد من الفلاتر</span>
+              <span>المواصفات والموقع</span>
               <Icon
                 className={`shrink-0 text-muted transition-transform ${moreOpen ? "rotate-90" : ""}`}
                 name="chevron-left"
@@ -244,7 +253,6 @@ function FilterFields({
               </div>
             ) : (
               <>
-                {/* Keep applied advanced values on submit while collapsed */}
                 <input name="subcategory" type="hidden" value={draft.subcategory ?? ""} />
                 <input name="area" type="hidden" value={draft.area ?? ""} />
                 <input name="condition" type="hidden" value={draft.condition ?? ""} />
@@ -467,7 +475,7 @@ export function SearchFilters({
             type="button"
           >
             <Icon className="text-secondary" name="filter" size={16} />
-            <span>فلاتر</span>
+            <span>فلترة</span>
             {appliedCount > 0 ? (
               <span className="rounded-full bg-[#c9a45c] px-2 py-0.5 text-[0.65rem] font-black text-[#0b1628]">
                 {appliedCount}
@@ -510,9 +518,14 @@ export function SearchFilters({
           <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 pt-4">
             <h2 className="text-sm font-bold text-ink">صفِّ بحثك</h2>
             <p className="text-[11px] leading-5 text-muted">
-              ابدأ بالإمارة والتصنيف، ثم ضيّق بالسعر والمواصفات.
+              {(draft.category || selectedFilters.category) === "cars"
+                ? "الماركة والموديل والسعر أولاً — المواصفات اختيارية."
+                : "ابدأ بالإمارة والتصنيف، ثم ضيّق بالسعر والمواصفات."}
             </p>
-            <FilterFields {...fieldProps} />
+            <FilterFields
+              {...fieldProps}
+              carsGrouped={(draft.category || selectedFilters.category) === "cars"}
+            />
           </div>
           <div className="shrink-0 border-t border-border/70 bg-surface px-4 py-3">
             {footer(false)}

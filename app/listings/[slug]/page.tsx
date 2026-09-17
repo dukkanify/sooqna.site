@@ -78,7 +78,7 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
   const locale = await getRequestLocale();
   const [categories, relatedListings] = await Promise.all([
     getCategories(),
-    getRelatedListings(listing.categoryId, listing.id),
+    getRelatedListings(listing.categoryId, listing.id, listing),
   ]);
   const category = categories.find((item) => item.id === listing.categoryId);
 

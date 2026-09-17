@@ -13,6 +13,7 @@ import { listingTitle, sellerName } from "@/shared/i18n/listing-copy";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
+import { getCarCardMetaLine } from "@/shared/listings/listing-specs";
 import { Badge } from "@/shared/ui/Badge";
 import { Icon } from "@/shared/ui/Icon";
 import { ListingCardBadges } from "./ListingCardBadges";
@@ -118,6 +119,12 @@ export const PremiumListingCard = memo(function PremiumListingCard({
           <ListingTitle listing={listing} />
         </h3>
       </Link>
+
+      {listing.categoryId === "cars" && getCarCardMetaLine(listing) ? (
+        <p className="text-[0.7rem] font-medium text-muted">
+          {getCarCardMetaLine(listing)}
+        </p>
+      ) : null}
 
       <div>
         <CurrencyAmount amount={listing.price} size="sm" />

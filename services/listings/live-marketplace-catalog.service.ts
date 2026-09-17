@@ -9,7 +9,7 @@ import {
 import { bumpListingsCache } from "@/services/listings/listings-cache";
 
 const LIVE_CATALOG_VERSION_KEY = "live_marketplace_catalog_version";
-const LIVE_CATALOG_VERSION = "v7-all-car-models";
+const LIVE_CATALOG_VERSION = "v8-car-specs-hydrate";
 
 let ensureInflight: Promise<number> | null = null;
 

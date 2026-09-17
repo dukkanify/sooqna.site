@@ -328,7 +328,7 @@ test("live catalog covers remaining car models and keeps original live-mkt ids",
   assert.match(remaining, /Toyota Corolla/);
   assert.match(remaining, /Toyota Hilux/);
   assert.match(remaining, /Mercedes-Benz Maybach/);
-  assert.match(version, /v7-all-car-models/);
+  assert.match(version, /v8-car-specs-hydrate/);
 });
 
 test("category CTAs are centralized and job seeker is not apply-job", () => {

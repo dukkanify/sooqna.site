@@ -126,17 +126,22 @@ export default async function CategoryPage({
             ]}
           />
 
-          <CategoryHero category={category} />
+          <CategoryHero
+            category={category}
+            compact={category.id === "cars"}
+          />
 
-          <div className="mb-4 flex flex-wrap gap-1.5 md:mb-3">
-            {category.subcategories.map((subcategory) => (
-              <ChipLink
-                key={subcategory}
-                href={`/categories/${category.slug}?subcategory=${encodeURIComponent(subcategory)}`}
-                label={subcategory}
-              />
-            ))}
-          </div>
+          {category.id !== "cars" ? (
+            <div className="mb-4 flex flex-wrap gap-1.5 md:mb-3">
+              {category.subcategories.map((subcategory) => (
+                <ChipLink
+                  key={subcategory}
+                  href={`/categories/${category.slug}?subcategory=${encodeURIComponent(subcategory)}`}
+                  label={subcategory}
+                />
+              ))}
+            </div>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-[16rem_1fr] md:gap-5 lg:grid-cols-[18rem_1fr] lg:gap-6 xl:grid-cols-[20rem_1fr]">
             <aside className="md:sticky md:top-24 md:self-start">

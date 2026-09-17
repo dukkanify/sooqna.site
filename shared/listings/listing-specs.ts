@@ -143,6 +143,86 @@ export function getListingSpecEntries(listing: Listing): SpecEntry[] {
   return getMockSpecEntries(listing);
 }
 
+/** High-value car fields for above-the-fold strips (cards / sticky / mobile). */
+export function getCarKeySpecRows(
+  listing: Listing,
+): { label: string; value: string }[] {
+  const inferred = inferCarDisplaySpecs(listing);
+  return [
+    { label: "السنة", value: inferred.year },
+    { label: "العداد", value: inferred.mileageLabel },
+    { label: "الحالة", value: inferred.condition },
+    { label: "ناقل الحركة", value: inferred.transmission },
+    { label: "الوقود", value: inferred.fuel },
+    { label: "المواصفات", value: inferred.regionalSpecs },
+  ].filter((row) => row.value.trim().length > 0);
+}
+
+export function getCarCardMetaLine(listing: Listing): string {
+  const inferred = inferCarDisplaySpecs(listing);
+  return [inferred.year, inferred.mileageLabel].filter(Boolean).join(" · ");
+}
+
+const CONDITION_LABELS: Record<string, string> = {
+  excellent: "ممتاز",
+  new: "جديد",
+  used: "مستعمل",
+};
+
+/** Prefer stored categorySpecs; fall back to title/features when specs were stripped. */
+function inferCarDisplaySpecs(listing: Listing): {
+  year: string;
+  mileageLabel: string;
+  condition: string;
+  transmission: string;
+  fuel: string;
+  regionalSpecs: string;
+} {
+  const specs = listing.categorySpecs ?? {};
+  const car = listing.carSpecs;
+  const title = `${listing.titleEnglish ?? ""} ${listing.title ?? ""}`;
+  const yearFromTitle = title.match(/\b(20\d{2}|19\d{2})\b/)?.[1] ?? "";
+  const mileageRaw = specs.mileage ?? car?.mileage;
+  const mileageLabel = mileageRaw
+    ? `${Number(mileageRaw).toLocaleString("en-AE")} كم`
+    : "";
+
+  let fuel = String(specs.fuelType ?? car?.fuel ?? "");
+  if (!fuel) {
+    const sub = listing.subcategory ?? "";
+    if (/كهرب|electric|ev/i.test(`${sub} ${title}`)) fuel = "كهربائي";
+    else if (/هجين|hybrid/i.test(`${sub} ${title}`)) fuel = "هجين";
+    else if (/ديزل|diesel/i.test(`${sub} ${title}`)) fuel = "ديزل";
+  }
+
+  let regionalSpecs = String(specs.regionalSpecs ?? car?.regionalSpecs ?? "");
+  if (!regionalSpecs && listing.features?.some((f) => /خليجي|GCC/i.test(f))) {
+    regionalSpecs = "خليجي";
+  }
+
+  const conditionRaw =
+    (typeof specs.condition === "string" ? specs.condition : "") ||
+    listing.condition ||
+    "";
+  const condition =
+    CONDITION_LABELS[conditionRaw] ??
+    (conditionRaw && !["excellent", "new", "used"].includes(conditionRaw)
+      ? conditionRaw
+      : CONDITION_LABELS[listing.condition] ?? "");
+
+  return {
+    year:
+      typeof specs.year === "string" || typeof specs.year === "number"
+        ? String(specs.year)
+        : yearFromTitle,
+    mileageLabel,
+    condition,
+    transmission: String(specs.transmission ?? car?.transmission ?? ""),
+    fuel,
+    regionalSpecs,
+  };
+}
+
 export function getListingFeatureItems(listing: Listing): string[] {
   if (listing.features?.length) {
     return listing.features;

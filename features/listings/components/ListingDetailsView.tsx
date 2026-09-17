@@ -21,6 +21,7 @@ import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
+import { getCarKeySpecRows } from "@/shared/listings/listing-specs";
 import {
   formatPostedTime,
   MARKETPLACE_LISTING_GRID_CLASS,
@@ -107,22 +108,38 @@ export function ListingDetailsView({
                   </span>
                 ) : null}
               </div>
+      {listing.categoryId === "cars" ? (
+        <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {getCarKeySpecRows(listing).map((row) => (
+            <li
+              key={row.label}
+              className="rounded-xl border border-border/80 bg-surface-muted/50 px-3 py-2"
+            >
+              <p className="text-[0.65rem] font-bold text-muted">{row.label}</p>
+              <p className="mt-0.5 text-sm font-bold text-ink">{row.value}</p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
             </div>
 
             <ListingDetailToolbar listing={listing} />
             <div className="mt-6 lg:hidden">
               <ShowcaseListingNotice listing={listing} />
             </div>
-            <ListingLocationMap listing={listing} />
 
-            <div className="marketplace-panel mt-6 p-6">
+            <div className="marketplace-panel mt-6 p-5 md:p-6">
               <h2 className="text-lg font-black text-ink">وصف الإعلان</h2>
-              <p className="mt-4 text-sm font-medium leading-8 text-muted" data-ugc>
+              <p
+                className="mt-3 max-w-3xl text-sm font-medium leading-8 text-muted md:text-[0.95rem]"
+                data-ugc
+              >
                 {listingDescription(listing, locale)}
               </p>
             </div>
 
             <ListingSpecifications listing={listing} />
+            <ListingLocationMap listing={listing} />
             <div className="mt-6 lg:hidden">
               <SellerPanel listing={listing} />
             </div>
