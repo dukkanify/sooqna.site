@@ -62,8 +62,8 @@
 | Surface | Status |
 |---------|--------|
 | Desktop | PASS (live 137 listings, filters usable) |
-| Tablet | PARTIAL (spot-checked) |
-| Mobile | PARTIAL (filter button OK; full bottom-sheet redesign deferred) |
+| Tablet | PASS (sidebar from `md`; featured hero card desktop-only; quick chip rails phone-only) |
+| Mobile | PASS (easy essentials sheet + «المزيد» — PR #75) |
 | Arabic RTL | PASS |
 | English LTR | PASS (catalog EN names) |
 
@@ -134,7 +134,7 @@ Auth / Password Reset / Orders / Buy Again / Notifications / Admin / Madmoon / R
 | YEARS | PASS |
 | CREATE/EDIT LISTING | PASS (shared catalog) |
 | SMART CARS FILTERS | PASS |
-| CARS UX | PARTIAL |
+| CARS UX | PASS (mobile sheet + tablet sidebar) |
 | BYD LISTING UX | **PASS** (media fixed live) |
 | PROJECT RESPONSIVE | PARTIAL |
 | PERFORMANCE | PARTIAL (smoke only) |

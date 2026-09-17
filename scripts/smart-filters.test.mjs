@@ -129,7 +129,8 @@ test("server listing query applies categorySpecs instead of client catalog scans
 
 test("mobile drawer still has apply and reset", () => {
   const src = read("features/search/components/SearchFilters.tsx");
-  assert.match(src, /lg:hidden/);
+  assert.match(src, /md:hidden/);
+  assert.match(src, /md:flex/);
   assert.match(src, /تطبيق الفلاتر/);
   assert.match(src, /إعادة تعيين/);
   assert.match(src, /عرض النتائج/);
@@ -141,4 +142,5 @@ test("mobile drawer still has apply and reset", () => {
   const quick = read("features/search/components/SearchQuickFilters.tsx");
   assert.match(quick, /كل الإمارات/);
   assert.match(quick, /حتى 50 ألف/);
+  assert.match(quick, /md:hidden/);
 });

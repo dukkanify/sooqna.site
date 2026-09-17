@@ -128,7 +128,7 @@ export default async function CategoryPage({
 
           <CategoryHero category={category} />
 
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-wrap gap-1.5 md:mb-3">
             {category.subcategories.map((subcategory) => (
               <ChipLink
                 key={subcategory}
@@ -138,8 +138,8 @@ export default async function CategoryPage({
             ))}
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[18rem_1fr] lg:gap-6 xl:grid-cols-[20rem_1fr]">
-            <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="grid gap-4 md:grid-cols-[16rem_1fr] md:gap-5 lg:grid-cols-[18rem_1fr] lg:gap-6 xl:grid-cols-[20rem_1fr]">
+            <aside className="md:sticky md:top-24 md:self-start">
               <SearchFilters
                 action={`/categories/${category.slug}`}
                 categories={categories}
