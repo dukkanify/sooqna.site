@@ -17,12 +17,34 @@ import {
 import { setVehicleCatalogOverrides } from "@/shared/vehicles";
 import type { SearchFilterState } from "./search-url";
 
+/** Cars search: keep make/model/year up front; tuck the rest under «المزيد». */
+const CARS_ESSENTIAL_KEYS = new Set(["brand", "model", "year"]);
+const CARS_ADVANCED_KEYS = new Set([
+  "mileage",
+  "condition",
+  "regionalSpecs",
+  "bodyType",
+  "transmission",
+  "fuelType",
+  "drivetrain",
+]);
+
+export type SmartFieldsVariant = "full" | "essential" | "advanced";
+
 type CategorySmartFieldsProps = {
   category?: Category;
   compact?: boolean;
   draft: SearchFilterState;
   onChange: (next: SearchFilterState) => void;
+  /** Mobile sheet can show essentials or advanced-only; default is everything. */
+  variant?: SmartFieldsVariant;
 };
+
+function rangeLabels(field: CategoryFieldDefinition): { min: string; max: string } {
+  if (field.key === "year") return { min: "من سنة", max: "إلى سنة" };
+  if (field.key === "mileage") return { min: "من كم", max: "إلى كم" };
+  return { min: `من ${field.label}`, max: `إلى ${field.label}` };
+}
 
 function setSpec(
   draft: SearchFilterState,
@@ -75,8 +97,12 @@ export function CategorySmartFields({
   compact = true,
   draft,
   onChange,
+  variant = "full",
 }: CategorySmartFieldsProps) {
   const categoryId = draft.category || category?.id || "";
+  const isCars = categoryId === "cars";
+  const showMeta = variant === "full" || variant === "advanced";
+  const showEmptyHint = variant !== "advanced";
 
   useEffect(() => {
     if (categoryId !== "cars") return;
@@ -98,6 +124,7 @@ export function CategorySmartFields({
   }, [categoryId]);
 
   if (!categoryId) {
+    if (!showEmptyHint) return null;
     return (
       <p className="rounded-xl border border-dashed border-border/80 px-3 py-2 text-[0.7rem] leading-5 text-muted">
         اختر تصنيفاً لإظهار فلاتر الماركة والموديل والمواصفات.
@@ -105,7 +132,11 @@ export function CategorySmartFields({
     );
   }
 
-  const fields = getCategorySearchFields(categoryId);
+  const fields = getCategorySearchFields(categoryId).filter((field) => {
+    if (!isCars || variant === "full") return true;
+    if (variant === "essential") return CARS_ESSENTIAL_KEYS.has(field.key);
+    return CARS_ADVANCED_KEYS.has(field.key);
+  });
   const specs = draft.specs ?? {};
   const subcategories = category?.subcategories ?? [];
   const emirate = draft.city ?? "";
@@ -121,7 +152,7 @@ export function CategorySmartFields({
 
   return (
     <div className="grid gap-2">
-      {subcategories.length > 0 ? (
+      {showMeta && subcategories.length > 0 ? (
         <Select
           compact={compact}
           label={subcategoryFilterLabel(categoryId)}
@@ -144,31 +175,34 @@ export function CategorySmartFields({
         />
       ) : null}
 
-      {emirate && areaOptions.length > 0 ? (
-        <Select
-          compact={compact}
-          label="المنطقة"
-          name="area"
-          onChange={(event) => onChange({ ...draft, area: event.target.value })}
-          options={areaSelectOptions}
-          value={areaValue}
-        />
-      ) : (
-        <Input
-          compact={compact}
-          label="المنطقة"
-          name="area"
-          onChange={(event) => onChange({ ...draft, area: event.target.value })}
-          placeholder="مثال: جميرا، مردف"
-          value={areaValue}
-        />
-      )}
+      {showMeta ? (
+        emirate && areaOptions.length > 0 ? (
+          <Select
+            compact={compact}
+            label="المنطقة"
+            name="area"
+            onChange={(event) => onChange({ ...draft, area: event.target.value })}
+            options={areaSelectOptions}
+            value={areaValue}
+          />
+        ) : (
+          <Input
+            compact={compact}
+            label="المنطقة"
+            name="area"
+            onChange={(event) => onChange({ ...draft, area: event.target.value })}
+            placeholder="مثال: جميرا، مردف"
+            value={areaValue}
+          />
+        )
+      ) : null}
 
       {fields.map((field) => {
         if (!fieldVisibleForSpecs(field, specs)) return null;
 
         if (rangeField(field)) {
           const range = draft.ranges?.[field.key] ?? {};
+          const labels = rangeLabels(field);
           const yearOptions =
             field.key === "year"
               ? [{ label: "أي", value: "" }, ...optionsForSearchField(categoryId, field, specs)]
@@ -179,7 +213,7 @@ export function CategorySmartFields({
                 <>
                   <Select
                     compact={compact}
-                    label={`من ${field.label}`}
+                    label={labels.min}
                     name={`min_${field.key}`}
                     onChange={(event) =>
                       onChange(setRange(draft, field.key, "min", event.target.value))
@@ -189,7 +223,7 @@ export function CategorySmartFields({
                   />
                   <Select
                     compact={compact}
-                    label={`إلى ${field.label}`}
+                    label={labels.max}
                     name={`max_${field.key}`}
                     onChange={(event) =>
                       onChange(setRange(draft, field.key, "max", event.target.value))
@@ -203,7 +237,7 @@ export function CategorySmartFields({
                   <Input
                     compact={compact}
                     inputMode="numeric"
-                    label={`أقل ${field.label}`}
+                    label={labels.min}
                     min="0"
                     name={`min_${field.key}`}
                     onChange={(event) =>
@@ -215,7 +249,7 @@ export function CategorySmartFields({
                   <Input
                     compact={compact}
                     inputMode="numeric"
-                    label={`أعلى ${field.label}`}
+                    label={labels.max}
                     min="0"
                     name={`max_${field.key}`}
                     onChange={(event) =>
