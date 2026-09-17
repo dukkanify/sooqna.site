@@ -24,16 +24,22 @@ export function getAppUrl(): string {
 }
 
 /**
- * Password-reset emails must never point at a stale/wrong apex.
- * Prefer configured URL when it is sooqnauae.com; otherwise force Production apex
- * (except local/preview where getAppUrl already scopes correctly).
+ * Password-reset emails must ALWAYS land on the primary Production domain.
+ * Never embed ephemeral Vercel Preview hosts — those expire and break inbox links.
+ * Local/dev still uses localhost for manual testing.
  */
 export function getPasswordResetAppUrl(): string {
-  if (process.env.VERCEL_ENV === "preview") return getAppUrl();
-  if (process.env.NODE_ENV !== "production") return getAppUrl();
+  if (process.env.NODE_ENV !== "production") {
+    return DEVELOPMENT_SITE_URL;
+  }
   const configured = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, "");
-  if (configured && /sooqnauae\.com$/i.test(new URL(configured).hostname)) {
-    return configured;
+  if (configured) {
+    try {
+      const host = new URL(configured).hostname.replace(/^www\./, "");
+      if (/sooqnauae\.com$/i.test(host)) return configured;
+    } catch {
+      // fall through
+    }
   }
   return PRODUCTION_SITE_URL;
 }
