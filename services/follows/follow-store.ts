@@ -33,6 +33,14 @@ export async function listFollowedSellerIds(
     .map((row) => row.sellerId);
 }
 
+/** Follows for one user, newest first. */
+export async function listFollowsByFollower(
+  followerId: string,
+): Promise<SellerFollow[]> {
+  const rows = await loadFollows();
+  return rows.filter((row) => row.followerId === followerId);
+}
+
 export async function listFollowerIds(sellerId: string): Promise<string[]> {
   const rows = await loadFollows();
   return rows

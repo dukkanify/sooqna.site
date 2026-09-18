@@ -43,6 +43,7 @@ export const STORAGE_EVENTS = {
   favoritesChange: "sooqna-favorites-change",
   recentSearchesChange: "sooqna-recent-searches-change",
   savedSearchesChange: "sooqna-saved-searches-change",
+  followsChange: "sooqna-follows-change",
   themeChange: "sooqna-theme-change",
   notificationsChange: "sooqna-notifications-change",
   localeChange: "sooqna-locale-change",

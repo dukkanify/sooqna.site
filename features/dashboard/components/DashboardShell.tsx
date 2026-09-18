@@ -32,6 +32,11 @@ const dashboardLinks = [
     icon: "search" as const,
     label: "البحث المحفوظ",
   },
+  {
+    href: "/profile#following",
+    icon: "user" as const,
+    label: "البائعون المتابعون",
+  },
   { href: "/orders", icon: "package" as const, label: "طلباتي" },
   { href: "/dashboard/listings", icon: "grid" as const, label: "إعلاناتي" },
   { href: "/listings/new", icon: "plus" as const, label: "إضافة إعلان" },

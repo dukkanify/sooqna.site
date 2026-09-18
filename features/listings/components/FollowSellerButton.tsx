@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionUser } from "@/services/storage";
+import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import { Button } from "@/shared/ui/Button";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 
@@ -82,6 +83,9 @@ export function FollowSellerButton({
       );
       if (response.ok) {
         setFollowing(!following);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event(STORAGE_EVENTS.followsChange));
+        }
       }
     } finally {
       setBusy(false);
