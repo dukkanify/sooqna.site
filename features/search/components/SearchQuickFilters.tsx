@@ -38,7 +38,7 @@ function ChipRail({
   return (
     <DragScrollRow
       ariaLabel={ariaLabel}
-      className="-mx-1 flex snap-x gap-2 overflow-x-auto overscroll-x-contain px-1 pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="-mx-1 flex min-w-0 max-w-full snap-x gap-2 overflow-x-auto overscroll-x-contain px-1 pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
       {chips.map((chip) => (
         <Link
@@ -130,7 +130,7 @@ export function SearchQuickFilters({
     : [];
 
   return (
-    <div className="space-y-3 md:hidden">
+    <div className="min-w-0 space-y-3 md:hidden">
       <ChipRail ariaLabel="الإمارة" chips={emirateChips} />
       <ChipRail ariaLabel="السعر" chips={priceChips} />
       {categoryChips.length > 0 ? (

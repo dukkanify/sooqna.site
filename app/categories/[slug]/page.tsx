@@ -143,8 +143,8 @@ export default async function CategoryPage({
             </div>
           ) : null}
 
-          <div className="grid gap-4 md:grid-cols-[16rem_1fr] md:gap-5 lg:grid-cols-[18rem_1fr] lg:gap-6 xl:grid-cols-[20rem_1fr]">
-            <aside className="md:sticky md:top-24 md:self-start">
+          <div className="grid min-w-0 gap-4 md:grid-cols-[16rem_minmax(0,1fr)] md:gap-5 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
+            <aside className="min-w-0 md:sticky md:top-24 md:self-start">
               <SearchFilters
                 action={`/categories/${category.slug}`}
                 categories={categories}
@@ -157,7 +157,7 @@ export default async function CategoryPage({
               />
             </aside>
 
-            <div>
+            <div className="min-w-0">
               {ESCROW_CHECKOUT_CATEGORIES.has(category.id) ? (
                 <div className="mb-3">
                   <Badge variant="escrow">ضمان مالي على الإعلانات المؤهلة</Badge>
