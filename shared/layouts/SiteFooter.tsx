@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/shared/components/BrandLogo";
 import { BrandMark } from "@/shared/components/BrandMark";
-import { BRAND, DEVELOPER } from "@/shared/constants/brand";
+import { BRAND } from "@/shared/constants/brand";
 import { footerLinks } from "@/shared/constants/navigation";
 import { LanguageSwitch } from "@/shared/i18n/LanguageSwitch";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -224,17 +224,9 @@ export function SiteFooter() {
             <p className="site-footer__copy">{BRAND.copyright}</p>
           </div>
           <div className="site-footer__credit">
-            <p className="site-footer__credit-ar">تم التطوير بواسطة {DEVELOPER.nameAr}</p>
+            <p className="site-footer__credit-ar">{BRAND.nameAr} — {BRAND.nameEn}</p>
             <p className="site-footer__credit-en" dir="ltr">
-              Developed by{" "}
-              <a
-                className="focus-ring site-footer__credit-link"
-                href={DEVELOPER.url}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                {DEVELOPER.nameEn}
-              </a>
+              {BRAND.domain}
             </p>
           </div>
         </div>

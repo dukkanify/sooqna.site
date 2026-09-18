@@ -211,6 +211,9 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const showGoldCta =
     !isOwn && MOBILE_PRIMARY_CTA_ACTIONS.has(config.primaryAction);
   const showContactIcons = !isOwn;
+  const hideChatIcon =
+    config.primaryAction === "CONTACT_SELLER" ||
+    config.primaryAction === "SEND_MESSAGE";
   const isCheckoutCta =
     config.primaryAction === "BUY_NOW" || config.primaryAction === "RESERVE";
 
@@ -261,13 +264,15 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
 
         {showContactIcons ? (
           <div className="mobile-sticky-bar__actions">
-            <StartChatButton
-              className="mobile-sticky-bar__icon mobile-sticky-bar__icon--chat"
-              layout="icon"
-              listing={listing}
-              size="sm"
-              variant="ghost"
-            />
+            {hideChatIcon ? null : (
+              <StartChatButton
+                className="mobile-sticky-bar__icon mobile-sticky-bar__icon--chat"
+                layout="icon"
+                listing={listing}
+                size="sm"
+                variant="ghost"
+              />
+            )}
 
             {whatsapp ? (
               <MobileContactIconButton
