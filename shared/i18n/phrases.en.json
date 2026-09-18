@@ -2175,5 +2175,13 @@
   "إعلان جديد من بائع تتابعه": "New listing from a seller you follow",
   "إعادة كمتاح": "Mark available again",
   "جاري تحميل الموديلات...": "Loading models...",
-  "لا يوجد موديل مطابق — اختر «أخرى» أو اكتب اقتراحاً.": "No matching model — choose “Other” or type a suggestion."
+  "لا يوجد موديل مطابق — اختر «أخرى» أو اكتب اقتراحاً.": "No matching model — choose “Other” or type a suggestion.",
+  "البائعون الذين أتابعهم": "Sellers I follow",
+  "البائعون المتابعون": "Following",
+  "البائعون الذين تتابعهم من صفحات الإعلانات — تصلك إشعارات عند نشر إعلان جديد.": "Sellers you follow from listing pages — you get notified when they post something new.",
+  "لا تتابع أي بائع بعد": "You are not following any sellers yet",
+  "من صفحة أي إعلان اضغط «متابعة البائع» — ستظهر القائمة هنا، وستصلك إشعارات عند إعلاناتهم الجديدة.": "On any listing, tap “Follow seller” — they appear here, and you get notified about their new ads.",
+  "جاري تحميل البائعين…": "Loading sellers…",
+  "تعذر تحميل قائمة المتابعة. حاول مرة أخرى لاحقاً.": "Could not load your following list. Try again later.",
+  "تعذر التحميل": "Could not load"
 }

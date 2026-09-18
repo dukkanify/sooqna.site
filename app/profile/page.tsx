@@ -1,5 +1,6 @@
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
 import { FavoritesPanel } from "@/features/profile/components/FavoritesPanel";
+import { FollowedSellersPanel } from "@/features/profile/components/FollowedSellersPanel";
 import { ProfileSavedSearches } from "@/features/profile/components/ProfileSavedSearches";
 import { ProfileActivityPanel } from "@/features/profile/components/ProfileActivityPanel";
 import { ProfileHashScroll } from "@/features/profile/components/ProfileHashScroll";
@@ -44,6 +45,15 @@ export default async function ProfilePage() {
             </p>
             <div className="mt-4">
               <ProfileSavedSearches />
+            </div>
+          </Card>
+          <Card className="mt-6 scroll-mt-24 p-5" id="following" variant="flat">
+            <h2 className="text-sm font-semibold text-ink">البائعون الذين أتابعهم</h2>
+            <p className="mt-1 text-xs leading-6 text-muted">
+              البائعون الذين تتابعهم من صفحات الإعلانات — تصلك إشعارات عند نشر إعلان جديد.
+            </p>
+            <div className="mt-4">
+              <FollowedSellersPanel />
             </div>
           </Card>
           <ProfileActivityPanel userId={user.id} />
