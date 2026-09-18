@@ -42,6 +42,13 @@
   box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 }
 
+.mobile-home-header__location--bar {
+  max-width: clamp(5.5rem, 30vw, 7.75rem);
+  height: 2.35rem;
+  border-color: rgb(201 164 92 / 35%);
+  background: rgb(255 255 255 / 96%);
+}
+
 .mobile-home-header__location-icon {
   flex-shrink: 0;
   color: #c9a45c;

@@ -90,6 +90,23 @@
   height: 2.35rem;
 }
 
+.mobile-home-header__location--bar {
+  max-width: clamp(5.5rem, 30vw, 7.75rem);
+  height: 2.35rem;
+  border-color: rgb(201 164 92 / 35%);
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
+}
+
+.mobile-home-header__location--bar .mobile-home-header__location-icon {
+  color: #c9a45c;
+}
+
+.mobile-home-header__location--bar .mobile-home-header__location-value {
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
 /* Guest menu sheet opened from bottom-nav menu slot */
 .mobile-guest-menu {
   position: fixed;

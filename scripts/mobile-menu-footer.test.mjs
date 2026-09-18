@@ -8,10 +8,16 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel) => readFileSync(join(root, rel), "utf8");
 
 describe("mobile menu in footer for guests", () => {
-  it("MobileHomeHeader no longer renders hamburger", () => {
+  it("MobileHomeHeader puts city by logo and drops search row", () => {
     const header = read("features/home/components/mobile/MobileHomeHeader.tsx");
     assert.doesNotMatch(header, /name=\{menuOpen \? "close" : "menu"\}/);
     assert.doesNotMatch(header, /setMenuOpen/);
+    assert.doesNotMatch(header, /smart-row/);
+    assert.doesNotMatch(header, /quick-search/);
+    assert.match(header, /EmirateLocationSelect/);
+    assert.match(header, /mobile-home-header__location--bar/);
+    assert.match(header, /NotificationBell/);
+    assert.doesNotMatch(header, /name="search"/);
   });
 
   it("MobileBottomNav opens guest menu; account for signed-in", () => {
