@@ -12,6 +12,10 @@ import {
   markNotificationsRead,
 } from "@/features/notifications/notification-client";
 import { enableBrowserNotifications } from "@/features/notifications/NotificationPushRegistrar";
+import {
+  playNotificationChime,
+  unlockNotificationAudio,
+} from "@/features/notifications/notification-sound";
 import type { AppNotification } from "@/types/domain/notification";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { tx } from "@/shared/i18n/tx";
@@ -57,7 +61,19 @@ export function NotificationBell({
   const [items, setItems] = useState<AppNotification[]>([]);
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
   const [pushUi, setPushUi] = useState({ iosHint: false, prompt: false, ready: false });
+  const [ringPulse, setRingPulse] = useState(false);
   const lastUnread = useRef(0);
+  const primed = useRef(false);
+
+  const noteNewUnread = useCallback((nextUnread: number) => {
+    const rose = nextUnread > lastUnread.current;
+    if (rose && primed.current) {
+      playNotificationChime();
+      setRingPulse(true);
+      window.setTimeout(() => setRingPulse(false), 1600);
+    }
+    lastUnread.current = nextUnread;
+  }, []);
 
   const refresh = useCallback(async (opts?: { announce?: boolean; full?: boolean }) => {
     if (opts?.full) {
@@ -80,14 +96,14 @@ export function NotificationBell({
           });
         }
       }
-      lastUnread.current = data.unread;
+      noteNewUnread(data.unread);
       return;
     }
 
     const unreadCount = await fetchUnreadCount();
     setUnread(unreadCount);
-    lastUnread.current = unreadCount;
-  }, []);
+    noteNewUnread(unreadCount);
+  }, [noteNewUnread]);
 
   useEffect(() => {
     if (!user) return undefined;
@@ -138,6 +154,8 @@ export function NotificationBell({
   const visibleUnread = user ? unread : 0;
 
   async function openPanel() {
+    unlockNotificationAudio();
+    primed.current = true;
     setOpen(true);
     setPushUi(readPushUi());
     const data = await fetchNotifications();
@@ -199,6 +217,8 @@ export function NotificationBell({
         }
         className={`${className} notify-bell__trigger`}
         onClick={() => {
+          unlockNotificationAudio();
+          primed.current = true;
           if (open) {
             setOpen(false);
             return;
@@ -207,17 +227,30 @@ export function NotificationBell({
         }}
         type="button"
       >
-        <span className="mobile-home-header__notify-ring" aria-hidden />
-        <Icon className={iconClassName} name="bell" size={iconSize} />
+        <span
+          className={`mobile-home-header__notify-ring${ringPulse ? " notify-bell__ring--pulse" : ""}`}
+          aria-hidden
+        />
+        <span className="notify-bell__glyph" aria-hidden>
+          {visibleUnread > 0 ? (
+            <span className="notify-bell__emoji">🛎️</span>
+          ) : (
+            <Icon className={iconClassName} name="bell" size={iconSize} />
+          )}
+        </span>
         {visibleUnread > 0 ? (
-          <span className={badgeClassName}>{visibleUnread > 9 ? "9+" : visibleUnread}</span>
+          <span className={`${badgeClassName} notify-bell__count`}>
+            {visibleUnread > 9 ? "9+" : visibleUnread}
+          </span>
         ) : null}
       </button>
 
       {open ? (
         <div className="notify-bell__panel" id={panelId} role="dialog" aria-label="الإشعارات">
           <div className="notify-bell__head">
-            <p className="notify-bell__title">الإشعارات</p>
+            <p className="notify-bell__title">
+              {visibleUnread > 0 ? "🛎️ الإشعارات" : "الإشعارات"}
+            </p>
             {freshIds.size > 0 ? (
               <button
                 className="notify-bell__action notify-bell__action--ghost"
@@ -238,6 +271,7 @@ export function NotificationBell({
                 const content = (
                   <>
                     <p className="notify-bell__item-title">
+                      {isFresh ? <span aria-hidden>🛎️ </span> : null}
                       {locale === "en" ? item.titleEn || tx(locale, item.title) : item.title}
                     </p>
                     <p className="notify-bell__item-body">
