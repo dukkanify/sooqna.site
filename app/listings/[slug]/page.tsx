@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MobileBottomNav } from "@/features/home/components/mobile/MobileBottomNav";
 import { ListingDetailsView } from "@/features/listings/components/ListingDetailsView";
 import {
   RecentlyViewedSection,
@@ -113,7 +112,6 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
         />
       </main>
       <SiteFooter />
-      <MobileBottomNav />
     </>
   );
 }

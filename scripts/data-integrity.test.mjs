@@ -373,7 +373,7 @@ test("category CTAs are centralized and job seeker is not apply-job", () => {
   assert.match(actions, /isPurchasableListing/);
   assert.match(
     actions,
-    /categoryId === "cars"\) \{\s*return contactConfig\("CONTACT_SELLER"\);/,
+    /profile === "vehicles"\) \{\s*return contactConfig\("CONTACT_SELLER"\);/,
   );
   const primary = readFileSync(
     path.join(root, "features/listings/components/ListingPrimaryAction.tsx"),
