@@ -194,6 +194,7 @@ const MOBILE_PRIMARY_CTA_ACTIONS = new Set<ListingActionType>([
   "BOOK_SERVICE",
   "BOOK_VIEWING",
   "BUY_NOW",
+  "CONTACT_SELLER",
   "REQUEST_QUOTE",
   "RESERVE",
 ]);

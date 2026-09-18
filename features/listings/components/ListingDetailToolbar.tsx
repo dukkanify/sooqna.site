@@ -31,17 +31,22 @@ export function ListingDetailToolbar({ listing }: ListingDetailToolbarProps) {
 
   return (
     <LocalizedTree>
-    <div className="mt-4 flex flex-wrap items-center gap-2">
+    <div className="mt-3 flex flex-wrap items-center gap-1.5 text-muted lg:mt-4 lg:gap-2">
       <span className="lg:hidden">
-        <FavoriteButton className="!min-h-9" listing={listing} />
+        <FavoriteButton className="!min-h-8 !px-2.5 !text-xs" listing={listing} />
       </span>
-      <ShareButton className="!min-h-9" listing={listing} />
-      <Button className="!min-h-9" onClick={handlePrint} size="sm" variant="secondary">
+      <ShareButton className="!min-h-8 !px-2.5 !text-xs lg:!min-h-9" listing={listing} />
+      <Button
+        className="!hidden !min-h-9 lg:!inline-flex"
+        onClick={handlePrint}
+        size="sm"
+        variant="secondary"
+      >
         <Icon name="photo" size={14} />
         طباعة
       </Button>
       <Button
-        className="!min-h-9"
+        className="!min-h-8 !px-2.5 !text-xs lg:!min-h-9"
         onClick={() => setReportOpen(true)}
         size="sm"
         variant="ghost"
