@@ -84,6 +84,205 @@
   justify-content: flex-start;
 }
 
+.mobile-home-header__side-spacer {
+  display: block;
+  width: 2.35rem;
+  height: 2.35rem;
+}
+
+/* Guest menu sheet opened from bottom-nav menu slot */
+.mobile-guest-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  align-items: end;
+}
+
+.mobile-guest-menu__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 45%);
+  cursor: pointer;
+}
+
+.mobile-guest-menu__panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.35rem;
+  max-height: min(78vh, 36rem);
+  overflow: auto;
+  border: 1px solid var(--mh-border);
+  border-radius: 1.25rem 1.25rem 0 0;
+  background: var(--mh-bg, #fff);
+  padding: 0.85rem 1rem calc(5.5rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -12px 40px rgb(15 23 42 / 18%);
+  animation: mobile-home-slide-down var(--mh-duration) var(--mh-ease);
+}
+
+.mobile-guest-menu__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.mobile-guest-menu__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--mh-primary, #0b1628);
+}
+
+.mobile-guest-menu__close {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--mh-border);
+  border-radius: 999px;
+  background: var(--mh-surface-muted, #f8fafc);
+  color: var(--mh-primary, #0b1628);
+}
+
+.mobile-guest-menu__profile {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border: 1px solid rgb(201 164 92 / 28%);
+  border-radius: var(--mh-radius-lg, 1rem);
+  background: linear-gradient(
+    135deg,
+    rgb(248 243 234 / 96%) 0%,
+    rgb(255 255 255 / 96%) 100%
+  );
+  padding: 0.75rem 0.875rem;
+}
+
+.mobile-guest-menu__profile-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--mh-gold, #c9a45c);
+}
+
+.mobile-guest-menu__profile-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mobile-guest-menu__profile-eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--mh-muted, #6b7280);
+}
+
+.mobile-guest-menu__profile-name {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--mh-primary, #0b1628);
+}
+
+.mobile-guest-menu__profile-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mh-gold, #a88642);
+}
+
+.mobile-guest-menu__register {
+  display: block;
+  padding: 0.35rem 0.25rem 0.55rem;
+  font-size: 0.78rem;
+  color: var(--mh-muted, #6b7280);
+}
+
+.mobile-guest-menu__register span {
+  font-weight: 800;
+  color: var(--mh-gold, #a88642);
+}
+
+.mobile-guest-menu__link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 0.9rem;
+  padding: 0.7rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 750;
+  color: var(--mh-primary, #0b1628);
+}
+
+.mobile-guest-menu__link--active {
+  background: rgb(201 164 92 / 14%);
+  color: #a88642;
+}
+
+.mobile-guest-menu__link-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: rgb(15 23 42 / 4%);
+}
+
+.mobile-guest-menu__language {
+  margin-top: 0.35rem;
+}
+
+.mobile-guest-menu__theme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 0.9rem;
+  background: rgb(15 23 42 / 3%);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.mobile-guest-menu__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e8c978 0%, #c9a45c 55%, #a88642 100%);
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #0b1628;
+}
+
+@media (min-width: 1024px) {
+  .mobile-guest-menu {
+    display: none;
+  }
+}
+
+html[data-theme="dark"] .mobile-guest-menu__panel {
+  background: #121a2a;
+  border-color: rgb(255 255 255 / 10%);
+}
+
+html[data-theme="dark"] .mobile-guest-menu__profile {
+  background: rgb(212 184 122 / 10%);
+}
+
 .mobile-home-header__side--end {
   justify-content: flex-end;
   overflow: visible;
@@ -2227,7 +2426,11 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   align-items: center;
   gap: 0.25rem;
   padding-bottom: 0.125rem;
+  border: 0;
+  background: transparent;
   color: #6b7280;
+  font: inherit;
+  cursor: pointer;
   transition: color var(--mh-duration) var(--mh-ease);
   -webkit-tap-highlight-color: transparent;
 }
