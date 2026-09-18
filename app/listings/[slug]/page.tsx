@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MobileBottomNav } from "@/features/home/components/mobile/MobileBottomNav";
 import { ListingDetailsView } from "@/features/listings/components/ListingDetailsView";
 import {
   RecentlyViewedSection,
@@ -92,7 +91,7 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
     <>
       <SiteHeader />
       <RecentlyViewedTracker listing={listing} />
-      <main className="pb-44 lg:pb-0">
+      <main className="pb-28 lg:pb-0">
         <ListingDetailsView
           breadcrumbs={[
             { href: "/", label: tx(locale, "الرئيسية") },
@@ -113,7 +112,6 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
         />
       </main>
       <SiteFooter />
-      <MobileBottomNav />
     </>
   );
 }
