@@ -1,6 +1,7 @@
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
 import { FavoritesPanel } from "@/features/profile/components/FavoritesPanel";
 import { FollowedSellersPanel } from "@/features/profile/components/FollowedSellersPanel";
+import { ProfileAppSettings } from "@/features/profile/components/ProfileAppSettings";
 import { ProfileSavedSearches } from "@/features/profile/components/ProfileSavedSearches";
 import { ProfileActivityPanel } from "@/features/profile/components/ProfileActivityPanel";
 import { ProfileHashScroll } from "@/features/profile/components/ProfileHashScroll";
@@ -26,6 +27,7 @@ export default async function ProfilePage() {
           user={user}
         >
           <ProfileForm user={user} />
+          <ProfileAppSettings />
           <div className="mt-6">
             <SecuritySettingsPanel />
           </div>

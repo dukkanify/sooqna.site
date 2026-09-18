@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --test --experimental-strip-types scripts/auth-regression.test.mjs scripts/data-integrity.test.mjs scripts/smart-filters.test.mjs scripts/login-form-payload.test.mjs scripts/buy-again.test.mjs scripts/qa-isolated-cleanup.test.mjs scripts/escrow-auto-release.test.mjs scripts/rbac-storage-delivery.test.mjs scripts/rbac-action-enforcement.test.mjs scripts/vehicle-catalog.test.mjs scripts/arabic-hero-search.test.mjs scripts/model-dropdown-stability.test.mjs scripts/followed-sellers-profile.test.mjs scripts/notification-sound.test.mjs",
+    "test": "node --test --experimental-strip-types scripts/auth-regression.test.mjs scripts/data-integrity.test.mjs scripts/smart-filters.test.mjs scripts/login-form-payload.test.mjs scripts/buy-again.test.mjs scripts/qa-isolated-cleanup.test.mjs scripts/escrow-auto-release.test.mjs scripts/rbac-storage-delivery.test.mjs scripts/rbac-action-enforcement.test.mjs scripts/vehicle-catalog.test.mjs scripts/arabic-hero-search.test.mjs scripts/model-dropdown-stability.test.mjs scripts/followed-sellers-profile.test.mjs scripts/notification-sound.test.mjs scripts/mobile-menu-footer.test.mjs",
     "import:vehicle-catalog": "node scripts/import-vehicle-catalog.mjs",
     "test:e2e": "playwright test",
     "verify:isolation": "node scripts/verify-isolation.mjs"

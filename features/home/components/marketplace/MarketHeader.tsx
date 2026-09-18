@@ -133,7 +133,8 @@ export function MarketHeader() {
             <button
               aria-expanded={menuOpen}
               aria-label={menuOpen ? copy.closeMenu : copy.menu}
-              className="market-header__menu-btn lg:hidden"
+              className="market-header__menu-btn hidden"
+              hidden
               onClick={() => setMenuOpen((open) => !open)}
               type="button"
             >

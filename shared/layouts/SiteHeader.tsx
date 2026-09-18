@@ -169,7 +169,8 @@ export function SiteHeader() {
             <button
               aria-expanded={menuOpen}
               aria-label={menuOpen ? copy.closeMenu : copy.menu}
-              className="focus-ring motion-press grid size-11 shrink-0 place-items-center overflow-visible rounded-[var(--radius-xl)] border border-border bg-surface text-primary shadow-[var(--shadow-xs)] transition hover:border-secondary/50 lg:hidden"
+              className="focus-ring motion-press hidden size-11 shrink-0 place-items-center overflow-visible rounded-[var(--radius-xl)] border border-border bg-surface text-primary shadow-[var(--shadow-xs)] transition hover:border-secondary/50"
+              hidden
               onClick={() => setMenuOpen((open) => !open)}
               type="button"
             >
