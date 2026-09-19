@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ChatConversation } from "@/services/chat";
 import {
   addMessageToConversation,
-  getChatConversationById,
+  counterpartName,
+  fetchConversationById,
   markConversationRead,
 } from "@/services/chat";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
@@ -28,18 +29,39 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isReady, setIsReady] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+
+  const sync = useCallback(async () => {
+    try {
+      const current = await fetchConversationById(conversationId);
+      setConversation(current);
+      if (current) {
+        void markConversationRead(conversationId);
+      }
+    } catch {
+      setConversation(null);
+    } finally {
+      setIsReady(true);
+    }
+  }, [conversationId]);
 
   useEffect(() => {
-    const sync = () => {
-      const current = getChatConversationById(conversationId) ?? null;
-      setConversation(current);
-      setIsReady(true);
-      if (current) markConversationRead(conversationId);
+    const timeoutId = window.setTimeout(() => {
+      void sync();
+    }, 0);
+    const onLocal = () => {
+      void sync();
     };
-    sync();
-    window.addEventListener(STORAGE_EVENTS.chatChange, sync);
-    return () => window.removeEventListener(STORAGE_EVENTS.chatChange, sync);
-  }, [conversationId]);
+    window.addEventListener(STORAGE_EVENTS.chatChange, onLocal);
+    const timer = window.setInterval(() => {
+      void sync();
+    }, 8000);
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.removeEventListener(STORAGE_EVENTS.chatChange, onLocal);
+      window.clearInterval(timer);
+    };
+  }, [sync]);
 
   if (!isReady) {
     return <Card className="p-6">جاري تحميل المحادثة...</Card>;
@@ -51,7 +73,7 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
       <EmptyState
         actionHref="/chat"
         actionLabel="العودة للرسائل"
-        description="المحادثة غير موجودة في هذا المتصفح."
+        description="هذه المحادثة غير متاحة لحسابك، أو ربما تم حذفها."
         icon="message"
         title="المحادثة غير موجودة"
       />
@@ -63,8 +85,9 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
   const listingHref = conversation.listingId.startsWith("local-")
     ? `/listings/local/${conversation.listingId}`
     : `/listings/${conversation.listingSlug}`;
+  const otherName = counterpartName(conversation, user?.id);
 
-  function handleSend(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSend(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
@@ -83,29 +106,38 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
       return;
     }
 
-    const updated = addMessageToConversation(
-      conversation.id,
-      user.id,
-      message.trim(),
-    );
+    setIsSending(true);
+    try {
+      const updated = await addMessageToConversation(
+        conversation.id,
+        user.id,
+        message.trim(),
+      );
 
-    if (!updated) {
-      setError("تعذر إرسال الرسالة.");
-      return;
+      if (!updated) {
+        setError("تعذر إرسال الرسالة.");
+        return;
+      }
+
+      const recipientUserId =
+        user.id === conversation.sellerId
+          ? conversation.buyerId
+          : conversation.sellerId;
+      notifyChatEmail({
+        conversationId: conversation.id,
+        listingTitle: conversation.listingTitle,
+        preview: message.trim(),
+        recipientUserId,
+        senderName: user.fullName,
+      });
+
+      setConversation(updated);
+      setMessage("");
+    } catch {
+      setError("تعذر إرسال الرسالة. تحقق من الاتصال وحاول مرة أخرى.");
+    } finally {
+      setIsSending(false);
     }
-
-    const recipientUserId =
-      user.id === conversation.sellerId ? conversation.buyerId : conversation.sellerId;
-    notifyChatEmail({
-      conversationId: conversation.id,
-      listingTitle: conversation.listingTitle,
-      preview: message.trim(),
-      recipientUserId,
-      senderName: user.fullName,
-    });
-
-    setConversation(updated);
-    setMessage("");
   }
 
   return (
@@ -117,8 +149,8 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
             <p className="text-sm font-semibold text-ink" data-ugc>
               {conversation.listingTitle}
             </p>
-            <p className="mt-1 text-xs text-muted">
-              مع {conversation.sellerName}
+            <p className="mt-1 text-xs text-muted" data-ugc>
+              مع {otherName}
             </p>
           </div>
           <Button href={listingHref} size="sm" variant="secondary">
@@ -154,7 +186,7 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
           })}
         </div>
 
-        <form className="mt-4 grid gap-2 border-t border-border pt-4" onSubmit={handleSend}>
+        <form className="mt-4 grid gap-2 border-t border-border pt-4" onSubmit={(e) => void handleSend(e)}>
           <Input
             label="رسالتك"
             name="message"
@@ -164,7 +196,7 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
           />
           {error ? <FormMessage variant="error">{error}</FormMessage> : null}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <Button type="submit" variant="primary">
+            <Button loading={isSending} type="submit" variant="primary">
               <Icon className="shrink-0" name="send" size={16} />
               إرسال
             </Button>

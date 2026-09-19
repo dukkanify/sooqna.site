@@ -10,6 +10,9 @@ import {
   markConversationReadForUser,
   resolveOrCreateServerConversation,
 } from "@/services/chat/chat-server-store";
+import { getListingById } from "@/services/listings/listing-store";
+import { isPublicListingStatus } from "@/shared/constants/listingStatuses";
+import { createNotification } from "@/services/payments/notification-store";
 
 export async function GET() {
   const user = await requireSessionUser();
@@ -37,14 +40,25 @@ export async function POST(request: Request) {
 
   try {
     if (body.action === "open" && body.listing) {
+      if (!body.listing.sellerId || body.listing.sellerId === user.id) {
+        return NextResponse.json({ error: "OWN_LISTING" }, { status: 400 });
+      }
+      const listing = await getListingById(body.listing.id);
+      if (listing && !isPublicListingStatus(listing.status)) {
+        return NextResponse.json(
+          { error: "LISTING_NOT_PUBLIC" },
+          { status: 403 },
+        );
+      }
       const conversation = await resolveOrCreateServerConversation({
         buyerId: user.id,
         buyerName: user.fullName,
         listingId: body.listing.id,
-        listingTitle: body.listing.title,
-        listingSlug: body.listing.slug,
+        listingTitle: body.listing.title || listing?.title || "إعلان",
+        listingSlug: body.listing.slug || listing?.slug || body.listing.id,
         sellerId: body.listing.sellerId,
-        sellerName: body.listing.sellerName,
+        sellerName:
+          body.listing.sellerName || listing?.seller.name || "البائع",
       });
       return NextResponse.json({ conversation });
     }
@@ -58,6 +72,25 @@ export async function POST(request: Request) {
       if (!conversation) {
         return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
       }
+
+      const recipientId =
+        conversation.buyerId === user.id
+          ? conversation.sellerId
+          : conversation.buyerId;
+      const preview = body.message.trim().slice(0, 120);
+      void createNotification({
+        userId: recipientId,
+        type: "chat_message",
+        title: "رسالة جديدة",
+        titleEn: "New message",
+        body: `${user.fullName}: ${preview}`,
+        bodyEn: `${user.fullName}: ${preview}`,
+        href: `/chat/${conversation.id}`,
+        dedupeKey: `chat:${conversation.id}:${conversation.updatedAt}`,
+      }).catch((error) => {
+        console.error("[Sooqna Chat] in-app notify failed", error);
+      });
+
       return NextResponse.json({ conversation });
     }
 

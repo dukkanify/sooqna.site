@@ -23,7 +23,8 @@ export type NotificationType =
   | "stripe_requirements"
   | "escrow_auto_released"
   | "saved_search_match"
-  | "seller_followed_listing";
+  | "seller_followed_listing"
+  | "chat_message";
 
 export type AppNotification = {
   id: string;

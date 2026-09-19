@@ -223,12 +223,6 @@ export function SiteFooter() {
             <LanguageSwitch className="!mt-0" variant="compact" />
             <p className="site-footer__copy">{BRAND.copyright}</p>
           </div>
-          <div className="site-footer__credit">
-            <p className="site-footer__credit-ar">{BRAND.nameAr} — {BRAND.nameEn}</p>
-            <p className="site-footer__credit-en" dir="ltr">
-              {BRAND.domain}
-            </p>
-          </div>
         </div>
       </div>
     </footer>
