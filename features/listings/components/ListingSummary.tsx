@@ -13,6 +13,8 @@ import { Badge } from "@/shared/ui/Badge";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import {
   isShowcaseListing,
@@ -37,6 +39,7 @@ const conditionLabels: Record<Listing["condition"], string> = {
 };
 
 export function ListingSummary({ category, listing }: ListingSummaryProps) {
+  const locale = useLocale();
   const config = getListingActionConfig(listing);
   const locationLabel = listing.area
     ? `${listing.area}، ${listing.emirate ?? listing.city}`
@@ -92,7 +95,7 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
             <span className="font-medium text-muted">المشاهدات</span>
             <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
               <Icon name="eye" size={14} />
-              {listing.views.toLocaleString("ar-AE")}
+              {listing.views.toLocaleString(intlLocale(locale))}
             </span>
           </div>
         ) : null}

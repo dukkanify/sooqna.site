@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useState } from "react";
 import type { ServerFavorite } from "@/types/domain/server-favorite";
@@ -13,6 +16,7 @@ type FavoritesPayload = {
 };
 
 export function AdminFavoritesPanel() {
+  const locale = useLocale();
   const [data, setData] = useState<FavoritesPayload | null>(null);
 
   useEffect(() => {
@@ -78,7 +82,7 @@ export function AdminFavoritesPanel() {
                 {item.title || item.listingId}
               </p>
               <p className="admin-ops__queue-meta">
-                {item.userId} · {new Date(item.savedAt).toLocaleString("ar-AE")}
+                {item.userId} · {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
               </p>
             </div>
           </li>

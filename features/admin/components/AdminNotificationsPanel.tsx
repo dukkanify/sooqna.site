@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useState } from "react";
 import type { AppNotification } from "@/types/domain/notification";
@@ -15,6 +18,7 @@ const emailStatusLabel: Record<EmailLogRecord["status"], string> = {
 };
 
 export function AdminNotificationsPanel() {
+  const locale = useLocale();
   const [items, setItems] = useState<AppNotification[]>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLogRecord[]>([]);
   const [summary, setSummary] = useState({
@@ -86,7 +90,7 @@ export function AdminNotificationsPanel() {
                   {item.body} · {item.userId} · {item.type}
                 </p>
                 <p className="admin-ops__queue-meta">
-                  {new Date(item.createdAt).toLocaleString("ar-AE")}
+                  {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
                 </p>
               </div>
               <span
@@ -116,7 +120,7 @@ export function AdminNotificationsPanel() {
                   {item.to} · {item.type} · {item.entityId}
                 </p>
                 <p className="admin-ops__queue-meta">
-                  {new Date(item.createdAt).toLocaleString("ar-AE")}
+                  {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
                   {item.error ? ` · ${item.error}` : ""}
                 </p>
               </div>

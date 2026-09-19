@@ -6,6 +6,8 @@ import { SearchFilterChips } from "./SearchFilterChips";
 import { SearchQuickFilters } from "./SearchQuickFilters";
 import { buildSearchUrl, type SearchFilterState } from "./search-url";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { useLocale } from "@/shared/i18n/useLocale";
+import { intlLocale } from "@/shared/i18n/locale";
 
 type SearchResultsToolbarProps = {
   basePath?: string;
@@ -30,6 +32,7 @@ export function SearchResultsToolbar({
   resultCount,
   selectedFilters,
 }: SearchResultsToolbarProps) {
+  const locale = useLocale();
   const currentUrl = buildSearchUrl(selectedFilters, undefined, basePath);
 
   return (
@@ -38,7 +41,7 @@ export function SearchResultsToolbar({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-semibold text-ink">
             <span className="text-lg font-bold text-primary">
-              {resultCount.toLocaleString("ar-AE")}
+              {resultCount.toLocaleString(intlLocale(locale))}
             </span>{" "}
             إعلان
           </p>

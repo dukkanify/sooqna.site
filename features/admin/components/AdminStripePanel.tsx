@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { AdminStripeConnectPanel } from "@/features/admin/components/AdminStripeConnectPanel";
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import Link from "next/link";
@@ -60,6 +63,7 @@ type StripePayload = {
 
 /** Platform keys live in Vercel Production — never paste secrets in the browser. */
 export function AdminStripePanel() {
+  const locale = useLocale();
   const [data, setData] = useState<StripePayload | null>(null);
 
   useEffect(() => {
@@ -230,7 +234,7 @@ export function AdminStripePanel() {
                   <p className="admin-ops__queue-label">{order.title}</p>
                   <p className="admin-ops__queue-meta">
                     {order.stripePaymentIntentId ?? order.id} ·{" "}
-                    {new Date(order.createdAt).toLocaleString("ar-AE")}
+                    {new Date(order.createdAt).toLocaleString(intlLocale(locale))}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -251,7 +255,7 @@ export function AdminStripePanel() {
               <div>
                 <p className="admin-ops__queue-label">{event.type}</p>
                 <p className="admin-ops__queue-meta">
-                  {new Date(event.createdAt).toLocaleString("ar-AE")}
+                  {new Date(event.createdAt).toLocaleString(intlLocale(locale))}
                   {event.orderId ? ` · ${event.orderId}` : ""}
                 </p>
               </div>

@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/shared/ui/Button";
@@ -74,6 +77,7 @@ export function AdminStripeConnectPanel({
   mode = "manage",
   platformConfigured: platformHint,
 }: Props) {
+  const locale = useLocale();
   const [connect, setConnect] = useState<ConnectStatusPayload | null>(null);
   const [busy, setBusy] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
@@ -333,7 +337,7 @@ export function AdminStripeConnectPanel({
         </div>
         {status.updatedAt ? (
           <div className="admin-ops__status-chip">
-            آخر تحديث: {new Date(status.updatedAt).toLocaleString("ar-AE")}
+            آخر تحديث: {new Date(status.updatedAt).toLocaleString(intlLocale(locale))}
           </div>
         ) : null}
       </div>

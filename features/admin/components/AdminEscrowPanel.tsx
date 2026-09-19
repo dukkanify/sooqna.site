@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -44,6 +47,7 @@ function matchesFilter(order: Order, filter: EscrowFilter): boolean {
 }
 
 export function AdminEscrowPanel() {
+  const locale = useLocale();
   const [orders, setOrders] = useState<Order[]>([]);
   const [summary, setSummary] = useState({ activeHolds: 0, totalProtected: 0 });
   const [filter, setFilter] = useState<EscrowFilter>("held");
@@ -219,7 +223,7 @@ export function AdminEscrowPanel() {
                       {order.buyerName} → {order.sellerName}
                     </p>
                     <p className="admin-ops__queue-meta">
-                      {new Date(order.createdAt).toLocaleString("ar-AE")}
+                      {new Date(order.createdAt).toLocaleString(intlLocale(locale))}
                     </p>
                     {order.productVerificationStatus ? (
                       <p className="admin-ops__queue-meta">

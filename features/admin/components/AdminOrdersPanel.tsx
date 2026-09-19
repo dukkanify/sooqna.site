@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -110,6 +113,7 @@ function parseFilter(raw: string | null): OrderFilter {
 }
 
 export function AdminOrdersPanel() {
+  const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -288,7 +292,7 @@ export function AdminOrdersPanel() {
                         : ""}
                     </p>
                     <p className="admin-ops__queue-meta">
-                      {new Date(order.createdAt).toLocaleString("ar-AE")}
+                      {new Date(order.createdAt).toLocaleString(intlLocale(locale))}
                       {order.repurchasedFromOrderId
                         ? ` · إعادة شراء من ${order.repurchasedFromOrderId}`
                         : ""}
@@ -307,7 +311,7 @@ export function AdminOrdersPanel() {
                       <p className="admin-ops__queue-meta">
                         أدلة البائع: {proofUrls.length} ملف
                         {order.sellerProofAt
-                          ? ` · ${new Date(order.sellerProofAt).toLocaleString("ar-AE")}`
+                          ? ` · ${new Date(order.sellerProofAt).toLocaleString(intlLocale(locale))}`
                           : ""}
                       </p>
                     ) : null}

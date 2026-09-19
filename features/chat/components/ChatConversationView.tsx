@@ -19,12 +19,15 @@ import { FormMessage } from "@/shared/ui/FormMessage";
 import { Icon } from "@/shared/ui/Icon";
 import { Input } from "@/shared/ui/Input";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { useLocale } from "@/shared/i18n/useLocale";
+import { intlLocale } from "@/shared/i18n/locale";
 
 type ChatConversationViewProps = {
   conversationId: string;
 };
 
 export function ChatConversationView({ conversationId }: ChatConversationViewProps) {
+  const locale = useLocale();
   const [conversation, setConversation] = useState<ChatConversation | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -182,7 +185,7 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
               >
                 <p data-ugc>{item.body}</p>
                 <p className={`mt-1 text-[0.65rem] ${isMine ? "text-white/70" : "text-muted"}`}>
-                  {new Date(item.createdAt).toLocaleString("ar-AE", {
+                  {new Date(item.createdAt).toLocaleString(intlLocale(locale), {
                     day: "numeric",
                     hour: "2-digit",
                     minute: "2-digit",

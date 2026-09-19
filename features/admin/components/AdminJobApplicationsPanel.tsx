@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useState } from "react";
 import type { JobApplication } from "@/types/domain/job-application";
@@ -44,6 +47,7 @@ function statusChipClass(status: JobApplication["status"]): string {
 }
 
 export function AdminJobApplicationsPanel() {
+  const locale = useLocale();
   const [items, setItems] = useState<JobApplication[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -107,7 +111,7 @@ export function AdminJobApplicationsPanel() {
                   </p>
                   <p className="admin-ops__queue-meta">
                     {item.currentCity} · خبرة {item.yearsOfExperience} سنة ·{" "}
-                    {new Date(item.createdAt).toLocaleString("ar-AE")}
+                    {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">

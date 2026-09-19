@@ -167,7 +167,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         {(listing.views ?? 0) > 0 ? (
           <span className="inline-flex items-center gap-1">
             <Icon className="marketplace-card-meta-icon" name="eye" size={12} />
-            {formatViews(listing.views)} مشاهدة
+            {formatViews(listing.views, locale)} مشاهدة
           </span>
         ) : null}
         {showStatus && listing.status !== "active" ? (

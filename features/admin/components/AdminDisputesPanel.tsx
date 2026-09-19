@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -68,6 +71,7 @@ function isActionable(status: DisputeStatus): boolean {
 }
 
 export function AdminDisputesPanel() {
+  const locale = useLocale();
   const [disputes, setDisputes] = useState<AdminDisputeRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("openish");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -224,7 +228,7 @@ export function AdminDisputesPanel() {
                   <div className="text-start">
                     <CurrencyAmount amount={dispute.amount} size="lg" />
                     <p className="mt-1 text-xs text-muted">
-                      {new Date(dispute.createdAt).toLocaleString("ar-AE")}
+                      {new Date(dispute.createdAt).toLocaleString(intlLocale(locale))}
                     </p>
                   </div>
                 </div>

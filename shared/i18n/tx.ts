@@ -94,6 +94,156 @@ const NAME_TEMPLATES: Array<[RegExp, (match: RegExpMatchArray) => string]> = [
     /^([\d,]+)\s*نتيجة$/u,
     (match) => `${match[1]} results`,
   ],
+  [
+    /^منذ (\d+) د$/u,
+    (match) => `${match[1]}m ago`,
+  ],
+  [
+    /^منذ (\d+) س$/u,
+    (match) => `${match[1]}h ago`,
+  ],
+  [
+    /^(\d+) فلتر نشط$/u,
+    (match) => `${match[1]} active filters`,
+  ],
+  [
+    /^(\d+) محفوظ$/u,
+    (match) => `${match[1]} saved`,
+  ],
+  [
+    /^إعادة الإرسال خلال (\d+)ث$/u,
+    (match) => `Resend in ${match[1]}s`,
+  ],
+  [
+    /^مهلة النزاع: حتى (.+)\.$/u,
+    (match) => `Dispute window: until ${match[1]}.`,
+  ],
+  [
+    /^(.+) — قريبًا$/u,
+    (match) => `${tx("en", match[1])} — Coming soon`,
+  ],
+  [
+    /^(.+)، (\d+) غير مقروء$/u,
+    (match) => `${tx("en", match[1])}, ${match[2]} unread`,
+  ],
+  [
+    /^مع (.+)$/u,
+    (match) => `with ${match[1]}`,
+  ],
+  [
+    /^آخر تحديث: (.+)$/u,
+    (match) => `Last updated: ${match[1]}`,
+  ],
+  [
+    /^(\d+) ماركة — مرّر أو اكتب للبحث$/u,
+    (match) => `${match[1]} makes — scroll or type to search`,
+  ],
+  [
+    /^(\d+) موديل — مرّر أو اكتب للبحث$/u,
+    (match) => `${match[1]} models — scroll or type to search`,
+  ],
+  [
+    /^لا توجد ماركة مطابقة — سيتم حفظ «(.+)» كما كتبتها\.$/u,
+    (match) => `No matching make — “${match[1]}” will be saved as typed.`,
+  ],
+  [
+    /^(.+) مطلوب\.$/u,
+    (match) => `${tx("en", match[1])} is required.`,
+  ],
+  [
+    /^(.+) يجب أن يكون رقماً\.$/u,
+    (match) => `${tx("en", match[1])} must be a number.`,
+  ],
+  [
+    /^\(المحاولات المتبقية: (\d+)\)$/u,
+    (match) => `(Attempts left: ${match[1]})`,
+  ],
+  [
+    /^رقم (.+)$/u,
+    (match) => `Number ${match[1]}`,
+  ],
+  [
+    /^رمز التحقق: (.+)$/u,
+    (match) => `Verification code: ${match[1]}`,
+  ],
+  [
+    /^تبقّى أقل من (\d+) ساعة لفتح نزاع\.$/u,
+    (match) => `Less than ${match[1]} hours left to open a dispute.`,
+  ],
+  [
+    /^تبقّى حوالي (\d+) ساعة لفتح نزاع \(تنبيه 48 ساعة\)\.$/u,
+    (match) => `About ${match[1]} hours left to open a dispute (48h notice).`,
+  ],
+  [
+    /^تم تحديث الحالة إلى: (.+)$/u,
+    (match) => `Status updated to: ${tx("en", match[1])}`,
+  ],
+  [
+    /^خريطة موقع (.+)$/u,
+    (match) => `Location map: ${match[1]}`,
+  ],
+  [
+    /^صورة (\d+)$/u,
+    (match) => `Image ${match[1]}`,
+  ],
+  [
+    /^صورة واحدة على الأقل مطلوبة — حتى (\d+) صور$/u,
+    (match) => `At least one photo required — up to ${match[1]} photos`,
+  ],
+  [
+    /^يمكنك إضافة حتى (\d+) صورة$/u,
+    (match) => `You can add up to ${match[1]} photos`,
+  ],
+  [
+    /^طلب حجز خدمة «(.+)»$/u,
+    (match) => `Service booking request: “${match[1]}”`,
+  ],
+  [
+    /^طلب عرض سعر لخدمة «(.+)»$/u,
+    (match) => `Quote request for “${match[1]}”`,
+  ],
+  [
+    /^مرحباً، أنا مهتم بإعلان «(.+)»\.$/u,
+    (match) => `Hi, I’m interested in “${match[1]}”.`,
+  ],
+  [
+    /^استلمنا رسالتك وأرسلنا تأكيدًا إلى بريدك\. يمكنك أيضًا مراسلتنا على (.+)\.$/u,
+    (match) =>
+      `We received your message and emailed a confirmation. You can also reach us at ${match[1]}.`,
+  ],
+  [
+    /^استلمنا رسالتك\. إذا احتجت تواصلًا أسرع راسلنا على (.+)\.$/u,
+    (match) =>
+      `We received your message. For faster help, email ${match[1]}.`,
+  ],
+  [
+    /^تصفح إعلانات (.+) في (.+)\.$/u,
+    (match) =>
+      `Browse ${tx("en", match[1])} listings in ${tx("en", match[2])}.`,
+  ],
+  [
+    /^تصفح كل إعلانات (.+) على (.+)\.$/u,
+    (match) =>
+      `Browse all of ${match[1]}’s listings on ${tx("en", match[2])}.`,
+  ],
+  [
+    /^للاستفسارات غير المرتبطة بنزاع مفتوح، استخدم صفحة الدعم أو (.+)\.$/u,
+    (match) =>
+      `For questions not tied to an open dispute, use Support or ${match[1]}.`,
+  ],
+  [
+    /^واجهة تعديل الإعلان "(.+)" جاهزة للربط مع API التعديل\.$/u,
+    (match) =>
+      `Listing edit UI for “${match[1]}” is ready to wire to the edit API.`,
+  ],
+  [
+    /^من (.+)$/u,
+    (match) => `From ${tx("en", match[1])}`,
+  ],
+  [
+    /^إلى (.+)$/u,
+    (match) => `To ${tx("en", match[1])}`,
+  ],
 ];
 
 const UNIT_SUFFIXES: Array<[RegExp, string]> = [

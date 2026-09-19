@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useState } from "react";
 import type { AdminSiteSettings } from "@/services/admin/admin-settings-store";
@@ -9,6 +12,7 @@ import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 
 export function AdminSettingsPanel() {
+  const locale = useLocale();
   const [settings, setSettings] = useState<AdminSiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -236,7 +240,7 @@ export function AdminSettingsPanel() {
         ) : null}
       </div>
       <p className="text-xs text-muted">
-        آخر تحديث: {new Date(settings.updatedAt).toLocaleString("ar-AE")}
+        آخر تحديث: {new Date(settings.updatedAt).toLocaleString(intlLocale(locale))}
       </p>
     </div>
   );

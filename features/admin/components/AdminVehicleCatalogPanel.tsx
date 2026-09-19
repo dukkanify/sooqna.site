@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { Fragment, useEffect, useState } from "react";
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { Button } from "@/shared/ui/Button";
@@ -47,6 +50,7 @@ type Suggestion = {
 };
 
 export function AdminVehicleCatalogPanel() {
+  const locale = useLocale();
   const [makes, setMakes] = useState<MakeRow[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [query, setQuery] = useState("");
@@ -284,7 +288,7 @@ export function AdminVehicleCatalogPanel() {
                 <p className="text-sm font-semibold text-ink">{item.value}</p>
                 <p className="text-xs text-muted">
                   {item.requestedByName ?? "بائع"} ·{" "}
-                  {new Date(item.createdAt).toLocaleString("ar-AE")}
+                  {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
                 </p>
               </div>
               <div className="flex gap-2">

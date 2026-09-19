@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useState } from "react";
 import type { AdminAuditEntry } from "@/services/admin/admin-audit-store";
@@ -7,6 +10,7 @@ import { getSessionUser } from "@/services/storage";
 import { Card } from "@/shared/ui/Card";
 
 export function AdminAuditPanel() {
+  const locale = useLocale();
   const [entries, setEntries] = useState<AdminAuditEntry[]>([]);
 
   useEffect(() => {
@@ -37,7 +41,7 @@ export function AdminAuditPanel() {
                 </p>
                 <p className="admin-ops__queue-meta">
                   {entry.actorName} ·{" "}
-                  {new Date(entry.createdAt).toLocaleString("ar-AE")}
+                  {new Date(entry.createdAt).toLocaleString(intlLocale(locale))}
                 </p>
                 {entry.detail ? (
                   <p className="admin-ops__queue-meta">{entry.detail}</p>

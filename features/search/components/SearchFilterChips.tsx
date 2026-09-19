@@ -5,6 +5,8 @@ import type { Category } from "@/types";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 import { getCategoryFieldLabel } from "@/shared/constants/category-fields";
 import {
   buildSearchUrl,
@@ -37,6 +39,7 @@ export function SearchFilterChips({
   basePath = "/search",
   selectedFilters,
 }: SearchFilterChipsProps) {
+  const locale = useLocale();
   const categoryId = selectedFilters.category ?? "";
   const chips: { href: string; key: string; label: React.ReactNode }[] = [];
 
@@ -143,7 +146,7 @@ export function SearchFilterChips({
     <LocalizedTree>
     <div className="mb-4 flex flex-wrap items-center gap-2">
       <span className="text-xs font-semibold text-muted">
-        {chips.length.toLocaleString("ar-AE")} فلتر نشط
+        {chips.length.toLocaleString(intlLocale(locale))} فلتر نشط
       </span>
       {chips.map((chip) => (
         <Link
