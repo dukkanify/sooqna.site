@@ -9,6 +9,7 @@ import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { useTx } from "@/shared/i18n/useTx";
 import {
   SearchTypeahead,
   type SearchSuggestion,
@@ -91,6 +92,7 @@ function FilterFields({
   easy = false,
   carsGrouped = false,
 }: FilterFieldsProps) {
+  const t = useTx();
   const selectedCategory =
     categories.find((category) => category.id === (draft.category || "")) ??
     undefined;
@@ -154,10 +156,11 @@ function FilterFields({
             options={[
               { label: "كل التصنيفات", value: "" },
               ...categories.map((category) => ({
-                label: category.name,
+                label: t(category.name),
                 value: category.id,
               })),
             ]}
+            optionsAreUgc
             value={draft.category ?? ""}
           />
         ) : (

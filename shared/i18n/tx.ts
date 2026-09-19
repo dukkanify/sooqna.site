@@ -237,6 +237,10 @@ const NAME_TEMPLATES: Array<[RegExp, (match: RegExpMatchArray) => string]> = [
       `Listing edit UI for “${match[1]}” is ready to wire to the edit API.`,
   ],
   [
+    /^عرض المزيد \((\d+)\)$/u,
+    (match) => `Show more (${match[1]})`,
+  ],
+  [
     /^من (.+)$/u,
     (match) => `From ${tx("en", match[1])}`,
   ],

@@ -46,9 +46,7 @@ export default function AboutPage() {
             <Card className="p-5" variant="flat">
               <h2 className="text-sm font-bold text-ink">قصتنا</h2>
               <p className="mt-2 text-sm leading-7 text-muted">
-                {BRAND.nameAr} ({BRAND.nameEn}) منصة إعلانات مبوبة تجمع السيارات والعقارات
-                والإلكترونيات والوظائف والخدمات في مكان واحد. نسعى لسوق أوضح وأكثر أمانًا،
-                مع محفظة وخيارات دفع محمية عند تفعيل الضمان.
+                سوقنا (Sooqna) منصة إعلانات مبوبة تجمع السيارات والعقارات والإلكترونيات والوظائف والخدمات في مكان واحد. نسعى لسوق أوضح وأكثر أمانًا، مع محفظة وخيارات دفع محمية عند تفعيل الضمان.
               </p>
             </Card>
             {values.map((value) => (

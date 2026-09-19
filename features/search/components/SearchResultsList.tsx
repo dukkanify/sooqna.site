@@ -173,7 +173,7 @@ export function SearchResultsList({
             size="md"
             variant="secondary"
           >
-            عرض المزيد ({visibleListings.length - visibleCount})
+            {`عرض المزيد (${visibleListings.length - visibleCount})`}
           </Button>
         </div>
       ) : null}
