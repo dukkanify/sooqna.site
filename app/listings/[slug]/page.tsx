@@ -11,6 +11,7 @@ import { getCategories } from "@/services/categories";
 import { getListingBySlug, getRelatedListings } from "@/services/listings";
 import { getValidSessionUser } from "@/services/auth/require-session";
 import { resolveListingPageAccess } from "@/shared/listings/listing-page-access";
+import { normalizeListingSlugParam } from "@/shared/listings/listing-slug";
 import { listingDescription, listingTitle } from "@/shared/i18n/listing-copy";
 import { getRequestLocale } from "@/shared/i18n/locale";
 import { tx } from "@/shared/i18n/tx";
@@ -29,7 +30,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: ListingPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeListingSlugParam(rawSlug);
   const session = await getValidSessionUser();
   const listing =
     (await getListingBySlug(slug, {
@@ -67,7 +69,8 @@ export async function generateMetadata({
 }
 
 export default async function ListingDetailsPage({ params }: ListingPageProps) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeListingSlugParam(rawSlug);
   const session = await getValidSessionUser();
   // Authenticated viewers (seller/admin) also need fixture/demo rows and their
   // own pending_review ads — load with fixtures first when a session exists.
@@ -76,6 +79,12 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
     : await getListingBySlug(slug);
   if (!listing && session) {
     listing = await getListingBySlug(slug);
+  }
+  // Retry with the raw param in case normalization differed from storage.
+  if (!listing && rawSlug && rawSlug !== slug) {
+    listing = await getListingBySlug(rawSlug, {
+      includeFixtures: Boolean(session),
+    });
   }
 
   const access = resolveListingPageAccess(listing, session);

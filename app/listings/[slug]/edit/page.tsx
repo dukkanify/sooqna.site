@@ -4,6 +4,7 @@ import { PageHero } from "@/shared/ui/PageHero";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { getListingBySlug } from "@/services/listings";
+import { normalizeListingSlugParam } from "@/shared/listings/listing-slug";
 
 type EditListingPageProps = {
   params: Promise<{
@@ -12,7 +13,8 @@ type EditListingPageProps = {
 };
 
 export default async function EditListingPage({ params }: EditListingPageProps) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeListingSlugParam(rawSlug);
   const listing = await getListingBySlug(slug, { includeFixtures: true });
 
   return (

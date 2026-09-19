@@ -243,21 +243,38 @@ export async function persistAllListings(listings: Listing[]): Promise<void> {
 }
 
 export async function loadListingBySlug(slug: string): Promise<Listing | null> {
+  const { listingSlugLookupKeys } = await import("@/shared/listings/listing-slug");
+  const keys = listingSlugLookupKeys(slug);
+  if (keys.length === 0) return null;
+
   try {
     if (await ensureListingsTable()) {
       const pool = await getOptionalPostgresPool();
-      if (!pool) return await findInMemoryCatalog(slug);
+      if (!pool) {
+        for (const key of keys) {
+          const hit = await findInMemoryCatalog(key);
+          if (hit) return hit;
+        }
+        return null;
+      }
       try {
         const result = await pool.query(
-          `SELECT payload FROM ${TABLE} WHERE slug = $1 LIMIT 1`,
-          [slug],
+          `SELECT payload FROM ${TABLE}
+           WHERE slug = ANY($1::text[])
+              OR payload->>'slug' = ANY($1::text[])
+           LIMIT 1`,
+          [keys],
         );
         const payload = (result.rows[0]?.payload as Listing) ?? null;
         if (payload) return payload;
       } catch (error) {
         if (isPostgresQuotaOrUnavailableError(error)) {
           markPostgresUnavailable(error);
-          return await findInMemoryCatalog(slug);
+          for (const key of keys) {
+            const hit = await findInMemoryCatalog(key);
+            if (hit) return hit;
+          }
+          return null;
         }
         throw error;
       }
@@ -265,16 +282,23 @@ export async function loadListingBySlug(slug: string): Promise<Listing | null> {
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {
       markPostgresUnavailable(error);
-      return await findInMemoryCatalog(slug);
+      for (const key of keys) {
+        const hit = await findInMemoryCatalog(key);
+        if (hit) return hit;
+      }
+      return null;
     }
     throw error;
   }
 
   const stored = await readJsonFile();
-  return (
-    stored?.find((item) => item.slug === slug) ??
-    (await findInMemoryCatalog(slug))
-  );
+  for (const key of keys) {
+    const hit =
+      stored?.find((item) => item.slug === key) ??
+      (await findInMemoryCatalog(key));
+    if (hit) return hit;
+  }
+  return null;
 }
 
 export async function loadListingById(id: string): Promise<Listing | null> {
