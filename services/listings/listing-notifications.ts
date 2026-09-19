@@ -28,7 +28,8 @@ export async function notifyListingSubmitted(listing: Listing): Promise<void> {
         titleEn: "We received your listing",
         body: `إعلان «${listing.title}» قيد المراجعة وسيظهر بعد الموافقة.`,
         bodyEn: `“${listing.title}” is under review and will go live after approval.`,
-        href: "/dashboard/listings",
+        // Owner preview of the pending ad — not a public 404.
+        href: `/listings/${listing.slug}`,
         dedupeKey: `listing_received:${listing.id}`,
       }),
     "listing_received in-app",
@@ -79,7 +80,7 @@ export async function notifyListingRejected(
         bodyEn: reason
           ? `We could not publish “${listing.title}”: ${reason}`
           : `We could not publish “${listing.title}” in its current form. Edit it and resubmit.`,
-        href: "/dashboard/listings",
+        href: `/listings/${listing.slug}`,
         dedupeKey: `listing_rejected:${listing.id}:${listing.postedAt ?? ""}`,
       }),
     "listing_rejected in-app",

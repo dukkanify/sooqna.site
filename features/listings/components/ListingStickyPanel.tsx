@@ -21,6 +21,7 @@ import { isGuestCheckoutEnabled } from "@/shared/constants/feature-flags";
 import { LISTING_ERRORS } from "@/shared/constants/listing-errors";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import { isOwnListing } from "@/shared/listings/listing-ownership";
+import { isPublicListingStatus } from "@/shared/constants/listingStatuses";
 import { getCheckoutPath, getListingCanonicalUrl } from "@/shared/listings/listing-url";
 import {
   getTelHref,
@@ -61,6 +62,7 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
   const config = getListingActionConfig(listing);
   const user = typeof window !== "undefined" ? getSessionUser() : null;
   const isOwn = user ? isOwnListing(listing, user) : false;
+  const canTransact = isPublicListingStatus(listing.status) && !isOwn;
 
   const locationLabel = listing.area
     ? `${listing.area}، ${listing.emirate ?? listing.city}`
@@ -125,17 +127,19 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
       </div>
 
       <div className="mt-6 grid gap-2">
-        {!isOwn ? (
+        {canTransact ? (
           <ListingPrimaryAction action={config.primaryAction} listing={listing} />
         ) : null}
-        <SellerContactActions
-          hideChat={
-            config.primaryAction === "CONTACT_SELLER" ||
-            config.primaryAction === "SEND_MESSAGE"
-          }
-          listing={listing}
-          stacked
-        />
+        {canTransact ? (
+          <SellerContactActions
+            hideChat={
+              config.primaryAction === "CONTACT_SELLER" ||
+              config.primaryAction === "SEND_MESSAGE"
+            }
+            listing={listing}
+            stacked
+          />
+        ) : null}
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
@@ -205,17 +209,22 @@ export function MobileStickyActionBar({ listing }: MobileStickyActionBarProps) {
   const config = getListingActionConfig(listing);
   const user = useSyncExternalStore(subscribeSession, getSessionSnapshot, () => null);
   const isOwn = user ? isOwnListing(listing, user) : false;
+  const canTransact = isPublicListingStatus(listing.status) && !isOwn;
   const tel = getTelHref(listing);
   const whatsapp = getWhatsAppHref(listing, getListingCanonicalUrl(listing));
   const primaryLabel = getListingActionLabel(listing, config.primaryAction);
   const showGoldCta =
-    !isOwn && MOBILE_PRIMARY_CTA_ACTIONS.has(config.primaryAction);
-  const showContactIcons = !isOwn;
+    canTransact && MOBILE_PRIMARY_CTA_ACTIONS.has(config.primaryAction);
+  const showContactIcons = canTransact;
   const hideChatIcon =
     config.primaryAction === "CONTACT_SELLER" ||
     config.primaryAction === "SEND_MESSAGE";
   const isCheckoutCta =
     config.primaryAction === "BUY_NOW" || config.primaryAction === "RESERVE";
+
+  if (!canTransact) {
+    return null;
+  }
 
   function handleBuyNow() {
     if (listing.status !== "active") {

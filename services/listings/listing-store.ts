@@ -188,13 +188,25 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
   const { syncLiveCatalogMedia } = await import(
     "@/services/listings/live-marketplace-catalog"
   );
+  const { listingSlugLookupKeys, normalizeListingSlugParam } = await import(
+    "@/shared/listings/listing-slug"
+  );
   const withMedia = (listing: Listing | undefined | null) =>
     listing ? syncLiveCatalogMedia([listing])[0] : undefined;
+
+  const keys = listingSlugLookupKeys(slug);
+  const normalized = normalizeListingSlugParam(slug);
+
+  // Allow /listings/local-… ids that were used as path segments.
+  if (normalized.startsWith("local-") || normalized.startsWith("admin-")) {
+    const byId = await getListingById(normalized).catch(() => undefined);
+    if (byId) return withMedia(byId);
+  }
 
   // Fast path when Neon quota is exceeded — avoid write-heavy ensure* on every view.
   if (isPostgresTemporarilyUnavailable()) {
     const memory = await loadCatalogWithoutPostgres().catch(() => [] as Listing[]);
-    const hit = memory.find((listing) => listing.slug === slug);
+    const hit = memory.find((listing) => keys.includes(listing.slug));
     if (hit) return withMedia(hit);
   }
 
@@ -213,15 +225,18 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
     // Catalog ensure is best-effort for public reads.
   }
 
-  const persisted = await loadListingBySlug(slug).catch(() => null);
-  if (persisted) return withMedia(persisted);
+  for (const key of keys) {
+    const persisted = await loadListingBySlug(key).catch(() => null);
+    if (persisted) return withMedia(persisted);
+  }
+
   const listings = await getAllListings().catch(() => [] as Listing[]);
-  return withMedia(
-    listings.find((listing) => listing.slug === slug) ??
-      (await loadCatalogWithoutPostgres().catch(() => [] as Listing[])).find(
-        (listing) => listing.slug === slug,
-      ),
-  );
+  const fromCatalog =
+    listings.find((listing) => keys.includes(listing.slug)) ??
+    (await loadCatalogWithoutPostgres().catch(() => [] as Listing[])).find(
+      (listing) => keys.includes(listing.slug),
+    );
+  return withMedia(fromCatalog);
 }
 
 export async function upsertListing(listing: Listing): Promise<Listing> {
@@ -285,7 +300,7 @@ function slugifyTitle(title: string) {
   const base = title
     .trim()
     .toLowerCase()
-    .replace(/[^\u0600-\u06FFa-z0-9]+/gi, "-")
+    .replace(/[^a-z0-9]+/gi, "-")
     .replace(/^-+|-+$/g, "");
   return base || `listing-${Date.now()}`;
 }

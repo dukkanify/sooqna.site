@@ -30,15 +30,28 @@ export function createSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-/** Prefer Latin slug when available so URLs stay stable and unique. */
+/** Latin-only slug segment — portable across proxies, CDNs, and Next params. */
+export function createLatinSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Prefer Latin slug when available so URLs stay stable and unique.
+ * Arabic-only titles fall back to `listing-{idSuffix}` — never put Arabic
+ * into the path (breaks detail lookup when params stay percent-encoded).
+ */
 export function createListingSlug(input: {
   id?: string;
   title: string;
   titleEnglish?: string;
 }): string {
-  const fromEnglish = createSlug(input.titleEnglish ?? "");
-  const fromTitle = createSlug(input.title);
-  const base = fromEnglish || fromTitle || "listing";
+  const fromEnglish = createLatinSlug(input.titleEnglish ?? "");
+  const fromTitleLatin = createLatinSlug(input.title);
+  const base = fromEnglish || fromTitleLatin || "listing";
   const suffix = (input.id ?? "")
     .replace(/^local-/, "")
     .replace(/\W+/g, "")
