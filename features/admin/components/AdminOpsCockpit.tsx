@@ -8,6 +8,8 @@ import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 import type { IconName } from "@/shared/ui/Icon";
 
 type Severity = "critical" | "high" | "medium" | "low";
@@ -188,6 +190,7 @@ function asIcon(name: string): IconName {
 }
 
 export function AdminOpsCockpit() {
+  const locale = useLocale();
   const [range, setRange] = useState<7 | 30 | 90>(7);
   const [data, setData] = useState<DashboardPayload | null>(null);
   const [error, setError] = useState("");
@@ -343,7 +346,7 @@ export function AdminOpsCockpit() {
                   ) : (
                     <span>
                       {typeof card.value === "number"
-                        ? card.value.toLocaleString("ar-AE")
+                        ? card.value.toLocaleString(intlLocale(locale))
                         : card.value}
                     </span>
                   )}
@@ -371,7 +374,7 @@ export function AdminOpsCockpit() {
                   <Link className="admin-dash__action-item" href={item.href}>
                     <div>
                       <p className="admin-dash__action-label">
-                        {item.count.toLocaleString("ar-AE")} {item.label}
+                        {item.count.toLocaleString(intlLocale(locale))} {item.label}
                       </p>
                       <p className="admin-dash__action-meta">
                         {[item.meta, item.oldestAgeLabel].filter(Boolean).join(" · ")}
@@ -411,38 +414,38 @@ export function AdminOpsCockpit() {
               <div className="admin-dash__stat-grid">
                 <div className="admin-dash__stat">
                   <span>إجمالي الإعلانات</span>
-                  <strong>{data.platform.totalListings.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.platform.totalListings.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 <div className="admin-dash__stat">
                   <span>المنشورة</span>
-                  <strong>{data.platform.activeListings.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.platform.activeListings.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 <div className="admin-dash__stat">
                   <span>المعلقة</span>
-                  <strong>{data.platform.pendingListings.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.platform.pendingListings.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 <div className="admin-dash__stat">
                   <span>المرفوضة</span>
-                  <strong>{data.platform.rejectedListings.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.platform.rejectedListings.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 <div className="admin-dash__stat">
                   <span>المستخدمون</span>
-                  <strong>{data.platform.totalUsers.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.platform.totalUsers.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 <div className="admin-dash__stat">
                   <span>المستخدمون الجدد</span>
-                  <strong>{data.platform.newUsers.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.platform.newUsers.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 {data.platform.totalViews != null ? (
                   <div className="admin-dash__stat">
                     <span>إجمالي المشاهدات</span>
-                    <strong>{data.platform.totalViews.toLocaleString("ar-AE")}</strong>
+                    <strong>{data.platform.totalViews.toLocaleString(intlLocale(locale))}</strong>
                   </div>
                 ) : null}
                 {data.platform.engagement != null ? (
                   <div className="admin-dash__stat">
                     <span>التفاعل (مفضلة)</span>
-                    <strong>{data.platform.engagement.toLocaleString("ar-AE")}</strong>
+                    <strong>{data.platform.engagement.toLocaleString(intlLocale(locale))}</strong>
                   </div>
                 ) : null}
               </div>
@@ -488,11 +491,11 @@ export function AdminOpsCockpit() {
                 </div>
                 <div className="admin-dash__stat">
                   <span>مدفوعات ناجحة</span>
-                  <strong>{data.financial.successfulPayments.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.financial.successfulPayments.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 <div className="admin-dash__stat">
                   <span>مدفوعات معلّقة</span>
-                  <strong>{data.financial.pendingPayments.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.financial.pendingPayments.toLocaleString(intlLocale(locale))}</strong>
                 </div>
                 <div className="admin-dash__stat">
                   <span>المبالغ المستردة</span>
@@ -502,7 +505,7 @@ export function AdminOpsCockpit() {
                 </div>
                 <div className="admin-dash__stat">
                   <span>عمليات مضمون المحجوزة</span>
-                  <strong>{data.financial.heldEscrowCount.toLocaleString("ar-AE")}</strong>
+                  <strong>{data.financial.heldEscrowCount.toLocaleString(intlLocale(locale))}</strong>
                 </div>
               </div>
             )}
@@ -560,7 +563,7 @@ export function AdminOpsCockpit() {
                   </span>
                 </div>
                 <p className="admin-dash__queue-count">
-                  {queue.count.toLocaleString("ar-AE")}
+                  {queue.count.toLocaleString(intlLocale(locale))}
                 </p>
                 {queue.oldestAgeLabel ? (
                   <p className="admin-dash__queue-age">أقدم طلب: {queue.oldestAgeLabel}</p>
@@ -592,7 +595,7 @@ export function AdminOpsCockpit() {
                     {severityLabel[item.severity]}
                   </span>
                 </div>
-                <strong>{item.count.toLocaleString("ar-AE")}</strong>
+                <strong>{item.count.toLocaleString(intlLocale(locale))}</strong>
               </Link>
             ))}
           </div>
@@ -614,7 +617,7 @@ export function AdminOpsCockpit() {
                       <div className="admin-dash__rank-copy">
                         <p>{cat.label}</p>
                         <p className="admin-dash__rank-meta">
-                          {cat.listings.toLocaleString("ar-AE")} إعلان · {cat.viewSharePercent}% من
+                          {cat.listings.toLocaleString(intlLocale(locale))} إعلان · {cat.viewSharePercent}% من
                           المشاهدات
                         </p>
                         <div className="admin-dash__rank-bar">
@@ -625,7 +628,7 @@ export function AdminOpsCockpit() {
                           />
                         </div>
                       </div>
-                      <strong>{cat.views.toLocaleString("ar-AE")}</strong>
+                      <strong>{cat.views.toLocaleString(intlLocale(locale))}</strong>
                     </Link>
                   </li>
                 ))}
@@ -660,7 +663,7 @@ export function AdminOpsCockpit() {
                         </td>
                         <td>{row.categoryLabel}</td>
                         <td>{row.sellerName}</td>
-                        <td>{row.views.toLocaleString("ar-AE")}</td>
+                        <td>{row.views.toLocaleString(intlLocale(locale))}</td>
                         <td>{row.status}</td>
                       </tr>
                     ))}
@@ -688,7 +691,7 @@ export function AdminOpsCockpit() {
                       <p className="admin-dash__activity-meta">
                         {item.actor} ·{" "}
                         {item.timestamp
-                          ? new Date(item.timestamp).toLocaleString("ar-AE")
+                          ? new Date(item.timestamp).toLocaleString(intlLocale(locale))
                           : "—"}
                       </p>
                     </Link>

@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -38,6 +41,7 @@ type DailyPoint = {
 };
 
 export function AdminReportsPanel() {
+  const locale = useLocale();
   const [summary, setSummary] = useState<ReportSummary | null>(null);
   const [events, setEvents] = useState<PaymentEvent[]>([]);
   const [daily, setDaily] = useState<DailyPoint[]>([]);
@@ -240,7 +244,7 @@ export function AdminReportsPanel() {
                   <div>
                     <p className="admin-ops__queue-label">{event.type}</p>
                     <p className="admin-ops__queue-meta">
-                      {new Date(event.createdAt).toLocaleString("ar-AE")}
+                      {new Date(event.createdAt).toLocaleString(intlLocale(locale))}
                       {event.orderId ? ` — ${event.orderId}` : ""}
                     </p>
                   </div>

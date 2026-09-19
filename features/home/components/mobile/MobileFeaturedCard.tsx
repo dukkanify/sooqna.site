@@ -17,6 +17,8 @@ import {
   getListingImages,
   getListingLocation,
 } from "@/features/listings/components/listing-card.utils";
+import { useLocale } from "@/shared/i18n/useLocale";
+import { intlLocale } from "@/shared/i18n/locale";
 import { useTx } from "@/shared/i18n/useTx";
 
 type MobileFeaturedCardProps = {
@@ -30,6 +32,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
   listing,
   priority = false,
 }: MobileFeaturedCardProps) {
+  const locale = useLocale();
   const t = useTx();
   const href = getListingHref(listing);
   const imageUrl = getListingImageUrl(listing);
@@ -77,7 +80,10 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
 
       <div className="mobile-home-featured-card__body">
         <p className="mobile-home-featured-card__price" dir="ltr">
-          {formatCurrencyDisplay(listing.price, "ar-AE")}
+          {formatCurrencyDisplay(
+            listing.price,
+            intlLocale(locale) as "ar-AE" | "en-AE",
+          )}
         </p>
 
         <Link href={href}>
@@ -94,7 +100,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
           <div className="mobile-home-featured-card__footer">
             <span className="mobile-home-featured-card__views">
               <Icon name="eye" size={12} />
-              {formatViews(listing.views ?? 0)}
+              {formatViews(listing.views ?? 0, locale)}
             </span>
           </div>
         ) : null}

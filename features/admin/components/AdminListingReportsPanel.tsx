@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -63,6 +66,7 @@ function statusBadgeVariant(
 }
 
 export function AdminListingReportsPanel() {
+  const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -271,7 +275,7 @@ export function AdminListingReportsPanel() {
                     <p className="admin-ops__queue-meta">
                       البائع: {item.sellerName ?? "—"}
                       {item.sellerId ? ` · ${item.sellerId}` : ""} ·{" "}
-                      {new Date(item.createdAt).toLocaleString("ar-AE")}
+                      {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
                     </p>
                     {item.resolutionNote ? (
                       <p className="admin-ops__queue-meta">

@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import type { ActivityKind, ActivityRecord, ActivityScope, ActivitySummary } from "@/types/domain/activity";
 import { activityKindLabel } from "@/services/activity/activity-labels";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 import { useToast } from "@/shared/components/ToastProvider";
 import { Button } from "@/shared/ui/Button";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -51,10 +53,15 @@ const STATUS_OPTIONS: Partial<Record<ActivityKind, { value: string; label: strin
   ],
 };
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string, localeTag: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString("ar-AE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleString(localeTag, {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function ActivityFeed({
@@ -63,6 +70,7 @@ export function ActivityFeed({
   manageReceived = true,
   showScopeTabs = true,
 }: ActivityFeedProps) {
+  const locale = useLocale();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const urlKind = searchParams.get("kind");
@@ -191,7 +199,7 @@ export function ActivityFeed({
                     {item.subtitle ? (
                       <p className="mt-0.5 truncate text-[11px] text-muted">{item.subtitle}</p>
                     ) : null}
-                    <p className="mt-0.5 text-[10px] text-muted">{formatWhen(item.updatedAt)}</p>
+                    <p className="mt-0.5 text-[10px] text-muted">{formatWhen(item.updatedAt, intlLocale(locale))}</p>
                     {item.nextAction ? (
                       <p className="mt-1 text-[11px] font-medium text-primary">{item.nextAction}</p>
                     ) : null}

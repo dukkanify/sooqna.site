@@ -1,6 +1,8 @@
 "use client";
 
 import { formatCurrencyDisplay } from "@/shared/utils/currency";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 
 type CurrencyAmountSize = "sm" | "md" | "lg" | "xl";
 
@@ -22,10 +24,13 @@ const sizeClasses: Record<CurrencyAmountSize, string> = {
 export function CurrencyAmount({
   amount,
   className = "",
-  locale = "ar-AE",
+  locale: localeProp,
   size = "md",
   showSign = false,
 }: CurrencyAmountProps) {
+  const appLocale = useLocale();
+  const locale =
+    localeProp ?? (intlLocale(appLocale) as "ar-AE" | "en-AE");
   const formatted = formatCurrencyDisplay(amount, locale);
   const sign = showSign && amount > 0 ? "+" : showSign && amount < 0 ? "" : "";
 

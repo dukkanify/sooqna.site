@@ -16,6 +16,9 @@ import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { PageHero } from "@/shared/ui/PageHero";
 import { Textarea } from "@/shared/ui/Textarea";
+import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 
 type OrderDetailContentProps = {
   orderId: string;
@@ -40,6 +43,7 @@ export function OrderDetailContent({
   orderId,
   paymentSuccess,
 }: OrderDetailContentProps) {
+  const locale = useLocale();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState("");
@@ -335,11 +339,12 @@ export function OrderDetailContent({
           ? `تبقّى أقل من ${hours} ساعة لفتح نزاع.`
           : hours <= 48
             ? `تبقّى حوالي ${hours} ساعة لفتح نزاع (تنبيه 48 ساعة).`
-            : `مهلة النزاع: حتى ${new Date(ends).toLocaleString("ar-AE")}.`;
+            : `مهلة النزاع: حتى ${new Date(ends).toLocaleString(intlLocale(locale))}.`;
     }
   }
 
   return (
+    <LocalizedTree>
     <section className="app-container page-padding">
       <PageHero
         description={`طلب رقم ${order.id}`}
@@ -424,13 +429,13 @@ export function OrderDetailContent({
             )}
             {order.sellerProofAt ? (
               <p className="mt-2 text-xs text-muted">
-                {new Date(order.sellerProofAt).toLocaleString("ar-AE")}
+                {new Date(order.sellerProofAt).toLocaleString(intlLocale(locale))}
               </p>
             ) : null}
             {order.buyerMatchConfirmedAt ? (
               <p className="mt-2 text-xs font-semibold text-success">
                 أكّد المشتري المطابقة في{" "}
-                {new Date(order.buyerMatchConfirmedAt).toLocaleString("ar-AE")}
+                {new Date(order.buyerMatchConfirmedAt).toLocaleString(intlLocale(locale))}
               </p>
             ) : null}
           </Card>
@@ -540,7 +545,7 @@ export function OrderDetailContent({
               >
                 <p className="font-semibold text-ink">{event.message}</p>
                 <p className="mt-0.5 text-xs text-muted">
-                  {new Date(event.createdAt).toLocaleString("ar-AE")}
+                  {new Date(event.createdAt).toLocaleString(intlLocale(locale))}
                 </p>
               </li>
             ))}
@@ -548,5 +553,6 @@ export function OrderDetailContent({
         </Card>
       </div>
     </section>
+    </LocalizedTree>
   );
 }

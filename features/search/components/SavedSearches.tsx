@@ -11,6 +11,9 @@ import {
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Icon } from "@/shared/ui/Icon";
+import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 
 type SavedSearchesProps = {
   currentUrl: string;
@@ -18,6 +21,7 @@ type SavedSearchesProps = {
 };
 
 export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) {
+  const locale = useLocale();
   const [saved, setSaved] = useState<SavedSearch[]>([]);
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
@@ -74,6 +78,7 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
   }
 
   return (
+    <LocalizedTree>
     <div className="relative">
       <button
         className="focus-ring inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-xs font-bold text-ink hover:border-[#c9a45c]/50 hover:bg-secondary-soft"
@@ -89,7 +94,7 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
           onClick={() => setOpen((value) => !value)}
           type="button"
         >
-          {saved.length.toLocaleString("ar-AE")} محفوظ
+          {saved.length.toLocaleString(intlLocale(locale))} محفوظ
         </button>
       ) : null}
 
@@ -125,5 +130,6 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
         </ul>
       ) : null}
     </div>
+    </LocalizedTree>
   );
 }

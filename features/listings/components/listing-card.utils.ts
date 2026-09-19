@@ -1,13 +1,29 @@
 import type { Listing } from "@/types";
+import type { AppLocale } from "@/shared/i18n/locale";
+import { intlLocale } from "@/shared/i18n/locale";
 
 /** Compact marketplace density — always 2-up (never full-width), 4-up on large screens. */
 export const MARKETPLACE_LISTING_GRID_CLASS =
   "grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4";
 
-export const listingPriceFormatter = new Intl.NumberFormat("ar-AE", {
+const numberFormatOptions: Intl.NumberFormatOptions = {
   maximumFractionDigits: 0,
   numberingSystem: "latn",
-});
+};
+
+export const listingPriceFormatter = new Intl.NumberFormat(
+  "ar-AE",
+  numberFormatOptions,
+);
+
+export function formatListingPrice(
+  amount: number,
+  locale: AppLocale = "ar",
+): string {
+  return new Intl.NumberFormat(intlLocale(locale), numberFormatOptions).format(
+    amount,
+  );
+}
 
 export function getListingHref(listing: Listing): string {
   // Prefer slug routes so synced local-* ads resolve from the server catalog
@@ -90,8 +106,8 @@ export function formatPostedTime(postedAt?: string): string {
   return `${posted.getUTCDate()} ${months[posted.getUTCMonth()]}`;
 }
 
-export function formatViews(views: number): string {
-  return new Intl.NumberFormat("ar-AE", { numberingSystem: "latn" }).format(
-    views,
-  );
+export function formatViews(views: number, locale: AppLocale = "ar"): string {
+  return new Intl.NumberFormat(intlLocale(locale), {
+    numberingSystem: "latn",
+  }).format(views);
 }

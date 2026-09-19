@@ -13,6 +13,8 @@ type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
   error?: string;
   label: string;
   options: SelectOption[];
+  /** When true, option labels are treated as user/admin content (skip LiveLocalizer). */
+  optionsAreUgc?: boolean;
 };
 
 export function Select({
@@ -21,6 +23,7 @@ export function Select({
   error,
   label,
   options,
+  optionsAreUgc = false,
   ...props
 }: SelectProps) {
   const t = useTx();
@@ -40,6 +43,7 @@ export function Select({
       <select
         aria-invalid={hasError || undefined}
         className={`focus-ring w-full min-w-0 rounded-[var(--radius-xl)] border bg-surface text-ink shadow-[var(--shadow-xs)] transition ${compact ? "min-h-9 rounded-lg px-3 text-xs font-medium" : "min-h-11 px-4 text-sm font-medium"} ${hasError ? "border-error bg-error-soft/30" : "border-border"} ${className}`}
+        data-ugc={optionsAreUgc ? "" : undefined}
         {...props}
       >
         {options.map((option) => (

@@ -1,5 +1,8 @@
 "use client";
 
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
@@ -32,6 +35,7 @@ type WalletsPayload = {
 };
 
 export function AdminWalletsPanel() {
+  const locale = useLocale();
   const [data, setData] = useState<WalletsPayload | null>(null);
   const [userId, setUserId] = useState("");
   const [amount, setAmount] = useState("");
@@ -194,14 +198,14 @@ export function AdminWalletsPanel() {
                   {wallet.lastTransaction
                     ? ` · ${wallet.lastTransaction.type} — ${new Date(
                         wallet.lastTransaction.date,
-                      ).toLocaleString("ar-AE")}`
+                      ).toLocaleString(intlLocale(locale))}`
                     : ""}
                 </p>
               </div>
               <div className="text-end text-xs font-bold">
                 <CurrencyAmount amount={wallet.availableBalance} size="sm" />
                 <p className="admin-ops__queue-meta">
-                  محجوز {wallet.heldInEscrow.toLocaleString("ar-AE")}
+                  محجوز {wallet.heldInEscrow.toLocaleString(intlLocale(locale))}
                 </p>
               </div>
             </li>

@@ -11,6 +11,7 @@ import {
 } from "@/features/listings/components/listing-card.utils";
 import { listingTitle, sellerName } from "@/shared/i18n/listing-copy";
 import { useLocale } from "@/shared/i18n/useLocale";
+import { intlLocale } from "@/shared/i18n/locale";
 import { tx } from "@/shared/i18n/tx";
 import { getAppPreviewImageUrl } from "./mobile-app-preview.config";
 import { formatCurrencyDisplay } from "@/shared/utils/currency";
@@ -25,6 +26,13 @@ const HOME_CHIPS = ["سيارات", "عقارات", "موبايلات", "إلك�
 const SEARCH_EMIRATES = ["دبي", "أبوظبي", "الشارقة", "عجمان"] as const;
 const SEARCH_PRICES = ["حتى 20 ألف", "حتى 50 ألف", "حتى 100 ألف"] as const;
 const SLIDE_MS = 5200;
+
+function money(amount: number, locale: "ar" | "en") {
+  return formatCurrencyDisplay(
+    amount,
+    intlLocale(locale) as "ar-AE" | "en-AE",
+  );
+}
 
 function useListingCopy(listing: Listing | undefined) {
   const locale = useLocale();
@@ -130,6 +138,7 @@ function TabBar({
 }
 
 function HomeScreen({ listings }: { listings: Listing[] }) {
+  const locale = useLocale();
   const hero = listings[0];
   const next = listings[1];
   const heroCopy = useListingCopy(hero);
@@ -142,25 +151,25 @@ function HomeScreen({ listings }: { listings: Listing[] }) {
         <div className="app-phone__brand">
           <BrandMark size={18} variant="default" />
           <span>
-            <strong>{BRAND.nameAr}</strong>
-            <small>{BRAND.nameEn}</small>
+            <strong>{locale === "en" ? BRAND.nameEn : BRAND.nameAr}</strong>
+            <small>{locale === "en" ? BRAND.nameAr : BRAND.nameEn}</small>
           </span>
         </div>
         <span className="app-phone__loc">
           <Icon name="map" size={9} />
-          دبي
+          {tx(locale, "دبي")}
         </span>
       </header>
 
       <div className="app-phone__search">
         <Icon name="search" size={11} />
-        <span>ابحث في سوقنا...</span>
+        <span>{tx(locale, "ابحث في سوقنا...")}</span>
       </div>
 
       <div className="app-phone__chips">
         {HOME_CHIPS.map((chip, index) => (
           <span key={chip} className={index === 0 ? "is-active" : undefined}>
-            {chip}
+            {tx(locale, chip)}
           </span>
         ))}
       </div>
@@ -169,8 +178,8 @@ function HomeScreen({ listings }: { listings: Listing[] }) {
         <article className="app-phone__hero">
           <Cover listing={hero} priority sizes="280px" />
           <div className="app-phone__hero-meta">
-            {hero.isFeatured ? <em>مميز</em> : null}
-            <p dir="ltr">{formatCurrencyDisplay(hero.price, "ar-AE")}</p>
+            {hero.isFeatured ? <em>{tx(locale, "مميز")}</em> : null}
+            <p dir="ltr">{money(hero.price, locale)}</p>
             <b data-ugc>{heroCopy.title}</b>
           </div>
         </article>
@@ -182,11 +191,11 @@ function HomeScreen({ listings }: { listings: Listing[] }) {
             <Cover listing={next} sizes="88px" />
           </div>
           <div className="app-phone__row-copy">
-            <p dir="ltr">{formatCurrencyDisplay(next.price, "ar-AE")}</p>
+            <p dir="ltr">{money(next.price, locale)}</p>
             <b data-ugc>{nextCopy.title}</b>
             <small>
               <Icon name="map" size={8} />
-              {getListingLocation(next)}
+              {tx(locale, getListingLocation(next))}
             </small>
           </div>
         </article>
@@ -198,6 +207,7 @@ function HomeScreen({ listings }: { listings: Listing[] }) {
 }
 
 function ListingScreen({ listing }: { listing?: Listing }) {
+  const locale = useLocale();
   const copy = useListingCopy(listing);
   if (!listing) return null;
   const cta = getListingActionLabel(listing);
@@ -213,25 +223,27 @@ function ListingScreen({ listing }: { listing?: Listing }) {
         </span>
       </div>
       <div className="app-phone__detail-body">
-        <p className="app-phone__kicker">{listing.subcategory ?? "إعلان مميز"}</p>
+        <p className="app-phone__kicker">
+          {tx(locale, listing.subcategory ?? "إعلان مميز")}
+        </p>
         <h3 data-ugc>{copy.title}</h3>
         <p className="app-phone__price" dir="ltr">
-          {formatCurrencyDisplay(listing.price, "ar-AE")}
+          {money(listing.price, locale)}
         </p>
         <small>
           <Icon name="map" size={9} />
-          {getListingLocation(listing)}
+          {tx(locale, getListingLocation(listing))}
         </small>
         <div className="app-phone__seller">
           <span>{copy.seller.slice(0, 1)}</span>
           <div>
             <b data-ugc>{copy.seller}</b>
-            <small>{verified ? "بائع موثّق" : "بائع"}</small>
+            <small>{tx(locale, verified ? "بائع موثّق" : "بائع")}</small>
           </div>
         </div>
       </div>
       <div className="app-phone__sticky">
-        <div className="app-phone__cta">{cta}</div>
+        <div className="app-phone__cta">{tx(locale, cta)}</div>
         <span className="app-phone__sticky-icon app-phone__sticky-icon--chat">
           <Icon name="message" size={11} />
         </span>
@@ -289,7 +301,7 @@ function SearchScreen({ listings }: { listings: Listing[] }) {
               <Cover listing={listing} sizes="88px" />
             </div>
             <div className="app-phone__row-copy">
-              <p dir="ltr">{formatCurrencyDisplay(listing.price, "ar-AE")}</p>
+              <p dir="ltr">{money(listing.price, locale)}</p>
               <b data-ugc>{listingTitle(listing, locale)}</b>
               <small>
                 <Icon name="map" size={8} />

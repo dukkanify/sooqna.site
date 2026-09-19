@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { BRAND } from "@/shared/constants/brand";
 import { BrandMark } from "@/shared/components/BrandMark";
+import { useLocale } from "@/shared/i18n/useLocale";
 
 type BrandLogoProps = {
   className?: string;
@@ -19,15 +22,16 @@ const titleSizes = {
   lg: "text-xl",
 } as const;
 
-const enSizes = {
+const secondarySizes = {
   sm: "text-[0.65rem]",
   md: "text-[0.7rem]",
   lg: "text-xs",
 } as const;
 
 /**
- * Canonical Sooqna wordmark: mark + Arabic primary + English secondary.
- * Use this everywhere instead of custom header/footer brand markup.
+ * Canonical Sooqna wordmark: mark + locale-primary name.
+ * Arabic locale: Arabic primary + English secondary.
+ * English locale: English only (no Arabic chrome).
  */
 export function BrandLogo({
   className = "",
@@ -37,11 +41,19 @@ export function BrandLogo({
   theme = "light",
   variant = "horizontal",
 }: BrandLogoProps) {
+  const locale = useLocale();
+  const isEnglish = locale === "en";
   const markSize = markSizes[size];
   const isDark = theme === "dark";
   const ink = isDark ? "text-white" : "text-ink";
   const gold = "text-secondary";
   const muted = isDark ? "text-white/65" : "text-muted";
+  const primary = isEnglish ? BRAND.nameEn : BRAND.nameAr;
+  const secondary = isEnglish ? null : BRAND.nameEn;
+  const tagline = isEnglish ? BRAND.taglineEn : BRAND.taglineAr;
+  const ariaLabel = isEnglish
+    ? BRAND.nameEn
+    : `${BRAND.nameAr} — ${BRAND.nameEn}`;
 
   const iconOnly = (
     <BrandMark size={markSize} variant={isDark ? "dark" : "default"} />
@@ -49,17 +61,21 @@ export function BrandLogo({
 
   const wordmark = (
     <span className="min-w-0 text-start leading-none">
-      <span className={`block font-black tracking-tight ${titleSizes[size]} ${ink}`}>
-        {BRAND.nameAr}
-      </span>
       <span
-        className={`mt-1 block font-latin font-bold tracking-[0.04em] ${enSizes[size]} ${gold}`}
+        className={`block font-black tracking-tight ${titleSizes[size]} ${ink} ${isEnglish ? "font-latin" : ""}`}
       >
-        {BRAND.nameEn}
+        {primary}
       </span>
+      {secondary ? (
+        <span
+          className={`mt-1 block font-latin font-bold tracking-[0.04em] ${secondarySizes[size]} ${gold}`}
+        >
+          {secondary}
+        </span>
+      ) : null}
       {showTagline || variant === "bilingual" ? (
         <span className={`mt-1.5 block text-[0.6rem] font-medium leading-snug ${muted}`}>
-          {BRAND.taglineAr}
+          {tagline}
         </span>
       ) : null}
     </span>
@@ -86,7 +102,7 @@ export function BrandLogo({
 
   return (
     <Link
-      aria-label={`${BRAND.nameAr} — ${BRAND.nameEn}`}
+      aria-label={ariaLabel}
       className="inline-flex shrink-0 items-center"
       href={href}
     >

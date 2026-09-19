@@ -42,7 +42,7 @@ export function CategoryDirectory({ categories }: CategoryDirectoryProps) {
                     className="text-lg font-semibold text-ink transition hover:text-primary"
                     href={`/categories/${category.slug}`}
                   >
-                    {category.name}
+                    <span data-ugc>{t(category.name)}</span>
                   </Link>
                   <span className="text-xs font-medium text-muted">
                     {listingCountLabel(category.listingCount, locale)}
@@ -55,7 +55,7 @@ export function CategoryDirectory({ categories }: CategoryDirectoryProps) {
                       className="rounded-[var(--radius-xl)] border border-border bg-surface-muted px-3 py-1.5 text-xs font-medium text-muted transition hover:border-secondary/40 hover:text-ink"
                       href={`/categories/${category.slug}?q=${encodeURIComponent(subcategory)}`}
                     >
-                      {subcategory}
+                      <span data-ugc>{t(subcategory)}</span>
                     </Link>
                   ))}
                 </div>

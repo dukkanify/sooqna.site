@@ -7,6 +7,8 @@ import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import type { ActivityKind, ActivityRecord } from "@/types/domain/activity";
 import { activityKindLabel } from "@/services/activity/activity-labels";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 import { getSessionUser } from "@/services/storage";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -14,6 +16,7 @@ import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 
 export function AdminActivitiesPanel() {
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const [items, setItems] = useState<ActivityRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -114,7 +117,7 @@ export function AdminActivitiesPanel() {
                 <p className="admin-ops__queue-label">{item.title}</p>
                 <p className="admin-ops__queue-meta">
                   {activityKindLabel(item.kind)} · {item.statusLabel} ·{" "}
-                  {new Date(item.updatedAt).toLocaleString("ar-AE")}
+                  {new Date(item.updatedAt).toLocaleString(intlLocale(locale))}
                 </p>
                 {item.subtitle ? (
                   <p className="admin-ops__queue-meta">{item.subtitle}</p>
@@ -130,7 +133,7 @@ export function AdminActivitiesPanel() {
 
       <div className="flex items-center justify-between text-sm text-muted">
         <span>
-          {total.toLocaleString("ar-AE")} نشاط
+          {total.toLocaleString(intlLocale(locale))} نشاط
         </span>
         <div className="flex gap-2">
           <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} size="sm" type="button" variant="secondary">
