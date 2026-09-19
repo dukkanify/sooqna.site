@@ -105,7 +105,7 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
     <>
       <SiteHeader />
       <RecentlyViewedTracker listing={visible} />
-      <main className="pb-28 lg:pb-0">
+      <main className="pb-44 lg:pb-0">
         <ListingDetailsView
           breadcrumbs={[
             { href: "/", label: tx(locale, "الرئيسية") },

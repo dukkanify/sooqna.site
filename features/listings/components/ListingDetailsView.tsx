@@ -4,6 +4,7 @@ import type { Category, Listing } from "@/types";
 import { EscrowProtectionCard } from "@/features/listings/components/EscrowProtectionCard";
 import { ListingPlatformNotice } from "@/features/listings/components/ListingPlatformNotice";
 import { ListingDetailToolbar } from "@/features/listings/components/ListingDetailToolbar";
+import { MobileListingPrimaryCtas } from "@/features/listings/components/MobileListingPrimaryCtas";
 import { ListingGallery } from "@/features/listings/components/ListingGallery";
 import dynamic from "next/dynamic";
 import { ListingOwnerStatusBanner } from "@/features/listings/components/ListingOwnerStatusBanner";
@@ -75,7 +76,7 @@ export function ListingDetailsView({
   return (
     <LocalizedTree>
     <>
-      <section className="app-container page-padding scroll-mt-20 pb-28 lg:pb-8">
+      <section className="app-container page-padding scroll-mt-20 pb-44 lg:pb-8">
         <Breadcrumbs items={breadcrumbs} />
         {showOwnerStatusBanner ? (
           <ListingOwnerStatusBanner listing={listing} />
@@ -130,6 +131,7 @@ export function ListingDetailsView({
       ) : null}
             </div>
 
+            <MobileListingPrimaryCtas listing={listing} />
             <ListingDetailToolbar listing={listing} />
             <div className="mt-6 lg:hidden">
               <ShowcaseListingNotice listing={listing} />
@@ -181,7 +183,7 @@ export function ListingDetailsView({
       </section>
 
       {relatedListings.length > 0 ? (
-        <section className="app-container page-padding pb-28 lg:pb-8">
+        <section className="app-container page-padding pb-44 lg:pb-8">
           <SectionHeader
             description="إعلانات من نفس التصنيف قد تعجبك."
             eyebrow="مشابه"
