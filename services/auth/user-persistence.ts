@@ -56,7 +56,12 @@ function getPostgresUrl(): string {
     process.env.POSTGRES_URL?.trim() ||
     process.env.POSTGRES_PRISMA_URL?.trim() ||
     "";
-  if (direct.startsWith("postgres")) return direct;
+  if (direct.startsWith("postgres")) {
+    return direct.replace(
+      /([?&]sslmode=)(require|prefer|verify-ca)\b/gi,
+      "$1verify-full",
+    );
+  }
 
   // Vercel Neon integration exposes split PG* vars instead of DATABASE_URL.
   const host =
@@ -85,7 +90,7 @@ function getPostgresUrl(): string {
     const encodedUser = encodeURIComponent(user);
     const encodedPassword = encodeURIComponent(password);
     const encodedDb = encodeURIComponent(database);
-    return `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${encodedDb}?sslmode=require`;
+    return `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${encodedDb}?sslmode=verify-full`;
   }
 
   return "";
@@ -119,6 +124,10 @@ function resolveDurableJsonDir(): string {
   const configured = process.env.DATA_DIR?.trim();
   if (configured && !isEphemeralDir(configured)) {
     return configured;
+  }
+  // Vercel/Lambda cwd (`/var/task`) is read-only — never mkdir there.
+  if (isServerlessRuntime()) {
+    return path.join("/tmp", "sooqna-data");
   }
   return path.join(process.cwd(), ".data");
 }

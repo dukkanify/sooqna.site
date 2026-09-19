@@ -516,10 +516,22 @@ async function readFlagsFile(): Promise<Record<string, string>> {
 
 async function writeFlagsFile(flags: Record<string, string>): Promise<void> {
   const target = path.join(getDurableAuthDir(), FLAGS_FILE);
-  await mkdir(path.dirname(target), { recursive: true });
-  const tempPath = `${target}.${process.pid}.${Date.now()}.tmp`;
-  await writeFile(tempPath, JSON.stringify(flags, null, 2));
-  await rename(tempPath, target);
+  try {
+    await mkdir(path.dirname(target), { recursive: true });
+    const tempPath = `${target}.${process.pid}.${Date.now()}.tmp`;
+    await writeFile(tempPath, JSON.stringify(flags, null, 2));
+    await rename(tempPath, target);
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: string }).code)
+        : "";
+    // Read-only serverless FS or missing mount — skip; Postgres is source of truth.
+    if (code === "ENOENT" || code === "EACCES" || code === "EROFS" || code === "EPERM") {
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function getMarketplaceFlag(key: string): Promise<string | null> {

@@ -88,7 +88,13 @@ export function getPostgresConnectionString(): string {
     process.env.POSTGRES_URL?.trim() ||
     process.env.POSTGRES_PRISMA_URL?.trim() ||
     "";
-  if (direct.startsWith("postgres")) return direct;
+  if (direct.startsWith("postgres")) {
+    // pg treats require/prefer/verify-ca as verify-full; name it to silence the warning.
+    return direct.replace(
+      /([?&]sslmode=)(require|prefer|verify-ca)\b/gi,
+      "$1verify-full",
+    );
+  }
 
   const host =
     process.env.DATABASE_PGHOST?.trim() ||
@@ -111,7 +117,7 @@ export function getPostgresConnectionString(): string {
     process.env.DATABASE_PGPORT?.trim() || process.env.PGPORT?.trim() || "5432";
 
   if (host && password) {
-    return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}?sslmode=require`;
+    return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}?sslmode=verify-full`;
   }
   return "";
 }
