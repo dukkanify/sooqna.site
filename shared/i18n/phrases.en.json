@@ -2190,5 +2190,7 @@
   "تعذر التحميل": "Could not load",
   "🛎️ الإشعارات": "🛎️ Notifications",
   "إعدادات التطبيق": "App settings",
-  "اللغة والمظهر — نفس الخيارات التي كانت في قائمة الموبايل.": "Language and appearance — the same options that used to live in the mobile menu."
+  "اللغة والمظهر — نفس الخيارات التي كانت في قائمة الموبايل.": "Language and appearance — the same options that used to live in the mobile menu.",
+  "هذه المحادثة غير متاحة لحسابك، أو ربما تم حذفها.": "This conversation is not available for your account, or it may have been deleted.",
+  "هذه المحادثة غير متاحة لحسابك، أو ربما تم حذفها. افتح صندوق الرسائل لعرض محادثاتك.": "This conversation is not available for your account, or it may have been deleted. Open your inbox to see your messages."
 }

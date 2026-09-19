@@ -91,20 +91,31 @@
 }
 
 .mobile-home-header__location--bar {
-  max-width: clamp(5.5rem, 30vw, 7.75rem);
+  max-width: none;
+  min-width: 0;
+  width: max-content;
+  max-width: min(9.75rem, 42vw);
   height: 2.35rem;
-  border-color: rgb(201 164 92 / 35%);
-  background: rgb(255 255 255 / 96%);
-  box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
+  gap: 0.28rem;
+  padding-inline: 0.55rem 0.45rem;
+  border-color: rgb(212 175 55 / 45%);
+  background: linear-gradient(180deg, #fffdf6 0%, #f7efd8 100%);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 5%),
+    inset 0 1px 0 rgb(255 255 255 / 75%);
 }
 
 .mobile-home-header__location--bar .mobile-home-header__location-icon {
-  color: #c9a45c;
+  color: #c4a035;
 }
 
 .mobile-home-header__location--bar .mobile-home-header__location-value {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 750;
+  letter-spacing: -0.01em;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 /* Guest menu sheet opened from bottom-nav menu slot */
@@ -2632,8 +2643,12 @@ html[data-theme="dark"] .mobile-home-hero__badge {
     gap: 0.25rem;
   }
 
-  .mobile-home-header__location-value {
-    max-width: 3.25rem;
+  .mobile-home-header__location--bar {
+    max-width: min(9.5rem, 46vw);
+  }
+
+  .mobile-home-header__location--bar .mobile-home-header__location-value {
+    font-size: 0.74rem;
   }
 }
 
@@ -2701,8 +2716,24 @@ html[data-theme="dark"] .mobile-home-header__location {
   box-shadow: 0 4px 12px rgb(0 0 0 / 28%);
 }
 
+html[data-theme="dark"] .mobile-home-header__location--bar {
+  border-color: rgb(212 175 55 / 38%);
+  background: linear-gradient(180deg, #2a2416 0%, #1c1810 100%);
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 220 140 / 8%);
+}
+
+html[data-theme="dark"] .mobile-home-header__location--bar .mobile-home-header__location-icon {
+  color: #d4af37;
+}
+
 html[data-theme="dark"] .mobile-home-header__location-value {
   color: #eef2f8;
+}
+
+html[data-theme="dark"] .mobile-home-header__location--bar .mobile-home-header__location-value {
+  color: #f3e6c0;
 }
 
 html[data-theme="dark"] .mobile-home-header__actions,

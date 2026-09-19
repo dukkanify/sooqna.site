@@ -423,6 +423,7 @@ export function AdminShell({
                 <p className="admin-ops__who-role">مدير</p>
               </div>
               <Button
+                className="admin-ops__logout-btn"
                 onClick={handleLogout}
                 size="sm"
                 type="button"

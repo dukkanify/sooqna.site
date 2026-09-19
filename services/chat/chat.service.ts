@@ -62,6 +62,28 @@ function replaceCache(conversations: ChatConversation[]) {
   );
 }
 
+/** Prefer the newer thread when merging local + server copies. */
+function mergeConversationMaps(
+  ...lists: ChatConversation[][]
+): ChatConversation[] {
+  const byId = new Map<string, ChatConversation>();
+  for (const list of lists) {
+    for (const item of list) {
+      const existing = byId.get(item.id);
+      if (
+        !existing ||
+        item.updatedAt.localeCompare(existing.updatedAt) > 0 ||
+        item.messages.length > existing.messages.length
+      ) {
+        byId.set(item.id, item);
+      }
+    }
+  }
+  return [...byId.values()].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
+  );
+}
+
 async function postChat(body: Record<string, unknown>): Promise<ApiConversation | null> {
   const response = await fetch("/api/chat/conversations", {
     method: "POST",
@@ -77,8 +99,52 @@ async function postChat(body: Record<string, unknown>): Promise<ApiConversation 
   return data.conversation ?? null;
 }
 
-/** Sync inbox from the durable server store into local cache. */
+/** Push a local thread to the durable store so both parties can open email links. */
+export async function importConversationToServer(
+  conversation: ChatConversation,
+): Promise<ChatConversation | null> {
+  try {
+    const saved = await postChat({
+      action: "import",
+      conversation: {
+        id: conversation.id,
+        listingId: conversation.listingId,
+        listingTitle: conversation.listingTitle,
+        listingSlug: conversation.listingSlug,
+        sellerId: conversation.sellerId,
+        sellerName: conversation.sellerName,
+        buyerId: conversation.buyerId,
+        buyerName: conversation.buyerName,
+        messages: conversation.messages,
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt,
+        lastReadAtBy: conversation.lastReadAtBy,
+      },
+    });
+    if (saved) upsertCache(saved);
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+async function pushLocalOnlyToServer(
+  local: ChatConversation[],
+  server: ChatConversation[],
+): Promise<ChatConversation[]> {
+  const serverIds = new Set(server.map((item) => item.id));
+  const imported: ChatConversation[] = [];
+  for (const item of local) {
+    if (serverIds.has(item.id)) continue;
+    const saved = await importConversationToServer(item);
+    if (saved) imported.push(saved);
+  }
+  return imported;
+}
+
+/** Sync inbox from the durable server store into local cache (merge, never wipe). */
 export async function syncChatConversationsFromServer(): Promise<ChatConversation[]> {
+  const local = readCache();
   const response = await fetch("/api/chat/conversations", {
     credentials: "include",
   });
@@ -86,9 +152,11 @@ export async function syncChatConversationsFromServer(): Promise<ChatConversatio
     return getChatConversations();
   }
   const data = (await response.json()) as { conversations?: ChatConversation[] };
-  const conversations = Array.isArray(data.conversations) ? data.conversations : [];
-  replaceCache(conversations);
-  return conversations;
+  const server = Array.isArray(data.conversations) ? data.conversations : [];
+  const imported = await pushLocalOnlyToServer(local, server);
+  const merged = mergeConversationMaps(local, server, imported);
+  replaceCache(merged);
+  return merged;
 }
 
 export function getChatConversations(): ChatConversation[] {
@@ -113,9 +181,17 @@ export function findConversationForListing(
 export async function fetchConversationById(
   conversationId: string,
 ): Promise<ChatConversation | null> {
-  const conversation = await postChat({ conversationId });
-  if (conversation) upsertCache(conversation);
-  return conversation;
+  try {
+    const conversation = await postChat({ conversationId });
+    if (conversation) upsertCache(conversation);
+    return conversation;
+  } catch {
+    // Email deep-link recovery: if this browser still has the thread, publish it.
+    const local = getChatConversationById(conversationId);
+    if (!local) return null;
+    const imported = await importConversationToServer(local);
+    return imported ?? local;
+  }
 }
 
 export async function openListingConversation(listing: Listing): Promise<string> {

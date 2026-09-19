@@ -338,8 +338,8 @@ export async function emailChatMessage(input: {
       : `رسالة جديدة حول «${input.listingTitle}»`,
     title: english ? "You have a new message" : "لديك رسالة جديدة",
     bodyHtml: english
-      ? `${greet(recipient.fullName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">${escapeEmailHtml(input.senderName)} messaged you about “${escapeEmailHtml(input.listingTitle)}”.</p><p style="font-size:15px;line-height:1.8;margin:12px 0 0;color:#6b6560;">${escapeEmailHtml(input.preview.slice(0, 180))}</p>`
-      : `${greet(recipient.fullName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">${escapeEmailHtml(input.senderName)} راسلك بخصوص «${escapeEmailHtml(input.listingTitle)}».</p><p style="font-size:15px;line-height:1.8;margin:12px 0 0;color:#6b6560;">${escapeEmailHtml(input.preview.slice(0, 180))}</p>`,
+      ? `${greet(recipient.fullName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">${escapeEmailHtml(input.senderName)} messaged you about “${escapeEmailHtml(input.listingTitle)}”.</p><p dir="auto" style="font-size:15px;line-height:1.8;margin:12px 0 0;color:#6b6560;unicode-bidi:plaintext;">${escapeEmailHtml(input.preview.slice(0, 180))}</p>`
+      : `${greet(recipient.fullName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">${escapeEmailHtml(input.senderName)} راسلك بخصوص «${escapeEmailHtml(input.listingTitle)}».</p><p dir="rtl" style="font-size:15px;line-height:1.8;margin:12px 0 0;color:#6b6560;text-align:right;">${escapeEmailHtml(input.preview.slice(0, 180))}</p>`,
     bodyLines: english
       ? [
           `${input.senderName} sent a message about “${input.listingTitle}”.`,

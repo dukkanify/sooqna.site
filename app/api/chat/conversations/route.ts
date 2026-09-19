@@ -6,9 +6,11 @@ import {
 import {
   appendServerMessage,
   getConversationById,
+  importServerConversation,
   listConversationsForUser,
   markConversationReadForUser,
   resolveOrCreateServerConversation,
+  type ServerChatConversation,
 } from "@/services/chat/chat-server-store";
 import { getListingById } from "@/services/listings/listing-store";
 import { isPublicListingStatus } from "@/shared/constants/listingStatuses";
@@ -29,6 +31,7 @@ export async function POST(request: Request) {
     action?: string;
     conversationId?: string;
     message?: string;
+    conversation?: ServerChatConversation;
     listing?: {
       id: string;
       title: string;
@@ -39,6 +42,14 @@ export async function POST(request: Request) {
   };
 
   try {
+    if (body.action === "import" && body.conversation) {
+      const conversation = await importServerConversation(
+        body.conversation,
+        user.id,
+      );
+      return NextResponse.json({ conversation });
+    }
+
     if (body.action === "open" && body.listing) {
       if (!body.listing.sellerId || body.listing.sellerId === user.id) {
         return NextResponse.json({ error: "OWN_LISTING" }, { status: 400 });
@@ -50,6 +61,9 @@ export async function POST(request: Request) {
           { status: 403 },
         );
       }
+      const existingBefore = await getConversationById(
+        `chat-${body.listing.id}-${user.id}`,
+      );
       const conversation = await resolveOrCreateServerConversation({
         buyerId: user.id,
         buyerName: user.fullName,
@@ -60,6 +74,25 @@ export async function POST(request: Request) {
         sellerName:
           body.listing.sellerName || listing?.seller.name || "البائع",
       });
+      if (!existingBefore) {
+        const preview =
+          conversation.messages[conversation.messages.length - 1]?.body?.slice(
+            0,
+            120,
+          ) ?? "";
+        void createNotification({
+          userId: conversation.sellerId,
+          type: "chat_message",
+          title: "رسالة جديدة",
+          titleEn: "New message",
+          body: `${user.fullName}: ${preview}`,
+          bodyEn: `${user.fullName}: ${preview}`,
+          href: `/chat/${conversation.id}`,
+          dedupeKey: `chat-open:${conversation.id}`,
+        }).catch((error) => {
+          console.error("[Sooqna Chat] open notify failed", error);
+        });
+      }
       return NextResponse.json({ conversation });
     }
 

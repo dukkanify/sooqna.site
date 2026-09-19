@@ -16,6 +16,8 @@ describe("server-backed buyer↔seller chat", () => {
     assert.match(service, /\/api\/chat\/conversations/);
     assert.match(service, /export async function openListingConversation/);
     assert.match(service, /export async function syncChatConversationsFromServer/);
+    assert.match(service, /export async function importConversationToServer/);
+    assert.match(service, /mergeConversationMaps|pushLocalOnlyToServer/);
     assert.match(service, /action:\s*"message"/);
   });
 
@@ -30,12 +32,37 @@ describe("server-backed buyer↔seller chat", () => {
     assert.doesNotMatch(view, /غير موجودة في هذا المتصفح/);
   });
 
-  it("message route notifies the other party in-app", () => {
+  it("message route notifies and imports durable threads", () => {
     const route = read("app/api/chat/conversations/route.ts");
     assert.match(route, /createNotification/);
     assert.match(route, /type:\s*"chat_message"/);
+    assert.match(route, /importServerConversation/);
+    assert.match(route, /action === "import"/);
     assert.match(route, /OWN_LISTING/);
     assert.match(route, /LISTING_NOT_PUBLIC/);
+  });
+
+  it("email chat preview sets text direction for Arabic", () => {
+    const email = read("services/email/notification-emails.ts");
+    assert.match(email, /dir="rtl"/);
+    assert.match(email, /dir="auto"/);
+  });
+});
+
+describe("mobile city pill and admin shell", () => {
+  it("does not clip Abu Dhabi on compact phones", () => {
+    const css = read("features/home/components/mobile/mobile-home.css");
+    assert.doesNotMatch(css, /location-value \{\s*max-width:\s*3\.25rem/);
+    assert.match(css, /mobile-home-header__location--bar/);
+    assert.match(css, /#c4a035|#d4af37|fffdf6/);
+  });
+
+  it("keeps admin logout from overlapping identity on mobile", () => {
+    const css = read("features/admin/components/admin-ops.css");
+    const shell = read("features/admin/components/AdminShell.tsx");
+    assert.match(css, /admin-ops__logout-btn/);
+    assert.match(css, /\.admin-ops__who \{\s*display:\s*none/);
+    assert.match(shell, /admin-ops__logout-btn/);
   });
 });
 

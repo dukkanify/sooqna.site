@@ -8,6 +8,7 @@ export {
   getChatThreads,
   getConversationUnreadCount,
   getUnreadChatCount,
+  importConversationToServer,
   markConversationRead,
   openListingConversation,
   resolveOrCreateConversation,

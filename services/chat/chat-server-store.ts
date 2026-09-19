@@ -49,6 +49,61 @@ export async function upsertConversation(
   return store.upsert(conversation);
 }
 
+/**
+ * Merge a client-held thread into the durable store.
+ * Keeps the richer message history when both sides exist.
+ */
+export async function importServerConversation(
+  incoming: ServerChatConversation,
+  actorUserId: string,
+): Promise<ServerChatConversation> {
+  if (
+    incoming.buyerId !== actorUserId &&
+    incoming.sellerId !== actorUserId
+  ) {
+    throw new Error("UNAUTHORIZED");
+  }
+  if (!incoming.id || !incoming.listingId || !incoming.buyerId || !incoming.sellerId) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  const existing = await getConversationById(incoming.id);
+  if (!existing) {
+    return store.upsert({
+      ...incoming,
+      messages: Array.isArray(incoming.messages) ? incoming.messages : [],
+      updatedAt: incoming.updatedAt || new Date().toISOString(),
+      createdAt: incoming.createdAt || new Date().toISOString(),
+    });
+  }
+
+  const byMsgId = new Map<string, ServerChatMessage>();
+  for (const msg of [...existing.messages, ...incoming.messages]) {
+    if (msg?.id) byMsgId.set(msg.id, msg);
+  }
+  const messages = [...byMsgId.values()].sort((a, b) =>
+    a.createdAt.localeCompare(b.createdAt),
+  );
+  const updatedAt =
+    incoming.updatedAt.localeCompare(existing.updatedAt) > 0
+      ? incoming.updatedAt
+      : existing.updatedAt;
+
+  return store.upsert({
+    ...existing,
+    listingTitle: incoming.listingTitle || existing.listingTitle,
+    listingSlug: incoming.listingSlug || existing.listingSlug,
+    buyerName: incoming.buyerName || existing.buyerName,
+    sellerName: incoming.sellerName || existing.sellerName,
+    messages,
+    updatedAt,
+    lastReadAtBy: {
+      ...(existing.lastReadAtBy ?? {}),
+      ...(incoming.lastReadAtBy ?? {}),
+    },
+  });
+}
+
 export async function resolveOrCreateServerConversation(input: {
   buyerId: string;
   buyerName: string;
