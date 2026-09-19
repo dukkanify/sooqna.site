@@ -62,6 +62,58 @@ export async function getConversationById(
   return all.find((item) => item.id === conversationId);
 }
 
+/** True when the user is a stored participant. */
+export function isConversationParticipant(
+  conversation: ServerChatConversation,
+  userId: string,
+): boolean {
+  return conversation.buyerId === userId || conversation.sellerId === userId;
+}
+
+/**
+ * If the signed-in user owns the listing, rewrite sellerId so they can reply
+ * even when the thread was opened with a stale/wrong seller id.
+ */
+export async function repairConversationSellerIfOwner(
+  conversation: ServerChatConversation,
+  userId: string,
+): Promise<ServerChatConversation> {
+  if (isConversationParticipant(conversation, userId)) {
+    return conversation;
+  }
+
+  const { getListingById, getListingBySlug, getAllListings } = await import(
+    "@/services/listings/listing-store"
+  );
+  let listing =
+    (await getListingById(conversation.listingId).catch(() => undefined)) ??
+    (await getListingBySlug(conversation.listingSlug).catch(() => undefined));
+
+  if (!listing || listing.seller.id !== userId) {
+    const all = await getAllListings().catch(() => [] as Awaited<
+      ReturnType<typeof getAllListings>
+    >);
+    listing = all.find(
+      (item) =>
+        item.seller.id === userId &&
+        (item.id === conversation.listingId ||
+          item.slug === conversation.listingSlug),
+    );
+  }
+
+  if (!listing || listing.seller.id !== userId) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  return upsertMergingMessages({
+    ...conversation,
+    sellerId: userId,
+    sellerName: listing.seller.name || conversation.sellerName,
+    listingId: listing.id || conversation.listingId,
+    listingSlug: listing.slug || conversation.listingSlug,
+  });
+}
+
 export async function upsertConversation(
   conversation: ServerChatConversation,
 ): Promise<ServerChatConversation> {
@@ -110,21 +162,35 @@ export async function importServerConversation(
   incoming: ServerChatConversation,
   actorUserId: string,
 ): Promise<ServerChatConversation> {
+  let snapshot = incoming;
   if (
-    incoming.buyerId !== actorUserId &&
-    incoming.sellerId !== actorUserId
+    snapshot.buyerId !== actorUserId &&
+    snapshot.sellerId !== actorUserId
   ) {
-    throw new Error("UNAUTHORIZED");
+    const { getListingById, getListingBySlug } = await import(
+      "@/services/listings/listing-store"
+    );
+    const listing =
+      (await getListingById(snapshot.listingId).catch(() => undefined)) ??
+      (await getListingBySlug(snapshot.listingSlug).catch(() => undefined));
+    if (!listing || listing.seller.id !== actorUserId) {
+      throw new Error("UNAUTHORIZED");
+    }
+    snapshot = {
+      ...snapshot,
+      sellerId: actorUserId,
+      sellerName: listing.seller.name || snapshot.sellerName,
+    };
   }
-  if (!incoming.id || !incoming.listingId || !incoming.buyerId || !incoming.sellerId) {
+  if (!snapshot.id || !snapshot.listingId || !snapshot.buyerId || !snapshot.sellerId) {
     throw new Error("INVALID_INPUT");
   }
 
   return upsertMergingMessages({
-    ...incoming,
-    messages: Array.isArray(incoming.messages) ? incoming.messages : [],
-    updatedAt: incoming.updatedAt || new Date().toISOString(),
-    createdAt: incoming.createdAt || new Date().toISOString(),
+    ...snapshot,
+    messages: Array.isArray(snapshot.messages) ? snapshot.messages : [],
+    updatedAt: snapshot.updatedAt || new Date().toISOString(),
+    createdAt: snapshot.createdAt || new Date().toISOString(),
   });
 }
 
@@ -172,13 +238,14 @@ export async function appendServerMessage(input: {
   body: string;
 }): Promise<ServerChatConversation | undefined> {
   return withConversationLock(input.conversationId, async () => {
-    const conversation = await getConversationById(input.conversationId);
+    let conversation = await getConversationById(input.conversationId);
     if (!conversation) return undefined;
-    if (
-      conversation.buyerId !== input.senderId &&
-      conversation.sellerId !== input.senderId
-    ) {
-      throw new Error("UNAUTHORIZED");
+
+    if (!isConversationParticipant(conversation, input.senderId)) {
+      conversation = await repairConversationSellerIfOwner(
+        conversation,
+        input.senderId,
+      );
     }
 
     const now = new Date().toISOString();
@@ -204,10 +271,10 @@ export async function markConversationReadForUser(
   userId: string,
 ): Promise<ServerChatConversation | undefined> {
   return withConversationLock(conversationId, async () => {
-    const conversation = await getConversationById(conversationId);
+    let conversation = await getConversationById(conversationId);
     if (!conversation) return undefined;
-    if (conversation.buyerId !== userId && conversation.sellerId !== userId) {
-      throw new Error("UNAUTHORIZED");
+    if (!isConversationParticipant(conversation, userId)) {
+      conversation = await repairConversationSellerIfOwner(conversation, userId);
     }
     const now = new Date().toISOString();
     return upsertMergingMessages({

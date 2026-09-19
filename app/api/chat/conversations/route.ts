@@ -9,12 +9,26 @@ import {
   importServerConversation,
   listConversationsForUser,
   markConversationReadForUser,
+  repairConversationSellerIfOwner,
   resolveOrCreateServerConversation,
   type ServerChatConversation,
 } from "@/services/chat/chat-server-store";
 import { getListingById } from "@/services/listings/listing-store";
 import { isPublicListingStatus } from "@/shared/constants/listingStatuses";
 import { createNotification } from "@/services/payments/notification-store";
+
+async function ensureConversationForActor(
+  conversationId: string,
+  actorUserId: string,
+  snapshot?: ServerChatConversation,
+): Promise<ServerChatConversation | undefined> {
+  let conversation = await getConversationById(conversationId);
+  if (!conversation && snapshot && snapshot.id === conversationId) {
+    conversation = await importServerConversation(snapshot, actorUserId);
+  }
+  if (!conversation) return undefined;
+  return repairConversationSellerIfOwner(conversation, actorUserId);
+}
 
 export async function GET() {
   const user = await requireSessionUser();
@@ -47,7 +61,11 @@ export async function POST(request: Request) {
         body.conversation,
         user.id,
       );
-      return NextResponse.json({ conversation });
+      const repaired = await repairConversationSellerIfOwner(
+        conversation,
+        user.id,
+      );
+      return NextResponse.json({ conversation: repaired });
     }
 
     if (body.action === "open" && body.listing) {
@@ -61,6 +79,13 @@ export async function POST(request: Request) {
           { status: 403 },
         );
       }
+      // Prefer durable listing seller id over client-provided id.
+      const sellerId = listing?.seller.id || body.listing.sellerId;
+      const sellerName =
+        listing?.seller.name || body.listing.sellerName || "البائع";
+      if (!sellerId || sellerId === user.id) {
+        return NextResponse.json({ error: "OWN_LISTING" }, { status: 400 });
+      }
       const existingBefore = await getConversationById(
         `chat-${body.listing.id}-${user.id}`,
       );
@@ -70,9 +95,8 @@ export async function POST(request: Request) {
         listingId: body.listing.id,
         listingTitle: body.listing.title || listing?.title || "إعلان",
         listingSlug: body.listing.slug || listing?.slug || body.listing.id,
-        sellerId: body.listing.sellerId,
-        sellerName:
-          body.listing.sellerName || listing?.seller.name || "البائع",
+        sellerId,
+        sellerName,
       });
       if (!existingBefore) {
         const preview =
@@ -97,8 +121,17 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "message" && body.conversationId && body.message) {
-      const conversation = await appendServerMessage({
-        conversationId: body.conversationId,
+      let conversation = await ensureConversationForActor(
+        body.conversationId,
+        user.id,
+        body.conversation,
+      );
+      if (!conversation) {
+        return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+      }
+
+      conversation = await appendServerMessage({
+        conversationId: conversation.id,
         senderId: user.id,
         body: body.message,
       });
@@ -128,8 +161,16 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "read" && body.conversationId) {
-      const conversation = await markConversationReadForUser(
+      const ensured = await ensureConversationForActor(
         body.conversationId,
+        user.id,
+        body.conversation,
+      );
+      if (!ensured) {
+        return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+      }
+      const conversation = await markConversationReadForUser(
+        ensured.id,
         user.id,
       );
       if (!conversation) {
@@ -139,15 +180,13 @@ export async function POST(request: Request) {
     }
 
     if (body.conversationId) {
-      const conversation = await getConversationById(body.conversationId);
+      const conversation = await ensureConversationForActor(
+        body.conversationId,
+        user.id,
+        body.conversation,
+      );
       if (!conversation) {
         return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
-      }
-      if (
-        conversation.buyerId !== user.id &&
-        conversation.sellerId !== user.id
-      ) {
-        return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 403 });
       }
       return NextResponse.json({ conversation });
     }

@@ -32,14 +32,29 @@ describe("server-backed buyer↔seller chat", () => {
     assert.doesNotMatch(view, /غير موجودة في هذا المتصفح/);
   });
 
-  it("message route notifies and imports durable threads", () => {
+  it("message route notifies and recovers durable threads", () => {
     const route = read("app/api/chat/conversations/route.ts");
     assert.match(route, /createNotification/);
     assert.match(route, /type:\s*"chat_message"/);
     assert.match(route, /importServerConversation/);
     assert.match(route, /action === "import"/);
+    assert.match(route, /ensureConversationForActor|repairConversationSellerIfOwner/);
     assert.match(route, /OWN_LISTING/);
     assert.match(route, /LISTING_NOT_PUBLIC/);
+  });
+
+  it("send path retries with conversation snapshot", () => {
+    const service = read("services/chat/chat.service.ts");
+    const view = read("features/chat/components/ChatConversationView.tsx");
+    assert.match(service, /action:\s*"message"/);
+    assert.match(service, /conversation: local|conversation: imported/);
+    assert.match(view, /addMessageToConversation\([\s\S]*conversation,/);
+  });
+
+  it("repairs seller id when listing owner replies", () => {
+    const store = read("services/chat/chat-server-store.ts");
+    assert.match(store, /repairConversationSellerIfOwner/);
+    assert.match(store, /listing\.seller\.id !== userId/);
   });
 
   it("email chat preview sets text direction for Arabic", () => {

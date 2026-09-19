@@ -36,7 +36,7 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
       const current = await fetchConversationById(conversationId);
       setConversation(current);
       if (current) {
-        void markConversationRead(conversationId);
+        void markConversationRead(conversationId, current);
       }
     } catch {
       setConversation(null);
@@ -112,10 +112,11 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
         conversation.id,
         user.id,
         message.trim(),
+        conversation,
       );
 
       if (!updated) {
-        setError("تعذر إرسال الرسالة.");
+        setError("تعذر إرسال الرسالة. حدّث الصفحة وحاول مرة أخرى.");
         return;
       }
 
@@ -133,8 +134,15 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
 
       setConversation(updated);
       setMessage("");
-    } catch {
-      setError("تعذر إرسال الرسالة. تحقق من الاتصال وحاول مرة أخرى.");
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "";
+      if (code === "UNAUTHORIZED") {
+        setError("لا يمكنك الرد في هذه المحادثة بهذا الحساب.");
+      } else if (code === "NOT_FOUND") {
+        setError("المحادثة غير موجودة على الخادم. افتحها من صندوق الرسائل وحاول مرة أخرى.");
+      } else {
+        setError("تعذر إرسال الرسالة. تحقق من الاتصال وحاول مرة أخرى.");
+      }
     } finally {
       setIsSending(false);
     }
