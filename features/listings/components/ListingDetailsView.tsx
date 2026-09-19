@@ -6,6 +6,7 @@ import { ListingPlatformNotice } from "@/features/listings/components/ListingPla
 import { ListingDetailToolbar } from "@/features/listings/components/ListingDetailToolbar";
 import { ListingGallery } from "@/features/listings/components/ListingGallery";
 import dynamic from "next/dynamic";
+import { ListingOwnerStatusBanner } from "@/features/listings/components/ListingOwnerStatusBanner";
 import { ListingSafetyTips } from "@/features/listings/components/ListingSafetyTips";
 import { ShowcaseListingNotice } from "@/features/listings/components/ShowcaseListingNotice";
 import { ListingSpecifications } from "@/features/listings/components/ListingSpecifications";
@@ -52,6 +53,8 @@ type ListingDetailsViewProps = {
   category?: Category;
   listing: Listing;
   relatedListings?: Listing[];
+  /** Owner/admin preview of a non-public listing (pending review, etc.). */
+  showOwnerStatusBanner?: boolean;
 };
 
 export function ListingDetailsView({
@@ -59,6 +62,7 @@ export function ListingDetailsView({
   category,
   listing,
   relatedListings = [],
+  showOwnerStatusBanner = false,
 }: ListingDetailsViewProps) {
   const locale = useLocale();
   const escrowProtected = showsEscrowProtection(listing);
@@ -73,6 +77,9 @@ export function ListingDetailsView({
     <>
       <section className="app-container page-padding scroll-mt-20 pb-28 lg:pb-8">
         <Breadcrumbs items={breadcrumbs} />
+        {showOwnerStatusBanner ? (
+          <ListingOwnerStatusBanner listing={listing} />
+        ) : null}
 
         <div className="listing-details-grid grid w-full min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start lg:gap-x-8">
           <div className="min-w-0 overflow-x-clip lg:col-start-1">

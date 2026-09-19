@@ -46,7 +46,7 @@ function buildSellerFromSession(user: NonNullable<ReturnType<typeof getSessionUs
 }
 
 type SyncListingResult =
-  | { ok: true }
+  | { ok: true; listing?: Listing }
   | { ok: false; code?: string; error: string };
 
 async function syncListingToServer(
@@ -62,6 +62,7 @@ async function syncListingToServer(
     const data = (await response.json().catch(() => ({}))) as {
       error?: string;
       message?: string;
+      listing?: Listing;
     };
 
     if (!response.ok) {
@@ -84,6 +85,11 @@ async function syncListingToServer(
         ok: false,
         error: "تعذر حفظ الإعلان على الخادم. حاول مرة أخرى.",
       };
+    }
+
+    if (data.listing?.id) {
+      saveLocalListing(data.listing);
+      return { ok: true, listing: data.listing };
     }
 
     return { ok: true };
@@ -453,7 +459,13 @@ export function useAddListingForm(categories: Category[]) {
         }).catch(() => undefined);
       }
 
-      router.push(`/listings/local/${id}`);
+      // Prefer canonical slug preview so owners land on the pending ad, not 404.
+      const synced = sync.ok ? sync.listing : undefined;
+      if (synced?.slug) {
+        router.push(`/listings/${synced.slug}`);
+        return;
+      }
+      router.push(`/listings/local/${synced?.id ?? id}`);
     },
     [categories, featuredCheckoutAvailable, imageFiles, router, selectedCategoryId],
   );

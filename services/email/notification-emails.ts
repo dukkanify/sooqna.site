@@ -43,7 +43,7 @@ export async function emailListingReceived(listing: Listing): Promise<void> {
       ? [`We received “${listing.title}” and it is under review.`]
       : [`استلمنا إعلان «${listing.title}» وهو قيد المراجعة.`],
     ctaHref: href,
-    ctaLabel: english ? "View listing" : "متابعة الإعلان",
+    ctaLabel: english ? "Preview your listing" : "معاينة إعلانك",
   });
 }
 

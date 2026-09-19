@@ -6,6 +6,7 @@ import { getCategories } from "@/services/categories";
 import { getListingById } from "@/services/listings/listing-store";
 import { getValidSessionUser } from "@/services/auth/require-session";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import { resolveListingPageAccess } from "@/shared/listings/listing-page-access";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 
 type LocalListingPageProps = {
@@ -27,15 +28,23 @@ export default async function LocalListingPage({
 
   const stored = await getListingById(id);
   if (stored?.slug) {
-    const isOwner = Boolean(session && stored.seller.id === session.id);
-    const isAdmin = session?.role === "admin";
     const hidden =
       isConfirmedFixtureListing(stored) || isShowcaseListing(stored);
-    if (hidden && !isOwner && !isAdmin) {
+    const access = resolveListingPageAccess(stored, session);
+    // Fixture/showcase rows stay private unless owner/admin.
+    if (hidden && access.kind !== "allow") {
+      if (access.kind === "login_required") {
+        redirect(
+          `/login?next=${encodeURIComponent(`/listings/local/${id}`)}`,
+        );
+      }
       notFound();
     }
-    if (stored.status !== "active" && !isOwner && !isAdmin) {
-      notFound();
+    if (access.kind === "not_found") notFound();
+    if (access.kind === "login_required") {
+      redirect(
+        `/login?next=${encodeURIComponent(`/listings/${stored.slug}`)}`,
+      );
     }
     // Synced catalog copy — use the canonical slug page (fast, shared cache rules).
     redirect(`/listings/${stored.slug}`);
