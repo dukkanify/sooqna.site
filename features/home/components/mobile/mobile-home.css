@@ -90,11 +90,10 @@
   height: 2.35rem;
 }
 
-.mobile-home-header__location--bar {
-  max-width: none;
-  min-width: 0;
-  width: max-content;
+.mobile-home-header__location.mobile-home-header__location--bar {
   max-width: min(9.75rem, 42vw);
+  width: max-content;
+  min-width: 0;
   height: 2.35rem;
   gap: 0.28rem;
   padding-inline: 0.55rem 0.45rem;
@@ -105,11 +104,11 @@
     inset 0 1px 0 rgb(255 255 255 / 75%);
 }
 
-.mobile-home-header__location--bar .mobile-home-header__location-icon {
+.mobile-home-header__location.mobile-home-header__location--bar .mobile-home-header__location-icon {
   color: #c4a035;
 }
 
-.mobile-home-header__location--bar .mobile-home-header__location-value {
+.mobile-home-header__location.mobile-home-header__location--bar .mobile-home-header__location-value {
   font-size: 0.8rem;
   font-weight: 750;
   letter-spacing: -0.01em;
@@ -2643,11 +2642,11 @@ html[data-theme="dark"] .mobile-home-hero__badge {
     gap: 0.25rem;
   }
 
-  .mobile-home-header__location--bar {
+  .mobile-home-header__location.mobile-home-header__location--bar {
     max-width: min(9.5rem, 46vw);
   }
 
-  .mobile-home-header__location--bar .mobile-home-header__location-value {
+  .mobile-home-header__location.mobile-home-header__location--bar .mobile-home-header__location-value {
     font-size: 0.74rem;
   }
 }
@@ -2716,7 +2715,7 @@ html[data-theme="dark"] .mobile-home-header__location {
   box-shadow: 0 4px 12px rgb(0 0 0 / 28%);
 }
 
-html[data-theme="dark"] .mobile-home-header__location--bar {
+html[data-theme="dark"] .mobile-home-header__location.mobile-home-header__location--bar {
   border-color: rgb(212 175 55 / 38%);
   background: linear-gradient(180deg, #2a2416 0%, #1c1810 100%);
   box-shadow:
@@ -2724,7 +2723,7 @@ html[data-theme="dark"] .mobile-home-header__location--bar {
     inset 0 1px 0 rgb(255 220 140 / 8%);
 }
 
-html[data-theme="dark"] .mobile-home-header__location--bar .mobile-home-header__location-icon {
+html[data-theme="dark"] .mobile-home-header__location.mobile-home-header__location--bar .mobile-home-header__location-icon {
   color: #d4af37;
 }
 
@@ -2732,7 +2731,7 @@ html[data-theme="dark"] .mobile-home-header__location-value {
   color: #eef2f8;
 }
 
-html[data-theme="dark"] .mobile-home-header__location--bar .mobile-home-header__location-value {
+html[data-theme="dark"] .mobile-home-header__location.mobile-home-header__location--bar .mobile-home-header__location-value {
   color: #f3e6c0;
 }
 

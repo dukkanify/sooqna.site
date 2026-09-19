@@ -27,6 +27,25 @@ const store = createPayloadCollectionStore<ServerChatConversation>({
   fileName: "sooqna-chat.json",
 });
 
+/** Serialize mutations per conversation so mark-read cannot clobber a send. */
+const conversationLocks = new Map<string, Promise<unknown>>();
+
+function withConversationLock<T>(
+  conversationId: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const previous = conversationLocks.get(conversationId) ?? Promise.resolve();
+  const run = previous.then(fn, fn);
+  conversationLocks.set(
+    conversationId,
+    run.then(
+      () => undefined,
+      () => undefined,
+    ),
+  );
+  return run;
+}
+
 export async function listConversationsForUser(
   userId: string,
 ): Promise<ServerChatConversation[]> {
@@ -50,6 +69,40 @@ export async function upsertConversation(
 }
 
 /**
+ * Upsert while preserving the richer message history (guards concurrent
+ * mark-read / send races that would otherwise drop the latest message).
+ */
+async function upsertMergingMessages(
+  next: ServerChatConversation,
+): Promise<ServerChatConversation> {
+  const existing = await getConversationById(next.id);
+  if (!existing) return store.upsert(next);
+
+  const byMsgId = new Map<string, ServerChatMessage>();
+  for (const msg of [...existing.messages, ...next.messages]) {
+    if (msg?.id) byMsgId.set(msg.id, msg);
+  }
+  const messages = [...byMsgId.values()].sort((a, b) =>
+    a.createdAt.localeCompare(b.createdAt),
+  );
+  const updatedAt =
+    next.updatedAt.localeCompare(existing.updatedAt) > 0
+      ? next.updatedAt
+      : existing.updatedAt;
+
+  return store.upsert({
+    ...existing,
+    ...next,
+    messages,
+    updatedAt,
+    lastReadAtBy: {
+      ...(existing.lastReadAtBy ?? {}),
+      ...(next.lastReadAtBy ?? {}),
+    },
+  });
+}
+
+/**
  * Merge a client-held thread into the durable store.
  * Keeps the richer message history when both sides exist.
  */
@@ -67,40 +120,11 @@ export async function importServerConversation(
     throw new Error("INVALID_INPUT");
   }
 
-  const existing = await getConversationById(incoming.id);
-  if (!existing) {
-    return store.upsert({
-      ...incoming,
-      messages: Array.isArray(incoming.messages) ? incoming.messages : [],
-      updatedAt: incoming.updatedAt || new Date().toISOString(),
-      createdAt: incoming.createdAt || new Date().toISOString(),
-    });
-  }
-
-  const byMsgId = new Map<string, ServerChatMessage>();
-  for (const msg of [...existing.messages, ...incoming.messages]) {
-    if (msg?.id) byMsgId.set(msg.id, msg);
-  }
-  const messages = [...byMsgId.values()].sort((a, b) =>
-    a.createdAt.localeCompare(b.createdAt),
-  );
-  const updatedAt =
-    incoming.updatedAt.localeCompare(existing.updatedAt) > 0
-      ? incoming.updatedAt
-      : existing.updatedAt;
-
-  return store.upsert({
-    ...existing,
-    listingTitle: incoming.listingTitle || existing.listingTitle,
-    listingSlug: incoming.listingSlug || existing.listingSlug,
-    buyerName: incoming.buyerName || existing.buyerName,
-    sellerName: incoming.sellerName || existing.sellerName,
-    messages,
-    updatedAt,
-    lastReadAtBy: {
-      ...(existing.lastReadAtBy ?? {}),
-      ...(incoming.lastReadAtBy ?? {}),
-    },
+  return upsertMergingMessages({
+    ...incoming,
+    messages: Array.isArray(incoming.messages) ? incoming.messages : [],
+    updatedAt: incoming.updatedAt || new Date().toISOString(),
+    createdAt: incoming.createdAt || new Date().toISOString(),
   });
 }
 
@@ -147,47 +171,51 @@ export async function appendServerMessage(input: {
   senderId: string;
   body: string;
 }): Promise<ServerChatConversation | undefined> {
-  const conversation = await getConversationById(input.conversationId);
-  if (!conversation) return undefined;
-  if (
-    conversation.buyerId !== input.senderId &&
-    conversation.sellerId !== input.senderId
-  ) {
-    throw new Error("UNAUTHORIZED");
-  }
+  return withConversationLock(input.conversationId, async () => {
+    const conversation = await getConversationById(input.conversationId);
+    if (!conversation) return undefined;
+    if (
+      conversation.buyerId !== input.senderId &&
+      conversation.sellerId !== input.senderId
+    ) {
+      throw new Error("UNAUTHORIZED");
+    }
 
-  const now = new Date().toISOString();
-  const next: ServerChatConversation = {
-    ...conversation,
-    messages: [
-      ...conversation.messages,
-      {
-        id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        body: input.body.trim(),
-        createdAt: now,
-        senderId: input.senderId,
-      },
-    ],
-    updatedAt: now,
-  };
-  return store.upsert(next);
+    const now = new Date().toISOString();
+    const next: ServerChatConversation = {
+      ...conversation,
+      messages: [
+        ...conversation.messages,
+        {
+          id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          body: input.body.trim(),
+          createdAt: now,
+          senderId: input.senderId,
+        },
+      ],
+      updatedAt: now,
+    };
+    return upsertMergingMessages(next);
+  });
 }
 
 export async function markConversationReadForUser(
   conversationId: string,
   userId: string,
 ): Promise<ServerChatConversation | undefined> {
-  const conversation = await getConversationById(conversationId);
-  if (!conversation) return undefined;
-  if (conversation.buyerId !== userId && conversation.sellerId !== userId) {
-    throw new Error("UNAUTHORIZED");
-  }
-  const now = new Date().toISOString();
-  return store.upsert({
-    ...conversation,
-    lastReadAtBy: {
-      ...(conversation.lastReadAtBy ?? {}),
-      [userId]: now,
-    },
+  return withConversationLock(conversationId, async () => {
+    const conversation = await getConversationById(conversationId);
+    if (!conversation) return undefined;
+    if (conversation.buyerId !== userId && conversation.sellerId !== userId) {
+      throw new Error("UNAUTHORIZED");
+    }
+    const now = new Date().toISOString();
+    return upsertMergingMessages({
+      ...conversation,
+      lastReadAtBy: {
+        ...(conversation.lastReadAtBy ?? {}),
+        [userId]: now,
+      },
+    });
   });
 }
