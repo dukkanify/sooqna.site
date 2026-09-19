@@ -57,6 +57,13 @@ describe("server-backed buyer↔seller chat", () => {
     assert.match(store, /listing\.seller\.id !== userId/);
   });
 
+  it("inbox lists listing-owner threads even with stale sellerId", () => {
+    const store = read("services/chat/chat-server-store.ts");
+    assert.match(store, /listConversationsForUser/);
+    assert.match(store, /ownedKeys|getAllListings/);
+    assert.match(store, /orphans/);
+  });
+
   it("email chat preview sets text direction for Arabic", () => {
     const email = read("services/email/notification-emails.ts");
     assert.match(email, /dir="rtl"/);

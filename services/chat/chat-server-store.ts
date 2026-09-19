@@ -50,9 +50,46 @@ export async function listConversationsForUser(
   userId: string,
 ): Promise<ServerChatConversation[]> {
   const all = await store.listAll();
-  return all
-    .filter((item) => item.buyerId === userId || item.sellerId === userId)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const direct = all.filter(
+    (item) => item.buyerId === userId || item.sellerId === userId,
+  );
+  const orphans = all.filter(
+    (item) => item.buyerId !== userId && item.sellerId !== userId,
+  );
+
+  let repaired: ServerChatConversation[] = [];
+  if (orphans.length > 0) {
+    const { getAllListings } = await import("@/services/listings/listing-store");
+    const listings = await getAllListings().catch(
+      () => [] as Awaited<ReturnType<typeof getAllListings>>,
+    );
+    const ownedKeys = new Set(
+      listings
+        .filter((listing) => listing.seller.id === userId)
+        .flatMap((listing) => [listing.id, listing.slug].filter(Boolean)),
+    );
+    for (const item of orphans) {
+      if (
+        !ownedKeys.has(item.listingId) &&
+        !ownedKeys.has(item.listingSlug)
+      ) {
+        continue;
+      }
+      try {
+        repaired.push(await repairConversationSellerIfOwner(item, userId));
+      } catch {
+        // Not an owner after all — skip.
+      }
+    }
+  }
+
+  const byId = new Map<string, ServerChatConversation>();
+  for (const item of [...direct, ...repaired]) {
+    byId.set(item.id, item);
+  }
+  return [...byId.values()].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
+  );
 }
 
 export async function getConversationById(
