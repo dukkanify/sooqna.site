@@ -42,27 +42,37 @@
   box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 }
 
-.mobile-home-header__location--bar {
-  max-width: clamp(5.5rem, 30vw, 7.75rem);
+.mobile-home-header__location.mobile-home-header__location--bar {
+  max-width: min(9.75rem, 42vw);
   height: 2.35rem;
-  border-color: rgb(201 164 92 / 35%);
-  background: rgb(255 255 255 / 96%);
+  gap: 0.28rem;
+  padding-inline: 0.55rem 0.45rem;
+  border-color: rgb(212 175 55 / 45%);
+  background: linear-gradient(180deg, #fffdf6 0%, #f7efd8 100%);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 5%),
+    inset 0 1px 0 rgb(255 255 255 / 75%);
 }
 
 .mobile-home-header__location-icon {
   flex-shrink: 0;
-  color: #c9a45c;
+  color: #c4a035;
+}
+
+.mobile-home-header__location.mobile-home-header__location--bar .mobile-home-header__location-icon {
+  color: #c4a035;
 }
 
 .mobile-home-header__location-value {
   min-width: 0;
   flex: 1;
-  overflow: hidden;
-  font-size: clamp(0.5625rem, 2.6vw, 0.6875rem);
-  font-weight: 700;
+  overflow: visible;
+  font-size: clamp(0.7rem, 2.8vw, 0.8rem);
+  font-weight: 750;
   color: #0f172a;
   line-height: 1.2;
-  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+  text-overflow: clip;
   white-space: nowrap;
 }
 

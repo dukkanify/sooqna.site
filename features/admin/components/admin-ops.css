@@ -70,21 +70,35 @@
 }
 
 .admin-ops__topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.55rem 0.75rem;
   border-bottom: 1px solid var(--admin-line);
   background: var(--admin-surface);
-  padding: 0.75rem 1rem;
+  padding: 0.7rem 0.85rem;
+}
+
+.admin-ops__topbar .admin-ops__brand {
+  min-width: 0;
+}
+
+.admin-ops__topbar .admin-ops__brand-copy {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .admin-ops__topbar .admin-ops__brand-name {
   color: var(--admin-ink);
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-ops__topbar .admin-ops__brand-sub {
   color: var(--admin-gold-deep);
+  font-size: 0.62rem;
 }
 
 .admin-ops__live {
@@ -109,22 +123,35 @@
 .admin-ops__top-actions {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .admin-ops__who {
   text-align: end;
+  min-width: 0;
+  max-width: 7.5rem;
 }
 
 .admin-ops__who-name {
-  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
   font-weight: 800;
 }
 
 .admin-ops__who-role {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   color: var(--admin-muted);
+}
+
+.admin-ops__logout-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .admin-ops__workspace {
@@ -762,6 +789,48 @@
   .admin-ops__queue--dense,
   .admin-boxes__grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-ops__topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.45rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .admin-ops__topbar .admin-ops__mark {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .admin-ops__top-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 11.5rem;
+    gap: 0.35rem;
+  }
+
+  .admin-ops__who {
+    display: none;
+  }
+
+  .admin-ops__logout-btn {
+    min-height: 2rem;
+    padding-inline: 0.7rem;
+    font-size: 0.72rem;
+  }
+
+  .admin-ops__mobile-nav {
+    gap: 0.35rem;
+    margin-inline: -0.15rem;
+    padding-inline: 0.15rem;
+    padding-bottom: 0.35rem;
+  }
+
+  .admin-ops__pill {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.72rem;
+    border-radius: 999px;
   }
 }
 

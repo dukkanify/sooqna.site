@@ -73,7 +73,7 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
       <EmptyState
         actionHref="/chat"
         actionLabel="العودة للرسائل"
-        description="هذه المحادثة غير متاحة لحسابك، أو ربما تم حذفها."
+        description="هذه المحادثة غير متاحة لحسابك، أو ربما تم حذفها. افتح صندوق الرسائل لعرض محادثاتك."
         icon="message"
         title="المحادثة غير موجودة"
       />
