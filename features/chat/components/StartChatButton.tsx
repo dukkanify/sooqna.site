@@ -9,6 +9,7 @@ import {
   openListingConversation,
 } from "@/services/chat";
 import { isOwnListing } from "@/shared/listings/listing-ownership";
+import { isPublicListingStatus } from "@/shared/constants/listingStatuses";
 import { useToast } from "@/shared/components/ToastProvider";
 import { getSessionUser } from "@/services/storage";
 import { Button } from "@/shared/ui/Button";
@@ -66,11 +67,18 @@ export function StartChatButton({
         return;
       }
 
+      if (!isPublicListingStatus(listing.status)) {
+        const message = "المحادثة متاحة بعد نشر الإعلان.";
+        if (layout === "icon" || iconOnly) {
+          showToast(message, "error");
+        } else {
+          setError(message);
+        }
+        return;
+      }
+
       const existing = findConversationForListing(listing.id, user.id);
-      const conversationId = openListingConversation(listing, {
-        id: user.id,
-        name: user.fullName,
-      });
+      const conversationId = await openListingConversation(listing);
       if (!existing && listing.seller.id) {
         notifyChatEmail({
           conversationId,
@@ -104,7 +112,7 @@ export function StartChatButton({
         aria-label={chatLabel}
         className={`focus-ring ${className ?? ""}`.trim()}
         disabled={isLoading}
-        onClick={handleClick}
+        onClick={() => void handleClick()}
         type="button"
       >
         <Icon name="message" size={20} />
@@ -120,7 +128,7 @@ export function StartChatButton({
         className={className}
         fullWidth={fullWidth}
         loading={isLoading}
-        onClick={handleClick}
+        onClick={() => void handleClick()}
         size={size}
         type="button"
         variant={variant}

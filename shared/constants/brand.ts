@@ -7,7 +7,7 @@ export const BRAND = {
     "منصة سوق إماراتية موثوقة — بيع وشراء بثقة مع ضمان مالي، محفظة آمنة، ودعم على مدار الساعة.",
   descriptionEn:
     "A trusted UAE marketplace — buy and sell with confidence, with escrow protection, a secure wallet, and support around the clock.",
-  copyright: "© 2026 Sooqna. جميع الحقوق محفوظة.",
+  copyright: "© 2026 سوقنا. جميع الحقوق محفوظة.",
   copyrightEn: "© 2026 Sooqna. All rights reserved.",
   domain: "sooqnauae.com",
   supportEmail: "support@sooqnauae.com",

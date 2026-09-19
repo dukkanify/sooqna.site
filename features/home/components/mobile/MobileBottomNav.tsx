@@ -51,13 +51,34 @@ export function MobileBottomNav() {
   }, [pathname]);
 
   useEffect(() => {
-    const syncUnread = () => setUnreadChat(readUnreadCount(user?.id));
-    syncUnread();
+    let cancelled = false;
+    const syncUnread = () => {
+      setUnreadChat(readUnreadCount(user?.id));
+    };
+    const syncFromServer = () => {
+      if (!user?.id) {
+        setUnreadChat(0);
+        return;
+      }
+      void import("@/services/chat").then(({ syncChatConversationsFromServer }) =>
+        syncChatConversationsFromServer()
+          .then(() => {
+            if (!cancelled) syncUnread();
+          })
+          .catch(() => {
+            if (!cancelled) syncUnread();
+          }),
+      );
+    };
+    syncFromServer();
     window.addEventListener(STORAGE_EVENTS.chatChange, syncUnread);
-    window.addEventListener(STORAGE_EVENTS.sessionChange, syncUnread);
+    window.addEventListener(STORAGE_EVENTS.sessionChange, syncFromServer);
+    const timer = window.setInterval(syncFromServer, 30000);
     return () => {
+      cancelled = true;
       window.removeEventListener(STORAGE_EVENTS.chatChange, syncUnread);
-      window.removeEventListener(STORAGE_EVENTS.sessionChange, syncUnread);
+      window.removeEventListener(STORAGE_EVENTS.sessionChange, syncFromServer);
+      window.clearInterval(timer);
     };
   }, [user?.id]);
 
