@@ -181,13 +181,15 @@ export function findConversationForListing(
 export async function fetchConversationById(
   conversationId: string,
 ): Promise<ChatConversation | null> {
+  const local = getChatConversationById(conversationId);
   try {
-    const conversation = await postChat({ conversationId });
+    const conversation = await postChat({
+      conversationId,
+      ...(local ? { conversation: local } : {}),
+    });
     if (conversation) upsertCache(conversation);
     return conversation;
   } catch {
-    // Email deep-link recovery: if this browser still has the thread, publish it.
-    const local = getChatConversationById(conversationId);
     if (!local) return null;
     const imported = await importConversationToServer(local);
     return imported ?? local;
@@ -216,14 +218,44 @@ export async function addMessageToConversation(
   conversationId: string,
   _senderId: string,
   body: string,
+  snapshot?: ChatConversation | null,
 ): Promise<ChatConversation | undefined> {
-  const conversation = await postChat({
-    action: "message",
+  const local =
+    snapshot && snapshot.id === conversationId
+      ? snapshot
+      : getChatConversationById(conversationId);
+  const payload = {
+    action: "message" as const,
     conversationId,
     message: body,
-  });
-  if (conversation) upsertCache(conversation);
-  return conversation ?? undefined;
+    ...(local ? { conversation: local } : {}),
+  };
+
+  try {
+    const conversation = await postChat(payload);
+    if (conversation) upsertCache(conversation);
+    return conversation ?? undefined;
+  } catch (firstError) {
+    // Recover missing/stale server threads using the local snapshot, then retry once.
+    if (local) {
+      const imported = await importConversationToServer(local);
+      if (imported) {
+        try {
+          const conversation = await postChat({
+            action: "message",
+            conversationId: imported.id,
+            message: body,
+            conversation: imported,
+          });
+          if (conversation) upsertCache(conversation);
+          return conversation ?? undefined;
+        } catch {
+          throw firstError;
+        }
+      }
+    }
+    throw firstError;
+  }
 }
 
 export function getConversationUnreadCount(
@@ -252,11 +284,17 @@ export function getUnreadChatCount(userId?: string | null): number {
 
 export async function markConversationRead(
   conversationId: string,
+  snapshot?: ChatConversation | null,
 ): Promise<void> {
+  const local =
+    snapshot && snapshot.id === conversationId
+      ? snapshot
+      : getChatConversationById(conversationId);
   try {
     const conversation = await postChat({
       action: "read",
       conversationId,
+      ...(local ? { conversation: local } : {}),
     });
     if (conversation) upsertCache(conversation);
   } catch {
