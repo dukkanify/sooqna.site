@@ -1,7 +1,13 @@
 "use client";
 
-import { useRef, type InputHTMLAttributes, type MouseEvent } from "react";
+import {
+  useRef,
+  useState,
+  type InputHTMLAttributes,
+  type MouseEvent,
+} from "react";
 import { useTx } from "@/shared/i18n/useTx";
+import { Icon } from "@/shared/ui/Icon";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   compact?: boolean;
@@ -23,8 +29,12 @@ export function Input({
 }: InputProps) {
   const t = useTx();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const hasError = Boolean(error);
   const isPickerType = type === "date" || type === "time";
+  const isPasswordType = type === "password";
+  const resolvedType =
+    isPasswordType && passwordVisible ? "text" : type;
   const translatedLabel = label ? t(label) : label;
   const translatedError = error ? t(error) : error;
   const translatedHint = hint ? t(hint) : hint;
@@ -73,15 +83,34 @@ export function Input({
           {translatedLabel}
         </span>
       ) : null}
-      <input
-        ref={inputRef}
-        aria-invalid={hasError || undefined}
-        className={`focus-ring w-full min-w-0 rounded-[var(--radius-xl)] border bg-surface text-ink shadow-[var(--shadow-xs)] placeholder:text-muted/60 transition ${compact ? "min-h-9 rounded-lg px-3 text-xs font-medium" : "min-h-11 px-4 text-sm font-medium"} ${hasError ? "border-error bg-error-soft/30" : "border-border"} ${isPickerType ? "cursor-pointer" : ""} ${className}`}
-        onClick={handleInputClick}
-        placeholder={translatedPlaceholder}
-        type={type}
-        {...props}
-      />
+      <span className="relative block min-w-0">
+        <input
+          ref={inputRef}
+          aria-invalid={hasError || undefined}
+          className={`focus-ring w-full min-w-0 rounded-[var(--radius-xl)] border bg-surface text-ink shadow-[var(--shadow-xs)] placeholder:text-muted/60 transition ${compact ? "min-h-9 rounded-lg px-3 text-xs font-medium" : "min-h-11 px-4 text-sm font-medium"} ${isPasswordType ? (compact ? "pe-9" : "pe-11") : ""} ${hasError ? "border-error bg-error-soft/30" : "border-border"} ${isPickerType ? "cursor-pointer" : ""} ${className}`}
+          onClick={handleInputClick}
+          placeholder={translatedPlaceholder}
+          {...props}
+          type={resolvedType}
+        />
+        {isPasswordType ? (
+          <button
+            aria-label={
+              passwordVisible ? t("إخفاء كلمة المرور") : t("إظهار كلمة المرور")
+            }
+            aria-pressed={passwordVisible}
+            className={`absolute end-1.5 top-1/2 z-[1] inline-flex -translate-y-1/2 items-center justify-center rounded-lg text-muted transition hover:bg-surface-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${compact ? "size-7" : "size-9"}`}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setPasswordVisible((value) => !value);
+            }}
+            type="button"
+          >
+            <Icon name={passwordVisible ? "eye-off" : "eye"} size={compact ? 16 : 18} />
+          </button>
+        ) : null}
+      </span>
       {translatedError ? (
         <span className="text-xs font-medium text-error" role="alert">
           {translatedError}
