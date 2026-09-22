@@ -281,18 +281,6 @@ textarea {
     linear-gradient(160deg, var(--color-night) 0%, var(--color-night-soft) 100%);
 }
 
-.uae-flag-strip {
-  /* Literal UAE flag colors — do not follow flipped dark theme tokens */
-  background:
-    linear-gradient(90deg, #c41e3a 0 18%, transparent 18%),
-    linear-gradient(
-      180deg,
-      #c9a962 0 33.333%,
-      #ffffff 33.333% 66.666%,
-      #0b1628 66.666% 100%
-    );
-}
-
 /* ── Category mark — artistic 3D icon tiles (navy + gold) ── */
 .category-mark {
   position: relative;

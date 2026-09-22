@@ -31,11 +31,6 @@ export async function AuthShell({
         <div className="auth-shell__showcase-inner">
           <BrandLogo showTagline={false} size="md" theme="dark" />
 
-          <span className="auth-shell__eyebrow">
-            <span className="inline-block h-3 w-4 overflow-hidden rounded-sm uae-flag-strip" />
-            منصة إماراتية موثوقة
-          </span>
-
           <AuthBrandTitle title={title} />
 
           <p className="auth-shell__description">{description}</p>
