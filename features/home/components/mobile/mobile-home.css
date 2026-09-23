@@ -956,65 +956,54 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 }
 
 .mobile-home-search-card__filters {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 0.3125rem;
   margin-top: 0.375rem;
-}
-
-.mobile-home-search-card__filter-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.3125rem;
-}
-
-.mobile-home-search-card__filter-row--action {
-  grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
 }
 
-.mobile-home-search-card__segment {
-  display: flex;
+.mobile-home-search-card__chip {
+  position: relative;
+  display: inline-flex;
   min-width: 0;
-  flex-direction: column;
-  gap: 0.125rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 2.25rem;
   border: 1px solid var(--mh-border);
   border-radius: var(--mh-radius-md);
   background: var(--mh-bg);
-  padding: 0.3125rem 0.5rem 0.375rem;
+  padding: 0.375rem 0.5rem;
   box-shadow: var(--mh-shadow-sm);
+  color: var(--mh-primary);
 }
 
-.mobile-home-search-card__segment-label {
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: var(--mh-muted);
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.mobile-home-search-card__segment-control {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 0.25rem;
+.mobile-home-search-card__chip-icon {
+  flex-shrink: 0;
   color: var(--mh-gold);
 }
 
-.mobile-home-search-card__segment-icon {
-  flex-shrink: 0;
+.mobile-home-search-card__chip-label {
+  overflow: hidden;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.mobile-home-search-card__select {
-  min-width: 0;
-  flex: 1;
+.mobile-home-search-card__chip-select {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   border: 0;
-  background: transparent;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--mh-primary);
-  line-height: 1.25;
-  outline: none;
+  opacity: 0;
+  cursor: pointer;
+  appearance: none;
 }
 
 .mobile-home-search-card__submit {
@@ -1025,8 +1014,8 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   align-items: center;
   justify-content: center;
   gap: 0.3125rem;
-  min-width: 4.5rem;
-  padding: 0.5rem 0.75rem;
+  min-width: 3.75rem;
+  padding: 0.5rem 0.85rem;
   border: 0;
   border-radius: var(--mh-radius-md);
   background: linear-gradient(165deg, #1a2236 0%, var(--mh-navy, #0b1628) 52%, #0a0f1a 100%);
@@ -1035,21 +1024,13 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   line-height: 1;
   letter-spacing: 0.01em;
   color: white;
+  white-space: nowrap;
   box-shadow:
     0 3px 10px rgb(15 23 42 / 20%),
     inset 0 1px 0 rgb(255 255 255 / 14%);
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
-}
-
-.mobile-home-search-card__submit svg {
-  flex-shrink: 0;
-  opacity: 0.96;
-}
-
-.mobile-home-search-card__submit span {
-  white-space: nowrap;
 }
 
 .mobile-home-search-card__submit:focus-visible {
@@ -2595,20 +2576,17 @@ html[data-theme="dark"] .mobile-home-hero__badge {
     padding: 0.5625rem 0.6875rem;
   }
 
-  .mobile-home-search-card__filter-row {
-    gap: 0.3125rem;
+  .mobile-home-search-card__filters {
+    gap: 0.375rem;
   }
 
-  .mobile-home-search-card__segment {
-    padding: 0.375rem 0.625rem 0.4375rem;
+  .mobile-home-search-card__chip {
+    min-height: 2.375rem;
+    padding: 0.4rem 0.55rem;
   }
 
-  .mobile-home-search-card__segment-label {
-    font-size: 0.6875rem;
-  }
-
-  .mobile-home-search-card__select {
-    font-size: 0.8125rem;
+  .mobile-home-search-card__chip-label {
+    font-size: 0.75rem;
   }
 
   .mobile-home-promo__media {
@@ -2652,21 +2630,18 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 }
 
 @media (max-width: 359px) {
-  .mobile-home-search-card__segment-label {
+  .mobile-home-search-card__chip-label {
     font-size: 0.5625rem;
   }
 
-  .mobile-home-search-card__segment-icon {
-    display: none;
-  }
-
-  .mobile-home-search-card__submit span {
+  .mobile-home-search-card__chip-icon {
     display: none;
   }
 
   .mobile-home-search-card__submit {
-    min-width: 2.5rem;
+    min-width: 2.75rem;
     padding-inline: 0.5rem;
+    font-size: 0.6875rem;
   }
 }
 
