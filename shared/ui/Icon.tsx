@@ -14,6 +14,7 @@ type IconName =
   | "check"
   | "star"
   | "map"
+  | "map-pin"
   | "clock"
   | "coins"
   | "filter"
@@ -80,6 +81,9 @@ const paths: Partial<Record<IconName, string>> = {
   check: "M5 12.5 9.5 17 19 7",
   star: "M12 3.5 14.2 9l5.8.5-4.4 3.8 1.3 5.7L12 16.2 7.1 18.9 8.4 13.3 4 9.5l5.8-.5L12 3.5Z",
   map: "M9 19l-5-2V6l5 2 6-2 5 2v11l-5-2-6 2Zm0-13v11M15 6v11",
+  /** Location pin — emirate / الإمارة */
+  "map-pin":
+    "M12 21s-7-5.2-7-11a7 7 0 1 1 14 0c0 5.8-7 11-7 11Zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
   clock: "M12 7v5l3 2 M12 21a9 9 0 1 1 9-9 9 9 0 0 1-9 9Z",
   /** Stacked coins — price / السعر */
   coins:

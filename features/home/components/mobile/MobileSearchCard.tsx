@@ -84,7 +84,7 @@ export function MobileSearchCard({ categories }: MobileSearchCardProps) {
             <Icon
               aria-hidden
               className="mobile-home-search-card__chip-icon"
-              name="map"
+              name="map-pin"
               size={14}
             />
             <span className="mobile-home-search-card__chip-label">
