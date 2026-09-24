@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { mockCategories } from "@/mock/categories.mock";
-import { loadCollection, saveCollection } from "@/services/payments/data-store";
+import { createPayloadCollectionStore } from "@/services/db/durable-json-collection";
 import type { Category } from "@/types";
 import type {
   AdminCategoryCreateInput,
@@ -14,6 +14,7 @@ import {
 import {
   LISTINGS_CACHE_TAG,
   CATEGORY_COUNTS_REVALIDATE_SECONDS,
+  bumpCategoriesCache,
 } from "@/services/listings/listings-cache";
 import { unstable_cache } from "next/cache";
 import {
@@ -26,13 +27,22 @@ import {
 } from "@/shared/constants/category-feature-profiles";
 import { replaceCategoryFormFields } from "@/services/admin/category-form-store";
 
-const FILE = "categories.json";
-
 type StoredCategory = Category & {
   enabled: boolean;
   sortOrder: number;
   featureProfile?: CategoryFeatureProfile;
 };
+
+/**
+ * Durable categories (incl. فروع / subcategories): Postgres JSONB on Vercel,
+ * local durable file when Postgres is unavailable — same pattern as form fields.
+ * Previously used ephemeral /tmp `categories.json`, so admin edits vanished on
+ * other instances and the publish wizard re-seeded mock subcategories.
+ */
+const store = createPayloadCollectionStore<StoredCategory>({
+  table: "categories",
+  fileName: "sooqna-categories.json",
+});
 
 let cacheRows: StoredCategory[] | null = null;
 let inflight: Promise<StoredCategory[]> | null = null;
@@ -83,23 +93,34 @@ function withResolvedProfile(row: StoredCategory): StoredCategory {
   };
 }
 
+async function persistCategories(rows: StoredCategory[]) {
+  await store.replaceAll(rows);
+  setCache(rows);
+  bumpCategoriesCache();
+}
+
 async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
+  // Vercel instances keep module state. Stale cacheRows hide category/subcategory
+  // edits saved by another instance (same pattern as listing-store).
+  if (process.env.VERCEL) {
+    cacheRows = null;
+  }
+
   if (cacheRows) return cloneCategories(cacheRows);
 
   if (!inflight) {
     inflight = (async () => {
-      const stored = await loadCollection<StoredCategory>(FILE).catch(
-        () => [] as StoredCategory[],
-      );
+      const stored = await store.listAll().catch(() => [] as StoredCategory[]);
       if (stored.length === 0) {
         const seeded = seedCategories();
-        await saveCollection(FILE, seeded);
+        await store.replaceAll(seeded);
         return setCache(seeded);
       }
       return setCache(
         stored.map((row, index) =>
           withResolvedProfile({
             ...row,
+            subcategories: normalizeSubcategories(row.subcategories),
             sortOrder:
               typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
           }),
@@ -264,8 +285,7 @@ export async function createCategoryRecord(
     featureProfile: profile,
   };
   categories.unshift(record);
-  await saveCollection(FILE, categories);
-  setCache(categories);
+  await persistCategories(categories);
 
   if (input.seedForm !== false) {
     await seedFormForProfile(record.id, profile);
@@ -310,8 +330,7 @@ export async function patchCategoryRecord(
     featureProfile: nextProfile,
     subcategories: nextSubcategories,
   };
-  await saveCollection(FILE, categories);
-  setCache(categories);
+  await persistCategories(categories);
   const row = categories[index];
   const resolvedProfile = resolveCategoryFeatureProfile(row.id, row.featureProfile);
   const profileChanged =
@@ -337,8 +356,7 @@ export async function deleteCategoryRecord(id: string): Promise<boolean> {
   const categories = await loadCategoryRecordsUncached();
   const next = categories.filter((item) => item.id !== id);
   if (next.length === categories.length) return false;
-  await saveCollection(FILE, next);
-  setCache(next);
+  await persistCategories(next);
   try {
     await replaceCategoryFormFields(id, []);
   } catch {
