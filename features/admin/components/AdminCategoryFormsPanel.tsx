@@ -161,7 +161,16 @@ export function AdminCategoryFormsPanel() {
         body: JSON.stringify({ categoryId, fields }),
       });
       if (!response.ok) {
-        setMessage("تعذر حفظ النموذج.");
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        const reason =
+          data?.error === "INVALID_INPUT"
+            ? "تحقق من المفاتيح والتسميات وأنواع الحقول."
+            : data?.error
+              ? ` (${data.error})`
+              : "";
+        setMessage(`تعذر حفظ النموذج.${reason}`);
         return;
       }
       setMessage("تم حفظ حقول النموذج.");

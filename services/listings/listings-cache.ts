@@ -20,3 +20,17 @@ export function bumpListingsCache() {
     // Outside a Next.js request (scripts/tests): skip.
   }
 }
+
+/** After admin category / subcategory edits — refresh browse + publish wizard. */
+export function bumpCategoriesCache() {
+  try {
+    revalidateTag(LISTINGS_CACHE_TAG, { expire: 0 });
+    revalidatePath("/", "page");
+    revalidatePath("/search", "page");
+    revalidatePath("/categories", "layout");
+    revalidatePath("/listings/new", "page");
+    revalidatePath("/dashboard/listings", "layout");
+  } catch {
+    // Outside a Next.js request (scripts/tests): skip.
+  }
+}
