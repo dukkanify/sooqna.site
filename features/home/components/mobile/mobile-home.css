@@ -982,16 +982,24 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 }
 
 .mobile-home-search-card__chip-icon {
+  display: block;
   flex-shrink: 0;
+  align-self: center;
   color: var(--mh-gold);
+}
+
+/* Stacked-coins glyph reads high/low in the box — nudge to match label cap-height */
+.mobile-home-search-card__chip-icon[data-icon="coins"] {
+  transform: translateY(-0.5px);
 }
 
 .mobile-home-search-card__chip-label {
   flex-shrink: 0;
+  display: block;
   overflow: visible;
   font-size: 0.6875rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1;
   white-space: nowrap;
 }
 
