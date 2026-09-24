@@ -543,7 +543,7 @@ const furnitureFields: CategoryFieldDefinition[] = [
   },
   {
     key: "condition",
-    label: "الحالة",
+    label: "حالة المنتج",
     type: "select",
     required: true,
     options: [

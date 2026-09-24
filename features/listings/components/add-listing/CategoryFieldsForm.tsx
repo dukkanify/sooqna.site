@@ -139,7 +139,7 @@ function renderField(
     return (
       <fieldset key={field.key} className={addListingCheckboxGroupClass}>
         <legend className="mb-1 px-0.5 text-xs font-semibold text-ink">
-          {field.label}
+          <LocalizedTree>{field.label}</LocalizedTree>
         </legend>
         <div className={addListingCheckboxGridClass}>
           {(field.options ?? []).map((option) => (
@@ -151,7 +151,9 @@ function renderField(
                 type="checkbox"
                 value={option.value}
               />
-              <span className="min-w-0 truncate">{option.label}</span>
+              <span className="min-w-0 truncate">
+                <LocalizedTree>{option.label}</LocalizedTree>
+              </span>
             </label>
           ))}
         </div>

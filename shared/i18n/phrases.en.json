@@ -2700,5 +2700,16 @@
   "، أو اطلب المساعدة من": ", or get help from",
   "بالتسجيل فإنك توافق أيضاً على": "By registering you also agree to",
   "راسلنا على": "Email us at",
-  "أو أرسل النموذج وسنعود إليك.": "or send the form and we’ll get back to you."
+  "أو أرسل النموذج وسنعود إليك.": "or send the form and we’ll get back to you.",
+  "الأبعاد بالسنتيمتر (الطول × العرض × الارتفاع)": "Dimensions in cm (L × W × H)",
+  "الماركة (إن وجدت)": "Brand (if any)",
+  "العيوب أو الأجزاء الناقصة (إن وجدت)": "Defects or missing parts (if any)",
+  "أسرة ومراتب": "Beds & mattresses",
+  "خزائن ووحدات تخزين": "Cabinets & storage",
+  "طاولات وكراسي": "Tables & chairs",
+  "أثاث مكتبي": "Office furniture",
+  "سجاد وستائر": "Carpets & curtains",
+  "إضاءة وديكور": "Lighting & décor",
+  "تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم الفرعي» (وليست حقول النموذج مثل نوع الأثاث).": "Shown on the “Choose category” step when posting an ad — the Subcategory list (not form fields like Furniture type).",
+  "من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة.": "From the subcategories defined for this category in the admin panel."
 }
