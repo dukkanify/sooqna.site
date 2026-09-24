@@ -343,7 +343,7 @@ export function AdminCategoriesPanel() {
             />
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 grid gap-1.5">
             <Textarea
               label="تصنيفات فرعية (اختياري)"
               onChange={(event) => setCreateSubsText(event.target.value)}
@@ -353,6 +353,10 @@ export function AdminCategoriesPanel() {
               rows={3}
               value={createSubsText}
             />
+            <p className="text-xs text-muted">
+              تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم
+              الفرعي» (وليست حقول النموذج مثل نوع الأثاث).
+            </p>
           </div>
 
           <div className="mt-4 rounded-[var(--radius-xl)] border border-border/80 bg-[#f8f6f1] p-4">
@@ -439,6 +443,10 @@ export function AdminCategoriesPanel() {
                       <div className="sm:col-span-2 grid gap-2 rounded-[var(--radius-lg)] border border-border bg-surface/60 p-3">
                         <p className="text-sm font-semibold text-ink">
                           التصنيفات الفرعية
+                        </p>
+                        <p className="text-xs text-muted">
+                          تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم
+                          الفرعي» (وليست حقول النموذج مثل نوع الأثاث).
                         </p>
                         {editSubs.length === 0 ? (
                           <p className="text-xs text-muted">
