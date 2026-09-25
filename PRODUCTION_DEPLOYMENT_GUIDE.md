@@ -31,8 +31,17 @@ cp .env.production.example .env.production
 | `STRIPE_CURRENCY` | `aed` | Yes |
 | `SESSION_COOKIE_DOMAIN` | `.sooqna.site` | Recommended |
 | `DATABASE_URL` | `postgres://...` (Neon / Vercel Postgres) | **Yes on Vercel** — user accounts must not use `/tmp` |
+| `S3_BUCKET` + `S3_ACCESS_KEY_ID` + `S3_SECRET_ACCESS_KEY` | AWS / Cloudflare R2 / MinIO | **Recommended** — durable listing photos (without S3, images inline as data URLs in Postgres) |
+| `S3_PUBLIC_BASE_URL` | CDN / public bucket base | Recommended with S3 |
+| `S3_ENDPOINT` / `S3_REGION` | Provider endpoint & region | As required by your provider |
 
 `NEXT_PUBLIC_APP_URL` must be set before `npm run build` so metadata, sitemap, Stripe redirects, and JSON-LD use the correct domain.
+
+### Media durability (listing photos)
+
+- With S3/R2 configured, `/api/uploads` returns stable public object URLs.
+- Without object storage on serverless, the client compresses images to data URLs so photos survive inside listing JSON (Postgres) instead of ephemeral `/api/media` disk.
+- Set Stripe live keys (`STRIPE_*`) in the Vercel project for real escrow checkout; mock fallback runs only when keys are unset.
 
 ---
 

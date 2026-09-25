@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   getSavedSearches,
   removeSavedSearch,
+  replaceSavedSearches,
   saveCurrentSearch,
   type SavedSearch,
 } from "@/services/storage";
@@ -20,6 +21,33 @@ type SavedSearchesProps = {
   currentLabel: string;
 };
 
+type ServerSavedSearch = {
+  id: string;
+  label: string;
+  url: string;
+};
+
+async function hydrateFromServer(): Promise<SavedSearch[] | null> {
+  try {
+    const response = await fetch("/api/saved-searches", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as { items?: ServerSavedSearch[] };
+    const items = (payload.items ?? [])
+      .filter((item) => item.id && item.label && item.url)
+      .map((item) => ({
+        id: item.id,
+        label: item.label,
+        url: item.url,
+      }));
+    return replaceSavedSearches(items);
+  } catch {
+    return null;
+  }
+}
+
 export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) {
   const locale = useLocale();
   const [saved, setSaved] = useState<SavedSearch[]>([]);
@@ -29,6 +57,9 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
   useEffect(() => {
     const sync = () => setSaved(getSavedSearches());
     sync();
+    void hydrateFromServer().then((items) => {
+      if (items) setSaved(items);
+    });
     window.addEventListener(STORAGE_EVENTS.savedSearchesChange, sync);
     window.addEventListener("storage", sync);
     return () => {
@@ -67,7 +98,16 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
             parsed.searchParams.get("emirate") ||
             undefined,
         }),
-      }).catch(() => undefined);
+      })
+        .then(async (response) => {
+          if (!response.ok) return;
+          const payload = (await response.json().catch(() => null)) as {
+            item?: ServerSavedSearch;
+          } | null;
+          if (!payload?.item) return;
+          await hydrateFromServer();
+        })
+        .catch(() => undefined);
     } catch {
       // ignore URL parse errors
     }
@@ -75,6 +115,10 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
 
   function handleRemove(id: string) {
     setSaved(removeSavedSearch(id));
+    void fetch(`/api/saved-searches?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      credentials: "include",
+    }).catch(() => undefined);
   }
 
   return (

@@ -12,6 +12,7 @@ export {
   getSessionUser,
   isFavoriteListing,
   removeSavedSearch,
+  replaceSavedSearches,
   saveAccountProof,
   getAccountProof,
   saveCurrentSearch,

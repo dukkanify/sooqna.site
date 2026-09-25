@@ -10,7 +10,6 @@ import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { getSessionUser, setSessionUser } from "@/services/storage";
-import { persistSessionCookie } from "@/services/auth/session-sync";
 import { isUaePassEnabled } from "@/shared/constants/feature-flags";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 
@@ -32,6 +31,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     typeof window !== "undefined" ? (getSessionUser() ?? user) : user,
   );
   const [saveMessage, setSaveMessage] = useState("");
+  const [saveError, setSaveError] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   return (
     <LocalizedTree>
@@ -69,20 +70,54 @@ export function ProfileForm({ user }: ProfileFormProps) {
             const accountType = String(
               formData.get("accountType") ?? displayUser.accountType,
             ) as UserProfile["accountType"];
+            const fullName = String(
+              formData.get("fullName") ?? displayUser.fullName,
+            ).trim();
+            const phone = String(formData.get("phone") ?? displayUser.phone).trim();
 
-            const updatedUser: UserProfile = {
-              ...displayUser,
-              fullName: String(formData.get("fullName") ?? displayUser.fullName),
-              email: String(formData.get("email") ?? displayUser.email),
-              phone: String(formData.get("phone") ?? displayUser.phone),
-              city: cityName,
-              accountType,
-            };
+            setIsSaving(true);
+            setSaveMessage("");
+            setSaveError(false);
 
-            setSessionUser(updatedUser);
-            void persistSessionCookie();
-            setDisplayUser(updatedUser);
-            setSaveMessage("تم حفظ التغييرات محلياً.");
+            void (async () => {
+              try {
+                const response = await fetch("/api/profile", {
+                  method: "PATCH",
+                  credentials: "same-origin",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    fullName,
+                    phone,
+                    city: cityName,
+                    accountType,
+                  }),
+                });
+
+                if (!response.ok) {
+                  setSaveError(true);
+                  setSaveMessage("تعذر حفظ الملف الشخصي. حاول مرة أخرى.");
+                  return;
+                }
+
+                const payload = (await response.json()) as { user?: UserProfile };
+                const updatedUser = payload.user ?? {
+                  ...displayUser,
+                  fullName,
+                  phone,
+                  city: cityName,
+                  accountType,
+                };
+
+                setSessionUser(updatedUser);
+                setDisplayUser(updatedUser);
+                setSaveMessage("تم حفظ التغييرات في حسابك.");
+              } catch {
+                setSaveError(true);
+                setSaveMessage("تعذر حفظ الملف الشخصي. حاول مرة أخرى.");
+              } finally {
+                setIsSaving(false);
+              }
+            })();
           }}
         >
           <div className="grid gap-4 md:grid-cols-2">
@@ -94,6 +129,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             />
             <Input
               defaultValue={displayUser.email}
+              disabled
               label="البريد الإلكتروني"
               name="email"
               type="email"
@@ -132,14 +168,18 @@ export function ProfileForm({ user }: ProfileFormProps) {
           />
 
           {saveMessage ? (
-            <FormMessage variant="success">{saveMessage}</FormMessage>
+            <FormMessage variant={saveError ? "error" : "success"}>
+              {saveMessage}
+            </FormMessage>
           ) : null}
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-2xl)] bg-surface-muted p-4">
             <p className="text-sm font-medium text-muted">
-              بياناتك محفوظة محلياً في هذا المتصفح.
+              التغييرات تُحفظ في حسابك وتظهر على كل الأجهزة بعد تسجيل الدخول.
             </p>
-            <Button type="submit">حفظ التغييرات</Button>
+            <Button loading={isSaving} type="submit">
+              حفظ التغييرات
+            </Button>
           </div>
         </form>
       </Card>

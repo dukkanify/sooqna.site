@@ -433,6 +433,9 @@ export async function patchListingRecord(
     ...(typeof patch.negotiable === "boolean"
       ? { negotiable: patch.negotiable }
       : {}),
+    ...(patch.videoUrl !== undefined
+      ? { videoUrl: patch.videoUrl.trim() || undefined }
+      : {}),
     ...(patch.status ? { status: patch.status } : {}),
     ...(typeof patch.isFeatured === "boolean" ? { isFeatured: patch.isFeatured } : {}),
     ...(patch.status === "rejected"
