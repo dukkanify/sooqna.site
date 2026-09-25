@@ -61,7 +61,14 @@ export function ListingPreviewPanel({
                   {preview.price.trim() ? preview.price : "الراتب / المتوقع"}
                 </span>
               ) : (
-                <CurrencyAmount amount={Number(preview.price || 0)} size="md" />
+                <div>
+                  <CurrencyAmount amount={Number(preview.price || 0)} size="md" />
+                  {preview.negotiable ? (
+                    <p className="mt-0.5 text-xs font-semibold text-secondary">
+                      قابل للتفاوض
+                    </p>
+                  ) : null}
+                </div>
               )}
               <span className="text-sm font-medium text-muted">
                 {preview.city.trim() ? preview.city : "الموقع"}

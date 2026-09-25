@@ -14,7 +14,7 @@ export default async function NewListingPage() {
         <section className="app-container px-3 pb-8 pt-4 md:page-padding">
           <PageHero
             compact
-            description="أضف إعلانك في خطوات بسيطة: اختر القسم، اكتب التفاصيل، أرفق الصور، ثم انشر مباشرة."
+            description="أضف إعلانك في خطوات بسيطة: اختر القسم، اكتب التفاصيل، أرفق الصور، ثم أرسله للمراجعة قبل الظهور في البحث."
             eyebrow="إضافة إعلان"
             title="انشر إعلانك في سوقنا"
           />

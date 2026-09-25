@@ -224,7 +224,6 @@
   "أضف إعلان": "Post an Ad",
   "أضف إعلانات جديدة، وراجعها: اعتماد، رفض، وتمييز — مع اختيار القسم لكل إعلان.": "Post new ads, then review them: Approve, Reject, or mark as Featured — and choose a category for each listing.",
   "أضف إعلانك": "Post an Ad",
-  "أضف إعلانك في خطوات بسيطة: اختر القسم، اكتب التفاصيل، أرفق الصور، ثم انشر مباشرة.": "Post your ad in a few steps: choose a category, add the details, attach photos, then publish.",
   "أضف رابط إثبات واحد على الأقل.": "Add at least one proof link.",
   "أضف رقم الطلب عبر الرابط، مثال: /disputes/new?orderId=...": "Add the order number in the link, for example: /disputes/new?orderId=...",
   "أضف صورة حقيقية واحدة على الأقل للمنتج.": "Add at least one real photo of the item.",
@@ -2720,5 +2719,15 @@
   "مطلوب عند اختيار مستعمل أو مجدّد أو للقطع أو لا يعمل.": "Required when Used, Refurbished, For parts, or Not working is selected.",
   "إعلانات الوظائف لا تستخدم سعر درهم ولا حالة مستعمل/جديد — الراتب والموقع يظهران من الحقول أعلاه.": "Job listings do not use AED price or New/Used condition — salary and location come from the fields above.",
   "الراتب حسب الاتفاق": "Salary by agreement",
-  "اختر...": "Select..."
+  "اختر...": "Select...",
+  "أضف إعلانك في خطوات بسيطة: اختر القسم، اكتب التفاصيل، أرفق الصور، ثم أرسله للمراجعة قبل الظهور في البحث.": "Post your ad in a few steps: choose a category, add the details, attach photos, then submit it for review before it appears in search.",
+  "المراجعة": "Review",
+  "حفظ كمسودة": "Save as draft",
+  "عنوان واضح يساعد المشترين على إيجاد إعلانك — 8 أحرف على الأقل.": "A clear title helps buyers find your ad — at least 8 characters.",
+  "اكتب عنواناً واضحاً للإعلان (8 أحرف على الأقل).": "Enter a clear listing title (at least 8 characters).",
+  "أكمل العنوان والقسم على الأقل قبل حفظ المسودة.": "Complete at least the title and category before saving the draft.",
+  "هل تريد إرسال الإعلان للمراجعة؟ سيراجعه فريق سوقنا قبل ظهوره في البحث.": "Submit this listing for review? Sooqna’s team will review it before it appears in search.",
+  "ستُوجَّه لبوابة الدفع لتفعيل التمييز بعد حفظ الإعلان. هل تريد المتابعة؟": "You’ll be sent to the payment gateway to activate featuring after the listing is saved. Continue?",
+  "مثال: تويوتا كامري 2022 بحالة ممتازة": "Example: Toyota Camry 2022 in excellent condition",
+  "تم حفظ الإعلان كمسودة. يمكنك إكماله لاحقاً من هنا.": "Listing saved as a draft. You can finish it later from here."
 }

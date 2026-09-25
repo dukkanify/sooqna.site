@@ -44,6 +44,13 @@ export function AddListingForm({ categories }: AddListingFormProps) {
     submitListing,
   } = useAddListingForm(categories);
 
+  const handlePreviewChange = useCallback(
+    (patch: Partial<import("./add-listing/types").ListingPreview>) => {
+      setPreview((current) => ({ ...current, ...patch }));
+    },
+    [setPreview],
+  );
+
   const handleSelectCategory = useCallback(
     (categoryId: string) => {
       setSelectedCategoryId(categoryId);
@@ -56,6 +63,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
         title: "",
         hideCondition: isJobs || categoryId === "food",
         priceMode: isJobs ? "salary" : "aed",
+        negotiable: false,
       });
 
       window.requestAnimationFrame(() => {
@@ -121,9 +129,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
             <CategoryFieldsStep
               categoryId={selectedCategoryId}
               errors={errors}
-              onPreviewChange={(patch) =>
-                setPreview((current) => ({ ...current, ...patch }))
-              }
+              onPreviewChange={handlePreviewChange}
             />
           ) : (
             <ListingDetailsStep errors={errors} onPreviewChange={setPreview} />
@@ -142,8 +148,8 @@ export function AddListingForm({ categories }: AddListingFormProps) {
           selectedPackage={selectedPackage}
         />
 
-        <Card
-          className="flex flex-wrap items-center justify-between gap-3 bg-primary p-4 text-white sm:gap-4 sm:p-5"
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-2xl)] bg-primary p-4 text-white shadow-[var(--shadow-card)] sm:gap-4 sm:p-5"
           id="add-listing-submit"
         >
           <div>
@@ -161,10 +167,29 @@ export function AddListingForm({ categories }: AddListingFormProps) {
               </p>
             ) : null}
           </div>
-          <Button className="shrink-0" loading={isSubmitting} type="submit">
-            {selectedPackage === "featured_pending" ? "متابعة للدفع" : "إرسال للمراجعة"}
-          </Button>
-        </Card>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button
+              className="!bg-white/15 !text-white hover:!bg-white/25"
+              disabled={isSubmitting}
+              name="intent"
+              type="submit"
+              value="draft"
+              variant="ghost"
+            >
+              حفظ كمسودة
+            </Button>
+            <Button
+              loading={isSubmitting}
+              name="intent"
+              type="submit"
+              value="review"
+            >
+              {selectedPackage === "featured_pending"
+                ? "متابعة للدفع"
+                : "إرسال للمراجعة"}
+            </Button>
+          </div>
+        </div>
       </div>
 
       <ListingPreviewPanel
