@@ -66,6 +66,9 @@ export const conditionLabels: Record<Listing["condition"], string> = {
   excellent: "ممتاز",
   new: "جديد",
   used: "مستعمل",
+  refurbished: "مجدّد",
+  for_parts: "للقطع",
+  not_working: "لا يعمل",
 };
 
 export const conditionBadgeVariant: Record<
@@ -75,6 +78,9 @@ export const conditionBadgeVariant: Record<
   excellent: "premium",
   new: "new",
   used: "muted",
+  refurbished: "premium",
+  for_parts: "muted",
+  not_working: "muted",
 };
 
 export function formatPostedTime(postedAt?: string): string {

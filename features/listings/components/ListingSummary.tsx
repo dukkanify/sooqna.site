@@ -30,12 +30,18 @@ const conditionVariants: Record<Listing["condition"], "new" | "muted" | "premium
   excellent: "premium",
   new: "new",
   used: "muted",
+  refurbished: "premium",
+  for_parts: "muted",
+  not_working: "muted",
 };
 
 const conditionLabels: Record<Listing["condition"], string> = {
   excellent: "ممتاز",
   new: "جديد",
   used: "مستعمل",
+  refurbished: "مجدّد",
+  for_parts: "للقطع",
+  not_working: "لا يعمل",
 };
 
 export function ListingSummary({ category, listing }: ListingSummaryProps) {
@@ -70,7 +76,16 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
       </h1>
 
       <div className="mt-4">
-        <CurrencyAmount amount={listing.price} size="xl" />
+        {listing.categoryId === "jobs" ? (
+          <p className="text-2xl font-black text-ink md:text-3xl">
+            {String(listing.categorySpecs?.salary ?? "").trim() || "الراتب حسب الاتفاق"}
+          </p>
+        ) : (
+          <CurrencyAmount amount={listing.price} size="xl" />
+        )}
+        {listing.negotiable && listing.categoryId !== "jobs" ? (
+          <p className="mt-1 text-sm font-semibold text-secondary">قابل للتفاوض</p>
+        ) : null}
       </div>
 
       <div className="mt-6 grid gap-3 text-sm">

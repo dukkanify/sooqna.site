@@ -279,7 +279,7 @@ const mobileFields: CategoryFieldDefinition[] = [
   { key: "warranty", label: "الضمان", type: "select", required: true, options: yesNoOptions },
   { key: "purchaseDate", label: "تاريخ الشراء", type: "date", required: true },
   { key: "accessoriesIncluded", label: "الملحقات المرفقة", type: "textarea", required: true },
-  { key: "condition", label: "الحالة", type: "select", required: true, options: [
+  { key: "condition", label: "حالة المنتج", type: "select", required: true, options: [
     { label: "جديد", value: "new" },
     { label: "مستعمل", value: "used" },
   ]},
@@ -314,10 +314,26 @@ const electronicsFields: CategoryFieldDefinition[] = [
     ],
     placeholder: "ابحث أو اكتب الموديل",
   },
-  { key: "condition", label: "الحالة", type: "select", required: true, options: [
+  { key: "condition", label: "حالة المنتج", type: "select", required: true, options: [
     { label: "جديد", value: "new" },
     { label: "مستعمل", value: "used" },
+    { label: "مجدّد", value: "refurbished" },
+    { label: "للقطع", value: "for_parts" },
+    { label: "لا يعمل", value: "not_working" },
   ]},
+  {
+    key: "defects",
+    label: "وصف العيوب أو الأجزاء الناقصة",
+    type: "textarea",
+    required: true,
+    searchable: true,
+    placeholder: "اشرح العيوب بوضوح (شاشة، بطارية، منافذ…)",
+    showWhen: {
+      key: "condition",
+      values: ["used", "refurbished", "for_parts", "not_working"],
+    },
+    note: "مطلوب عند اختيار مستعمل أو مجدّد أو للقطع أو لا يعمل.",
+  },
   { key: "warranty", label: "الضمان", type: "select", required: true, options: yesNoOptions },
   { key: "accessories", label: "الملحقات", type: "textarea", required: true },
 ];

@@ -42,6 +42,15 @@ type CategoryFieldsFormProps = {
   errors: CategoryFieldErrors;
   heading?: string;
   listing?: Listing;
+  onPreviewChange?: (patch: {
+    city?: string;
+    condition?: ListingCondition;
+    description?: string;
+    hideCondition?: boolean;
+    price?: string;
+    priceMode?: "aed" | "salary";
+    title?: string;
+  }) => void;
   showContact?: boolean;
   stepLabel?: string;
 };
@@ -99,6 +108,12 @@ function renderField(
   }
 
   if (field.type === "select") {
+    const needsChoice =
+      field.key === "condition" ||
+      field.key === "warranty" ||
+      field.key === "listingType" ||
+      field.key === "employmentType" ||
+      field.key === "availability";
     return (
       <Select
         key={field.key}
@@ -108,6 +123,7 @@ function renderField(
         name={name}
         onChange={(event) => onSpecChange(field.key, event.target.value)}
         options={options}
+        placeholder={needsChoice ? "اختر..." : undefined}
         required={field.required}
       />
     );
@@ -194,9 +210,13 @@ export function CategoryFieldsForm({
   defaults,
   errors,
   heading = "تفاصيل الإعلان",
+  onPreviewChange,
   showContact = false,
   stepLabel,
 }: CategoryFieldsFormProps) {
+  const isJobs = categoryId === "jobs";
+  const isFood = categoryId === "food";
+  const hideCondition = isJobs || isFood;
   const fallbackFields = useMemo(
     () => (isDynamicCategory(categoryId) ? getCategoryFields(categoryId) : []),
     [categoryId],
@@ -273,6 +293,41 @@ export function CategoryFieldsForm({
     return initial;
   });
 
+  const fields = allFields.filter(
+    (field) => field.type !== "checkbox-group" && fieldVisible(field, specs),
+  );
+  const featureField = allFields.find((field) => field.type === "checkbox-group");
+  const selectedFeatures = buildSelectedFeatures(defaults);
+  const conditionDefault =
+    defaults?.categorySpecs?.condition !== undefined
+      ? String(defaults.categorySpecs.condition)
+      : defaults?.condition;
+
+  useEffect(() => {
+    if (!onPreviewChange) return;
+    onPreviewChange({
+      hideCondition,
+      priceMode: isJobs ? "salary" : "aed",
+      city: isJobs
+        ? specs.location ?? ""
+        : specs.city ?? specs.emirate ?? "",
+      condition:
+        !hideCondition && specs.condition
+          ? (specs.condition as ListingCondition)
+          : undefined,
+      price: isJobs ? specs.salary ?? "" : undefined,
+    });
+  }, [
+    hideCondition,
+    isJobs,
+    onPreviewChange,
+    specs.city,
+    specs.condition,
+    specs.emirate,
+    specs.location,
+    specs.salary,
+  ]);
+
   if (!categoryId) {
     return null;
   }
@@ -287,16 +342,6 @@ export function CategoryFieldsForm({
     return null;
   }
 
-  const fields = allFields.filter(
-    (field) => field.type !== "checkbox-group" && fieldVisible(field, specs),
-  );
-  const featureField = allFields.find((field) => field.type === "checkbox-group");
-  const selectedFeatures = buildSelectedFeatures(defaults);
-  const conditionDefault =
-    defaults?.categorySpecs?.condition !== undefined
-      ? String(defaults.categorySpecs.condition)
-      : defaults?.condition;
-
   function onSpecChange(key: string, value: string) {
     setSpecs((prev) => {
       const next = { ...prev, [key]: value };
@@ -307,6 +352,25 @@ export function CategoryFieldsForm({
       }
       return next;
     });
+
+    if (!onPreviewChange) return;
+    if (key === "condition" && !hideCondition) {
+      onPreviewChange({ condition: value as ListingCondition });
+    }
+    if (key === "city" || key === "emirate" || (isJobs && key === "location")) {
+      onPreviewChange({ city: value });
+    }
+    if (isJobs && key === "salary") {
+      onPreviewChange({ price: value, priceMode: "salary" });
+    }
+    if (key === "position" || key === "company" || key === "brand" || key === "model") {
+      onPreviewChange({
+        title: [specs.brand, specs.model, specs.company, specs.position, value]
+          .filter(Boolean)
+          .join(" ")
+          .trim(),
+      });
+    }
   }
 
   function optionsForField(field: CategoryFieldDefinition): CategoryFieldOption[] | undefined {
@@ -348,7 +412,7 @@ export function CategoryFieldsForm({
           {fields.map((field) => {
             const spansFullWidth = field.type === "textarea";
 
-            if (field.key === "condition" && conditionDefault) {
+            if (field.key === "condition") {
               return (
                 <div
                   key={field.key}
@@ -356,11 +420,16 @@ export function CategoryFieldsForm({
                 >
                   <Select
                     compact
-                    defaultValue={String(conditionDefault)}
+                    defaultValue={
+                      conditionDefault !== undefined
+                        ? String(conditionDefault)
+                        : undefined
+                    }
                     label={field.label}
                     name={`spec_${field.key}`}
                     onChange={(event) => onSpecChange(field.key, event.target.value)}
                     options={field.options ?? []}
+                    placeholder="اختر..."
                     required={field.required}
                   />
                   {errors[field.key] ? (
@@ -411,24 +480,46 @@ export function CategoryFieldsForm({
         </div>
 
         <div className={addListingStepFooterClass}>
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-2">
-            <div className="col-span-2 sm:col-span-1">
-              <Input
-                compact
-                defaultValue={defaults?.price}
-                inputMode="numeric"
-                label="السعر بالدرهم"
-                min="1"
-                name="price"
-                placeholder="اكتب السعر"
-                required
-                type="number"
-              />
-              {errors.price ? (
-                <FormMessage variant="error">{errors.price}</FormMessage>
-              ) : null}
+          {isJobs ? (
+            <p className="text-xs text-muted">
+              إعلانات الوظائف لا تستخدم سعر درهم ولا حالة مستعمل/جديد — الراتب
+              والموقع يظهران من الحقول أعلاه.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-2">
+              <div className="col-span-2 sm:col-span-1">
+                <Input
+                  compact
+                  defaultValue={defaults?.price}
+                  inputMode="numeric"
+                  label="السعر بالدرهم"
+                  min="1"
+                  name="price"
+                  onChange={(event) =>
+                    onPreviewChange?.({
+                      price: event.target.value,
+                      priceMode: "aed",
+                    })
+                  }
+                  placeholder="اكتب السعر"
+                  required
+                  type="number"
+                />
+                {errors.price ? (
+                  <FormMessage variant="error">{errors.price}</FormMessage>
+                ) : null}
+              </div>
+              <label className="col-span-2 flex items-center gap-2 self-end pb-1 text-sm font-medium text-ink sm:col-span-1">
+                <input
+                  className="size-4 accent-primary"
+                  defaultChecked={Boolean(defaults?.negotiable)}
+                  name="negotiable"
+                  type="checkbox"
+                />
+                قابل للتفاوض
+              </label>
             </div>
-          </div>
+          )}
 
           <div>
             <Textarea
@@ -436,6 +527,9 @@ export function CategoryFieldsForm({
               defaultValue={defaults?.description}
               label="الوصف"
               name="description"
+              onChange={(event) =>
+                onPreviewChange?.({ description: event.target.value })
+              }
               placeholder="اكتب وصفاً واضحاً ومفصلاً للإعلان..."
               required
             />

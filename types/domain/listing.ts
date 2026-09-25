@@ -7,7 +7,13 @@ export type ListingStatus =
   | "expired"
   | "rejected";
 
-export type ListingCondition = "new" | "used" | "excellent";
+export type ListingCondition =
+  | "new"
+  | "used"
+  | "excellent"
+  | "refurbished"
+  | "for_parts"
+  | "not_working";
 
 export type SellerType = "individual" | "business";
 

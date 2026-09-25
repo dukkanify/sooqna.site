@@ -18,6 +18,9 @@ export function ListingPreviewPanel({
   preview,
   selectedCategory,
 }: ListingPreviewPanelProps) {
+  const showSalary = preview.priceMode === "salary";
+  const showCondition = !preview.hideCondition;
+
   return (
     <aside className="lg:sticky lg:top-28 lg:self-start">
       <Card className="p-5">
@@ -47,17 +50,29 @@ export function ListingPreviewPanel({
           </div>
           <div className="bg-surface p-5">
             <h3 className="line-clamp-2 text-lg font-semibold leading-8 text-ink">
-              {preview.title}
+              {preview.title || "عنوان الإعلان"}
             </h3>
             <p className="mt-3 line-clamp-2 text-sm font-medium leading-7 text-muted">
-              {preview.description}
+              {preview.description || "سيظهر الوصف هنا…"}
             </p>
             <div className="mt-4 flex items-center justify-between rounded-[var(--radius-xl)] bg-surface-muted px-4 py-3">
-              <CurrencyAmount amount={Number(preview.price || 0)} size="md" />
-              <span className="text-sm font-medium text-muted">{preview.city}</span>
+              {showSalary ? (
+                <span className="text-base font-black text-ink">
+                  {preview.price.trim() ? preview.price : "الراتب / المتوقع"}
+                </span>
+              ) : (
+                <CurrencyAmount amount={Number(preview.price || 0)} size="md" />
+              )}
+              <span className="text-sm font-medium text-muted">
+                {preview.city.trim() ? preview.city : "الموقع"}
+              </span>
             </div>
             <div className="mt-4 flex items-center justify-between text-xs font-medium text-muted">
-              <span>{conditionLabels[preview.condition]}</span>
+              <span>
+                {showCondition
+                  ? conditionLabels[preview.condition] ?? "الحالة"
+                  : "—"}
+              </span>
               <span>{imagePreviews.length} صور</span>
             </div>
           </div>

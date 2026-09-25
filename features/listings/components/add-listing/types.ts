@@ -17,4 +17,7 @@ export type ListingPreview = {
   description: string;
   price: string;
   title: string;
+  /** Jobs: show salary text instead of AED amount. */
+  priceMode?: "aed" | "salary";
+  hideCondition?: boolean;
 };

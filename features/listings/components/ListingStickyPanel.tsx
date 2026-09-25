@@ -50,12 +50,18 @@ const conditionVariants: Record<Listing["condition"], "new" | "muted" | "premium
   excellent: "premium",
   new: "new",
   used: "muted",
+  refurbished: "premium",
+  for_parts: "muted",
+  not_working: "muted",
 };
 
 const conditionLabels: Record<Listing["condition"], string> = {
   excellent: "ممتاز",
   new: "جديد",
   used: "مستعمل",
+  refurbished: "مجدّد",
+  for_parts: "للقطع",
+  not_working: "لا يعمل",
 };
 
 export function ListingStickyPanel({ category, listing }: ListingStickyPanelProps) {
@@ -90,7 +96,17 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
 
         <h1 className="mt-4 text-2xl font-black leading-tight text-ink"><ListingTitle listing={listing} /></h1>
         <div className="mt-4">
-          <CurrencyAmount amount={listing.price} size="xl" />
+          {listing.categoryId === "jobs" ? (
+            <p className="text-2xl font-black text-ink">
+              {String(listing.categorySpecs?.salary ?? "").trim() ||
+                "الراتب حسب الاتفاق"}
+            </p>
+          ) : (
+            <CurrencyAmount amount={listing.price} size="xl" />
+          )}
+          {listing.negotiable && listing.categoryId !== "jobs" ? (
+            <p className="mt-1 text-sm font-semibold text-secondary">قابل للتفاوض</p>
+          ) : null}
         </div>
 
         {listing.categoryId === "cars" ? (

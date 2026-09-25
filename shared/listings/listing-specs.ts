@@ -167,6 +167,9 @@ const CONDITION_LABELS: Record<string, string> = {
   excellent: "ممتاز",
   new: "جديد",
   used: "مستعمل",
+  refurbished: "مجدّد",
+  for_parts: "للقطع",
+  not_working: "لا يعمل",
 };
 
 /** Prefer stored categorySpecs; fall back to title/features when specs were stripped. */
@@ -206,7 +209,10 @@ function inferCarDisplaySpecs(listing: Listing): {
     "";
   const condition =
     CONDITION_LABELS[conditionRaw] ??
-    (conditionRaw && !["excellent", "new", "used"].includes(conditionRaw)
+    (conditionRaw &&
+    !["excellent", "new", "used", "refurbished", "for_parts", "not_working"].includes(
+      conditionRaw,
+    )
       ? conditionRaw
       : CONDITION_LABELS[listing.condition] ?? "");
 
