@@ -39,6 +39,11 @@ function readFeaturedSuccessFlag(): boolean {
   return new URLSearchParams(window.location.search).get("featured") === "1";
 }
 
+function readDraftSuccessFlag(): boolean {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("draft") === "1";
+}
+
 export function MyListingsDashboard({
   categories,
   listings,
@@ -50,6 +55,7 @@ export function MyListingsDashboard({
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [featuredSuccess] = useState(readFeaturedSuccessFlag);
+  const [draftSuccess] = useState(readDraftSuccessFlag);
   const [removedIds, setRemovedIds] = useState<string[]>([]);
 
   const allListings = useMemo(() => {
@@ -100,7 +106,11 @@ export function MyListingsDashboard({
 
   const successMessage =
     actionMessage ||
-    (featuredSuccess ? "تم تمييز الإعلان بنجاح." : "");
+    (featuredSuccess
+      ? "تم تمييز الإعلان بنجاح."
+      : draftSuccess
+        ? "تم حفظ الإعلان كمسودة. يمكنك إكماله لاحقاً من هنا."
+        : "");
 
   useEffect(() => {
     const syncLocalListings = () => {

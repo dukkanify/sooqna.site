@@ -228,13 +228,18 @@ export function useAddListingForm(categories: Category[]) {
         return;
       }
 
-      const formData = new FormData(event.currentTarget);
+      const formData = new FormData(
+        event.currentTarget,
+        (event.nativeEvent as SubmitEvent).submitter ?? undefined,
+      );
+      const intent = String(formData.get("intent") ?? "review");
+      const isDraft = intent === "draft";
       const categoryId = String(formData.get("categoryId") ?? selectedCategoryId);
       const contact = String(formData.get("contact") ?? "").trim();
       const subcategory = String(formData.get("subcategory") ?? "").trim();
       const videoUrl = String(formData.get("videoUrl") ?? "").trim();
       const listingPackage = String(formData.get("package") ?? "free");
-      const wantsFeatured = listingPackage === "featured_pending";
+      const wantsFeatured = !isDraft && listingPackage === "featured_pending";
       const category = categories.find((item) => item.id === categoryId);
       const featureProfile = resolveCategoryFeatureProfile(
         categoryId,
@@ -258,34 +263,57 @@ export function useAddListingForm(categories: Category[]) {
       }
 
       const parsed = parseCategoryForm(formData, categoryId, remoteFields);
-      const nextErrors: AddListingErrors & Record<string, string | undefined> = {
-        ...parsed.errors,
-      };
+      const nextErrors: AddListingErrors & Record<string, string | undefined> = {};
 
-      if (!categoryId) {
-        nextErrors.category = "اختر القسم المناسب للإعلان.";
-      }
-      if (!/^(\+971|971|0)?5\d{8}$/.test(contact)) {
-        nextErrors.contact = "اكتب رقم تواصل إماراتي صحيح.";
-      }
-      if (profileMeta.imagesRequired && imageFiles.length === 0) {
-        nextErrors.images = "أضف صورة حقيقية واحدة على الأقل للمنتج.";
-      }
-      if (
-        wantsFeatured &&
-        featuredCheckoutAvailable === false
-      ) {
-        nextErrors.package =
-          "بوابة الدفع غير متاحة حالياً. اختر الباقة المجانية أو حاول لاحقاً.";
+      if (isDraft) {
+        if (!categoryId) {
+          nextErrors.category = "اختر القسم المناسب للإعلان.";
+        }
+        const draftTitle =
+          String(formData.get("title") ?? "").trim() || parsed.title;
+        if (draftTitle.length < 8) {
+          nextErrors.title = "اكتب عنواناً واضحاً للإعلان (8 أحرف على الأقل).";
+        }
+        if (contact && !/^(\+971|971|0)?5\d{8}$/.test(contact)) {
+          nextErrors.contact = "اكتب رقم تواصل إماراتي صحيح.";
+        }
+      } else {
+        Object.assign(nextErrors, parsed.errors);
+        if (!categoryId) {
+          nextErrors.category = "اختر القسم المناسب للإعلان.";
+        }
+        if (!/^(\+971|971|0)?5\d{8}$/.test(contact)) {
+          nextErrors.contact = "اكتب رقم تواصل إماراتي صحيح.";
+        }
+        if (profileMeta.imagesRequired && imageFiles.length === 0) {
+          nextErrors.images = "أضف صورة حقيقية واحدة على الأقل للمنتج.";
+        }
+        if (wantsFeatured && featuredCheckoutAvailable === false) {
+          nextErrors.package =
+            "بوابة الدفع غير متاحة حالياً. اختر الباقة المجانية أو حاول لاحقاً.";
+        }
       }
 
       if (Object.keys(nextErrors).length > 0) {
-        nextErrors.submit = wantsFeatured
-          ? "أكمل الحقول المطلوبة أعلاه قبل متابعة الدفع."
-          : "أكمل الحقول المطلوبة أعلاه قبل الإرسال.";
+        nextErrors.submit = isDraft
+          ? "أكمل العنوان والقسم على الأقل قبل حفظ المسودة."
+          : wantsFeatured
+            ? "أكمل الحقول المطلوبة أعلاه قبل متابعة الدفع."
+            : "أكمل الحقول المطلوبة أعلاه قبل الإرسال.";
         setErrors(nextErrors);
         scrollToFirstError(nextErrors);
         return;
+      }
+
+      if (!isDraft) {
+        const confirmed = window.confirm(
+          wantsFeatured
+            ? "ستُوجَّه لبوابة الدفع لتفعيل التمييز بعد حفظ الإعلان. هل تريد المتابعة؟"
+            : "هل تريد إرسال الإعلان للمراجعة؟ سيراجعه فريق سوقنا قبل ظهوره في البحث.",
+        );
+        if (!confirmed) {
+          return;
+        }
       }
 
       setErrors({});
@@ -333,11 +361,12 @@ export function useAddListingForm(categories: Category[]) {
         featureProfile,
         city: cityName,
         country: countries[0].name,
-        price,
+        price: Number.isFinite(price) ? price : 0,
         currency: "AED",
         condition: parsed.condition,
         // Featured package stays draft until Stripe payment succeeds.
-        status: wantsFeatured ? "draft" : "pending_review",
+        // Explicit draft intent also saves without entering review.
+        status: isDraft || wantsFeatured ? "draft" : "pending_review",
         isFeatured: false,
         views: 0,
         ...(persistedImages[0] ? { imageUrl: persistedImages[0] } : {}),
@@ -350,7 +379,7 @@ export function useAddListingForm(categories: Category[]) {
         negotiable: parsed.negotiable,
         emirate: parsed.emirate,
         subcategory: subcategory || undefined,
-        contactPhone: contact,
+        contactPhone: contact || undefined,
         contactMethod: "both",
         ...(videoUrl ? { videoUrl } : {}),
       };
@@ -360,6 +389,16 @@ export function useAddListingForm(categories: Category[]) {
       }
 
       const sync = await syncListingToServer(listing);
+
+      if (isDraft) {
+        publishedRef.current = false;
+        if (!sync.ok && sync.code === "UNAUTHORIZED") {
+          router.replace("/login?next=/listings/new");
+          return;
+        }
+        router.push("/dashboard/listings?draft=1");
+        return;
+      }
 
       if (wantsFeatured) {
         if (!sync.ok) {

@@ -56,6 +56,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
         title: "",
         hideCondition: isJobs || categoryId === "food",
         priceMode: isJobs ? "salary" : "aed",
+        negotiable: false,
       });
 
       window.requestAnimationFrame(() => {
@@ -161,9 +162,28 @@ export function AddListingForm({ categories }: AddListingFormProps) {
               </p>
             ) : null}
           </div>
-          <Button className="shrink-0" loading={isSubmitting} type="submit">
-            {selectedPackage === "featured_pending" ? "متابعة للدفع" : "إرسال للمراجعة"}
-          </Button>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button
+              className="border border-white/30 bg-white/10 text-white hover:bg-white/20"
+              disabled={isSubmitting}
+              name="intent"
+              type="submit"
+              value="draft"
+              variant="ghost"
+            >
+              حفظ كمسودة
+            </Button>
+            <Button
+              loading={isSubmitting}
+              name="intent"
+              type="submit"
+              value="review"
+            >
+              {selectedPackage === "featured_pending"
+                ? "متابعة للدفع"
+                : "إرسال للمراجعة"}
+            </Button>
+          </div>
         </Card>
       </div>
 

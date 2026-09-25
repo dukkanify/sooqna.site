@@ -34,10 +34,11 @@ export function ListingDetailsStep({
             onChange={(event) =>
               onPreviewChange((current) => ({
                 ...current,
-                title: event.target.value || "عنوان إعلانك المميز",
+                title: event.target.value,
               }))
             }
             placeholder="مثال: آيفون 15 برو بحالة ممتازة"
+            required
           />
           {errors.title ? (
             <FormMessage variant="error">{errors.title}</FormMessage>
@@ -51,11 +52,11 @@ export function ListingDetailsStep({
           onChange={(event) =>
             onPreviewChange((current) => ({
               ...current,
-              description:
-                event.target.value || "سيظهر وصف الإعلان هنا أثناء الكتابة.",
+              description: event.target.value,
             }))
           }
           placeholder="اكتب تفاصيل المنتج، الحالة، سبب البيع، وأي معلومات مهمة..."
+          required
         />
         {errors.description ? (
           <FormMessage variant="error">{errors.description}</FormMessage>
@@ -72,10 +73,11 @@ export function ListingDetailsStep({
               onChange={(event) =>
                 onPreviewChange((current) => ({
                   ...current,
-                  price: event.target.value || "2500",
+                  price: event.target.value,
                 }))
               }
-              placeholder="2500"
+              placeholder="اكتب السعر"
+              required
               type="number"
             />
             {errors.price ? (
@@ -96,6 +98,8 @@ export function ListingDetailsStep({
               { label: "جديد", value: "new" },
               { label: "مستعمل", value: "used" },
             ]}
+            placeholder="اختر..."
+            required
           />
           <div className="col-span-2 md:col-span-1">
             <Select
@@ -107,15 +111,31 @@ export function ListingDetailsStep({
                   ...current,
                   city:
                     cities.find((city) => city.id === event.target.value)?.name ??
-                    "دبي",
+                    "",
                 }))
               }
               options={cities.map((city) => ({
                 label: city.name,
                 value: city.id,
               }))}
+              placeholder="اختر..."
+              required
             />
           </div>
+          <label className="col-span-2 flex items-center gap-2 text-sm font-medium text-ink md:col-span-3">
+            <input
+              className="size-4 accent-primary"
+              name="negotiable"
+              onChange={(event) =>
+                onPreviewChange((current) => ({
+                  ...current,
+                  negotiable: event.target.checked,
+                }))
+              }
+              type="checkbox"
+            />
+            قابل للتفاوض
+          </label>
         </div>
       </div>
     </Card>

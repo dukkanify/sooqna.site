@@ -1,6 +1,6 @@
 import type { ListingCondition } from "@/types";
 
-export const ADD_LISTING_STEPS = ["القسم", "التفاصيل", "الصور", "النشر"] as const;
+export const ADD_LISTING_STEPS = ["القسم", "التفاصيل", "الصور", "المراجعة"] as const;
 
 export const addListingStepCardClass = "p-4 sm:p-5";
 export const addListingStepTitleClass = "text-xl font-black text-ink sm:text-2xl";

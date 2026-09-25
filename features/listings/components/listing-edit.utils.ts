@@ -10,6 +10,7 @@ export function buildCategoryFieldsDefaults(listing: Listing): CategoryFieldsDef
     features: listing.features,
     negotiable: listing.negotiable,
     price: listing.price,
+    title: listing.title,
   };
 }
 

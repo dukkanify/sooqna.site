@@ -34,6 +34,7 @@ export type CategoryFieldsDefaults = {
   features?: string[];
   negotiable?: boolean;
   price?: number;
+  title?: string;
 };
 
 type CategoryFieldsFormProps = {
@@ -47,6 +48,7 @@ type CategoryFieldsFormProps = {
     condition?: ListingCondition;
     description?: string;
     hideCondition?: boolean;
+    negotiable?: boolean;
     price?: string;
     priceMode?: "aed" | "salary";
     title?: string;
@@ -363,14 +365,6 @@ export function CategoryFieldsForm({
     if (isJobs && key === "salary") {
       onPreviewChange({ price: value, priceMode: "salary" });
     }
-    if (key === "position" || key === "company" || key === "brand" || key === "model") {
-      onPreviewChange({
-        title: [specs.brand, specs.model, specs.company, specs.position, value]
-          .filter(Boolean)
-          .join(" ")
-          .trim(),
-      });
-    }
   }
 
   function optionsForField(field: CategoryFieldDefinition): CategoryFieldOption[] | undefined {
@@ -480,6 +474,26 @@ export function CategoryFieldsForm({
         </div>
 
         <div className={addListingStepFooterClass}>
+          <div>
+            <Input
+              compact
+              defaultValue={defaults?.title}
+              label="عنوان الإعلان"
+              name="title"
+              onChange={(event) =>
+                onPreviewChange?.({ title: event.target.value })
+              }
+              placeholder="مثال: تويوتا كامري 2022 بحالة ممتازة"
+              required
+            />
+            <p className="mt-1 text-xs text-muted">
+              عنوان واضح يساعد المشترين على إيجاد إعلانك — 8 أحرف على الأقل.
+            </p>
+            {errors.title ? (
+              <FormMessage variant="error">{errors.title}</FormMessage>
+            ) : null}
+          </div>
+
           {isJobs ? (
             <p className="text-xs text-muted">
               إعلانات الوظائف لا تستخدم سعر درهم ولا حالة مستعمل/جديد — الراتب
@@ -514,6 +528,9 @@ export function CategoryFieldsForm({
                   className="size-4 accent-primary"
                   defaultChecked={Boolean(defaults?.negotiable)}
                   name="negotiable"
+                  onChange={(event) =>
+                    onPreviewChange?.({ negotiable: event.target.checked })
+                  }
                   type="checkbox"
                 />
                 قابل للتفاوض
@@ -555,10 +572,6 @@ export function CategoryFieldsForm({
                 <FormMessage variant="error">{errors.contact}</FormMessage>
               ) : null}
             </div>
-          ) : null}
-
-          {errors.title ? (
-            <FormMessage variant="error">{errors.title}</FormMessage>
           ) : null}
         </div>
       </Card>

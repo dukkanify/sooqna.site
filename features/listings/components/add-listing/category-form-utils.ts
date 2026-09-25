@@ -114,11 +114,17 @@ export function parseCategoryForm(
     if (!parsedCondition) {
       errors.condition = "اختر حالة المنتج.";
     }
+    if (!cityId) {
+      errors.city = "اختر الإمارة / المدينة.";
+    }
+
+    const negotiableCheckbox = String(formData.get("negotiable") ?? "") === "on";
 
     return {
       categorySpecs: {},
       errors,
       features: [],
+      negotiable: negotiableCheckbox || undefined,
       title,
       condition: parsedCondition ?? "used",
       city: cityId,
@@ -218,9 +224,14 @@ export function parseCategoryForm(
     .map((field) => categorySpecs[field.key])
     .filter((value) => hasFieldValue(String(value ?? "")));
 
-  const title = titleParts.join(" ").trim();
+  const generatedTitle = titleParts.join(" ").trim();
+  const formTitle = String(formData.get("title") ?? "").trim();
+  // Prefer the explicit title field when the seller fills it.
+  const title = formTitle || generatedTitle;
   if (title.length < 8) {
-    errors.title = "أكمل الحقول الأساسية لتوليد عنوان الإعلان.";
+    errors.title = formTitle
+      ? "عنوان الإعلان يجب أن يكون 8 أحرف على الأقل."
+      : "اكتب عنواناً واضحاً للإعلان (8 أحرف على الأقل).";
   }
 
   const negotiableFromFeatures = features.includes("قابل للتفاوض");
