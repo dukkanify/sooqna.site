@@ -232,11 +232,7 @@ export function NotificationBell({
           aria-hidden
         />
         <span className="notify-bell__glyph" aria-hidden>
-          {visibleUnread > 0 ? (
-            <span className="notify-bell__emoji">🛎️</span>
-          ) : (
-            <Icon className={iconClassName} name="bell" size={iconSize} />
-          )}
+          <Icon className={iconClassName} name="bell" size={iconSize} />
         </span>
         {visibleUnread > 0 ? (
           <span className={`${badgeClassName} notify-bell__count`}>
@@ -248,9 +244,7 @@ export function NotificationBell({
       {open ? (
         <div className="notify-bell__panel" id={panelId} role="dialog" aria-label="الإشعارات">
           <div className="notify-bell__head">
-            <p className="notify-bell__title">
-              {visibleUnread > 0 ? "🛎️ الإشعارات" : "الإشعارات"}
-            </p>
+            <p className="notify-bell__title">الإشعارات</p>
             {freshIds.size > 0 ? (
               <button
                 className="notify-bell__action notify-bell__action--ghost"
@@ -271,7 +265,6 @@ export function NotificationBell({
                 const content = (
                   <>
                     <p className="notify-bell__item-title">
-                      {isFresh ? <span aria-hidden>🛎️ </span> : null}
                       {locale === "en" ? item.titleEn || tx(locale, item.title) : item.title}
                     </p>
                     <p className="notify-bell__item-body">

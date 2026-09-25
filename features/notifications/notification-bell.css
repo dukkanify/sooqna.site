@@ -49,14 +49,7 @@
   display: grid;
   place-items: center;
   line-height: 1;
-}
-
-.notify-bell__emoji {
-  display: grid;
-  place-items: center;
-  font-size: 1.05rem;
-  line-height: 1;
-  filter: drop-shadow(0 1px 0 rgb(0 0 0 / 8%));
+  transform-origin: 50% 0%;
 }
 
 .notify-bell__count {
@@ -84,19 +77,8 @@
   }
 }
 
-.notify-bell__ring--pulse,
-.notify-bell__trigger:has(.notify-bell__emoji) .notify-bell__glyph {
-  transform-origin: 50% 0%;
-}
-
 .notify-bell__trigger:has(.notify-bell__ring--pulse) .notify-bell__glyph {
   animation: notify-bell-ring 0.9s ease;
-}
-
-.notify-bell__item-title:has(span[aria-hidden]) {
-  display: flex;
-  align-items: baseline;
-  gap: 0.15rem;
 }
 
 .notify-bell__panel {

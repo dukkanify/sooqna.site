@@ -113,8 +113,8 @@ const paths: Partial<Record<IconName, string>> = {
   "chevron-right": "M9 6l6 6-6 6",
   "arrow-left": "M19 12H5M11 6l-6 6 6 6",
   package: "M12 3 20 7v10l-8 4-8-4V7l8-4Zm0 8 8-4M12 11 4 7M12 11v10",
-  /** Notification bell — stroke body; clapper rendered separately */
-  bell: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9",
+  /** Standard notification bell (Lucide-style outline) */
+  bell: "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9",
   chart: "M5 19V9M10 19V5M15 19v-7M20 19V11",
   car: "M5 16H3v-3l1.8-5.2A2 2 0 0 1 6.7 7h10.6a2 2 0 0 1 1.9 1.3L21 13.5V16h-2M5 16h14M7.5 9.5 9 7h6l1.5 2.5M7 16a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Zm7 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z",
   laptop: "M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8H4V6ZM3 16h18M2 18h20",
@@ -150,7 +150,7 @@ const CONTACT_ICONS = new Set<IconName>([
   "whatsapp",
 ]);
 
-const BELL_CLAPPER = "M13.73 21a2 2 0 0 1-3.46 0";
+const BELL_CLAPPER = "M10.3 21a1.94 1.94 0 0 0 3.4 0";
 
 function MessageGlyph() {
   return (
