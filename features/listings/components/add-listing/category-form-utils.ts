@@ -126,7 +126,8 @@ export function parseCategoryForm(
       features: [],
       negotiable: negotiableCheckbox || undefined,
       title,
-      condition: parsedCondition ?? "used",
+      // Only return a real condition when the seller chose one.
+      condition: parsedCondition ?? ("used" as ListingCondition),
       city: cityId,
       emirate: undefined,
     };
@@ -190,17 +191,19 @@ export function parseCategoryForm(
     }
   }
 
-  // Food / jobs: never treat as product New/Used condition for display.
-  if (isFood || isJobs) {
+  // Categories without product New/Used: store a type sentinel only.
+  // UI + preview hide condition for these (never show «مستعمل»).
+  const noProductCondition =
+    isFood ||
+    isJobs ||
+    categoryId === "real-estate" ||
+    categoryId === "services";
+
+  if (noProductCondition) {
     condition = "used";
     delete categorySpecs.condition;
   } else if (!condition) {
-    const hasConditionField = fields.some((field) => field.key === "condition");
-    if (hasConditionField) {
-      errors.condition = "اختر حالة المنتج.";
-    } else {
-      condition = "used";
-    }
+    errors.condition = "اختر حالة المنتج.";
   }
 
   const description = String(formData.get("description") ?? "").trim();
@@ -246,6 +249,7 @@ export function parseCategoryForm(
     features,
     negotiable: negotiableFromFeatures || negotiableCheckbox || undefined,
     title,
+    // Prefer the real choice; sentinel only for no-product-condition categories.
     condition: condition ?? "used",
     city,
     emirate,

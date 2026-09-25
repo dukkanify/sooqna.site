@@ -13,7 +13,8 @@ export type AddListingErrors = {
 
 export type ListingPreview = {
   city: string;
-  condition: ListingCondition;
+  /** Empty until the seller chooses — never seed New/Used. */
+  condition?: ListingCondition | "";
   description: string;
   price: string;
   title: string;

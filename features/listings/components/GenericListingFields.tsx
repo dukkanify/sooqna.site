@@ -13,6 +13,8 @@ type GenericListingFieldsProps = {
 };
 
 export function GenericListingFields({ errors, listing }: GenericListingFieldsProps) {
+  const cityDefault = cities.find((city) => city.name === listing.city)?.id;
+
   return (
     <Card className="p-6">
       <h2 className="text-2xl font-black text-ink">تفاصيل الإعلان</h2>
@@ -48,6 +50,7 @@ export function GenericListingFields({ errors, listing }: GenericListingFieldsPr
               label="السعر بالدرهم"
               min="1"
               name="price"
+              placeholder="اكتب السعر"
               required
               type="number"
             />
@@ -56,22 +59,26 @@ export function GenericListingFields({ errors, listing }: GenericListingFieldsPr
             ) : null}
           </div>
           <Select
-            defaultValue={listing.condition}
+            defaultValue={listing.condition || undefined}
             label="حالة المنتج"
             name="condition"
             options={[
               { label: "جديد", value: "new" },
               { label: "مستعمل", value: "used" },
             ]}
+            placeholder="اختر..."
+            required
           />
           <Select
-            defaultValue={cities.find((city) => city.name === listing.city)?.id}
+            defaultValue={cityDefault || undefined}
             label="الإمارة / المدينة"
             name="city"
             options={cities.map((city) => ({
               label: city.name,
               value: city.id,
             }))}
+            placeholder="اختر..."
+            required
           />
         </div>
       </div>

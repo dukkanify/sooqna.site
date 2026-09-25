@@ -24,7 +24,7 @@ import { createListingSlug } from "./utils";
 
 const defaultPreview: ListingPreview = {
   city: "",
-  condition: "used",
+  condition: "",
   description: "",
   price: "",
   title: "",
