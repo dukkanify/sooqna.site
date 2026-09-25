@@ -316,8 +316,9 @@ export function CategoryFieldsForm({
       condition:
         !hideCondition && specs.condition
           ? (specs.condition as ListingCondition)
-          : undefined,
-      price: isJobs ? specs.salary ?? "" : undefined,
+          : "",
+      // Keep price a string — never patch `undefined` over existing preview price.
+      ...(isJobs ? { price: specs.salary ?? "" } : {}),
     });
     // Sync category-derived preview fields only when those values change —
     // intentionally omit onPreviewChange identity to avoid update loops.

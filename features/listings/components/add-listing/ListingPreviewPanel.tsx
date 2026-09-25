@@ -58,11 +58,11 @@ export function ListingPreviewPanel({
             <div className="mt-4 flex items-center justify-between rounded-[var(--radius-xl)] bg-surface-muted px-4 py-3">
               {showSalary ? (
                 <span className="text-base font-black text-ink">
-                  {preview.price.trim() ? preview.price : "الراتب / المتوقع"}
+                  {preview.price?.trim() ? preview.price : "الراتب / المتوقع"}
                 </span>
               ) : (
                 <div>
-                  {preview.price.trim() ? (
+                  {preview.price?.trim() ? (
                     <CurrencyAmount amount={Number(preview.price)} size="md" />
                   ) : (
                     <span className="text-base font-black text-muted">السعر</span>
@@ -75,7 +75,7 @@ export function ListingPreviewPanel({
                 </div>
               )}
               <span className="text-sm font-medium text-muted">
-                {preview.city.trim() ? preview.city : "الموقع"}
+                {preview.city?.trim() ? preview.city : "الموقع"}
               </span>
             </div>
             <div className="mt-4 flex items-center justify-between text-xs font-medium text-muted">
