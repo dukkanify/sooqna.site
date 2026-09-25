@@ -35,6 +35,7 @@ import type {
   AdminListingRecord,
 } from "@/types/domain/admin";
 import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
+import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
 
 let cacheRows: Listing[] | null = null;
 let inflight: Promise<Listing[]> | null = null;
@@ -179,9 +180,10 @@ export function getListingSync(idOrSlug: string): Listing | undefined {
 
 export async function getListingById(id: string): Promise<Listing | undefined> {
   const persisted = await loadListingById(id).catch(() => null);
-  if (persisted) return persisted;
+  if (persisted) return sanitizeListingMediaFields(persisted);
   const listings = await getAllListings();
-  return listings.find((listing) => listing.id === id || listing.slug === id);
+  const found = listings.find((listing) => listing.id === id || listing.slug === id);
+  return found ? sanitizeListingMediaFields(found) : undefined;
 }
 
 export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
@@ -273,7 +275,7 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
     slug = `${slugifyTitle(listing.title) || "listing"}-${suffix}`;
   }
 
-  const next: Listing = {
+  const next: Listing = sanitizeListingMediaFields({
     ...listing,
     slug,
     postedAt,
@@ -287,7 +289,7 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
         : listing.status === "active"
           ? undefined
           : listing.rejectionReason ?? previous?.rejectionReason,
-  };
+  });
   if (index >= 0) listings[index] = next;
   else listings.unshift(next);
   await upsertListingRow(next);
@@ -411,9 +413,13 @@ export async function patchListingRecord(
       ? {
           images: nextImages?.filter(Boolean),
           imageUrl:
-            patch.imageUrl?.trim() ||
-            nextImages?.[0] ||
-            previous.imageUrl,
+            patch.imageUrl !== undefined
+              ? patch.imageUrl.trim() ||
+                nextImages?.filter(Boolean)?.[0] ||
+                undefined
+              : patch.imageUrl?.trim() ||
+                nextImages?.filter(Boolean)?.[0] ||
+                previous.imageUrl,
         }
       : {}),
     ...(patch.sellerName !== undefined
@@ -452,6 +458,7 @@ export async function patchListingRecord(
       : {}),
     statusHistory: history,
   };
+  listings[index] = sanitizeListingMediaFields(listings[index]);
   await upsertListingRow(listings[index]);
   cacheRows = null;
   bumpListingsCache();
@@ -583,34 +590,35 @@ export async function updateSellerListingRating(
 }
 
 export function toAdminListingRecord(listing: Listing): AdminListingRecord {
+  const media = sanitizeListingMediaFields(listing);
   return {
-    id: listing.id,
-    slug: listing.slug,
-    title: listing.title,
-    description: listing.description,
-    sellerName: listing.seller.name,
-    sellerId: listing.seller.id,
-    categoryId: listing.categoryId,
-    price: listing.price,
-    currency: listing.currency,
-    status: listing.status,
-    isFeatured: listing.isFeatured,
-    postedAt: listing.postedAt ?? "",
-    city: listing.city,
-    emirate: listing.emirate,
-    condition: listing.condition,
-    contactPhone: listing.contactPhone,
-    imageUrl: listing.imageUrl ?? listing.images?.[0],
-    images: listing.images?.length
-      ? listing.images
-      : listing.imageUrl
-        ? [listing.imageUrl]
+    id: media.id,
+    slug: media.slug,
+    title: media.title,
+    description: media.description,
+    sellerName: media.seller.name,
+    sellerId: media.seller.id,
+    categoryId: media.categoryId,
+    price: media.price,
+    currency: media.currency,
+    status: media.status,
+    isFeatured: media.isFeatured,
+    postedAt: media.postedAt ?? "",
+    city: media.city,
+    emirate: media.emirate,
+    condition: media.condition,
+    contactPhone: media.contactPhone,
+    imageUrl: media.imageUrl ?? media.images?.[0],
+    images: media.images?.length
+      ? media.images
+      : media.imageUrl
+        ? [media.imageUrl]
         : undefined,
-    categorySpecs: listing.categorySpecs,
-    features: listing.features,
-    negotiable: listing.negotiable,
-    isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
-    source: listing.source,
+    categorySpecs: media.categorySpecs,
+    features: media.features,
+    negotiable: media.negotiable,
+    isDemo: media.isDemo === true || media.source === SHOWCASE_SOURCE,
+    source: media.source,
   };
 }
 
