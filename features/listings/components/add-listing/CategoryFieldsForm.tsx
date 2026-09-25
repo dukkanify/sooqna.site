@@ -45,7 +45,7 @@ type CategoryFieldsFormProps = {
   listing?: Listing;
   onPreviewChange?: (patch: {
     city?: string;
-    condition?: ListingCondition;
+    condition?: ListingCondition | "";
     description?: string;
     hideCondition?: boolean;
     negotiable?: boolean;

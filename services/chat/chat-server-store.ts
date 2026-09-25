@@ -57,7 +57,7 @@ export async function listConversationsForUser(
     (item) => item.buyerId !== userId && item.sellerId !== userId,
   );
 
-  let repaired: ServerChatConversation[] = [];
+  const repaired: ServerChatConversation[] = [];
   if (orphans.length > 0) {
     const { getAllListings } = await import("@/services/listings/listing-store");
     const listings = await getAllListings().catch(
