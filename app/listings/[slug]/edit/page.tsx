@@ -41,6 +41,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
         />
         {canEdit && listing ? (
           <ListingEditForm
+            key={listing.id}
             initialListing={listing}
             listingId={listing.id}
             mode="server"

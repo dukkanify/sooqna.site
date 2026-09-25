@@ -39,34 +39,30 @@ export function useEditListingForm(
 ) {
   const mode = options.mode ?? "local";
   const router = useRouter();
-  const [listing, setListing] = useState<Listing | null>(() =>
-    mode === "server"
-      ? (options.initialListing ?? null)
-      : readLocalListing(listingId),
+  const [localListing, setLocalListing] = useState<Listing | null>(() =>
+    mode === "local" ? readLocalListing(listingId) : null,
   );
+  const [serverListing, setServerListing] = useState<Listing | null>(
+    () => options.initialListing ?? null,
+  );
+  const listing = mode === "server" ? serverListing : localListing;
   const [errors, setErrors] = useState<CategoryFieldErrors>({});
   const { handleImageChange: setImagePreviewsFromFiles, imageFiles, imagePreviews } =
     useImagePreviews();
   const [saveMessage, setSaveMessage] = useState("");
 
   useEffect(() => {
-    if (mode === "server") {
-      if (options.initialListing) {
-        setListing(options.initialListing);
-      }
-      return;
-    }
-    const sync = () => setListing(readLocalListing(listingId));
-    sync();
+    if (mode !== "local") return;
+    const sync = () => setLocalListing(readLocalListing(listingId));
     window.addEventListener(STORAGE_EVENTS.listingsChange, sync);
     return () => window.removeEventListener(STORAGE_EVENTS.listingsChange, sync);
-  }, [listingId, mode, options.initialListing]);
+  }, [listingId, mode]);
 
   const saveChanges = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       const currentListing =
-        mode === "server" ? listing : readLocalListing(listingId);
+        mode === "server" ? serverListing : readLocalListing(listingId);
       if (!currentListing) {
         return;
       }
@@ -166,7 +162,7 @@ export function useEditListingForm(
         };
 
         saveLocalListing(saved);
-        setListing(saved);
+        setServerListing(saved);
         setSaveMessage("تم حفظ التعديلات بنجاح.");
         router.push(`/listings/${saved.slug}`);
         router.refresh();
@@ -202,7 +198,7 @@ export function useEditListingForm(
       setSaveMessage("تم حفظ التعديلات بنجاح.");
       router.push(`/listings/local/${currentListing.id}`);
     },
-    [imageFiles, listing, listingId, mode, router],
+    [imageFiles, listingId, mode, router, serverListing],
   );
 
   const { isLoading, run: handleSubmit } = useAsyncAction(saveChanges);
@@ -210,12 +206,12 @@ export function useEditListingForm(
   const handleImageChange = useCallback(
     (fileList: FileList | null, modeAppend: "append" | "replace" = "replace") => {
       const current =
-        mode === "server" ? listing : readLocalListing(listingId);
+        mode === "server" ? serverListing : readLocalListing(listingId);
       const existingCount = current ? getListingImages(current).length : 0;
       const maxNew = Math.max(0, 6 - existingCount);
       setImagePreviewsFromFiles(fileList, maxNew, modeAppend);
     },
-    [listing, listingId, mode, setImagePreviewsFromFiles],
+    [listingId, mode, serverListing, setImagePreviewsFromFiles],
   );
 
   return {
