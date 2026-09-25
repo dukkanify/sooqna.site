@@ -59,6 +59,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
           <AppImage
             alt=""
             className="marketplace-card-image"
+            fallback="none"
             fill
             loading={priority ? undefined : "lazy"}
             priority={priority}
