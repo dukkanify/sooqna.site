@@ -28,5 +28,10 @@ export function isShowcaseListing(listing: ShowcaseListingRef): boolean {
 
 /** Jobs and food do not use New/Used as a product condition. */
 export function showsListingCondition(listing: ShowcaseListingRef): boolean {
-  return listing.categoryId !== "jobs" && listing.categoryId !== "food";
+  return (
+    listing.categoryId !== "jobs" &&
+    listing.categoryId !== "food" &&
+    listing.categoryId !== "real-estate" &&
+    listing.categoryId !== "services"
+  );
 }

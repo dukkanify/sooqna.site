@@ -110,12 +110,8 @@ function renderField(
   }
 
   if (field.type === "select") {
-    const needsChoice =
-      field.key === "condition" ||
-      field.key === "warranty" ||
-      field.key === "listingType" ||
-      field.key === "employmentType" ||
-      field.key === "availability";
+    // Always force an explicit choice on create — never silently submit the
+    // first option (دبي / جديد / ذكر / …). Edit flows pass defaultValue.
     return (
       <Select
         key={field.key}
@@ -125,7 +121,7 @@ function renderField(
         name={name}
         onChange={(event) => onSpecChange(field.key, event.target.value)}
         options={options}
-        placeholder={needsChoice ? "اختر..." : undefined}
+        placeholder="اختر..."
         required={field.required}
       />
     );
@@ -218,7 +214,11 @@ export function CategoryFieldsForm({
 }: CategoryFieldsFormProps) {
   const isJobs = categoryId === "jobs";
   const isFood = categoryId === "food";
-  const hideCondition = isJobs || isFood;
+  const hideCondition =
+    isJobs ||
+    isFood ||
+    categoryId === "real-estate" ||
+    categoryId === "services";
   const fallbackFields = useMemo(
     () => (isDynamicCategory(categoryId) ? getCategoryFields(categoryId) : []),
     [categoryId],

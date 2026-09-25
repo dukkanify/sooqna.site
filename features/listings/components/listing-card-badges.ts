@@ -24,7 +24,14 @@ export function isListingVerified(listing: Listing): boolean {
 }
 
 export function isListingFresh(listing: Listing): boolean {
-  if (listing.categoryId === "jobs" || listing.categoryId === "food") return false;
+  if (
+    listing.categoryId === "jobs" ||
+    listing.categoryId === "food" ||
+    listing.categoryId === "real-estate" ||
+    listing.categoryId === "services"
+  ) {
+    return false;
+  }
   // Only use stable listing fields — Date.now() age checks cause SSR/client hydration mismatches.
   return listing.condition === "new";
 }

@@ -57,11 +57,15 @@ export function AddListingForm({ categories }: AddListingFormProps) {
       const isJobs = categoryId === "jobs";
       setPreview({
         city: "",
-        condition: "used",
+        condition: "",
         description: "",
         price: "",
         title: "",
-        hideCondition: isJobs || categoryId === "food",
+        hideCondition:
+          isJobs ||
+          categoryId === "food" ||
+          categoryId === "real-estate" ||
+          categoryId === "services",
         priceMode: isJobs ? "salary" : "aed",
         negotiable: false,
       });
