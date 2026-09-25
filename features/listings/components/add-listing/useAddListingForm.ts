@@ -228,11 +228,18 @@ export function useAddListingForm(categories: Category[]) {
         return;
       }
 
+      const nativeSubmitter = (event.nativeEvent as SubmitEvent).submitter as
+        | HTMLButtonElement
+        | null
+        | undefined;
       const formData = new FormData(
         event.currentTarget,
-        (event.nativeEvent as SubmitEvent).submitter ?? undefined,
+        nativeSubmitter ?? undefined,
       );
-      const intent = String(formData.get("intent") ?? "review");
+      const intent =
+        String(formData.get("intent") ?? "").trim() ||
+        String(nativeSubmitter?.value ?? "").trim() ||
+        "review";
       const isDraft = intent === "draft";
       const categoryId = String(formData.get("categoryId") ?? selectedCategoryId);
       const contact = String(formData.get("contact") ?? "").trim();

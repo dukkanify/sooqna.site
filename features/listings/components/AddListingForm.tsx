@@ -44,6 +44,13 @@ export function AddListingForm({ categories }: AddListingFormProps) {
     submitListing,
   } = useAddListingForm(categories);
 
+  const handlePreviewChange = useCallback(
+    (patch: Partial<import("./add-listing/types").ListingPreview>) => {
+      setPreview((current) => ({ ...current, ...patch }));
+    },
+    [setPreview],
+  );
+
   const handleSelectCategory = useCallback(
     (categoryId: string) => {
       setSelectedCategoryId(categoryId);
@@ -122,9 +129,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
             <CategoryFieldsStep
               categoryId={selectedCategoryId}
               errors={errors}
-              onPreviewChange={(patch) =>
-                setPreview((current) => ({ ...current, ...patch }))
-              }
+              onPreviewChange={handlePreviewChange}
             />
           ) : (
             <ListingDetailsStep errors={errors} onPreviewChange={setPreview} />

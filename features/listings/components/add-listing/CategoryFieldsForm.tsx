@@ -319,10 +319,12 @@ export function CategoryFieldsForm({
           : undefined,
       price: isJobs ? specs.salary ?? "" : undefined,
     });
+    // Sync category-derived preview fields only when those values change —
+    // intentionally omit onPreviewChange identity to avoid update loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable preview patch
   }, [
     hideCondition,
     isJobs,
-    onPreviewChange,
     specs.city,
     specs.condition,
     specs.emirate,
