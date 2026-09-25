@@ -16,10 +16,7 @@ export function NotificationsList({ items }: NotificationsListProps) {
       {items.map((item) => {
         const content = (
           <>
-            <p className="font-semibold text-ink">
-              {!item.read ? <span aria-hidden>🛎️ </span> : null}
-              {item.title}
-            </p>
+            <p className="font-semibold text-ink">{item.title}</p>
             <p className="mt-0.5 text-xs">{item.body}</p>
           </>
         );
