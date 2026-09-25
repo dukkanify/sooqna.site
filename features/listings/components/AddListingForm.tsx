@@ -148,8 +148,8 @@ export function AddListingForm({ categories }: AddListingFormProps) {
           selectedPackage={selectedPackage}
         />
 
-        <Card
-          className="flex flex-wrap items-center justify-between gap-3 bg-primary p-4 text-white sm:gap-4 sm:p-5"
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-2xl)] bg-primary p-4 text-white shadow-[var(--shadow-card)] sm:gap-4 sm:p-5"
           id="add-listing-submit"
         >
           <div>
@@ -169,7 +169,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Button
-              className="border border-white/30 bg-white/10 text-white hover:bg-white/20"
+              className="!bg-white/15 !text-white hover:!bg-white/25"
               disabled={isSubmitting}
               name="intent"
               type="submit"
@@ -189,7 +189,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
                 : "إرسال للمراجعة"}
             </Button>
           </div>
-        </Card>
+        </div>
       </div>
 
       <ListingPreviewPanel
