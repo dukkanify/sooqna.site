@@ -292,6 +292,11 @@ export function CategoryFieldsForm({
       const value = getSpecValue(defaults, field.key);
       if (value !== undefined) initial[field.key] = String(value);
     }
+    // Listing.condition may live outside categorySpecs — seed it so showWhen
+    // fields (e.g. electronics defects for "used") appear on edit.
+    if (!initial.condition && defaults?.condition) {
+      initial.condition = String(defaults.condition);
+    }
     return initial;
   });
 

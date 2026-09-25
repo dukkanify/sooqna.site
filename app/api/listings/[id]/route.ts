@@ -24,19 +24,31 @@ const listingConditions = [
   "not_working",
 ] as const;
 
+/** Treat blank strings as omitted so partial edits don't fail min-length checks. */
+function optionalTrimmedString(max: number) {
+  return z
+    .string()
+    .trim()
+    .max(max)
+    .transform((value) => (value.length > 0 ? value : undefined))
+    .optional();
+}
+
 const sellerPatchSchema = z
   .object({
     status: z.enum(["active", "reserved", "sold", "expired"]).optional(),
     title: z.string().trim().min(1).max(200).optional(),
     description: z.string().max(20_000).optional(),
     price: z.number().finite().nonnegative().max(100_000_000).optional(),
-    city: z.string().trim().min(1).max(80).optional(),
-    emirate: z.string().trim().max(80).optional(),
+    city: optionalTrimmedString(80),
+    emirate: optionalTrimmedString(80),
     condition: z.enum(listingConditions).optional(),
-    contactPhone: z.string().trim().max(40).optional(),
+    contactPhone: optionalTrimmedString(40),
     imageUrl: z.string().max(2_000_000).optional(),
     images: z.array(z.string().max(2_000_000)).max(6).optional(),
-    categorySpecs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
+    categorySpecs: z
+      .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+      .optional(),
     features: z.array(z.string().max(120)).max(40).optional(),
     negotiable: z.boolean().optional(),
     videoUrl: z.string().trim().max(500).optional(),
@@ -85,8 +97,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     ...(data.title !== undefined ? { title: data.title } : {}),
     ...(data.description !== undefined ? { description: data.description } : {}),
     ...(typeof data.price === "number" ? { price: data.price } : {}),
-    ...(data.city !== undefined ? { city: data.city } : {}),
-    ...(data.emirate !== undefined ? { emirate: data.emirate } : {}),
+    ...(data.city ? { city: data.city } : {}),
+    ...(data.emirate ? { emirate: data.emirate } : {}),
     ...(data.condition !== undefined ? { condition: data.condition } : {}),
     ...(data.contactPhone !== undefined
       ? { contactPhone: data.contactPhone }
