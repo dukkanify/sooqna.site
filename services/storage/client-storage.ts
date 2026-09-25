@@ -333,3 +333,12 @@ export function removeSavedSearch(id: string): SavedSearch[] {
   persistSavedSearches(updated);
   return updated;
 }
+
+/** Replace local cache with server (or merged) saved searches. */
+export function replaceSavedSearches(items: SavedSearch[]): SavedSearch[] {
+  const normalized = items
+    .filter((item) => item.id && item.label && item.url)
+    .slice(0, MAX_SAVED_SEARCHES);
+  persistSavedSearches(normalized);
+  return normalized;
+}

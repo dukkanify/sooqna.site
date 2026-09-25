@@ -397,6 +397,35 @@ export async function updateUserAdmin(
   return updated;
 }
 
+/** Self-service profile fields (name, phone, city, account type). Email stays identity-bound. */
+export async function updateUserProfile(
+  userId: string,
+  patch: {
+    fullName?: string;
+    phone?: string;
+    city?: string;
+    accountType?: StoredUser["accountType"];
+  },
+): Promise<UserProfile | null> {
+  const user = await findUserById(userId);
+  if (!user) return null;
+
+  const fullName = patch.fullName?.trim();
+  const phone = patch.phone?.trim();
+  const city = patch.city?.trim();
+  const accountType = patch.accountType;
+
+  const updated: StoredUser = {
+    ...user,
+    ...(fullName ? { fullName } : {}),
+    ...(phone !== undefined ? { phone } : {}),
+    ...(city ? { city } : {}),
+    ...(accountType ? { accountType } : {}),
+  };
+  await saveUser(updated);
+  return toProfile(updated);
+}
+
 export function toAdminUserRecord(
   user: StoredUser,
   listingsCount = 0,

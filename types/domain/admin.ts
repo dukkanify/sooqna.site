@@ -74,6 +74,7 @@ export type AdminListingRecord = {
   categorySpecs?: CategorySpecs;
   features?: string[];
   negotiable?: boolean;
+  videoUrl?: string;
   isDemo?: boolean;
   source?: string;
 };
@@ -117,6 +118,7 @@ export type AdminListingPatch = Partial<
     | "categorySpecs"
     | "features"
     | "negotiable"
+    | "videoUrl"
   >
 > & {
   rejectReason?: string;

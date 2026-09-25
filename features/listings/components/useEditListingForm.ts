@@ -19,31 +19,50 @@ import {
   getListingImages,
 } from "./listing-edit.utils";
 
-function readListing(listingId: string): Listing | null {
+export type EditListingMode = "local" | "server";
+
+type UseEditListingFormOptions = {
+  initialListing?: Listing | null;
+  mode?: EditListingMode;
+};
+
+function readLocalListing(listingId: string): Listing | null {
   if (typeof window === "undefined") {
     return null;
   }
   return getLocalListingById(listingId) ?? null;
 }
 
-export function useEditListingForm(listingId: string) {
+export function useEditListingForm(
+  listingId: string,
+  options: UseEditListingFormOptions = {},
+) {
+  const mode = options.mode ?? "local";
   const router = useRouter();
-  const [listing, setListing] = useState<Listing | null>(() => readListing(listingId));
+  const [localListing, setLocalListing] = useState<Listing | null>(() =>
+    mode === "local" ? readLocalListing(listingId) : null,
+  );
+  const [serverListing, setServerListing] = useState<Listing | null>(
+    () => options.initialListing ?? null,
+  );
+  const listing = mode === "server" ? serverListing : localListing;
   const [errors, setErrors] = useState<CategoryFieldErrors>({});
   const { handleImageChange: setImagePreviewsFromFiles, imageFiles, imagePreviews } =
     useImagePreviews();
   const [saveMessage, setSaveMessage] = useState("");
 
   useEffect(() => {
-    const sync = () => setListing(readListing(listingId));
+    if (mode !== "local") return;
+    const sync = () => setLocalListing(readLocalListing(listingId));
     window.addEventListener(STORAGE_EVENTS.listingsChange, sync);
     return () => window.removeEventListener(STORAGE_EVENTS.listingsChange, sync);
-  }, [listingId]);
+  }, [listingId, mode]);
 
   const saveChanges = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      const currentListing = readListing(listingId);
+      const currentListing =
+        mode === "server" ? serverListing : readLocalListing(listingId);
       if (!currentListing) {
         return;
       }
@@ -82,14 +101,78 @@ export function useEditListingForm(listingId: string) {
         ? parsed.title
         : String(formData.get("title") ?? "").trim();
 
+      const nextSlug = createListingSlug({
+        id: currentListing.id,
+        title,
+        titleEnglish: currentListing.titleEnglish,
+      });
+
+      if (mode === "server") {
+        const response = await fetch(`/api/listings/${currentListing.id}`, {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            description,
+            price,
+            condition: parsed.condition,
+            city: cityName,
+            emirate: parsed.emirate,
+            contactPhone: contact,
+            imageUrl: mergedImages[0],
+            images: mergedImages.length > 0 ? mergedImages : undefined,
+            categorySpecs: isDynamicCategory(categoryId)
+              ? parsed.categorySpecs
+              : undefined,
+            features: parsed.features.length > 0 ? parsed.features : [],
+            negotiable: parsed.negotiable,
+            videoUrl: videoUrl || "",
+          }),
+        });
+
+        if (!response.ok) {
+          setSaveMessage("تعذر حفظ التعديلات. حاول مرة أخرى.");
+          return;
+        }
+
+        const payload = (await response.json().catch(() => null)) as {
+          listing?: Listing;
+        } | null;
+        const saved = payload?.listing ?? {
+          ...currentListing,
+          title,
+          slug: nextSlug,
+          description,
+          price,
+          condition: parsed.condition,
+          city: cityName,
+          country: countries[0].name,
+          imageUrl: mergedImages[0],
+          images: mergedImages.length > 0 ? mergedImages : undefined,
+          categorySpecs: isDynamicCategory(categoryId)
+            ? parsed.categorySpecs
+            : undefined,
+          features: parsed.features.length > 0 ? parsed.features : undefined,
+          negotiable: parsed.negotiable,
+          emirate: parsed.emirate,
+          contactPhone: contact,
+          contactMethod: "both" as const,
+          videoUrl: videoUrl || undefined,
+        };
+
+        saveLocalListing(saved);
+        setServerListing(saved);
+        setSaveMessage("تم حفظ التعديلات بنجاح.");
+        router.push(`/listings/${saved.slug}`);
+        router.refresh();
+        return;
+      }
+
       const updatedListing: Listing = {
         ...currentListing,
         title,
-        slug: createListingSlug({
-          id: currentListing.id,
-          title,
-          titleEnglish: currentListing.titleEnglish,
-        }),
+        slug: nextSlug,
         description,
         price,
         condition: parsed.condition,
@@ -115,22 +198,27 @@ export function useEditListingForm(listingId: string) {
       setSaveMessage("تم حفظ التعديلات بنجاح.");
       router.push(`/listings/local/${currentListing.id}`);
     },
-    [imageFiles, listingId, router],
+    [imageFiles, listingId, mode, router, serverListing],
   );
 
   const { isLoading, run: handleSubmit } = useAsyncAction(saveChanges);
 
   const handleImageChange = useCallback(
-    (fileList: FileList | null, mode: "append" | "replace" = "replace") => {
-      const current = readListing(listingId);
+    (fileList: FileList | null, modeAppend: "append" | "replace" = "replace") => {
+      const current =
+        mode === "server" ? serverListing : readLocalListing(listingId);
       const existingCount = current ? getListingImages(current).length : 0;
       const maxNew = Math.max(0, 6 - existingCount);
-      setImagePreviewsFromFiles(fileList, maxNew, mode);
+      setImagePreviewsFromFiles(fileList, maxNew, modeAppend);
     },
-    [listingId, setImagePreviewsFromFiles],
+    [listingId, mode, serverListing, setImagePreviewsFromFiles],
   );
 
   return {
+    cancelHref:
+      mode === "server" && listing
+        ? `/listings/${listing.slug}`
+        : `/listings/local/${listingId}`,
     defaults: listing ? buildCategoryFieldsDefaults(listing) : undefined,
     errors,
     existingImages: listing ? getListingImages(listing) : [],
