@@ -23,11 +23,13 @@ import { parseCategoryForm } from "./category-form-utils";
 import { createListingSlug } from "./utils";
 
 const defaultPreview: ListingPreview = {
-  city: "دبي",
+  city: "",
   condition: "used",
   description: "",
   price: "",
   title: "",
+  hideCondition: false,
+  priceMode: "aed",
 };
 
 function buildSellerFromSession(user: NonNullable<ReturnType<typeof getSessionUser>>) {
@@ -289,7 +291,7 @@ export function useAddListingForm(categories: Category[]) {
       setErrors({});
       publishedRef.current = true;
 
-      const price = Number(formData.get("price") ?? 0);
+      const price = parsed.skipPrice ? 0 : Number(formData.get("price") ?? 0);
       const description = String(formData.get("description") ?? "").trim();
       let persistedImages: string[] = [];
       if (imageFiles.length > 0) {
@@ -310,7 +312,11 @@ export function useAddListingForm(categories: Category[]) {
       const usesDynamicFields =
         remoteFields.length > 0 || isDynamicCategory(categoryId);
       const cityName = usesDynamicFields
-        ? parsed.city
+        ? parsed.city ||
+          (categoryId === "jobs"
+            ? String(parsed.categorySpecs.location ?? "").trim()
+            : "") ||
+          "الإمارات"
         : cities.find((city) => city.id === parsed.city)?.name ?? "دبي";
 
       const title = usesDynamicFields

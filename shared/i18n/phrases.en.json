@@ -2711,5 +2711,14 @@
   "سجاد وستائر": "Carpets & curtains",
   "إضاءة وديكور": "Lighting & décor",
   "تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم الفرعي» (وليست حقول النموذج مثل نوع الأثاث).": "Shown on the “Choose category” step when posting an ad — the Subcategory list (not form fields like Furniture type).",
-  "من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة.": "From the subcategories defined for this category in the admin panel."
+  "من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة.": "From the subcategories defined for this category in the admin panel.",
+  "مجدّد": "Refurbished",
+  "للقطع": "For parts",
+  "لا يعمل": "Not working",
+  "وصف العيوب أو الأجزاء الناقصة": "Describe defects or missing parts",
+  "اشرح العيوب بوضوح (شاشة، بطارية، منافذ…)": "Clearly describe defects (screen, battery, ports…)",
+  "مطلوب عند اختيار مستعمل أو مجدّد أو للقطع أو لا يعمل.": "Required when Used, Refurbished, For parts, or Not working is selected.",
+  "إعلانات الوظائف لا تستخدم سعر درهم ولا حالة مستعمل/جديد — الراتب والموقع يظهران من الحقول أعلاه.": "Job listings do not use AED price or New/Used condition — salary and location come from the fields above.",
+  "الراتب حسب الاتفاق": "Salary by agreement",
+  "اختر...": "Select..."
 }

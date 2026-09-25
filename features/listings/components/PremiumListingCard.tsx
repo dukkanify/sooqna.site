@@ -127,7 +127,13 @@ export const PremiumListingCard = memo(function PremiumListingCard({
       ) : null}
 
       <div>
-        <CurrencyAmount amount={listing.price} size="sm" />
+        {listing.categoryId === "jobs" ? (
+          <p className="text-sm font-black text-ink">
+            {String(listing.categorySpecs?.salary ?? "").trim() || "وظيفة"}
+          </p>
+        ) : (
+          <CurrencyAmount amount={listing.price} size="sm" />
+        )}
       </div>
 
       <div className="hidden items-center gap-2 lg:flex">

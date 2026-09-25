@@ -25,6 +25,9 @@ const conditionLabels: Record<string, string> = {
   excellent: "ممتاز",
   new: "جديد",
   used: "مستعمل",
+  refurbished: "مجدّد",
+  for_parts: "للقطع",
+  not_working: "لا يعمل",
 };
 
 const rangeLabels: Record<string, { max: string; min: string }> = {

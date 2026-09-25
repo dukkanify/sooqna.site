@@ -46,6 +46,9 @@ const conditionOptions = [
   { label: "جديد", value: "new" },
   { label: "مستعمل", value: "used" },
   { label: "ممتاز", value: "excellent" },
+  { label: "مجدّد", value: "refurbished" },
+  { label: "للقطع", value: "for_parts" },
+  { label: "لا يعمل", value: "not_working" },
 ];
 
 const CARS_ADVANCED_SPEC_KEYS = [

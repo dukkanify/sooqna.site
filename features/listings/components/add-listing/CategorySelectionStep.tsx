@@ -74,6 +74,7 @@ export function CategorySelectionStep({
               label: subcategory,
               value: subcategory,
             }))}
+            placeholder="اختر..."
           />
           <p className="text-xs text-muted">
             من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة.

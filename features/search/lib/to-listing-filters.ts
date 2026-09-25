@@ -35,7 +35,12 @@ export function toListingSearchFilters(
     categorySpecs: compactRecord(filters.specs),
     city: filters.city?.trim() || undefined,
     condition:
-      condition === "new" || condition === "used" || condition === "excellent"
+      condition === "new" ||
+      condition === "used" ||
+      condition === "excellent" ||
+      condition === "refurbished" ||
+      condition === "for_parts" ||
+      condition === "not_working"
         ? (condition as ListingCondition)
         : undefined,
     country: filters.country?.trim() || undefined,

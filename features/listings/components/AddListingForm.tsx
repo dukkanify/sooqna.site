@@ -31,7 +31,6 @@ export function AddListingForm({ categories }: AddListingFormProps) {
     handleImageChange,
     imagePreviews,
     isAllowed,
-    isJobsCategory,
     imagesRequired,
     isSubmitting,
     preview,
@@ -48,6 +47,16 @@ export function AddListingForm({ categories }: AddListingFormProps) {
   const handleSelectCategory = useCallback(
     (categoryId: string) => {
       setSelectedCategoryId(categoryId);
+      const isJobs = categoryId === "jobs";
+      setPreview({
+        city: "",
+        condition: "used",
+        description: "",
+        price: "",
+        title: "",
+        hideCondition: isJobs || categoryId === "food",
+        priceMode: isJobs ? "salary" : "aed",
+      });
 
       window.requestAnimationFrame(() => {
         window.setTimeout(() => {
@@ -58,7 +67,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
         }, 120);
       });
     },
-    [setSelectedCategoryId],
+    [setPreview, setSelectedCategoryId],
   );
 
   if (!isAllowed) {
@@ -109,7 +118,13 @@ export function AddListingForm({ categories }: AddListingFormProps) {
           id="add-listing-details"
         >
           {useDynamicFields ? (
-            <CategoryFieldsStep categoryId={selectedCategoryId} errors={errors} />
+            <CategoryFieldsStep
+              categoryId={selectedCategoryId}
+              errors={errors}
+              onPreviewChange={(patch) =>
+                setPreview((current) => ({ ...current, ...patch }))
+              }
+            />
           ) : (
             <ListingDetailsStep errors={errors} onPreviewChange={setPreview} />
           )}

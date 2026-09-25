@@ -12,6 +12,8 @@ export type CategoryFormResult = {
   condition: ListingCondition;
   city: string;
   emirate?: string;
+  /** Jobs (and similar) skip AED price — use salary in specs instead. */
+  skipPrice?: boolean;
 };
 
 function readFieldValue(
@@ -31,7 +33,7 @@ function hasFieldValue(value: string | string[]): boolean {
   return value.length > 0;
 }
 
-function normalizeCondition(value: string): ListingCondition {
+function normalizeCondition(value: string): ListingCondition | null {
   const normalized = value.trim().toLowerCase();
   if (
     normalized === "new" ||
@@ -47,7 +49,36 @@ function normalizeCondition(value: string): ListingCondition {
   ) {
     return "excellent";
   }
-  return "used";
+  if (
+    normalized === "refurbished" ||
+    value === "مجدّد" ||
+    value === "مجدد" ||
+    value === "مجددة"
+  ) {
+    return "refurbished";
+  }
+  if (
+    normalized === "for_parts" ||
+    value === "للقطع" ||
+    value === "قطع غيار"
+  ) {
+    return "for_parts";
+  }
+  if (
+    normalized === "not_working" ||
+    value === "لا يعمل" ||
+    value === "لا تعمل"
+  ) {
+    return "not_working";
+  }
+  if (
+    normalized === "used" ||
+    value === "مستعمل" ||
+    value === "مستعملة"
+  ) {
+    return "used";
+  }
+  return null;
 }
 
 export function parseCategoryForm(
@@ -58,9 +89,11 @@ export function parseCategoryForm(
   const errors: Record<string, string> = {};
   const categorySpecs: CategorySpecs = {};
   let features: string[] = [];
-  let condition: ListingCondition = "used";
+  let condition: ListingCondition | null = null;
   let city = "";
   let emirate: string | undefined;
+  const isJobs = categoryId === "jobs";
+  const isFood = categoryId === "food";
 
   const fields =
     fieldsOverride && fieldsOverride.length > 0
@@ -71,18 +104,23 @@ export function parseCategoryForm(
     const title = String(formData.get("title") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
     const price = Number(formData.get("price") ?? 0);
-    const cityId = String(formData.get("city") ?? "dubai");
+    const cityId = String(formData.get("city") ?? "");
 
     if (title.length < 8) errors.title = "عنوان الإعلان يجب أن يكون 8 أحرف على الأقل.";
     if (description.length < 20) errors.description = "اكتب وصفاً لا يقل عن 20 حرفاً.";
     if (!Number.isFinite(price) || price <= 0) errors.price = "اكتب سعراً صحيحاً.";
+    const rawCondition = String(formData.get("condition") ?? "").trim();
+    const parsedCondition = normalizeCondition(rawCondition);
+    if (!parsedCondition) {
+      errors.condition = "اختر حالة المنتج.";
+    }
 
     return {
       categorySpecs: {},
       errors,
       features: [],
       title,
-      condition: String(formData.get("condition") ?? "used") as ListingCondition,
+      condition: parsedCondition ?? "used",
       city: cityId,
       emirate: undefined,
     };
@@ -120,11 +158,20 @@ export function parseCategoryForm(
     }
 
     if (field.key === "condition") {
-      condition = normalizeCondition(value);
+      const parsed = normalizeCondition(value);
+      if (!parsed) {
+        errors[field.key] = "اختر حالة المنتج.";
+      } else {
+        condition = parsed;
+        categorySpecs.condition = value;
+      }
     } else if (field.key === "city") {
       city = value;
     } else if (field.key === "emirate") {
       emirate = value;
+    } else if (field.key === "location" && isJobs) {
+      city = value;
+      categorySpecs.location = value;
     } else if (field.type === "number") {
       const numeric = Number(value);
       if (!Number.isFinite(numeric)) {
@@ -137,10 +184,17 @@ export function parseCategoryForm(
     }
   }
 
-  // Food: never treat as new/used product condition.
-  if (categoryId === "food") {
+  // Food / jobs: never treat as product New/Used condition for display.
+  if (isFood || isJobs) {
     condition = "used";
     delete categorySpecs.condition;
+  } else if (!condition) {
+    const hasConditionField = fields.some((field) => field.key === "condition");
+    if (hasConditionField) {
+      errors.condition = "اختر حالة المنتج.";
+    } else {
+      condition = "used";
+    }
   }
 
   const description = String(formData.get("description") ?? "").trim();
@@ -148,9 +202,11 @@ export function parseCategoryForm(
     errors.description = "اكتب وصفاً لا يقل عن 20 حرفاً.";
   }
 
-  const price = Number(formData.get("price") ?? 0);
-  if (!Number.isFinite(price) || price <= 0) {
-    errors.price = "اكتب سعراً صحيحاً أكبر من صفر.";
+  if (!isJobs) {
+    const price = Number(formData.get("price") ?? 0);
+    if (!Number.isFinite(price) || price <= 0) {
+      errors.price = "اكتب سعراً صحيحاً أكبر من صفر.";
+    }
   }
 
   const titleParts = fields
@@ -167,19 +223,21 @@ export function parseCategoryForm(
     errors.title = "أكمل الحقول الأساسية لتوليد عنوان الإعلان.";
   }
 
-  const negotiableSelected = features.includes("قابل للتفاوض");
-  if (negotiableSelected) {
+  const negotiableFromFeatures = features.includes("قابل للتفاوض");
+  if (negotiableFromFeatures) {
     features = features.filter((item) => item !== "قابل للتفاوض");
   }
+  const negotiableCheckbox = String(formData.get("negotiable") ?? "") === "on";
 
   return {
     categorySpecs,
     errors,
     features,
-    negotiable: negotiableSelected || undefined,
+    negotiable: negotiableFromFeatures || negotiableCheckbox || undefined,
     title,
-    condition,
+    condition: condition ?? "used",
     city,
     emirate,
+    skipPrice: isJobs,
   };
 }

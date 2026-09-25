@@ -20,6 +20,9 @@ export const conditionLabels: Record<ListingCondition, string> = {
   excellent: "ممتاز",
   new: "جديد",
   used: "مستعمل",
+  refurbished: "مجدّد",
+  for_parts: "للقطع",
+  not_working: "لا يعمل",
 };
 
 export function createSlug(value: string) {
