@@ -73,6 +73,7 @@ function GalleryMedia({
       <AppImage
         alt={alt}
         className={className}
+        fallback="none"
         fill={fill}
         priority={priority}
         sizes={sizes}
@@ -140,14 +141,8 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
 
   if (galleryItems.length === 0) {
     return (
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-surface-muted">
-        <AppImage
-          alt={displayTitle}
-          className="object-cover"
-          fill
-          sizes="(max-width: 1024px) 100vw, 60vw"
-          src=""
-        />
+      <div className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-surface-muted text-sm font-semibold text-muted">
+        لا توجد صورة
       </div>
     );
   }
@@ -258,6 +253,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
                   <AppImage
                     alt={`صورة ${index + 1}`}
                     className="object-cover"
+                    fallback="none"
                     fill
                     loading="lazy"
                     sizes="76px"
@@ -289,6 +285,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
                 <AppImage
                   alt={`صورة ${index + 1}`}
                   className="object-cover"
+                  fallback="none"
                   fill
                   loading="lazy"
                   sizes="56px"

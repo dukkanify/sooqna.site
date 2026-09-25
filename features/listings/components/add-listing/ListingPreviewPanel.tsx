@@ -31,6 +31,7 @@ export function ListingPreviewPanel({
               <AppImage
                 alt="معاينة صورة الإعلان"
                 className="h-full w-full"
+                fallback="none"
                 fill
                 priority
                 src={imagePreviews[0]}

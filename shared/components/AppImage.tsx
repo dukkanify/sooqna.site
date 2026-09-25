@@ -11,7 +11,12 @@ import {
 type AppImageProps = {
   alt: string;
   className?: string;
-  fallback?: ImageFallbackCategory | "avatar";
+  /**
+   * Stock fallback category, or:
+   * - `"none"` — never substitute Unsplash (seller listing media)
+   * - `"avatar"` — portrait pool
+   */
+  fallback?: ImageFallbackCategory | "avatar" | "none";
   fallbackCategory?: string;
   fill?: boolean;
   height?: number;
@@ -32,6 +37,7 @@ function resolveFallbackUrl({
   fill,
   width,
 }: Pick<AppImageProps, "fallback" | "fallbackCategory" | "fill" | "width">) {
+  if (fallback === "none") return "";
   const size = fill ? 1200 : (width ?? 800);
   if (fallback === "avatar") return getFallbackUrl("avatar", fill ? 400 : (width ?? 800));
   if (fallback) return getFallbackUrl(fallback, size);
@@ -58,18 +64,34 @@ function AppImageInner({
     fill,
     width,
   });
-  const [activeSrc, setActiveSrc] = useState(src || fallbackUrl);
+  const allowStockFallback = fallback !== "none";
+  const initialSrc = (src?.trim() || fallbackUrl).trim();
+  const [activeSrc, setActiveSrc] = useState(initialSrc);
   // Priority images must paint immediately — opacity gating delays LCP.
   const [isLoaded, setIsLoaded] = useState(priority || isInlineImageSrc(src));
   const [usedErrorFallback, setUsedErrorFallback] = useState(false);
+  const [failed, setFailed] = useState(!initialSrc);
   const useNativeImage = isInlineImageSrc(activeSrc);
 
   function handleError() {
-    if (activeSrc !== fallbackUrl) {
+    if (allowStockFallback && fallbackUrl && activeSrc !== fallbackUrl) {
       setActiveSrc(fallbackUrl);
       setUsedErrorFallback(true);
       if (!priority) setIsLoaded(false);
+      return;
     }
+    // Seller media / no-stock mode: never invent a landmark photo.
+    setFailed(true);
+    setActiveSrc("");
+  }
+
+  if (failed || !activeSrc) {
+    return (
+      <span
+        aria-hidden
+        className={`overflow-hidden bg-surface-muted ${fill ? "absolute inset-0" : "relative block"} ${className}`}
+      />
+    );
   }
 
   const imageClassName = `object-cover ${className}`.trim();

@@ -154,9 +154,10 @@ export const verifiedPhotoPools: Record<ImageFallbackCategory, readonly string[]
     "photo-1749653652468-98a34f0be831",
   ],
   default: [
-    "photo-1661630804525-a745b42434a8",
-    "photo-1618843479313-40f8afb4b4d8",
-    "photo-1600607687939-ce8a6c25118c",
+    // Neutral abstract texture — never a landmark that looks like a real listing photo
+    "photo-1557683316-973673baf926",
+    "photo-1557682250-33bd709cbe85",
+    "photo-1557682224-5b8590cd4dd5",
   ],
 };
 
