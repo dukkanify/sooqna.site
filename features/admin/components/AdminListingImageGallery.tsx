@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type DragEvent } from "react";
+import { uploadListingImages } from "@/services/upload";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
 
@@ -12,20 +13,6 @@ type AdminListingImageGalleryProps = {
   uploading?: boolean;
   onUploadingChange?: (busy: boolean) => void;
 };
-
-async function uploadListingImage(file: File): Promise<string | null> {
-  const body = new FormData();
-  body.set("file", file);
-  body.set("folder", "listings");
-  const response = await fetch("/api/uploads", {
-    method: "POST",
-    credentials: "include",
-    body,
-  });
-  if (!response.ok) return null;
-  const data = await response.json();
-  return typeof data.url === "string" ? data.url : null;
-}
 
 export function AdminListingImageGallery({
   images,
@@ -55,10 +42,9 @@ export function AdminListingImageGallery({
     setError(null);
     onUploadingChange?.(true);
     try {
-      const urls = await Promise.all(
-        files.slice(0, room).map((file) => uploadListingImage(file)),
-      );
-      const next = urls.filter((url): url is string => Boolean(url));
+      // Same durable path as sellers: S3 when configured, otherwise data URLs
+      // (never ephemeral /api/media on serverless).
+      const next = await uploadListingImages(files.slice(0, room));
       if (!next.length) {
         setError("تعذر رفع الصور. حاول مرة أخرى.");
         return;
@@ -71,6 +57,8 @@ export function AdminListingImageGallery({
       if (next.length < files.slice(0, room).length) {
         setError("رُفعت بعض الصور فقط — أعد محاولة الباقي.");
       }
+    } catch {
+      setError("تعذر رفع الصور. حاول مرة أخرى.");
     } finally {
       onUploadingChange?.(false);
     }
@@ -103,6 +91,10 @@ export function AdminListingImageGallery({
   function addUrl() {
     const trimmed = urlDraft.trim();
     if (!trimmed) return;
+    if (trimmed.startsWith("/api/media/")) {
+      setError("رابط /api/media غير دائم — ارفع الصورة من الجهاز أو استخدم رابطاً عاماً.");
+      return;
+    }
     if (images.includes(trimmed)) {
       setUrlDraft("");
       return;
@@ -138,12 +130,15 @@ export function AdminListingImageGallery({
             {images.map((url, index) => (
               <div
                 className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface"
-                key={`${url}-${index}`}
+                key={`${url.slice(0, 48)}-${index}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   alt=""
                   className="size-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.style.visibility = "hidden";
+                  }}
                   src={url}
                 />
                 {index === 0 ? (

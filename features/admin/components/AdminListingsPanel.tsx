@@ -19,6 +19,7 @@ import {
 } from "@/features/listings/components/add-listing/CategoryFieldsForm";
 import { parseCategoryForm } from "@/features/listings/components/add-listing/category-form-utils";
 import { AdminListingImageGallery } from "@/features/admin/components/AdminListingImageGallery";
+import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -46,6 +47,26 @@ const statusFilterOptions: { label: string; value: string }[] = [
 
 function isDemoAdminListing(listing: AdminListingRecord): boolean {
   return listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE";
+}
+
+function AdminListingThumb({ src }: { src?: string }) {
+  const [failed, setFailed] = useState(!src?.trim());
+  if (failed) {
+    return (
+      <div className="grid size-14 shrink-0 place-items-center rounded-xl bg-surface-muted text-[10px] font-semibold text-muted">
+        بلا صورة
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      alt=""
+      className="size-14 shrink-0 rounded-xl bg-surface-muted object-cover"
+      onError={() => setFailed(true)}
+      src={src}
+    />
+  );
 }
 
 const conditionOptions = [
@@ -117,6 +138,7 @@ export function AdminListingsPanel() {
     {},
   );
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [editImagesTouched, setEditImagesTouched] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [openRowActions, setOpenRowActions] = useState<string | null>(null);
 
@@ -294,8 +316,20 @@ export function AdminListingsPanel() {
       });
       const data = await response.json();
       if (response.ok && data.listing) {
+        const next = sanitizeListingMediaFields(
+          data.listing as AdminListingRecord,
+        );
         setListings((prev) =>
-          prev.map((listing) => (listing.id === id ? data.listing : listing)),
+          prev.map((listing) => {
+            if (listing.id !== id) return listing;
+            // Status-only / field patches: never reintroduce ephemeral media into the card.
+            return {
+              ...listing,
+              ...next,
+              imageUrl: next.imageUrl ?? listing.imageUrl,
+              images: next.images ?? listing.images,
+            };
+          }),
         );
       }
     } finally {
@@ -321,10 +355,12 @@ export function AdminListingsPanel() {
 
 
   function startEdit(listing: AdminListingRecord) {
+    const media = sanitizeListingMediaFields(listing);
     const images =
-      listing.images?.filter(Boolean) ??
-      (listing.imageUrl ? [listing.imageUrl] : []);
+      media.images?.filter(Boolean) ??
+      (media.imageUrl ? [media.imageUrl] : []);
     setEditingId(listing.id);
+    setEditImagesTouched(false);
     setEditFieldErrors({});
     setEditDraft({
       title: listing.title,
@@ -333,7 +369,7 @@ export function AdminListingsPanel() {
       city: listing.city,
       condition: listing.condition ?? "used",
       contactPhone: listing.contactPhone ?? "",
-      imageUrl: images[0] ?? listing.imageUrl ?? "",
+      imageUrl: images[0] ?? "",
       images,
       sellerName: listing.sellerName,
     });
@@ -341,6 +377,7 @@ export function AdminListingsPanel() {
 
   function setEditImages(next: string[]) {
     const cleaned = next.filter(Boolean);
+    setEditImagesTouched(true);
     setEditDraft((current) => ({
       ...current,
       images: cleaned,
@@ -432,14 +469,21 @@ export function AdminListingsPanel() {
       emirate,
       condition,
       contactPhone,
-      imageUrl: images[0] || editDraft.imageUrl.trim() || undefined,
-      images,
+      // Only touch media when the admin changed the gallery — slim list rows
+      // often omit images, and sending [] would wipe durable photos.
+      ...(editImagesTouched
+        ? {
+            imageUrl: images[0] || "",
+            images,
+          }
+        : {}),
       sellerName: editDraft.sellerName.trim() || undefined,
       categorySpecs,
       features,
       negotiable,
     });
     setEditingId(null);
+    setEditImagesTouched(false);
   }
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
@@ -1085,6 +1129,7 @@ export function AdminListingsPanel() {
                         onClick={() => {
                           setEditingId(null);
                           setEditFieldErrors({});
+                          setEditImagesTouched(false);
                         }}
                         size="sm"
                         type="button"
@@ -1097,18 +1142,15 @@ export function AdminListingsPanel() {
                 ) : (
                   <>
                     <div className="flex items-start gap-3">
-                      {listing.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          alt=""
-                          className="size-14 shrink-0 rounded-xl object-cover"
-                          src={listing.imageUrl}
-                        />
-                      ) : null}
-                      <div>
-                        <p className="font-semibold text-ink">{listing.title}</p>
-                        <p className="mt-1 text-xs text-muted">{listing.slug}</p>
-                        <p className="mt-2 text-sm">
+                      <AdminListingThumb src={listing.imageUrl} />
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words font-semibold text-ink">
+                          {listing.title}
+                        </p>
+                        <p className="mt-1 truncate text-xs text-muted">
+                          {listing.slug}
+                        </p>
+                        <p className="mt-2 truncate text-sm">
                           {listing.sellerName} — {listing.city}
                         </p>
                       </div>
@@ -1128,7 +1170,7 @@ export function AdminListingsPanel() {
                 )}
               </div>
               {editingId === listing.id ? null : (
-              <div className="text-start">
+              <div className="shrink-0 text-start">
                 <CurrencyAmount amount={listing.price} size="lg" />
                 <p className="mt-1 text-xs text-muted">
                     {new Date(listing.postedAt).toLocaleDateString(intlLocale(locale))}
