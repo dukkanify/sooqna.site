@@ -417,9 +417,7 @@ export async function patchListingRecord(
               ? patch.imageUrl.trim() ||
                 nextImages?.filter(Boolean)?.[0] ||
                 undefined
-              : patch.imageUrl?.trim() ||
-                nextImages?.filter(Boolean)?.[0] ||
-                previous.imageUrl,
+              : nextImages?.filter(Boolean)?.[0] || previous.imageUrl,
         }
       : {}),
     ...(patch.sellerName !== undefined
