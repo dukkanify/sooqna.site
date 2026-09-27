@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { ChatConversation } from "@/services/chat";
 import {
@@ -28,6 +29,7 @@ type ChatConversationViewProps = {
 
 export function ChatConversationView({ conversationId }: ChatConversationViewProps) {
   const locale = useLocale();
+  const router = useRouter();
   const [conversation, setConversation] = useState<ChatConversation | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -39,14 +41,18 @@ export function ChatConversationView({ conversationId }: ChatConversationViewPro
       const current = await fetchConversationById(conversationId);
       setConversation(current);
       if (current) {
-        void markConversationRead(conversationId, current);
+        if (current.id !== conversationId) {
+          // Legacy ids (e.g. embedding "admin") are rewritten server-side.
+          router.replace(`/chat/${current.id}`);
+        }
+        void markConversationRead(current.id, current);
       }
     } catch {
       setConversation(null);
     } finally {
       setIsReady(true);
     }
-  }, [conversationId]);
+  }, [conversationId, router]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {

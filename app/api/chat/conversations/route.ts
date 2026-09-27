@@ -13,6 +13,10 @@ import {
   resolveOrCreateServerConversation,
   type ServerChatConversation,
 } from "@/services/chat/chat-server-store";
+import {
+  buildConversationId,
+  buildLegacyConversationId,
+} from "@/services/chat/conversation-id";
 import { getListingById } from "@/services/listings/listing-store";
 import { isPublicListingStatus } from "@/shared/constants/listingStatuses";
 import { createNotification } from "@/services/payments/notification-store";
@@ -86,9 +90,13 @@ export async function POST(request: Request) {
       if (!sellerId || sellerId === user.id) {
         return NextResponse.json({ error: "OWN_LISTING" }, { status: 400 });
       }
-      const existingBefore = await getConversationById(
-        `chat-${body.listing.id}-${user.id}`,
-      );
+      const opaqueId = buildConversationId(body.listing.id, user.id);
+      const legacyId = buildLegacyConversationId(body.listing.id, user.id);
+      const existingBefore =
+        (await getConversationById(opaqueId)) ??
+        (legacyId !== opaqueId
+          ? await getConversationById(legacyId)
+          : undefined);
       const conversation = await resolveOrCreateServerConversation({
         buyerId: user.id,
         buyerName: user.fullName,
