@@ -1,4 +1,5 @@
 import { STORAGE_EVENTS, STORAGE_KEYS } from "@/shared/constants/brand";
+import { buildConversationId } from "@/services/chat/conversation-id";
 import type { Listing } from "@/types";
 
 export type ChatMessage = {
@@ -83,7 +84,7 @@ export function resolveOrCreateConversation({
 
   const now = new Date().toISOString();
   const conversation: ChatConversation = {
-    id: `chat-${listing.id}-${buyerId}`,
+    id: buildConversationId(listing.id, buyerId),
     listingId: listing.id,
     listingTitle: listing.title,
     listingSlug: listing.slug,

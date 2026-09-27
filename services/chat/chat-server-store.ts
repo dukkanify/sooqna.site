@@ -1,4 +1,9 @@
 import { createPayloadCollectionStore } from "@/services/db/durable-json-collection";
+import {
+  buildConversationId,
+  buildLegacyConversationId,
+  isLegacyConversationId,
+} from "@/services/chat/conversation-id";
 
 export type ServerChatMessage = {
   id: string;
@@ -85,7 +90,8 @@ export async function listConversationsForUser(
 
   const byId = new Map<string, ServerChatConversation>();
   for (const item of [...direct, ...repaired]) {
-    byId.set(item.id, item);
+    const normalized = await migrateLegacyConversationId(item);
+    byId.set(normalized.id, normalized);
   }
   return [...byId.values()].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt),
@@ -96,7 +102,45 @@ export async function getConversationById(
   conversationId: string,
 ): Promise<ServerChatConversation | undefined> {
   const all = await store.listAll();
-  return all.find((item) => item.id === conversationId);
+  const direct = all.find((item) => item.id === conversationId);
+  if (direct) {
+    return migrateLegacyConversationId(direct);
+  }
+  return undefined;
+}
+
+/**
+ * Rewrite legacy `chat-{listing}-{buyer}` ids (may embed "admin") to opaque
+ * `c_*` ids so public URLs stop tripping edge WAF false positives.
+ */
+async function migrateLegacyConversationId(
+  conversation: ServerChatConversation,
+): Promise<ServerChatConversation> {
+  if (!isLegacyConversationId(conversation.id)) {
+    return conversation;
+  }
+  const opaqueId = buildConversationId(
+    conversation.listingId,
+    conversation.buyerId,
+  );
+  if (opaqueId === conversation.id) return conversation;
+
+  const existingOpaque = (await store.listAll()).find(
+    (item) => item.id === opaqueId,
+  );
+  if (existingOpaque) {
+    const merged = await upsertMergingMessages({
+      ...existingOpaque,
+      ...conversation,
+      id: opaqueId,
+    });
+    await store.removeById(conversation.id).catch(() => false);
+    return merged;
+  }
+
+  const migrated = await store.upsert({ ...conversation, id: opaqueId });
+  await store.removeById(conversation.id).catch(() => false);
+  return migrated;
 }
 
 /** True when the user is a stored participant. */
@@ -223,12 +267,34 @@ export async function importServerConversation(
     throw new Error("INVALID_INPUT");
   }
 
-  return upsertMergingMessages({
+  const opaqueId = buildConversationId(snapshot.listingId, snapshot.buyerId);
+  const legacyId = buildLegacyConversationId(
+    snapshot.listingId,
+    snapshot.buyerId,
+  );
+  const normalizedId =
+    snapshot.id === legacyId || isLegacyConversationId(snapshot.id)
+      ? opaqueId
+      : snapshot.id === opaqueId
+        ? opaqueId
+        : snapshot.id;
+
+  const merged = await upsertMergingMessages({
     ...snapshot,
+    id: normalizedId,
     messages: Array.isArray(snapshot.messages) ? snapshot.messages : [],
     updatedAt: snapshot.updatedAt || new Date().toISOString(),
     createdAt: snapshot.createdAt || new Date().toISOString(),
   });
+
+  if (legacyId !== opaqueId) {
+    const leftover = (await store.listAll()).find((item) => item.id === legacyId);
+    if (leftover) {
+      await store.removeById(legacyId).catch(() => false);
+    }
+  }
+
+  return merged;
 }
 
 export async function resolveOrCreateServerConversation(input: {
@@ -240,9 +306,18 @@ export async function resolveOrCreateServerConversation(input: {
   sellerId: string;
   sellerName: string;
 }): Promise<ServerChatConversation> {
-  const id = `chat-${input.listingId}-${input.buyerId}`;
-  const existing = await getConversationById(id);
-  if (existing) return existing;
+  const id = buildConversationId(input.listingId, input.buyerId);
+  const legacyId = buildLegacyConversationId(input.listingId, input.buyerId);
+
+  const existingOpaque = await getConversationById(id);
+  if (existingOpaque) return existingOpaque;
+
+  if (legacyId !== id) {
+    const legacy = (await store.listAll()).find((item) => item.id === legacyId);
+    if (legacy) {
+      return migrateLegacyConversationId(legacy);
+    }
+  }
 
   const now = new Date().toISOString();
   const conversation: ServerChatConversation = {

@@ -1,4 +1,5 @@
 import { STORAGE_EVENTS, STORAGE_KEYS } from "@/shared/constants/brand";
+import { buildConversationId } from "@/services/chat/conversation-id";
 import type { Listing } from "@/types";
 
 export type ChatMessage = {
@@ -52,7 +53,14 @@ function writeCache(conversations: ChatConversation[]) {
 }
 
 function upsertCache(conversation: ChatConversation) {
-  const all = readCache().filter((item) => item.id !== conversation.id);
+  const all = readCache().filter(
+    (item) =>
+      item.id !== conversation.id &&
+      !(
+        item.listingId === conversation.listingId &&
+        item.buyerId === conversation.buyerId
+      ),
+  );
   writeCache([conversation, ...all]);
 }
 
@@ -337,7 +345,7 @@ export function resolveOrCreateConversation(input: {
   if (existing) return existing;
   const now = new Date().toISOString();
   const conversation: ChatConversation = {
-    id: `chat-${input.listing.id}-${input.buyerId}`,
+    id: buildConversationId(input.listing.id, input.buyerId),
     listingId: input.listing.id,
     listingTitle: input.listing.title,
     listingSlug: input.listing.slug,
