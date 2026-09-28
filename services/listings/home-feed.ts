@@ -10,13 +10,19 @@ import {
   LISTINGS_CACHE_TAG,
 } from "@/services/listings/listings-cache";
 import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
+import { sortByMostViewed } from "@/services/listings/home-feed-rank";
 
 export type HomeListingCard = Listing;
 export { slimListingForCard };
+export { sortByMostViewed } from "@/services/listings/home-feed-rank";
 
 export type HomeFeed = {
   featured: Listing[];
   nearbySource: Listing[];
+  /**
+   * @deprecated Removed from homepage UI — kept empty so older callers stay safe.
+   * Market “preview” duplicated Featured; sections are most-viewed instead.
+   */
   preview: Listing[];
   sections: Array<{
     categoryId: string;
@@ -30,10 +36,9 @@ export type HomeFeed = {
 
 const HOME_SECTION_LIMIT = 13;
 const FEATURED_FETCH = 24;
-const PREVIEW_SHOW = 4;
 const FEATURED_SHOW = 6;
-const CATALOG_FETCH = 160;
-const NEARBY_SHOW = 12;
+const CATALOG_FETCH = 200;
+const NEARBY_SHOW = 8;
 const SECTION_SHOW = 4;
 
 /** Strip query/size so the same Unsplash photo collides across listings. */
@@ -68,7 +73,6 @@ function coverCandidates(listing: Listing): string[] {
     .map((url) => url?.trim())
     .filter((url): url is string => Boolean(url));
 
-  // Stay inside the listing's product-kind pool so a Patrol never gets a Mustang cover.
   const generated = galleryForListingProduct({
     categoryId: listing.categoryId,
     count: 8,
@@ -83,7 +87,6 @@ function coverCandidates(listing: Listing): string[] {
 function withCover(listing: Listing, cover: string): Listing {
   const original = coverKey(listing.imageUrl) || coverKey(listing.images?.[0]);
   const nextKey = coverKey(cover);
-  // Prefer keeping the original photo when it is still unique on the page.
   if (original && original === nextKey) {
     return listing;
   }
@@ -95,11 +98,10 @@ function withCover(listing: Listing, cover: string): Listing {
 }
 
 /**
- * Pick listings without repeating ids OR cover photos.
- * Pass 1 keeps original covers when unique; pass 2 rotates within the same
- * product gallery only; listings that still collide are skipped.
+ * Pick listings without repeating ids OR cover photos across the whole homepage.
+ * Pass 1 keeps original covers when unique; pass 2 remaps within the product gallery.
  */
-function takeDiverse(
+export function takeDiverse(
   listings: Listing[],
   limit: number,
   usedIds: Set<string>,
@@ -133,10 +135,30 @@ function takeDiverse(
   return out;
 }
 
+function mostViewedSectionCopy(def: {
+  categoryId: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  variant: "sand" | "white";
+}) {
+  return {
+    ...def,
+    eyebrow: "الأكثر مشاهدة",
+    title: `الأكثر زيارة — ${def.eyebrow}`,
+    description: `أعلى إعلانات ${def.eyebrow} مشاهدة حالياً — بدون تكرار مع المميزة أو القريبة منك.`,
+  };
+}
+
+/**
+ * Homepage composition (no duplicate listing ids across slices):
+ * 1) Featured (paid package)
+ * 2) Most-viewed rails per category
+ * 3) Nearby / across Emirates
+ */
 async function buildHomeFeed(): Promise<HomeFeed> {
   const sectionDefs = mockHomeCategorySections.slice(0, HOME_SECTION_LIMIT);
 
-  // Two round-trips instead of 1 + N category queries — much faster under Postgres quota.
   const [featuredRows, catalogRows] = await Promise.all([
     queryListings({
       featured: true,
@@ -155,31 +177,48 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
   const usedIds = new Set<string>();
   const usedCovers = new Set<string>();
-  const activeFeatured = featuredRows.filter((listing) =>
-    isListingFeaturedActive(listing),
+
+  const activeFeatured = sortByMostViewed(
+    featuredRows.filter((listing) => isListingFeaturedActive(listing)),
   );
 
-  // Preview = market snapshot (any active). Featured = paid placements only — never backfill.
-  const preview = takeDiverse(catalogRows, PREVIEW_SHOW, usedIds, usedCovers);
-  const featured = takeDiverse(activeFeatured, FEATURED_SHOW, usedIds, usedCovers);
-  const nearbySource = takeDiverse(catalogRows, NEARBY_SHOW, usedIds, usedCovers);
+  // 1) Featured first — never backfill with non-featured catalog rows.
+  const featured = takeDiverse(
+    activeFeatured,
+    FEATURED_SHOW,
+    usedIds,
+    usedCovers,
+  );
 
-  const sections = sectionDefs.map((section) => ({
-    ...section,
-    items: takeDiverse(
+  // 2) Most-visited per category (skips ids already used in featured).
+  const sections = sectionDefs.map((section) => {
+    const pool = sortByMostViewed(
       catalogRows.filter((listing) => listing.categoryId === section.categoryId),
-      SECTION_SHOW,
-      usedIds,
-      usedCovers,
-    ),
-  }));
+    );
+    const copy = mostViewedSectionCopy(section);
+    return {
+      ...copy,
+      items: takeDiverse(pool, SECTION_SHOW, usedIds, usedCovers),
+    };
+  });
 
-  return { featured, nearbySource, preview, sections };
+  // 3) Nearby last — remaining catalog, category-diverse covers.
+  const nearbyPool = sortByMostViewed(
+    catalogRows.filter((listing) => !usedIds.has(listing.id)),
+  );
+  const nearbySource = takeDiverse(
+    nearbyPool,
+    NEARBY_SHOW,
+    usedIds,
+    usedCovers,
+  );
+
+  return { featured, nearbySource, preview: [], sections };
 }
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v17-featured-paid-only"],
+  ["sooqna-home-feed-v19-featured-mostviewed-nearby"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],
