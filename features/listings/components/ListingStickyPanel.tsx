@@ -11,6 +11,8 @@ import { ShareButton } from "@/shared/components/ShareButton";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { intlLocale } from "@/shared/i18n/locale";
+import { useLocale } from "@/shared/i18n/useLocale";
 import { useToast } from "@/shared/components/ToastProvider";
 import {
   getListingActionConfig,
@@ -65,6 +67,7 @@ const conditionLabels: Record<Listing["condition"], string> = {
 };
 
 export function ListingStickyPanel({ category, listing }: ListingStickyPanelProps) {
+  const locale = useLocale();
   const config = getListingActionConfig(listing);
   const user = typeof window !== "undefined" ? getSessionUser() : null;
   const isOwn = user ? isOwnListing(listing, user) : false;
@@ -137,6 +140,15 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
             <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
               <Icon name="clock" size={14} />
               {formatPostedTime(listing.postedAt)}
+            </span>
+          </div>
+        ) : null}
+        {(listing.views ?? 0) > 0 ? (
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-muted">المشاهدات</span>
+            <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
+              <Icon name="eye" size={14} />
+              {listing.views.toLocaleString(intlLocale(locale))}
             </span>
           </div>
         ) : null}
