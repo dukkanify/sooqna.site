@@ -2,7 +2,6 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import type { Listing } from "@/types";
 import { mockHomeCategorySections } from "@/mock";
-import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { slimListingForCard } from "@/services/listings/listing-card-model";
 import { queryListings } from "@/services/listings/listing-queries";
 import {
@@ -10,6 +9,10 @@ import {
   LISTINGS_CACHE_TAG,
 } from "@/services/listings/listings-cache";
 import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
+import {
+  isEligibleFeaturedPageListing,
+  sortFeaturedPageListings,
+} from "@/shared/listings/featured-page-rules";
 
 export type HomeListingCard = Listing;
 export { slimListingForCard };
@@ -155,8 +158,9 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
   const usedIds = new Set<string>();
   const usedCovers = new Set<string>();
-  const activeFeatured = featuredRows.filter((listing) =>
-    isListingFeaturedActive(listing),
+  // Same eligibility/order contract as `/featured` (paid + active window).
+  const activeFeatured = sortFeaturedPageListings(
+    featuredRows.filter((listing) => isEligibleFeaturedPageListing(listing)),
   );
 
   // Preview = market snapshot (any active). Featured = paid placements only — never backfill.
@@ -179,7 +183,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v17-featured-paid-only"],
+  ["sooqna-home-feed-v18-featured-page-rules"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

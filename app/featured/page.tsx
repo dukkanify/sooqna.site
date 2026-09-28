@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { FeaturedListingsView } from "@/features/featured/FeaturedListingsView";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import { getCategories } from "@/services/categories";
 import { getFeaturedListings } from "@/services/listings";
 import { getRequestLocale } from "@/shared/i18n/locale";
@@ -18,10 +19,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function FeaturedPage() {
-  const [categories, listings, locale] = await Promise.all([
+  const [categories, listings, locale, settings] = await Promise.all([
     getCategories(),
     getFeaturedListings(),
     getRequestLocale(),
+    getAdminSettings(),
   ]);
 
   return (
@@ -32,6 +34,7 @@ export default async function FeaturedPage() {
           categories={categories}
           listings={listings}
           locale={locale}
+          packageDays={settings.featuredListingDays}
         />
       </main>
       <SiteFooter />
