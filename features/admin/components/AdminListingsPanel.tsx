@@ -30,6 +30,7 @@ import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
 import { intlLocale } from "@/shared/i18n/locale";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
+import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import { useLocale } from "@/shared/i18n/useLocale";
 
 const statusFilterOptions: { label: string; value: string }[] = [
@@ -47,6 +48,14 @@ const statusFilterOptions: { label: string; value: string }[] = [
 
 function isDemoAdminListing(listing: AdminListingRecord): boolean {
   return listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE";
+}
+
+/** Real marketplace rows — excludes showcase demos and confirmed fixtures. */
+function isMarketplaceAdminListing(listing: AdminListingRecord): boolean {
+  if (isDemoAdminListing(listing)) return false;
+  if (listing.isFixture === true) return false;
+  if (isConfirmedFixtureListing(listing)) return false;
+  return true;
 }
 
 function AdminListingThumb({ src }: { src?: string }) {
@@ -190,11 +199,12 @@ export function AdminListingsPanel() {
     return listings
       .filter((listing) => {
         const demo = isDemoAdminListing(listing);
+        const marketplace = isMarketplaceAdminListing(listing);
         if (statusFilter === "demo") return demo;
-        if (statusFilter === "marketplace") return !demo;
+        if (statusFilter === "marketplace") return marketplace;
         if (statusFilter === "all") return true;
-        // Status filters show real marketplace ads only (not showcase).
-        return listing.status === statusFilter && !demo;
+        // Status filters show real marketplace ads only (not showcase/fixtures).
+        return listing.status === statusFilter && marketplace;
       })
       .filter((listing) =>
         categoryFilter === "all" ? true : listing.categoryId === categoryFilter,
@@ -243,13 +253,14 @@ export function AdminListingsPanel() {
     () =>
       listings.filter(
         (listing) =>
-          listing.status === "pending_review" && !isDemoAdminListing(listing),
+          listing.status === "pending_review" &&
+          isMarketplaceAdminListing(listing),
       ).length,
     [listings],
   );
 
   const marketplaceCount = useMemo(
-    () => listings.filter((listing) => !isDemoAdminListing(listing)).length,
+    () => listings.filter((listing) => isMarketplaceAdminListing(listing)).length,
     [listings],
   );
 

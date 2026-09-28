@@ -4,6 +4,7 @@ import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { hasAdminAction } from "@/services/auth/admin-permission-checks";
 import { getAllUsers } from "@/services/auth/user-store";
 import { getAllListings } from "@/services/listings/listing-store";
+import { isMarketplaceListing } from "@/services/listings/listing-stats";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getAdminDisputes } from "@/services/admin/dispute-store";
 import { logAdminAction } from "@/services/admin/admin-audit-store";
@@ -72,8 +73,9 @@ export async function GET(request: Request) {
   const filteredUsers = users.filter((user) =>
     inRange(user.joinedAt ?? user.createdAt, startMs),
   );
-  const filteredListings = listings.filter((listing) =>
-    inRange(listing.postedAt, startMs),
+  const filteredListings = listings.filter(
+    (listing) =>
+      isMarketplaceListing(listing) && inRange(listing.postedAt, startMs),
   );
   const filteredOrders = orders.filter((order) => inRange(order.createdAt, startMs));
   const filteredDisputes = disputes.filter((dispute) =>

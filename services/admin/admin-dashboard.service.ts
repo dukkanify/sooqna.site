@@ -18,6 +18,7 @@ import {
   getAllListings,
   getListingsModerationSummary,
 } from "@/services/listings/listing-store";
+import { isMarketplaceListing } from "@/services/listings/listing-stats";
 import { getAllNotifications } from "@/services/payments/notification-store";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getPaymentEvents } from "@/services/payments/payment-log";
@@ -166,8 +167,11 @@ export async function buildAdminDashboard(
   const refundedAmount = refunded.reduce((sum, o) => sum + o.fees.total, 0);
   const walletHeld = wallets.reduce((sum, w) => sum + w.heldInEscrow, 0);
 
-  const rejectedListings = listings.filter((l) => l.status === "rejected").length;
-  const pendingListingRows = listings.filter((l) => l.status === "pending_review");
+  const marketplaceListings = listings.filter(isMarketplaceListing);
+  const rejectedListings = listingStats.rejectedListings;
+  const pendingListingRows = marketplaceListings.filter(
+    (l) => l.status === "pending_review",
+  );
   const oldestPendingListingMs = pendingListingRows.reduce<number | null>((oldest, row) => {
     const age = msAgo(row.postedAt || row.expiresAt);
     if (age == null) return oldest;
@@ -218,10 +222,13 @@ export async function buildAdminDashboard(
     favCountByListing.set(id, (favCountByListing.get(id) ?? 0) + 1);
   }
 
-  const totalViews = listings.reduce((sum, l) => sum + (l.views || 0), 0);
+  const totalViews = marketplaceListings.reduce(
+    (sum, l) => sum + (l.views || 0),
+    0,
+  );
   const totalFavorites = favorites.length;
 
-  const topListings = [...listings]
+  const topListings = [...marketplaceListings]
     .map((l) => ({
       id: l.id,
       slug: l.slug,
@@ -238,7 +245,9 @@ export async function buildAdminDashboard(
     .slice(0, 8);
 
   const categoryPerf = buildListingCategorySlices(adminListings).map((slice) => {
-    const catListings = listings.filter((l) => l.categoryId === slice.key);
+    const catListings = marketplaceListings.filter(
+      (l) => l.categoryId === slice.key,
+    );
     const views = catListings.reduce((sum, l) => sum + (l.views || 0), 0);
     const share =
       totalViews > 0 ? Math.round((views / totalViews) * 100) : 0;
@@ -261,7 +270,7 @@ export async function buildAdminDashboard(
         value: listingStats.totalListings,
         href: "/admin/listings",
         icon: "grid",
-        hint: "كل الإعلانات",
+        hint: "إعلانات السوق (بدون تجريبي/وهمي)",
       },
       {
         key: "activeListings",
@@ -270,7 +279,7 @@ export async function buildAdminDashboard(
         href: "/admin/listings?status=active",
         icon: "check",
         tone: "success",
-        hint: "منشورة للعامة",
+        hint: "منشورة للعامة (نشط + محجوز)",
       },
       {
         key: "pendingListings",
@@ -723,7 +732,7 @@ export async function buildAdminDashboard(
       pendingListings: listingStats.pendingListings,
       openDisputes,
       totalUsers: users.length,
-      totalListings: listings.length,
+      totalListings: listingStats.totalListings,
       walletAccounts: wallets.length,
       walletAvailable: wallets.reduce((s, w) => s + w.availableBalance, 0),
       walletHeld,

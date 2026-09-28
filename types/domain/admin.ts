@@ -76,6 +76,8 @@ export type AdminListingRecord = {
   negotiable?: boolean;
   videoUrl?: string;
   isDemo?: boolean;
+  /** Confirmed seed/QA fixture — excluded from marketplace totals. */
+  isFixture?: boolean;
   source?: string;
 };
 

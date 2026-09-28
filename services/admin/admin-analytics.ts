@@ -1,5 +1,6 @@
 import type { Order } from "@/types/domain/order";
 import type { AdminListingRecord } from "@/types/domain/admin";
+import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 
 export type DailyPoint = {
   date: string;
@@ -82,11 +83,22 @@ export function buildOrderStatusSlices(orders: Order[]): StatusSlice[] {
     .sort((a, b) => b.count - a.count);
 }
 
+function isMarketplaceAdminListing(listing: AdminListingRecord): boolean {
+  if (listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE") {
+    return false;
+  }
+  if (listing.isFixture === true || isConfirmedFixtureListing(listing)) {
+    return false;
+  }
+  return true;
+}
+
 export function buildListingCategorySlices(
   listings: AdminListingRecord[],
 ): StatusSlice[] {
   const map = new Map<string, number>();
   for (const listing of listings) {
+    if (!isMarketplaceAdminListing(listing)) continue;
     map.set(listing.categoryId, (map.get(listing.categoryId) ?? 0) + 1);
   }
   return [...map.entries()]
