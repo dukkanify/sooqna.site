@@ -1,6 +1,5 @@
 import { cache } from "react";
 import type { Listing, ListingSearchFilters } from "@/types";
-import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { queryListings, countMatchingListings } from "@/services/listings/listing-queries";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
@@ -9,6 +8,10 @@ import {
   getListingBySlug as getStoredListingBySlug,
 } from "@/services/listings/listing-store";
 import { applyListingViewCount } from "@/services/listings/listing-views-store";
+import {
+  isEligibleFeaturedPageListing,
+  sortFeaturedPageListings,
+} from "@/shared/listings/featured-page-rules";
 
 export type { ListingSearchFilters };
 
@@ -50,15 +53,17 @@ export async function getListingBySlug(
   return applyListingViewCount(copy);
 }
 
+/** Paid Featured placements for `/featured` — see featured-page-rules. */
 export const getFeaturedListings = cache(async (): Promise<Listing[]> => {
   const listings = await queryListings({
     featured: true,
-    limit: 24,
+    limit: 48,
     slim: "card",
     sort: "newest",
-    status: "active",
   });
-  return listings.filter((listing) => isListingFeaturedActive(listing));
+  return sortFeaturedPageListings(
+    listings.filter((listing) => isEligibleFeaturedPageListing(listing)),
+  ).slice(0, 24);
 });
 
 export async function getRelatedListings(
