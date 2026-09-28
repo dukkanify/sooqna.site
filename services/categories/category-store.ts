@@ -145,7 +145,7 @@ const getActiveListingCountsCached = unstable_cache(
     const counts = await countActiveListingsByCategory();
     return Object.fromEntries(counts.entries());
   },
-  ["sooqna-category-counts-v3"],
+  ["sooqna-category-counts-v4"],
   { revalidate: CATEGORY_COUNTS_REVALIDATE_SECONDS, tags: [LISTINGS_CACHE_TAG] },
 );
 
@@ -195,7 +195,7 @@ export async function getCategoryById(
 export async function getAdminCategoryRecords(): Promise<AdminCategoryRecord[]> {
   const [categories, counts] = await Promise.all([
     getAllCategoryRecords(),
-    countListingsByCategory(undefined, { includeFixtures: true }),
+    countListingsByCategory(undefined),
   ]);
 
   return categories

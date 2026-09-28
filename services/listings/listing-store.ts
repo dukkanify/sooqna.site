@@ -23,6 +23,7 @@ import {
 import { repairPoorQualityListings } from "@/services/listings/listing-quality-repair";
 import {
   allowMockCatalogSeed,
+  isConfirmedFixtureListing,
 } from "@/services/listings/mock-catalog-policy";
 import { loadAdminListingRecords } from "@/services/listings/listing-queries";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
@@ -625,6 +626,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     features: media.features,
     negotiable: media.negotiable,
     isDemo: media.isDemo === true || media.source === SHOWCASE_SOURCE,
+    isFixture: isConfirmedFixtureListing(media),
     source: media.source,
   };
 }
@@ -634,11 +636,20 @@ export async function getAdminListingRecords(): Promise<AdminListingRecord[]> {
 }
 
 export async function getListingsModerationSummary() {
-  const listings = await getAllListings();
+  const { getMarketplaceListingStats } = await import(
+    "@/services/listings/listing-stats"
+  );
+  const stats = await getMarketplaceListingStats();
   return {
-    totalListings: listings.length,
-    pendingListings: listings.filter((item) => item.status === "pending_review").length,
-    activeListings: listings.filter((item) => item.status === "active").length,
-    featuredListings: listings.filter((item) => item.isFeatured).length,
+    totalListings: stats.totalListings,
+    pendingListings: stats.pendingListings,
+    activeListings: stats.activeListings,
+    featuredListings: stats.featuredListings,
+    rejectedListings: stats.rejectedListings,
+    draftListings: stats.draftListings,
+    expiredListings: stats.expiredListings,
+    soldListings: stats.soldListings,
+    demoListings: stats.demoListings,
+    fixtureListings: stats.fixtureListings,
   };
 }

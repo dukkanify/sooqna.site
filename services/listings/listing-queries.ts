@@ -372,14 +372,23 @@ export async function countMatchingListings(query: ListingQuery = {}): Promise<n
 }
 
 function countWhere(
-  status?: Listing["status"],
+  status?: Listing["status"] | Listing["status"][],
   includeFixtures?: boolean,
 ): { sql: string; values: unknown[] } {
   const where: string[] = [];
   const values: unknown[] = [];
   if (status) {
-    values.push(status);
-    where.push(`status = $${values.length}`);
+    const statuses = Array.isArray(status) ? status : [status];
+    if (statuses.length === 1) {
+      values.push(statuses[0]);
+      where.push(`status = $${values.length}`);
+    } else {
+      const placeholders = statuses.map((entry) => {
+        values.push(entry);
+        return `$${values.length}`;
+      });
+      where.push(`status IN (${placeholders.join(", ")})`);
+    }
   }
   if (includeFixtures !== true) {
     where.push(`NOT ${FIXTURE_LISTING_SQL}`);
@@ -391,8 +400,17 @@ function countWhere(
   };
 }
 
+function statusMatches(
+  listingStatus: Listing["status"],
+  status?: Listing["status"] | Listing["status"][],
+): boolean {
+  if (!status) return true;
+  if (Array.isArray(status)) return status.includes(listingStatus);
+  return listingStatus === status;
+}
+
 export async function countListingsByCategory(
-  status?: Listing["status"],
+  status?: Listing["status"] | Listing["status"][],
   options?: { includeFixtures?: boolean },
 ): Promise<Map<string, number>> {
   await ensureCatalogsForPublicRead();
@@ -422,15 +440,16 @@ export async function countListingsByCategory(
 
   const stored = await loadPersistedListings();
   for (const listing of stored) {
-    if (status && listing.status !== status) continue;
+    if (!statusMatches(listing.status, status)) continue;
     if (!includeFixtures && isHiddenFromPublicCatalog(listing)) continue;
     counts.set(listing.categoryId, (counts.get(listing.categoryId) ?? 0) + 1);
   }
   return counts;
 }
 
+/** Publicly visible counts — active + reserved, excluding fixtures/showcase. */
 export async function countActiveListingsByCategory(): Promise<Map<string, number>> {
-  return countListingsByCategory("active");
+  return countListingsByCategory(["active", "reserved"]);
 }
 
 const EMIRATE_NAME_TO_CITY_ID: Record<string, string> = {
@@ -482,7 +501,7 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
 
   const stored = await loadPersistedListings();
   for (const listing of stored) {
-    if (listing.status !== "active") continue;
+    if (listing.status !== "active" && listing.status !== "reserved") continue;
     if (isHiddenFromPublicCatalog(listing)) continue;
     add(listing.emirate ?? listing.city);
   }
@@ -521,7 +540,10 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
       const pool = await getOptionalPostgresPool();
       if (pool) {
         const result = await pool.query(
-          `SELECT seller_id, COUNT(*)::int AS c FROM ${TABLE} GROUP BY seller_id`,
+          `SELECT seller_id, COUNT(*)::int AS c
+           FROM ${TABLE}
+           WHERE NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}
+           GROUP BY seller_id`,
         );
         for (const row of result.rows) {
           counts.set(String(row.seller_id), Number(row.c) || 0);
@@ -535,6 +557,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
   }
   const stored = await loadPersistedListings();
   for (const listing of stored) {
+    if (isHiddenFromPublicCatalog(listing)) continue;
     counts.set(listing.seller.id, (counts.get(listing.seller.id) ?? 0) + 1);
   }
   return counts;
@@ -571,25 +594,32 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             END) ASC,
            COALESCE(posted_at, updated_at) DESC NULLS LAST`,
         );
-        return result.rows.map((row) => ({
-          id: String(row.id),
-          slug: String(row.slug),
-          title: String(row.title ?? ""),
-          sellerName: String(row.seller_name ?? ""),
-          sellerId: String(row.seller_id),
-          categoryId: String(row.category_id),
-          price: Number(row.price) || 0,
-          currency: String(row.currency ?? "AED"),
-          status: row.status as AdminListingRecord["status"],
-          isFeatured: Boolean(row.is_featured),
-          postedAt:
-            row.posted_at instanceof Date
-              ? row.posted_at.toISOString()
-              : String(row.posted_at ?? ""),
-          city: String(row.city ?? ""),
-          isDemo: Boolean(row.is_demo) || String(row.source ?? "") === SHOWCASE_SOURCE,
-          source: row.source ? String(row.source) : undefined,
-        }));
+        return result.rows.map((row) => {
+          const id = String(row.id);
+          const slug = String(row.slug);
+          return {
+            id,
+            slug,
+            title: String(row.title ?? ""),
+            sellerName: String(row.seller_name ?? ""),
+            sellerId: String(row.seller_id),
+            categoryId: String(row.category_id),
+            price: Number(row.price) || 0,
+            currency: String(row.currency ?? "AED"),
+            status: row.status as AdminListingRecord["status"],
+            isFeatured: Boolean(row.is_featured),
+            postedAt:
+              row.posted_at instanceof Date
+                ? row.posted_at.toISOString()
+                : String(row.posted_at ?? ""),
+            city: String(row.city ?? ""),
+            isDemo:
+              Boolean(row.is_demo) ||
+              String(row.source ?? "") === SHOWCASE_SOURCE,
+            isFixture: isConfirmedFixtureListing({ id, slug }),
+            source: row.source ? String(row.source) : undefined,
+          };
+        });
       }
     }
   } catch (error) {
@@ -613,11 +643,12 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
       postedAt: listing.postedAt ?? "",
       city: listing.city,
       isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
+      isFixture: isConfirmedFixtureListing(listing),
       source: listing.source,
     }))
     .sort((a, b) => {
-      const aDemo = a.isDemo ? 1 : 0;
-      const bDemo = b.isDemo ? 1 : 0;
+      const aDemo = a.isDemo || a.isFixture ? 1 : 0;
+      const bDemo = b.isDemo || b.isFixture ? 1 : 0;
       if (aDemo !== bDemo) return aDemo - bDemo;
       const aTime = Date.parse(a.postedAt) || 0;
       const bTime = Date.parse(b.postedAt) || 0;
