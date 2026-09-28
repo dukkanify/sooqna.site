@@ -14,9 +14,9 @@ export function MobilePreviewStrip({ listings }: MobilePreviewStripProps) {
 
   return (
     <section aria-label="معاينة السوق" className="mobile-home-featured">
-      <MobileSectionHeader actionHref="/featured" icon="grid" title="معاينة السوق" />
+      <MobileSectionHeader actionHref="/search" icon="grid" title="معاينة السوق" />
       <p className="px-[var(--mh-page-x)] pb-1 text-xs font-medium text-[var(--mh-muted)]">
-        إعلانات مميزة الآن — مختارة لك من سوقنا.
+        لمحة سريعة من إعلانات السوق — ليست قائمة المميزة المدفوعة.
       </p>
       <DragScrollRow className="mobile-home-featured__track mobile-home-scroll flex w-full max-w-full flex-nowrap overflow-x-auto overscroll-x-contain">
         {previews.map((listing) => (

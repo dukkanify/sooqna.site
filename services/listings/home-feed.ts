@@ -159,14 +159,9 @@ async function buildHomeFeed(): Promise<HomeFeed> {
     isListingFeaturedActive(listing),
   );
 
-  // Prefer featured pool first, then backfill from catalog so preview/featured stay full.
-  const featuredPool = [
-    ...activeFeatured,
-    ...catalogRows.filter((listing) => !activeFeatured.some((item) => item.id === listing.id)),
-  ];
-
-  const preview = takeDiverse(featuredPool, PREVIEW_SHOW, usedIds, usedCovers);
-  const featured = takeDiverse(featuredPool, FEATURED_SHOW, usedIds, usedCovers);
+  // Preview = market snapshot (any active). Featured = paid placements only — never backfill.
+  const preview = takeDiverse(catalogRows, PREVIEW_SHOW, usedIds, usedCovers);
+  const featured = takeDiverse(activeFeatured, FEATURED_SHOW, usedIds, usedCovers);
   const nearbySource = takeDiverse(catalogRows, NEARBY_SHOW, usedIds, usedCovers);
 
   const sections = sectionDefs.map((section) => ({
@@ -184,7 +179,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v16-seller-integrity"],
+  ["sooqna-home-feed-v17-featured-paid-only"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

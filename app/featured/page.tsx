@@ -1,33 +1,38 @@
-import { SearchResultsList } from "@/features/search/components/SearchResultsList";
+import type { Metadata } from "next";
+import { FeaturedListingsView } from "@/features/featured/FeaturedListingsView";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { getCategories } from "@/services/categories";
 import { getFeaturedListings } from "@/services/listings";
+import { getRequestLocale } from "@/shared/i18n/locale";
+import { localizedMetadata } from "@/shared/i18n/localized-metadata";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata({
+    title: "إعلانات مميزة",
+    description:
+      "تصفّح إعلانات سوقنا التي فعّل أصحابها باقة التمييز المدفوعة لظهور أوضح خلال مدة الباقة.",
+  });
+}
+
 export default async function FeaturedPage() {
-  const [categories, listings] = await Promise.all([
+  const [categories, listings, locale] = await Promise.all([
     getCategories(),
     getFeaturedListings(),
+    getRequestLocale(),
   ]);
 
   return (
     <>
       <SiteHeader />
       <main className="bg-background">
-        <section className="app-container page-padding">
-          <div className="mb-8">
-            <p className="text-xs font-bold text-[#B8955F]">إعلانات مميزة</p>
-            <h1 className="mt-1 text-2xl font-bold text-ink md:text-3xl">
-              أفضل العروض في الإمارات
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-              إعلانات مختارة بعناية من بائعين موثوقين مع ضمان مالي كامل.
-            </p>
-          </div>
-          <SearchResultsList categories={categories} listings={listings} />
-        </section>
+        <FeaturedListingsView
+          categories={categories}
+          listings={listings}
+          locale={locale}
+        />
       </main>
       <SiteFooter />
     </>

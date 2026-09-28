@@ -24,14 +24,14 @@ export function MarketPreviewStrip({
           <div>
             <p className="text-xs font-bold text-[#B8955F]">معاينة السوق</p>
             <h2 className="mt-1 text-xl font-bold text-ink md:text-2xl">
-              إعلانات مميزة الآن
+              لمحة من الإعلانات
             </h2>
           </div>
           <Link
             className="text-sm font-bold text-[#B8955F] hover:text-[#9a7d4a]"
-            href="/featured"
+            href="/search"
           >
-            عرض الكل
+            تصفّح السوق
           </Link>
         </div>
 
