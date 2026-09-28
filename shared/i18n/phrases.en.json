@@ -2742,5 +2742,8 @@
   "لمحة من الإعلانات": "A snapshot of listings",
   "تصفّح السوق": "Browse the marketplace",
   "لمحة سريعة من إعلانات السوق — ليست قائمة المميزة المدفوعة.": "A quick snapshot of marketplace listings — not the paid Featured list.",
-  "تصفّح إعلانات سوقنا التي فعّل أصحابها باقة التمييز المدفوعة لظهور أوضح خلال مدة الباقة.": "Browse Sooqna listings whose sellers activated the paid Featured package for clearer visibility during the package period."
+  "تصفّح إعلانات سوقنا التي فعّل أصحابها باقة التمييز المدفوعة لظهور أوضح خلال مدة الباقة.": "Browse Sooqna listings whose sellers activated the paid Featured package for clearer visibility during the package period.",
+  "السعر من – إلى": "Price from – to",
+  "أدخل الحد الأدنى والأقصى بالدرهم الإماراتي": "Enter the minimum and maximum in UAE dirhams (AED)",
+  "الحد الأدنى لا يمكن أن يتجاوز الحد الأعلى": "Minimum cannot exceed maximum"
 }

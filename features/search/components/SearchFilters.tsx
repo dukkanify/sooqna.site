@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import type { Category, City } from "@/types";
 import { Button } from "@/shared/ui/Button";
-import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -15,8 +14,10 @@ import {
   type SearchSuggestion,
 } from "./SearchTypeahead";
 import { CategorySmartFields } from "./CategorySmartFields";
+import { PriceRangeFields } from "./PriceRangeFields";
 import { sortByPopularity } from "@/services/search/search-popularity";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
+import { isPriceRangeInverted } from "@/features/search/lib/price-range";
 import {
   activeFilterCount,
   buildSearchUrl,
@@ -217,29 +218,12 @@ function FilterFields({
             onChange={setDraft}
             variant="essential"
           />
-          <p className="pt-0.5 text-[0.7rem] font-bold text-muted">السعر</p>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              compact={compact}
-              defaultValue={draft.minPrice}
-              inputMode="numeric"
-              label="السعر من"
-              min="0"
-              name="minPrice"
-              placeholder="0"
-              type="number"
-            />
-            <Input
-              compact={compact}
-              defaultValue={draft.maxPrice}
-              inputMode="numeric"
-              label="السعر إلى"
-              min="0"
-              name="maxPrice"
-              placeholder="أي سعر"
-              type="number"
-            />
-          </div>
+          <PriceRangeFields
+            compact={compact}
+            draft={draft}
+            easy
+            onChange={setDraft}
+          />
 
           <div className="rounded-2xl border border-border/80 bg-surface-muted/40">
             <button
@@ -344,28 +328,12 @@ function FilterFields({
               />
             ) : null}
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              compact={compact}
-              defaultValue={draft.minPrice}
-              inputMode="numeric"
-              label={easy ? "السعر من" : "من (د.إ)"}
-              min="0"
-              name="minPrice"
-              placeholder="0"
-              type="number"
-            />
-            <Input
-              compact={compact}
-              defaultValue={draft.maxPrice}
-              inputMode="numeric"
-              label={easy ? "السعر إلى" : "إلى (د.إ)"}
-              min="0"
-              name="maxPrice"
-              placeholder="أي سعر"
-              type="number"
-            />
-          </div>
+          <PriceRangeFields
+            compact={compact}
+            draft={draft}
+            easy={easy}
+            onChange={setDraft}
+          />
         </>
       )}
       <input name="country" type="hidden" value={draft.country ?? ""} />
@@ -411,6 +379,7 @@ export function SearchFilters({
 
   const appliedCount = activeFilterCount(selectedFilters);
   const resetHref = action.split("?")[0] || "/search";
+  const priceInvalid = isPriceRangeInverted(draft.minPrice, draft.maxPrice);
 
   const fieldProps: FilterFieldsProps = {
     categories,
@@ -422,12 +391,24 @@ export function SearchFilters({
     suggestions,
   };
 
+  const guardPriceSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (isPriceRangeInverted(draft.minPrice, draft.maxPrice)) {
+      event.preventDefault();
+    }
+  };
+
   const footer = (easy: boolean) => (
     <div className="grid grid-cols-2 gap-2">
       <Button href={resetHref} size="sm" type="button" variant="secondary">
         {easy ? "مسح الكل" : "إعادة تعيين"}
       </Button>
-      <Button className="motion-press w-full" size="sm" type="submit" variant="primary">
+      <Button
+        className="motion-press w-full"
+        disabled={priceInvalid}
+        size="sm"
+        type="submit"
+        variant="primary"
+      >
         {easy ? "عرض النتائج" : "تطبيق الفلاتر"}
       </Button>
     </div>
@@ -437,7 +418,11 @@ export function SearchFilters({
     return (
       <LocalizedTree>
         <div className="marketplace-panel p-5 md:p-6">
-          <form action={action} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <form
+            action={action}
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+            onSubmit={guardPriceSubmit}
+          >
             <FilterFields {...fieldProps} compact={false} />
             <div className="md:col-span-2 lg:col-span-4">{footer(false)}</div>
           </form>
@@ -480,7 +465,11 @@ export function SearchFilters({
                   <Icon name="close" size={16} />
                 </button>
               </div>
-              <form action={action} className="flex min-h-0 flex-1 flex-col">
+              <form
+                action={action}
+                className="flex min-h-0 flex-1 flex-col"
+                onSubmit={guardPriceSubmit}
+              >
                 <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-3">
                   <FilterFields {...fieldProps} easy />
                 </div>
@@ -544,7 +533,11 @@ export function SearchFilters({
       </div>
 
       <div className="marketplace-panel hidden max-h-[calc(100vh-6.5rem)] flex-col overflow-hidden p-0 md:flex">
-        <form action={action} className="flex min-h-0 flex-1 flex-col">
+        <form
+          action={action}
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={guardPriceSubmit}
+        >
           <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 pt-4">
             <h2 className="text-sm font-bold text-ink">صفِّ بحثك</h2>
             <p className="text-[11px] leading-5 text-muted">
