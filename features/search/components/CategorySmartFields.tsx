@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Category, CategoryFieldDefinition } from "@/types";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
@@ -15,6 +15,7 @@ import {
   subcategoryFilterLabel,
 } from "@/features/search/lib/category-filter-fields";
 import { setVehicleCatalogOverrides } from "@/shared/vehicles";
+import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 import type { SearchFilterState } from "./search-url";
 
 /** Cars search: keep make/model/year up front; tuck the rest under «المزيد». */
@@ -103,6 +104,19 @@ export function CategorySmartFields({
   const isCars = categoryId === "cars";
   const showMeta = variant === "full" || variant === "advanced";
   const showEmptyHint = variant !== "advanced";
+  const [popularityScores, setPopularityScores] = useState<Record<string, number>>(
+    {},
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchPopularityScores().then((scores) => {
+      if (!cancelled) setPopularityScores(scores);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (categoryId !== "cars") return;
@@ -205,7 +219,15 @@ export function CategorySmartFields({
           const labels = rangeLabels(field);
           const yearOptions =
             field.key === "year"
-              ? [{ label: "أي", value: "" }, ...optionsForSearchField(categoryId, field, specs)]
+              ? [
+                  { label: "أي", value: "" },
+                  ...optionsForSearchField(
+                    categoryId,
+                    field,
+                    specs,
+                    popularityScores,
+                  ),
+                ]
               : null;
           return (
             <div key={field.key} className="grid grid-cols-2 gap-2">
@@ -264,7 +286,12 @@ export function CategorySmartFields({
           );
         }
 
-        const options = optionsForSearchField(categoryId, field, specs);
+        const options = optionsForSearchField(
+          categoryId,
+          field,
+          specs,
+          popularityScores,
+        );
         const value = specs[field.key] ?? "";
         const name = `spec_${field.key}`;
         const modelLocked = field.key === "model" && !specs.brand;

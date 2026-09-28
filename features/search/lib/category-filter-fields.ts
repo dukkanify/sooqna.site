@@ -3,6 +3,10 @@ import { getCategoryFields } from "@/shared/constants/category-fields";
 import { getBrandOptionsForCategory } from "@/shared/constants/product-brands";
 import { getModelsForBrand } from "@/shared/constants/product-brand-models";
 import { vehicleYearOptions } from "@/shared/vehicles";
+import {
+  mergePopularityScores,
+  sortByPopularity,
+} from "@/services/search/search-popularity";
 
 export const SEARCH_YEAR_OPTIONS: CategoryFieldOption[] = vehicleYearOptions();
 
@@ -95,16 +99,29 @@ export function optionsForSearchField(
   categoryId: string,
   field: CategoryFieldDefinition,
   specs: Record<string, string>,
+  popularityScores?: Record<string, number>,
 ): CategoryFieldOption[] {
+  const scores = popularityScores ?? mergePopularityScores();
   if (field.key === "brand") {
     const brands = getBrandOptionsForCategory(categoryId);
-    if (brands.length > 0) return brands;
+    if (brands.length > 0) {
+      return sortByPopularity(brands, (option) => option.value, scores, "brand");
+    }
   }
   if (field.key === "model" && (categoryId === "cars" || categoryId === "mobiles" || categoryId === "electronics")) {
     return getModelsForBrand(categoryId, specs.brand);
   }
   if (field.key === "year") return SEARCH_YEAR_OPTIONS;
-  return field.options ?? [];
+  const options = field.options ?? [];
+  if (options.length > 1 && field.type === "select") {
+    return sortByPopularity(
+      options,
+      (option) => `${field.key}:${option.value}`,
+      scores,
+      "spec",
+    );
+  }
+  return options;
 }
 
 export function subcategoryFilterLabel(categoryId: string): string {

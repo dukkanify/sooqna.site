@@ -1,6 +1,7 @@
 import { BRAND } from "@/shared/constants/brand";
 import type { AppLocale } from "@/shared/i18n/locale";
 import { getEmirateImageUrl, heroBackgroundUrl } from "@/shared/constants/image-fallbacks";
+import type { HeroPillKey } from "@/services/search/search-popularity";
 
 export type MarketEscrowStep = {
   description: string;
@@ -10,6 +11,7 @@ export type MarketEscrowStep = {
 
 export type MarketQuickSearch = {
   href: string;
+  key: HeroPillKey;
   label: string;
 };
 
@@ -18,31 +20,36 @@ export async function getMarketHeroBackground(): Promise<string> {
 }
 
 const QUICK_SEARCHES_AR: MarketQuickSearch[] = [
-  { href: "/search?q=مرسيدس", label: "مرسيدس" },
-  { href: "/search?q=باترول", label: "باترول" },
-  { href: "/search?q=جزيرة+ياس", label: "جزيرة ياس" },
-  { href: "/search?q=كورنيش+أبوظبي", label: "كورنيش أبوظبي" },
-  { href: "/search?q=شقة", label: "شقة" },
-  { href: "/search?q=فيلا", label: "فيلا" },
-  { href: "/search?q=آيفون", label: "آيفون" },
-  { href: "/search?q=مكتب", label: "مكتب" },
-  { href: "/search?q=ماك+بوك", label: "ماك بوك" },
-  { href: "/search?q=لاند+كروزر", label: "لاند كروزر" },
+  { key: "mercedes", href: "/search?q=مرسيدس", label: "مرسيدس" },
+  { key: "patrol", href: "/search?q=باترول", label: "باترول" },
+  { key: "yas-island", href: "/search?q=جزيرة+ياس", label: "جزيرة ياس" },
+  { key: "abu-dhabi-corniche", href: "/search?q=كورنيش+أبوظبي", label: "كورنيش أبوظبي" },
+  { key: "apartment", href: "/search?q=شقة", label: "شقة" },
+  { key: "villa", href: "/search?q=فيلا", label: "فيلا" },
+  { key: "iphone", href: "/search?q=آيفون", label: "آيفون" },
+  { key: "office", href: "/search?q=مكتب", label: "مكتب" },
+  { key: "macbook", href: "/search?q=ماك+بوك", label: "ماك بوك" },
+  { key: "land-cruiser", href: "/search?q=لاند+كروزر", label: "لاند كروزر" },
 ];
 
 const QUICK_SEARCHES_EN: MarketQuickSearch[] = [
-  { href: "/search?q=Mercedes", label: "Mercedes" },
-  { href: "/search?q=Patrol", label: "Patrol" },
-  { href: "/search?q=Yas+Island", label: "Yas Island" },
-  { href: "/search?q=Abu+Dhabi+Corniche", label: "Abu Dhabi Corniche" },
-  { href: "/search?q=Apartment", label: "Apartment" },
-  { href: "/search?q=Villa", label: "Villa" },
-  { href: "/search?q=iPhone", label: "iPhone" },
-  { href: "/search?q=Office", label: "Office" },
-  { href: "/search?q=MacBook", label: "MacBook" },
-  { href: "/search?q=Land+Cruiser", label: "Land Cruiser" },
+  { key: "mercedes", href: "/search?q=Mercedes", label: "Mercedes" },
+  { key: "patrol", href: "/search?q=Patrol", label: "Patrol" },
+  { key: "yas-island", href: "/search?q=Yas+Island", label: "Yas Island" },
+  {
+    key: "abu-dhabi-corniche",
+    href: "/search?q=Abu+Dhabi+Corniche",
+    label: "Abu Dhabi Corniche",
+  },
+  { key: "apartment", href: "/search?q=Apartment", label: "Apartment" },
+  { key: "villa", href: "/search?q=Villa", label: "Villa" },
+  { key: "iphone", href: "/search?q=iPhone", label: "iPhone" },
+  { key: "office", href: "/search?q=Office", label: "Office" },
+  { key: "macbook", href: "/search?q=MacBook", label: "MacBook" },
+  { key: "land-cruiser", href: "/search?q=Land+Cruiser", label: "Land Cruiser" },
 ];
 
+/** Static catalog — rank via `rankMarketQuickSearches` on the server. */
 export async function getMarketQuickSearches(
   locale: AppLocale = "ar",
 ): Promise<MarketQuickSearch[]> {

@@ -15,6 +15,8 @@ import {
   type SearchSuggestion,
 } from "./SearchTypeahead";
 import { CategorySmartFields } from "./CategorySmartFields";
+import { sortByPopularity } from "@/services/search/search-popularity";
+import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 import {
   activeFilterCount,
   buildSearchUrl,
@@ -102,6 +104,25 @@ function FilterFields({
   const isCars = (draft.category || selectedCategory?.id) === "cars";
   const useEasyCars = (easy || carsGrouped) && isCars;
   const [moreOpen, setMoreOpen] = useState(() => hasAdvancedDraft(draft));
+  const [scores, setScores] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchPopularityScores().then((next) => {
+      if (!cancelled) setScores(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const rankedCities = sortByPopularity(cities, (city) => city.name, scores, "city");
+  const rankedCategories = sortByPopularity(
+    categories,
+    (category) => category.id,
+    scores,
+    "category",
+  );
 
   return (
     <>
@@ -137,7 +158,10 @@ function FilterFields({
           }
           options={[
             { label: "جميع الإمارات", value: "" },
-            ...cities.map((city) => ({ label: city.name, value: city.name })),
+            ...rankedCities.map((city) => ({
+              label: city.name,
+              value: city.name,
+            })),
           ]}
           value={draft.city ?? ""}
         />
@@ -158,7 +182,7 @@ function FilterFields({
             }
             options={[
               { label: "كل التصنيفات", value: "" },
-              ...categories.map((category) => ({
+              ...rankedCategories.map((category) => ({
                 label: t(category.name),
                 value: category.id,
               })),

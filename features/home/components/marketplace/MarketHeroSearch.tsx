@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Category } from "@/types";
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { Icon } from "@/shared/ui/Icon";
@@ -12,6 +12,8 @@ import {
 } from "@/features/home/shared/home-search-fields";
 import { SearchTypeahead } from "@/features/search/components/SearchTypeahead";
 import { SMART_SEARCH_INPUT_ID } from "@/features/search/focus-smart-search";
+import { sortByPopularity } from "@/services/search/search-popularity";
+import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 
 type MarketHeroSearchProps = {
   categories: Category[];
@@ -24,6 +26,25 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
   const priceOptions = getHomeSearchPriceOptions(locale);
   const [category, setCategory] = useState("");
   const [city, setCity] = useState("");
+  const [scores, setScores] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchPopularityScores().then((next) => {
+      if (!cancelled) setScores(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const rankedCategories = sortByPopularity(
+    categories,
+    (item) => item.id,
+    scores,
+    "category",
+  );
+  const rankedCities = sortByPopularity(cities, (item) => item.name, scores, "city");
 
   return (
     <form action="/search" className="market-hero-search" data-search-anchor data-no-tx>
@@ -64,7 +85,7 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
                 value={category}
               >
                 <option value="">{labels.categoryAll}</option>
-                {categories.map((item) => (
+                {rankedCategories.map((item) => (
                   <option key={item.id} value={item.id}>
                     {locale === "en" ? txLocation(locale, item.name) : item.name}
                   </option>
@@ -90,7 +111,7 @@ export function MarketHeroSearch({ categories }: MarketHeroSearchProps) {
                 value={city}
               >
                 <option value="">{labels.cityAll}</option>
-                {cities.map((item) => (
+                {rankedCities.map((item) => (
                   <option key={item.id} value={item.name}>
                     {txLocation(locale, item.name)}
                   </option>
