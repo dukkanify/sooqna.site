@@ -40,13 +40,14 @@ export function showsEscrowProtection(listing: Listing): boolean {
 }
 
 /**
- * "Regular listing — no escrow" notice: only when escrow could apply to the
- * category but this listing is not under platform escrow protection.
- * Never show for contact-only categories where escrow does not exist.
+ * Negative «إعلان عادي — بدون ضمان مالي» copy must never appear.
+ * If escrow is not active on the listing, show no escrow-status phrase at all
+ * (avoids implying escrow is an option the buyer could have chosen).
+ * Positive escrow messaging stays on `showsEscrowProtection` / EscrowProtectionCard.
  */
-export function showsNonEscrowIntermediaryNotice(listing: Listing): boolean {
-  if (showsEscrowProtection(listing)) return false;
-  return listingCategorySupportsEscrow(listing);
+export function showsNonEscrowIntermediaryNotice(_listing?: Listing): boolean {
+  void _listing;
+  return false;
 }
 
 /**
