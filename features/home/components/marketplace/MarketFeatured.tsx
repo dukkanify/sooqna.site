@@ -20,8 +20,8 @@ export function MarketFeatured({ categories, listings }: MarketFeaturedProps) {
     <MarketSectionShell variant="white">
       <MarketSectionHeader
         actionHref="/featured"
-        actionLabel="عرض جميع الإعلانات"
-        description="إعلانات مختارة من سوقنا — صور حقيقية وأسعار واضحة من بائعين موثوقين."
+        actionLabel="عرض كل المميزة"
+        description="إعلانات فعّل أصحابها باقة التمييز — ظهور أوضح خلال مدة الباقة."
         eyebrow="مميز"
         title="إعلانات مميزة"
       />

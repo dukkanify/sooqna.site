@@ -2729,5 +2729,18 @@
   "هل تريد إرسال الإعلان للمراجعة؟ سيراجعه فريق سوقنا قبل ظهوره في البحث.": "Submit this listing for review? Sooqna’s team will review it before it appears in search.",
   "ستُوجَّه لبوابة الدفع لتفعيل التمييز بعد حفظ الإعلان. هل تريد المتابعة؟": "You’ll be sent to the payment gateway to activate featuring after the listing is saved. Continue?",
   "مثال: تويوتا كامري 2022 بحالة ممتازة": "Example: Toyota Camry 2022 in excellent condition",
-  "تم حفظ الإعلان كمسودة. يمكنك إكماله لاحقاً من هنا.": "Listing saved as a draft. You can finish it later from here."
+  "تم حفظ الإعلان كمسودة. يمكنك إكماله لاحقاً من هنا.": "Listing saved as a draft. You can finish it later from here.",
+  "هنا تظهر فقط الإعلانات التي فعّل أصحابها باقة التمييز المدفوعة — لظهور أوضح في سوقنا خلال مدة الباقة. ليست قائمة «أفضل العروض» العامة، ولا تعني أن كل إعلان مشمول بالضمان المالي.": "Only listings whose sellers activated the paid Featured package appear here — for clearer visibility on Sooqna during the package period. This is not a general “best offers” list, and it does not mean every listing includes escrow.",
+  "ميّز إعلانك": "Feature your ad",
+  "تصفّح كل الإعلانات": "Browse all listings",
+  "لا إعلانات مميزة حالياً": "No featured listings right now",
+  "لا توجد إعلانات مميزة نشطة": "No active featured listings",
+  "عندما يدفع بائع باقة التمييز، يظهر إعلانه هنا طوال مدة الباقة. يمكنك تصفّح السوق كاملاً أو تمييز أحد إعلاناتك.": "When a seller pays for the Featured package, their listing appears here for the package duration. You can browse the full marketplace or feature one of your ads.",
+  "ميّز إعلانك من لوحة التحكم": "Feature your ad from the dashboard",
+  "عرض كل المميزة": "See all featured",
+  "إعلانات فعّل أصحابها باقة التمييز — ظهور أوضح خلال مدة الباقة.": "Listings whose sellers activated the Featured package — clearer visibility for the package duration.",
+  "لمحة من الإعلانات": "A snapshot of listings",
+  "تصفّح السوق": "Browse the marketplace",
+  "لمحة سريعة من إعلانات السوق — ليست قائمة المميزة المدفوعة.": "A quick snapshot of marketplace listings — not the paid Featured list.",
+  "تصفّح إعلانات سوقنا التي فعّل أصحابها باقة التمييز المدفوعة لظهور أوضح خلال مدة الباقة.": "Browse Sooqna listings whose sellers activated the paid Featured package for clearer visibility during the package period."
 }
