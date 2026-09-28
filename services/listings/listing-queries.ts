@@ -32,6 +32,7 @@ import {
   isShowcaseListing,
 } from "@/shared/listings/showcase-listing";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
+import { applyListingViewCounts } from "@/services/listings/listing-views-store";
 
 const TABLE = "marketplace_listings";
 
@@ -162,7 +163,8 @@ async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
     typeof query.limit === "number"
       ? sorted.slice(offset, offset + query.limit)
       : sorted.slice(offset);
-  return limited.map((listing) => applySlim(listing, query.slim));
+  const withViews = await applyListingViewCounts(limited);
+  return withViews.map((listing) => applySlim(listing, query.slim));
 }
 
 function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: string[] } {
@@ -320,7 +322,8 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
             !shouldExcludeFixtures(query) || !isHiddenFromPublicCatalog(listing),
         ),
     );
-    return rows.map((listing) => applySlim(listing, query.slim));
+    const withViews = await applyListingViewCounts(rows);
+    return withViews.map((listing) => applySlim(listing, query.slim));
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {
       markPostgresUnavailable(error);

@@ -163,7 +163,11 @@ async function loadListingsUncached(): Promise<Listing[]> {
 
 /** Request-deduped catalog read for RSC trees. */
 export const getAllListings = cache(async (): Promise<Listing[]> => {
-  return loadListingsUncached();
+  const listings = await loadListingsUncached();
+  const { applyListingViewCounts } = await import(
+    "@/services/listings/listing-views-store"
+  );
+  return applyListingViewCounts(listings);
 });
 
 /** Sync read for checkout resolvers — uses cache; empty when cold. */
@@ -179,8 +183,13 @@ export function getListingSync(idOrSlug: string): Listing | undefined {
 }
 
 export async function getListingById(id: string): Promise<Listing | undefined> {
+  const { applyListingViewCount } = await import(
+    "@/services/listings/listing-views-store"
+  );
   const persisted = await loadListingById(id).catch(() => null);
-  if (persisted) return sanitizeListingMediaFields(persisted);
+  if (persisted) {
+    return applyListingViewCount(sanitizeListingMediaFields(persisted));
+  }
   const listings = await getAllListings();
   const found = listings.find((listing) => listing.id === id || listing.slug === id);
   return found ? sanitizeListingMediaFields(found) : undefined;

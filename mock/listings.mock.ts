@@ -81,7 +81,7 @@ function buildListing(seed: ListingSeed): Listing {
     isFeatured: seed.featured,
     isPremium: seed.premium,
     isUrgent: seed.urgent ?? (seed.featured && idNum % 5 === 1),
-    views: seed.views,
+    views: 0,
     images,
     imageUrl: images[0],
     seller,
