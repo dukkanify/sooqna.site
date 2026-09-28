@@ -1750,7 +1750,8 @@ function buildListing(def: SeedDef, index: number): Listing {
     isFeatured: Boolean(def.featured),
     featuredUntil,
     isPremium: Boolean(def.featured),
-    views: 120 + ((index * 37) % 2400),
+    // Real visit counts come from listing-views-store (not seeded demos).
+    views: 0,
     images,
     imageUrl: images[0],
     seller: { ...seller },

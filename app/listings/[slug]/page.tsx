@@ -5,6 +5,7 @@ import {
   RecentlyViewedSection,
   RecentlyViewedTracker,
 } from "@/features/listings/components/RecentlyViewedSection";
+import { RecordListingView } from "@/features/listings/components/RecordListingView";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { getCategories } from "@/services/categories";
@@ -101,10 +102,16 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
   ]);
   const category = categories.find((item) => item.id === visible.categoryId);
 
+  const isOwner = Boolean(session && session.id === visible.seller.id);
+
   return (
     <>
       <SiteHeader />
       <RecentlyViewedTracker listing={visible} />
+      <RecordListingView
+        enabled={!isPreview && !isOwner}
+        listingId={visible.id}
+      />
       <main className="pb-44 lg:pb-0">
         <ListingDetailsView
           breadcrumbs={[

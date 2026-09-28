@@ -8,6 +8,7 @@ import {
   getAllListings,
   getListingBySlug as getStoredListingBySlug,
 } from "@/services/listings/listing-store";
+import { applyListingViewCount } from "@/services/listings/listing-views-store";
 
 export type { ListingSearchFilters };
 
@@ -46,7 +47,7 @@ export async function getListingBySlug(
   }
   const copy = { ...listing };
   delete copy.isUrgent;
-  return copy;
+  return applyListingViewCount(copy);
 }
 
 export const getFeaturedListings = cache(async (): Promise<Listing[]> => {
