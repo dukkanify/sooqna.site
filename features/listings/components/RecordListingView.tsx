@@ -12,7 +12,8 @@ const SESSION_PREFIX = "sooqna-listing-view:";
 
 /**
  * Counts one real visit per browser session for a public listing page.
- * Deduped in sessionStorage so refresh / back-nav does not inflate views.
+ * Client: sessionStorage dedupe. Server: httpOnly cookie + IP window +
+ * automated UA rejection (see /api/listings/view).
  */
 export function RecordListingView({
   listingId,
