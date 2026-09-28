@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { Category } from "@/types";
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { DragScrollRow } from "@/shared/components/DragScrollRow";
+import { sortByPopularity } from "@/services/search/search-popularity";
+import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 import {
   buildSearchUrl,
   mergeSearchFilters,
@@ -63,6 +66,26 @@ export function SearchQuickFilters({
   selectedFilters,
 }: SearchQuickFiltersProps) {
   const cities = useMarketplaceLocations();
+  const [scores, setScores] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchPopularityScores().then((next) => {
+      if (!cancelled) setScores(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const rankedCities = sortByPopularity(cities, (city) => city.name, scores, "city");
+  const rankedCategories = sortByPopularity(
+    categories,
+    (category) => category.id,
+    scores,
+    "category",
+  );
+
   const hrefFor = (patch: Partial<SearchFilterState>) =>
     buildSearchUrl(mergeSearchFilters(selectedFilters, patch), undefined, basePath);
 
@@ -72,7 +95,7 @@ export function SearchQuickFilters({
       active: !selectedFilters.city,
       href: hrefFor({ city: "", area: "" }),
     },
-    ...cities.map((city) => ({
+    ...rankedCities.map((city) => ({
       label: city.name,
       active: selectedFilters.city === city.name,
       href: hrefFor({
@@ -115,7 +138,7 @@ export function SearchQuickFilters({
             subcategory: "",
           }),
         },
-        ...categories.slice(0, 8).map((category) => ({
+        ...rankedCategories.slice(0, 8).map((category) => ({
           label: category.name,
           active: selectedFilters.category === category.id,
           href: hrefFor({

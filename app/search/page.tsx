@@ -78,7 +78,13 @@ export default async function SearchPage({
   return (
     <>
       <SiteHeader />
-      <RecordRecentSearch query={selectedFilters.query} />
+      <RecordRecentSearch
+        brand={selectedFilters.specs?.brand}
+        category={selectedFilters.category}
+        city={selectedFilters.city}
+        query={selectedFilters.query}
+        specs={selectedFilters.specs}
+      />
       <main className="bg-background">
         <section className="app-container page-padding pb-28 lg:pb-8">
           <div className="mb-5">

@@ -4,6 +4,7 @@ import {
   getMarketHeroBackground,
   getMarketQuickSearches,
 } from "@/services/content/homepage-marketplace.content";
+import { rankMarketQuickSearches } from "@/services/content/rank-market-quick-searches";
 import { MarketHeroCopy } from "./MarketHeroCopy";
 import { MarketHeroPills } from "./MarketHeroPills";
 import { MarketHeroSearch } from "./MarketHeroSearch";
@@ -13,10 +14,14 @@ type MarketHeroProps = {
 };
 
 export async function MarketHero({ categories }: MarketHeroProps) {
-  const [backgroundUrl, searchesAr, searchesEn] = await Promise.all([
+  const [backgroundUrl, rawAr, rawEn] = await Promise.all([
     getMarketHeroBackground(),
     getMarketQuickSearches("ar"),
     getMarketQuickSearches("en"),
+  ]);
+  const [searchesAr, searchesEn] = await Promise.all([
+    rankMarketQuickSearches(rawAr),
+    rankMarketQuickSearches(rawEn),
   ]);
 
   return (
