@@ -4,10 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "@/shared/i18n/useLocale";
 import type { MarketQuickSearch } from "@/services/content/homepage-marketplace.content";
-import {
-  mergePopularityScores,
-  sortByPopularity,
-} from "@/services/search/search-popularity";
+import { sortByPopularity } from "@/services/search/search-popularity";
 import {
   fetchPopularityScores,
   recordHeroPillClick,
@@ -36,13 +33,9 @@ export function MarketHeroPills({ searchesAr, searchesEn }: MarketHeroPillsProps
   }, []);
 
   const searches = useMemo(() => {
+    // API already returns seed + live merged scores.
     if (!liveScores) return base;
-    return sortByPopularity(
-      base,
-      (item) => item.key,
-      mergePopularityScores(liveScores),
-      "pill",
-    );
+    return sortByPopularity(base, (item) => item.key, liveScores, "pill");
   }, [base, liveScores]);
 
   return (
