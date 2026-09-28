@@ -53,6 +53,15 @@ export const POPULARITY_SEEDS: Record<string, number> = {
   "brand:land-rover": 95,
   "brand:apple": 120,
   "brand:samsung": 100,
+
+  // City filter keys = normalizePopularityKey(Arabic display name).
+  "city:دبي": 180,
+  "city:أبوظبي": 150,
+  "city:الشارقة": 120,
+  "city:عجمان": 70,
+  "city:رأس-الخيمة": 55,
+  "city:الفجيرة": 45,
+  "city:أم-القيوين": 35,
 };
 
 const PILL_ALIASES: Record<string, HeroPillKey> = {
@@ -105,10 +114,23 @@ export function resolveHeroPillKey(labelOrQuery: string): HeroPillKey | null {
   return null;
 }
 
+/**
+ * Combine UAE marketplace seeds with durable live hit counts.
+ * Live counters are increments on top of seeds — they must not replace
+ * the baseline (otherwise the first click would demote a seeded brand
+ * from e.g. 140 → 1).
+ */
 export function mergePopularityScores(
   live: Record<string, number> = {},
 ): Record<string, number> {
-  return { ...POPULARITY_SEEDS, ...live };
+  const merged: Record<string, number> = { ...POPULARITY_SEEDS };
+  for (const [id, count] of Object.entries(live)) {
+    if (typeof count !== "number" || !Number.isFinite(count) || count <= 0) {
+      continue;
+    }
+    merged[id] = (POPULARITY_SEEDS[id] ?? 0) + Math.floor(count);
+  }
+  return merged;
 }
 
 export function scoreFor(
