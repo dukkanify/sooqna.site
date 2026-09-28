@@ -58,7 +58,7 @@ export const CATEGORY_FEATURE_PROFILES: CategoryFeatureProfileMeta[] = [
     id: "vehicles",
     label: "مركبات",
     description: "سيارات ومركبات — تواصل مع البائع بدون شراء أونلاين.",
-    capabilities: ["تواصل مع البائع", "حقول ماركة/موديل", "بدون ضمان مالي"],
+    capabilities: ["تواصل مع البائع", "حقول ماركة/موديل", "معاينة مع البائع"],
     defaultIcon: "car",
     formTemplateId: "cars",
     primaryAction: "CONTACT_SELLER",

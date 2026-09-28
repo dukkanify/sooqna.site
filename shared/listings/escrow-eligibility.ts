@@ -1,5 +1,9 @@
 import type { Listing } from "@/types";
 import type { Order } from "@/types/domain/order";
+import {
+  getCategoryFeatureProfileMeta,
+  resolveCategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
 import { getListingActionConfig } from "@/shared/constants/listingActionConfig";
 import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 
@@ -14,12 +18,35 @@ export function hasPlatformCheckout(listing: Listing): boolean {
 }
 
 /**
+ * True when this listing's category/profile can use escrow at all
+ * (goods / retail food). Cars, real estate, jobs, services, etc. return false.
+ */
+export function listingCategorySupportsEscrow(listing: Listing): boolean {
+  const profile = resolveCategoryFeatureProfile(
+    listing.categoryId,
+    listing.featureProfile,
+  );
+  if (getCategoryFeatureProfileMeta(profile).escrowEligible) return true;
+  return isPurchasableCategory(listing.categoryId, listing.featureProfile);
+}
+
+/**
  * Escrow protection applies only when the listing is eligible AND
  * the buyer completes payment fully through the integrated checkout.
  */
 export function showsEscrowProtection(listing: Listing): boolean {
   const config = getListingActionConfig(listing);
   return config.checkoutEnabled && isListingEscrowEligible(listing);
+}
+
+/**
+ * "Regular listing — no escrow" notice: only when escrow could apply to the
+ * category but this listing is not under platform escrow protection.
+ * Never show for contact-only categories where escrow does not exist.
+ */
+export function showsNonEscrowIntermediaryNotice(listing: Listing): boolean {
+  if (showsEscrowProtection(listing)) return false;
+  return listingCategorySupportsEscrow(listing);
 }
 
 /**
