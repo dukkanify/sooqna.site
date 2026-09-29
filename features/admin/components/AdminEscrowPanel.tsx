@@ -14,6 +14,7 @@ import {
   productVerificationStatusLabel,
 } from "@/services/activity/activity-labels";
 import { getSessionUser } from "@/services/storage";
+import { AdminOrderInlineDesk } from "@/features/admin/components/AdminOrderInlineDesk";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
@@ -21,7 +22,6 @@ import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
-import { Textarea } from "@/shared/ui/Textarea";
 
 type EscrowFilter = "held" | "all" | "released" | "refunded";
 
@@ -53,7 +53,7 @@ export function AdminEscrowPanel() {
   const [filter, setFilter] = useState<EscrowFilter>("held");
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deskId, setDeskId] = useState<string | null>(null);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{
     text: string;
@@ -147,7 +147,6 @@ export function AdminEscrowPanel() {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setMessage({ variant: "success", text: "تم استرداد الطلب." });
-        setExpandedId(null);
         load();
       } else {
         setMessage({
@@ -213,9 +212,9 @@ export function AdminEscrowPanel() {
         <ul className="admin-boxes__grid">
           {filtered.map((order) => {
             const held = isHeld(order);
-            const expanded = expandedId === order.id;
+            const deskOpen = deskId === order.id;
             return (
-              <li key={order.id} className="admin-boxes__card">
+              <li key={order.id} className="admin-boxes__card admin-boxes__card--wide">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="admin-ops__queue-label">{order.listingTitle}</p>
@@ -253,59 +252,45 @@ export function AdminEscrowPanel() {
 
                 <div className="admin-boxes__card-actions">
                   <Button
-                    href={`/orders/${order.id}`}
+                    aria-expanded={deskOpen}
+                    onClick={() =>
+                      setDeskId((prev) => (prev === order.id ? null : order.id))
+                    }
                     size="sm"
+                    type="button"
                     variant="secondary"
                   >
-                    عرض
+                    {deskOpen ? "إخفاء المكتب" : "مكتب الطلب"}
                   </Button>
                   {held ? (
-                    <>
-                      <Button
-                        loading={busyId === order.id}
-                        onClick={() => handleRelease(order.id)}
-                        size="sm"
-                        type="button"
-                      >
-                        تحرير للبائع
-                      </Button>
-                      <Button
-                        onClick={() =>
-                          setExpandedId(expanded ? null : order.id)
-                        }
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        {expanded ? "إخفاء" : "استرداد"}
-                      </Button>
-                    </>
+                    <Button
+                      loading={busyId === order.id}
+                      onClick={() => handleRelease(order.id)}
+                      size="sm"
+                      type="button"
+                    >
+                      تحرير للبائع
+                    </Button>
                   ) : null}
                 </div>
 
-                {expanded && held ? (
-                  <div className="mt-3 grid gap-2">
-                    <Textarea
-                      label="سبب الاسترداد (اختياري)"
-                      onChange={(e) =>
-                        setReasonDrafts((prev) => ({
-                          ...prev,
-                          [order.id]: e.target.value,
-                        }))
-                      }
-                      rows={2}
-                      value={reasonDrafts[order.id] ?? ""}
-                    />
-                    <Button
-                      loading={busyId === order.id}
-                      onClick={() => handleRefund(order.id)}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      تأكيد الاسترداد
-                    </Button>
-                  </div>
+                {deskOpen ? (
+                  <AdminOrderInlineDesk
+                    busy={busyId === order.id}
+                    locale={locale}
+                    onReasonChange={(value) =>
+                      setReasonDrafts((prev) => ({
+                        ...prev,
+                        [order.id]: value,
+                      }))
+                    }
+                    onRefund={() => handleRefund(order.id)}
+                    onRelease={() => handleRelease(order.id)}
+                    order={order}
+                    reasonDraft={reasonDrafts[order.id] ?? ""}
+                    showRefund={held && order.status !== "refunded"}
+                    showRelease={held}
+                  />
                 ) : null}
               </li>
             );

@@ -16,6 +16,7 @@ import {
 } from "@/services/activity/activity-labels";
 import { orderRequiresProductConditionVerification } from "@/shared/listings/escrow-eligibility";
 import { getSessionUser } from "@/services/storage";
+import { AdminOrderInlineDesk } from "@/features/admin/components/AdminOrderInlineDesk";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
@@ -23,7 +24,6 @@ import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
-import { Textarea } from "@/shared/ui/Textarea";
 
 const customerTypeLabels: Record<NonNullable<Order["customerType"]>, string> = {
   registered: "مستخدم مسجّل",
@@ -121,7 +121,7 @@ export function AdminOrdersPanel() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deskId, setDeskId] = useState<string | null>(null);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{
     text: string;
@@ -195,7 +195,6 @@ export function AdminOrdersPanel() {
           prev.map((order) => (order.id === orderId ? data.order : order)),
         );
         setMessage({ variant: "success", text: "تم استرداد الطلب." });
-        setExpandedId(null);
       } else {
         setMessage({
           variant: "error",
@@ -278,7 +277,7 @@ export function AdminOrdersPanel() {
             const held = isHeld(order);
             const evidenceMissing = needsEvidence(order);
             const proofUrls = order.sellerProofUrls ?? [];
-            const expanded = expandedId === order.id;
+            const deskOpen = deskId === order.id;
             return (
               <li key={order.id} className="admin-boxes__card admin-boxes__card--wide">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -335,11 +334,15 @@ export function AdminOrdersPanel() {
 
                 <div className="admin-boxes__card-actions">
                   <Button
-                    href={`/orders/${order.id}`}
+                    aria-expanded={deskOpen}
+                    onClick={() =>
+                      setDeskId((prev) => (prev === order.id ? null : order.id))
+                    }
                     size="sm"
+                    type="button"
                     variant="secondary"
                   >
-                    عرض
+                    {deskOpen ? "إخفاء المكتب" : "مكتب الطلب"}
                   </Button>
                   {held ? (
                     <Button
@@ -351,62 +354,26 @@ export function AdminOrdersPanel() {
                       تحرير ضمان
                     </Button>
                   ) : null}
-                  {order.status !== "refunded" ? (
-                    <Button
-                      onClick={() =>
-                        setExpandedId(expanded ? null : order.id)
-                      }
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      {expanded ? "إخفاء الاسترداد" : "استرداد"}
-                    </Button>
-                  ) : null}
                 </div>
 
-                {expanded && order.status !== "refunded" ? (
-                  <div className="mt-3 grid gap-2">
-                    <Textarea
-                      label="سبب الاسترداد (اختياري — يظهر في السجل)"
-                      onChange={(e) =>
-                        setReasonDrafts((prev) => ({
-                          ...prev,
-                          [order.id]: e.target.value,
-                        }))
-                      }
-                      rows={2}
-                      value={reasonDrafts[order.id] ?? ""}
-                    />
-                    {proofUrls.length > 0 ? (
-                      <ul className="grid gap-1">
-                        {proofUrls.map((url) => (
-                          <li key={url}>
-                            <a
-                              className="admin-ops__text-link"
-                              href={url}
-                              rel="noreferrer"
-                              target="_blank"
-                            >
-                              {url}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    <Button
-                      loading={busyId === order.id}
-                      onClick={() => handleRefund(order.id)}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      تأكيد الاسترداد
-                    </Button>
-                  </div>
-                ) : null}
-
-                {order.auditLog.slice(0, 2).length > 0 ? (
+                {deskOpen ? (
+                  <AdminOrderInlineDesk
+                    busy={busyId === order.id}
+                    locale={locale}
+                    onReasonChange={(value) =>
+                      setReasonDrafts((prev) => ({
+                        ...prev,
+                        [order.id]: value,
+                      }))
+                    }
+                    onRefund={() => handleRefund(order.id)}
+                    onRelease={() => handleRelease(order.id)}
+                    order={order}
+                    reasonDraft={reasonDrafts[order.id] ?? ""}
+                    showRefund={order.status !== "refunded"}
+                    showRelease={held}
+                  />
+                ) : order.auditLog.slice(0, 2).length > 0 ? (
                   <ul className="mt-2 grid gap-1">
                     {order.auditLog.slice(0, 2).map((event) => (
                       <li key={event.id} className="admin-ops__queue-meta">
