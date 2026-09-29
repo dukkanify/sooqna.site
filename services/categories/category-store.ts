@@ -239,6 +239,8 @@ async function seedFormForProfile(
       note: field.note,
       options: field.options,
       showWhen: field.showWhen,
+      pattern: field.pattern,
+      patternMessage: field.patternMessage,
       titlePart: field.titlePart,
       searchable: field.searchable,
     })),

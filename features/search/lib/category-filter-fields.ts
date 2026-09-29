@@ -86,14 +86,7 @@ export function getCategorySearchFields(categoryId: string): CategoryFieldDefini
   );
 }
 
-export function fieldVisibleForSpecs(
-  field: CategoryFieldDefinition,
-  specs: Record<string, string>,
-): boolean {
-  if (!field.showWhen) return true;
-  const current = specs[field.showWhen.key] ?? "";
-  return field.showWhen.values.includes(current);
-}
+export { fieldVisibleForSpecs } from "@/shared/listings/category-field-visibility";
 
 export function optionsForSearchField(
   categoryId: string,
