@@ -48,4 +48,17 @@ describe("pets listing publish", () => {
     assert.match(hook, /categoryId === "pets"/);
     assert.match(hook, /animalType/);
   });
+
+  it("seeds animalType from step-1 subcategory for pets", () => {
+    const utils = read(
+      "features/listings/components/add-listing/category-form-utils.ts",
+    );
+    const step = read(
+      "features/listings/components/add-listing/CategoryFieldsStep.tsx",
+    );
+    assert.match(utils, /PET_ANIMAL_TYPES/);
+    assert.match(utils, /visibilitySpecs\.animalType = subcategory/);
+    assert.match(step, /petsAnimalType/);
+    assert.match(step, /categorySpecs:\s*\{\s*animalType:\s*petsAnimalType/);
+  });
 });
