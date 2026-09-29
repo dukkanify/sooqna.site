@@ -6,7 +6,6 @@ import {
   MarketHeader,
   MarketHero,
   MarketNearbySection,
-  MarketPreviewStrip,
   MarketPromoBanner,
 } from "@/features/home";
 import { DeferredHomeBelowFold } from "@/features/home/components/marketplace/DeferredHomeBelowFold";
@@ -60,7 +59,6 @@ export default async function Home() {
         categoryById={categoryById}
         featuredListings={feed.featured}
         nearbyListings={feed.nearbySource}
-        previewListings={feed.preview}
         sectionListings={feed.sections}
       />
     );
@@ -70,8 +68,9 @@ export default async function Home() {
     feed.featured.length > 0 ||
     feed.nearbySource.length > 0 ||
     feed.sections.some((section) => section.items.length > 0);
-  const aboveFoldSections = sectionListings.slice(0, 2);
-  const belowFoldSections = sectionListings.slice(2);
+  // Cars / real-estate / electronics (etc.) most-viewed rails above the fold.
+  const aboveFoldSections = sectionListings.slice(0, 3);
+  const belowFoldSections = sectionListings.slice(3);
 
   return (
     <>
@@ -83,9 +82,8 @@ export default async function Home() {
           <MarketPromoBanner />
           {hasPublicListings ? (
             <>
-              <MarketPreviewStrip categories={categoryMeta} listings={feed.preview} />
+              {/* 1) Featured → 2) most-viewed by category → 3) nearby */}
               <MarketFeatured categories={categoryMeta} listings={feed.featured} />
-              <MarketNearbySection listings={feed.nearbySource} />
               {aboveFoldSections.map((section) => (
                 <MarketCategorySection
                   key={section.categoryId}
@@ -98,6 +96,7 @@ export default async function Home() {
                   variant={section.variant}
                 />
               ))}
+              <MarketNearbySection listings={feed.nearbySource} />
               <DeferredHomeBelowFold
                 appPreviewListings={appPreviewListings}
                 sections={belowFoldSections}

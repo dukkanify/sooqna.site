@@ -51,7 +51,7 @@ export function SearchFilterChips({
   const skipBandPriceChip =
     Boolean(selectedFilters.maxPrice) &&
     priceBandMax.has(selectedFilters.maxPrice ?? "") &&
-    !selectedFilters.minPrice;
+    (!selectedFilters.minPrice || selectedFilters.minPrice === "0");
 
   if (selectedFilters.query) {
     chips.push({
@@ -88,27 +88,48 @@ export function SearchFilterChips({
       href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "condition" })),
     });
   }
-  if (selectedFilters.minPrice) {
+  if (
+    selectedFilters.minPrice &&
+    selectedFilters.maxPrice &&
+    !skipBandPriceChip
+  ) {
     chips.push({
-      key: "minPrice",
+      key: "priceRange",
       label: (
         <span className="inline-flex items-center gap-1">
           من <CurrencyAmount amount={Number(selectedFilters.minPrice)} size="sm" />
+          {" – "}
+          <CurrencyAmount amount={Number(selectedFilters.maxPrice)} size="sm" />
         </span>
       ),
-      href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "minPrice" })),
+      href: hrefFor({
+        ...omitSearchFilter(selectedFilters, { kind: "core", key: "minPrice" }),
+        maxPrice: "",
+      }),
     });
-  }
-  if (selectedFilters.maxPrice && !skipBandPriceChip) {
-    chips.push({
-      key: "maxPrice",
-      label: (
-        <span className="inline-flex items-center gap-1">
-          حتى <CurrencyAmount amount={Number(selectedFilters.maxPrice)} size="sm" />
-        </span>
-      ),
-      href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "maxPrice" })),
-    });
+  } else {
+    if (selectedFilters.minPrice && selectedFilters.minPrice !== "0") {
+      chips.push({
+        key: "minPrice",
+        label: (
+          <span className="inline-flex items-center gap-1">
+            من <CurrencyAmount amount={Number(selectedFilters.minPrice)} size="sm" />
+          </span>
+        ),
+        href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "minPrice" })),
+      });
+    }
+    if (selectedFilters.maxPrice && !skipBandPriceChip) {
+      chips.push({
+        key: "maxPrice",
+        label: (
+          <span className="inline-flex items-center gap-1">
+            إلى <CurrencyAmount amount={Number(selectedFilters.maxPrice)} size="sm" />
+          </span>
+        ),
+        href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "maxPrice" })),
+      });
+    }
   }
 
   for (const [key, value] of Object.entries(selectedFilters.specs ?? {})) {
