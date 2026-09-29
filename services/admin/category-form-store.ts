@@ -1,6 +1,7 @@
 import { createPayloadCollectionStore } from "@/services/db/durable-json-collection";
 import type {
   CategoryFieldDefinition,
+  CategoryFieldShowWhen,
   CategoryFieldType,
 } from "@/types/domain/category-fields";
 import {
@@ -22,7 +23,9 @@ export type StoredCategoryFormField = {
   options?: { label: string; value: string }[];
   validation?: string;
   visibility?: string;
-  showWhen?: { key: string; values: string[] };
+  showWhen?: CategoryFieldShowWhen;
+  pattern?: string;
+  patternMessage?: string;
   titlePart?: boolean;
   searchable?: boolean;
   updatedAt: string;
@@ -43,6 +46,8 @@ function toDefinition(row: StoredCategoryFormField): CategoryFieldDefinition {
     note: row.note,
     options: row.options,
     showWhen: row.showWhen,
+    pattern: row.pattern,
+    patternMessage: row.patternMessage,
     titlePart: row.titlePart,
     searchable: row.searchable,
   };
@@ -59,13 +64,20 @@ export async function listCategoryFormFields(categoryId: string) {
 export async function resolveCategoryFields(
   categoryId: string,
 ): Promise<CategoryFieldDefinition[]> {
+  const defaults = getCategoryFields(categoryId);
   const stored = await listCategoryFormFields(categoryId);
   const enabled = stored.filter((row) => row.enabled);
-  if (enabled.length > 0) {
-    return enabled.map(toDefinition);
+  if (enabled.length === 0) {
+    if (!isDynamicCategory(categoryId)) return [];
+    return defaults;
   }
-  if (!isDynamicCategory(categoryId)) return [];
-  return getCategoryFields(categoryId);
+  const fromStore = enabled.map(toDefinition);
+  // Append any newer code-default keys missing from durable admin config
+  // (e.g. real-estate license fields) without overriding admin edits.
+  const known = new Set(fromStore.map((field) => field.key));
+  const missing = defaults.filter((field) => !known.has(field.key));
+  if (missing.length === 0) return fromStore;
+  return [...fromStore, ...missing];
 }
 
 export async function replaceCategoryFormFields(
@@ -95,6 +107,8 @@ export async function replaceCategoryFormFields(
       validation: field.validation,
       visibility: field.visibility,
       showWhen: field.showWhen,
+      pattern: field.pattern,
+      patternMessage: field.patternMessage,
       titlePart: field.titlePart,
       searchable: field.searchable,
       updatedAt: now,
@@ -121,6 +135,8 @@ export async function seedCategoryFormFromDefaults(categoryId: string) {
       note: field.note,
       options: field.options,
       showWhen: field.showWhen,
+      pattern: field.pattern,
+      patternMessage: field.patternMessage,
       titlePart: field.titlePart,
       searchable: field.searchable,
     })),

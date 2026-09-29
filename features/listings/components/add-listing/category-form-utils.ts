@@ -2,6 +2,11 @@ import type { CategoryFieldDefinition, CategorySpecs, ListingCondition } from "@
 import {
   getCategoryFields,
 } from "@/shared/constants/category-fields";
+import {
+  fieldVisibleForSpecs,
+  matchesFieldPattern,
+} from "@/shared/listings/category-field-visibility";
+import { regulatorEmirateError } from "@/shared/listings/real-estate-license";
 
 export type CategoryFormResult = {
   categorySpecs: CategorySpecs;
@@ -139,10 +144,7 @@ export function parseCategoryForm(
   }
 
   for (const field of fields) {
-    if (
-      field.showWhen &&
-      !field.showWhen.values.includes(visibilitySpecs[field.showWhen.key] ?? "")
-    ) {
+    if (!fieldVisibleForSpecs(field, visibilitySpecs)) {
       continue;
     }
 
@@ -161,6 +163,12 @@ export function parseCategoryForm(
       if (field.required) {
         errors[field.key] = `${field.label} مطلوب.`;
       }
+      continue;
+    }
+
+    const patternError = matchesFieldPattern(field, value);
+    if (patternError) {
+      errors[field.key] = patternError;
       continue;
     }
 
@@ -188,6 +196,17 @@ export function parseCategoryForm(
       }
     } else {
       categorySpecs[field.key] = value;
+    }
+  }
+
+  if (categoryId === "real-estate") {
+    const authorityError = regulatorEmirateError(
+      String(categorySpecs.advertiserType ?? ""),
+      String(categorySpecs.regulatoryAuthority ?? ""),
+      emirate,
+    );
+    if (authorityError) {
+      errors.regulatoryAuthority = authorityError;
     }
   }
 
@@ -220,10 +239,7 @@ export function parseCategoryForm(
 
   const titleParts = fields
     .filter((field) => field.titlePart)
-    .filter((field) => {
-      if (!field.showWhen) return true;
-      return field.showWhen.values.includes(visibilitySpecs[field.showWhen.key] ?? "");
-    })
+    .filter((field) => fieldVisibleForSpecs(field, visibilitySpecs))
     .map((field) => categorySpecs[field.key])
     .filter((value) => hasFieldValue(String(value ?? "")));
 

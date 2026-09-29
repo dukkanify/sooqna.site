@@ -12,6 +12,19 @@ export type CategoryFieldOption = {
   value: string;
 };
 
+export type CategoryFieldShowWhenRule = {
+  key: string;
+  values: string[];
+};
+
+/**
+ * Show field when the rule matches. A single rule or an AND-list of rules.
+ * Example: broker + Dubai → BRN.
+ */
+export type CategoryFieldShowWhen =
+  | CategoryFieldShowWhenRule
+  | CategoryFieldShowWhenRule[];
+
 export type CategoryFieldDefinition = {
   key: string;
   label: string;
@@ -26,7 +39,11 @@ export type CategoryFieldDefinition = {
   /** Searchable in query matching */
   searchable?: boolean;
   /** Show field only when another spec matches one of the values */
-  showWhen?: { key: string; values: string[] };
+  showWhen?: CategoryFieldShowWhen;
+  /** Optional RegExp source tested against non-empty values */
+  pattern?: string;
+  /** Arabic message when pattern fails */
+  patternMessage?: string;
 };
 
 export type CategorySpecValue = string | number | boolean;

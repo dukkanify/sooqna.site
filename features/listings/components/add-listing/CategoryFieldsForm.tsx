@@ -13,6 +13,7 @@ import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import type { CategoryFieldOption } from "@/types";
+import { fieldVisibleForSpecs } from "@/shared/listings/category-field-visibility";
 import {
   addListingCheckboxGridClass,
   addListingCheckboxGroupClass,
@@ -66,15 +67,6 @@ function getSpecValue(
     return undefined;
   }
   return value;
-}
-
-function fieldVisible(
-  field: CategoryFieldDefinition,
-  specs: Record<string, string>,
-): boolean {
-  if (!field.showWhen) return true;
-  const current = specs[field.showWhen.key] ?? "";
-  return field.showWhen.values.includes(current);
 }
 
 function renderField(
@@ -301,7 +293,8 @@ export function CategoryFieldsForm({
   });
 
   const fields = allFields.filter(
-    (field) => field.type !== "checkbox-group" && fieldVisible(field, specs),
+    (field) =>
+      field.type !== "checkbox-group" && fieldVisibleForSpecs(field, specs),
   );
   const featureField = allFields.find((field) => field.type === "checkbox-group");
   const selectedFeatures = buildSelectedFeatures(defaults);
@@ -474,7 +467,7 @@ export function CategoryFieldsForm({
             );
           })}
 
-          {featureField && fieldVisible(featureField, specs) ? (
+          {featureField && fieldVisibleForSpecs(featureField, specs) ? (
             <div className="col-span-2 min-w-0">
               {renderField(featureField, defaults, selectedFeatures, onSpecChange)}
             </div>
