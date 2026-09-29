@@ -63,4 +63,11 @@ describe("car year range validation", () => {
     assert.match(src, /YEAR_RANGE_ERROR_AR/);
     assert.match(src, /isYearRangeInverted/);
   });
+
+  it("SearchFilters blocks submit when year range is inverted", () => {
+    const src = read("features/search/components/SearchFilters.tsx");
+    assert.match(src, /guardRangeSubmit/);
+    assert.match(src, /yearInvalid/);
+    assert.match(src, /isYearRangeInverted/);
+  });
 });
