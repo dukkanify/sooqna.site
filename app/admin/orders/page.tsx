@@ -6,7 +6,7 @@ export default function AdminOrdersPage() {
   return (
     <AdminShell
       activePath="/admin/orders"
-      description="كل الطلبات مع معرفات Stripe وحالة الاسترداد — تحرّك بسرعة على الحالات الحرجة."
+      description="تفاصيل الطلب والإجراءات الإدارية داخل اللوحة — دون التحويل لرحلة المشتري أو الدفع في الموقع."
       title="الطلبات والمدفوعات"
     >
       <Suspense fallback={<p className="text-sm text-muted">جاري التحميل...</p>}>
