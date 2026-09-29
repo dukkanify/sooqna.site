@@ -1,5 +1,6 @@
 import type { ListingCondition, ListingSearchFilters } from "@/types";
 import type { SearchFilterState } from "@/features/search/components/search-url";
+import { normalizePriceRange } from "@/features/search/lib/price-range";
 
 function toNumber(value: string | undefined): number | undefined {
   if (!value?.trim()) return undefined;
@@ -35,6 +36,7 @@ export function toListingSearchFilters(
   }
 
   const condition = filters.condition;
+  const price = normalizePriceRange(filters.minPrice, filters.maxPrice);
   return {
     area: filters.area?.trim() || undefined,
     categoryId: filters.category?.trim() || undefined,
@@ -50,8 +52,8 @@ export function toListingSearchFilters(
         ? (condition as ListingCondition)
         : undefined,
     country: filters.country?.trim() || undefined,
-    maxPrice: toNumber(filters.maxPrice),
-    minPrice: toNumber(filters.minPrice),
+    maxPrice: price.max,
+    minPrice: price.min,
     query: filters.query?.trim() || undefined,
     sort:
       filters.sort === "price_asc" || filters.sort === "price_desc"
