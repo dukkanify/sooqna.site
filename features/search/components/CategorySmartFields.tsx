@@ -16,6 +16,11 @@ import {
 } from "@/features/search/lib/category-filter-fields";
 import { setVehicleCatalogOverrides } from "@/shared/vehicles";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
+import {
+  YEAR_RANGE_ERROR_AR,
+  isYearRangeInverted,
+  parseYearBound,
+} from "@/features/search/lib/year-range";
 import type { SearchFilterState } from "./search-url";
 
 /** Cars search: keep make/model/year up front; tuck the rest under «المزيد». */
@@ -80,11 +85,21 @@ function setRange(
   bound: "min" | "max",
   value: string,
 ): SearchFilterState {
+  const current = { ...draft.ranges?.[key], [bound]: value };
+  // Year: if the new bound makes the range inverted, clear the opposite bound.
+  if (key === "year") {
+    const min = parseYearBound(current.min);
+    const max = parseYearBound(current.max);
+    if (min !== undefined && max !== undefined && min > max) {
+      if (bound === "min") current.max = "";
+      else current.min = "";
+    }
+  }
   return {
     ...draft,
     ranges: {
       ...draft.ranges,
-      [key]: { ...draft.ranges?.[key], [bound]: value },
+      [key]: current,
     },
   };
 }
@@ -229,9 +244,29 @@ export function CategorySmartFields({
                   ),
                 ]
               : null;
+          const yearMinNum = parseYearBound(range.min);
+          const yearMaxNum = parseYearBound(range.max);
+          const yearMinOptions = yearOptions
+            ? yearOptions.filter((option) => {
+                if (!option.value) return true;
+                if (yearMaxNum === undefined) return true;
+                return Number(option.value) <= yearMaxNum;
+              })
+            : null;
+          const yearMaxOptions = yearOptions
+            ? yearOptions.filter((option) => {
+                if (!option.value) return true;
+                if (yearMinNum === undefined) return true;
+                return Number(option.value) >= yearMinNum;
+              })
+            : null;
+          const yearInverted =
+            field.key === "year" &&
+            isYearRangeInverted(range.min, range.max);
           return (
-            <div key={field.key} className="grid grid-cols-2 gap-2">
-              {yearOptions ? (
+            <div key={field.key} className="grid gap-1.5">
+              <div className="grid grid-cols-2 gap-2">
+              {yearOptions && yearMinOptions && yearMaxOptions ? (
                 <>
                   <Select
                     compact={compact}
@@ -240,7 +275,7 @@ export function CategorySmartFields({
                     onChange={(event) =>
                       onChange(setRange(draft, field.key, "min", event.target.value))
                     }
-                    options={yearOptions}
+                    options={yearMinOptions}
                     value={range.min ?? ""}
                   />
                   <Select
@@ -250,7 +285,7 @@ export function CategorySmartFields({
                     onChange={(event) =>
                       onChange(setRange(draft, field.key, "max", event.target.value))
                     }
-                    options={yearOptions}
+                    options={yearMaxOptions}
                     value={range.max ?? ""}
                   />
                 </>
@@ -282,6 +317,12 @@ export function CategorySmartFields({
                   />
                 </>
               )}
+              </div>
+              {yearInverted ? (
+                <p className="text-xs font-medium text-error" role="alert">
+                  {YEAR_RANGE_ERROR_AR}
+                </p>
+              ) : null}
             </div>
           );
         }

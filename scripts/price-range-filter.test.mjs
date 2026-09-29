@@ -51,7 +51,7 @@ describe("price range UI wiring", () => {
   it("SearchFilters uses PriceRangeFields and blocks inverted submit", () => {
     const src = read("features/search/components/SearchFilters.tsx");
     assert.match(src, /PriceRangeFields/);
-    assert.match(src, /guardPriceSubmit/);
+    assert.match(src, /guardRangeSubmit/);
     assert.match(src, /isPriceRangeInverted/);
     assert.doesNotMatch(src, /name="minPrice"[\s\S]*defaultValue=\{draft\.minPrice\}/);
   });

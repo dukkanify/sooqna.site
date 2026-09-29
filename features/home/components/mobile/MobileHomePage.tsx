@@ -9,7 +9,6 @@ import {
   MobileHomeHeader,
   MobileHomeShell,
   MobileNearbyRail,
-  MobilePreviewStrip,
   MobilePromoBanner,
 } from "@/features/home/components/mobile";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
@@ -29,18 +28,16 @@ type MobileHomePageProps = {
   categoryById: (id: string) => string;
   featuredListings: Listing[];
   nearbyListings: Listing[];
-  previewListings: Listing[];
   sectionListings: HomeSection[];
 };
 
-/** Isolated mobile homepage tree — keeps mobile-home.css off the desktop bundle. */
+/** Isolated mobile homepage — Featured → most-viewed categories → nearby. */
 export function MobileHomePage({
   appPreviewListings,
   categories,
   categoryById,
   featuredListings,
   nearbyListings,
-  previewListings,
   sectionListings,
 }: MobileHomePageProps) {
   return (
@@ -53,16 +50,13 @@ export function MobileHomePage({
             <MobileCategoryGrid categories={categories} />
             <MobilePromoBanner />
             <MobileEmiratesSection />
-            {previewListings.length === 0 &&
-            featuredListings.length === 0 &&
+            {featuredListings.length === 0 &&
             nearbyListings.length === 0 &&
             sectionListings.every((section) => section.items.length === 0) ? (
               <MarketCatalogEmpty />
             ) : (
               <>
-                <MobilePreviewStrip listings={previewListings} />
                 <MobileFeaturedRail listings={featuredListings} />
-                <MobileNearbyRail listings={nearbyListings} />
                 {sectionListings.map((section) => (
                   <MobileCategoryRail
                     key={section.categoryId}
@@ -71,6 +65,7 @@ export function MobileHomePage({
                     title={section.title}
                   />
                 ))}
+                <MobileNearbyRail listings={nearbyListings} />
                 <MobileAppDownload previewListings={appPreviewListings} />
               </>
             )}

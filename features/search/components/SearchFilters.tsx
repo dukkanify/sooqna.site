@@ -18,11 +18,25 @@ import { PriceRangeFields } from "./PriceRangeFields";
 import { sortByPopularity } from "@/services/search/search-popularity";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 import { isPriceRangeInverted } from "@/features/search/lib/price-range";
+import { isYearRangeInverted } from "@/features/search/lib/year-range";
 import {
   activeFilterCount,
   buildSearchUrl,
   type SearchFilterState,
 } from "./search-url";
+
+/** Drop an invalid To-year when URL/state arrives inverted (From > To). */
+function sanitizeYearDraft(filters: SearchFilterState): SearchFilterState {
+  const year = filters.ranges?.year;
+  if (!year || !isYearRangeInverted(year.min, year.max)) return filters;
+  return {
+    ...filters,
+    ranges: {
+      ...filters.ranges,
+      year: { min: year.min, max: "" },
+    },
+  };
+}
 
 type SearchFiltersProps = {
   action?: string;
@@ -356,11 +370,13 @@ export function SearchFilters({
   const [sheetOpen, setSheetOpen] = useState(false);
   const urlSignature = buildSearchUrl(selectedFilters, undefined, action);
   const [seenSignature, setSeenSignature] = useState(urlSignature);
-  const [draft, setDraft] = useState<SearchFilterState>(selectedFilters);
+  const [draft, setDraft] = useState<SearchFilterState>(() =>
+    sanitizeYearDraft(selectedFilters),
+  );
 
   if (seenSignature !== urlSignature) {
     setSeenSignature(urlSignature);
-    setDraft(selectedFilters);
+    setDraft(sanitizeYearDraft(selectedFilters));
   }
 
   useEffect(() => {
@@ -380,6 +396,11 @@ export function SearchFilters({
   const appliedCount = activeFilterCount(selectedFilters);
   const resetHref = action.split("?")[0] || "/search";
   const priceInvalid = isPriceRangeInverted(draft.minPrice, draft.maxPrice);
+  const yearInvalid = isYearRangeInverted(
+    draft.ranges?.year?.min,
+    draft.ranges?.year?.max,
+  );
+  const rangeInvalid = priceInvalid || yearInvalid;
 
   const fieldProps: FilterFieldsProps = {
     categories,
@@ -391,8 +412,11 @@ export function SearchFilters({
     suggestions,
   };
 
-  const guardPriceSubmit = (event: FormEvent<HTMLFormElement>) => {
-    if (isPriceRangeInverted(draft.minPrice, draft.maxPrice)) {
+  const guardRangeSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (
+      isPriceRangeInverted(draft.minPrice, draft.maxPrice) ||
+      isYearRangeInverted(draft.ranges?.year?.min, draft.ranges?.year?.max)
+    ) {
       event.preventDefault();
     }
   };
@@ -404,7 +428,7 @@ export function SearchFilters({
       </Button>
       <Button
         className="motion-press w-full"
-        disabled={priceInvalid}
+        disabled={rangeInvalid}
         size="sm"
         type="submit"
         variant="primary"
@@ -421,7 +445,7 @@ export function SearchFilters({
           <form
             action={action}
             className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
-            onSubmit={guardPriceSubmit}
+            onSubmit={guardRangeSubmit}
           >
             <FilterFields {...fieldProps} compact={false} />
             <div className="md:col-span-2 lg:col-span-4">{footer(false)}</div>
@@ -468,7 +492,7 @@ export function SearchFilters({
               <form
                 action={action}
                 className="flex min-h-0 flex-1 flex-col"
-                onSubmit={guardPriceSubmit}
+                onSubmit={guardRangeSubmit}
               >
                 <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-3">
                   <FilterFields {...fieldProps} easy />
@@ -536,7 +560,7 @@ export function SearchFilters({
         <form
           action={action}
           className="flex min-h-0 flex-1 flex-col"
-          onSubmit={guardPriceSubmit}
+          onSubmit={guardRangeSubmit}
         >
           <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 pt-4">
             <h2 className="text-sm font-bold text-ink">صفِّ بحثك</h2>
