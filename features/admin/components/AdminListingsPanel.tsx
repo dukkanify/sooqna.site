@@ -3,6 +3,7 @@
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
   AdminCategoryRecord,
   AdminListingRecord,
@@ -58,11 +59,20 @@ function isMarketplaceAdminListing(listing: AdminListingRecord): boolean {
   return true;
 }
 
-function AdminListingThumb({ src }: { src?: string }) {
+function AdminListingThumb({
+  size = "md",
+  src,
+}: {
+  size?: "sm" | "md";
+  src?: string;
+}) {
   const [failed, setFailed] = useState(!src?.trim());
+  const box = size === "sm" ? "size-10" : "size-14";
   if (failed) {
     return (
-      <div className="grid size-14 shrink-0 place-items-center rounded-xl bg-surface-muted text-[10px] font-semibold text-muted">
+      <div
+        className={`grid ${box} shrink-0 place-items-center rounded-lg bg-surface-muted text-[9px] font-semibold text-muted`}
+      >
         بلا صورة
       </div>
     );
@@ -71,11 +81,19 @@ function AdminListingThumb({ src }: { src?: string }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       alt=""
-      className="size-14 shrink-0 rounded-xl bg-surface-muted object-cover"
+      className={`${box} shrink-0 rounded-lg bg-surface-muted object-cover`}
       onError={() => setFailed(true)}
       src={src}
     />
   );
+}
+
+/** Compact listing number for the desk table (prefer trailing digits). */
+function listingNumberLabel(id: string): string {
+  const digits = id.replace(/\D/g, "");
+  if (digits.length >= 4) return digits.slice(-6);
+  const cleaned = id.replace(/^(local-|admin-|showcase-)/, "");
+  return cleaned.length > 12 ? cleaned.slice(-10) : cleaned;
 }
 
 const conditionOptions = [
@@ -117,12 +135,23 @@ const emptyForm = {
 export function AdminListingsPanel() {
   const cities = useMarketplaceLocations();
   const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [listings, setListings] = useState<AdminListingRecord[]>([]);
   const [categories, setCategories] = useState<AdminCategoryRecord[]>([]);
-  const [statusFilter, setStatusFilter] = useState("marketplace");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [cityFilter, setCityFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState(
+    () => searchParams.get("status") ?? "marketplace",
+  );
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("q") ?? "",
+  );
+  const [categoryFilter, setCategoryFilter] = useState(
+    () => searchParams.get("category") ?? "all",
+  );
+  const [cityFilter, setCityFilter] = useState(
+    () => searchParams.get("city") ?? "all",
+  );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -266,6 +295,25 @@ export function AdminListingsPanel() {
 
   const defaultStatusFilter = "marketplace";
 
+  const categoryNameById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category.name])),
+    [categories],
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (statusFilter !== defaultStatusFilter) params.set("status", statusFilter);
+    if (categoryFilter !== "all") params.set("category", categoryFilter);
+    if (cityFilter !== "all") params.set("city", cityFilter);
+    const qs = params.toString();
+    const next = qs ? `${pathname}?${qs}` : pathname;
+    const current = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+    if (next !== current) router.replace(next);
+    // Sync URL from filter state only — searchParams identity omitted on purpose.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- URL mirror
+  }, [searchQuery, statusFilter, categoryFilter, cityFilter, pathname, router]);
+
   const hasActiveFilters =
     statusFilter !== defaultStatusFilter ||
     categoryFilter !== "all" ||
@@ -339,6 +387,10 @@ export function AdminListingsPanel() {
               ...next,
               imageUrl: next.imageUrl ?? listing.imageUrl,
               images: next.images ?? listing.images,
+              views:
+                typeof next.views === "number" && next.views > 0
+                  ? next.views
+                  : (listing.views ?? next.views ?? 0),
             };
           }),
         );
@@ -895,15 +947,15 @@ export function AdminListingsPanel() {
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[220px] flex-1">
             <Input
-              label="بحث في الإعلانات"
+              label="بحث"
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="العنوان، المعرّف، الرابط، البائع، الهاتف..."
+              placeholder="العنوان، رقم الإعلان، الرابط، المعلن، الهاتف..."
               value={searchQuery}
             />
           </div>
           <div className="min-w-[160px]">
             <Select
-              label="تصفية حسب الحالة"
+              label="الحالة"
               onChange={(event) => setStatusFilter(event.target.value)}
               options={statusFilterOptions}
               value={statusFilter}
@@ -911,7 +963,7 @@ export function AdminListingsPanel() {
           </div>
           <div className="min-w-[160px]">
             <Select
-              label="القسم"
+              label="التصنيف"
               onChange={(event) => setCategoryFilter(event.target.value)}
               options={categoryFilterOptions}
               value={categoryFilter}
@@ -983,126 +1035,310 @@ export function AdminListingsPanel() {
           )}
         </Card>
       ) : (
-        <div className="admin-boxes__grid">
-        {filtered.map((listing) => (
-          <Card
-            key={listing.id}
-            className={`p-5${editingId === listing.id ? " admin-boxes__card--wide" : ""}`}
-            variant="flat"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                {editingId === listing.id ? (
-                  <form
-                    className="grid gap-3"
-                    noValidate
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      void saveEdit(listing, event.currentTarget);
-                    }}
-                  >
-                    {isDynamicCategory(listing.categoryId) ? (
-                      <CategoryFieldsForm
-                        key={`edit-${listing.id}`}
-                        categoryId={listing.categoryId}
-                        defaults={{
-                          categorySpecs: listing.categorySpecs,
-                          condition: listing.condition,
-                          contactPhone: listing.contactPhone,
-                          description: listing.description,
-                          features: listing.features,
-                          negotiable: listing.negotiable,
-                          price: listing.price,
-                        }}
-                        errors={editFieldErrors}
-                        heading="تفاصيل القسم"
-                        showContact
-                      />
-                    ) : (
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Input
-                          label="العنوان"
-                          onChange={(event) =>
-                            setEditDraft((current) => ({
-                              ...current,
-                              title: event.target.value,
-                            }))
-                          }
-                          value={editDraft.title}
-                        />
-                        <Input
-                          label="السعر"
-                          inputMode="numeric"
-                          onChange={(event) =>
-                            setEditDraft((current) => ({
-                              ...current,
-                              price: event.target.value,
-                            }))
-                          }
-                          value={editDraft.price}
-                        />
-                        <Select
-                          label="المدينة"
-                          onChange={(event) =>
-                            setEditDraft((current) => ({
-                              ...current,
-                              city: event.target.value,
-                            }))
-                          }
-                          options={cities.map((city) => ({
-                            label: city.name,
-                            value: city.name,
-                          }))}
-                          value={editDraft.city}
-                        />
-                        <Select
-                          label="الحالة"
-                          onChange={(event) =>
-                            setEditDraft((current) => ({
-                              ...current,
-                              condition: event.target.value,
-                            }))
-                          }
-                          options={conditionOptions}
-                          value={editDraft.condition}
-                        />
-                        <Input
-                          label="هاتف التواصل"
-                          onChange={(event) =>
-                            setEditDraft((current) => ({
-                              ...current,
-                              contactPhone: event.target.value,
-                            }))
-                          }
-                          value={editDraft.contactPhone}
-                        />
-                        <Input
-                          label="اسم البائع"
-                          onChange={(event) =>
-                            setEditDraft((current) => ({
-                              ...current,
-                              sellerName: event.target.value,
-                            }))
-                          }
-                          value={editDraft.sellerName}
-                        />
-                        <div className="sm:col-span-2">
-                          <Textarea
-                            label="الوصف"
-                            onChange={(event) =>
-                              setEditDraft((current) => ({
-                                ...current,
-                                description: event.target.value,
-                              }))
-                            }
-                            rows={3}
-                            value={editDraft.description}
-                          />
+        <Card className="admin-listings-table-card overflow-hidden p-0" variant="flat">
+          <div className="admin-listings-table-scroll">
+            <table className="admin-ops__table admin-listings-table">
+              <thead>
+                <tr>
+                  <th>رقم الإعلان</th>
+                  <th>الإعلان</th>
+                  <th>المعلن</th>
+                  <th>التصنيف</th>
+                  <th>المدينة</th>
+                  <th>السعر</th>
+                  <th>المشاهدات</th>
+                  <th>الحالة</th>
+                  <th>تاريخ النشر</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((listing) => {
+                  const actionsOpen = openRowActions === listing.id;
+                  const categoryLabel =
+                    categoryNameById.get(listing.categoryId) ??
+                    listing.categoryId;
+                  return (
+                    <tr key={listing.id}>
+                      <td>
+                        <span
+                          className="font-mono text-xs font-semibold text-ink"
+                          title={listing.id}
+                        >
+                          {listingNumberLabel(listing.id)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex min-w-[12rem] items-center gap-2">
+                          <AdminListingThumb size="sm" src={listing.imageUrl} />
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-ink">
+                              {listing.title}
+                            </p>
+                            <p className="truncate text-[11px] text-muted">
+                              {listing.slug}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      </td>
+                      <td>
+                        <p className="max-w-[9rem] truncate font-medium text-ink">
+                          {listing.sellerName || "—"}
+                        </p>
+                      </td>
+                      <td>
+                        <p className="max-w-[8rem] truncate text-ink">
+                          {categoryLabel}
+                        </p>
+                      </td>
+                      <td>
+                        <p className="max-w-[7rem] truncate text-muted">
+                          {listing.city || "—"}
+                        </p>
+                      </td>
+                      <td>
+                        <CurrencyAmount amount={listing.price} size="sm" />
+                      </td>
+                      <td>
+                        <span className="tabular-nums font-semibold text-ink">
+                          {(listing.views ?? 0).toLocaleString(
+                            intlLocale(locale),
+                          )}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex flex-col items-start gap-1">
+                          <Badge variant={listingBadgeVariant(listing.status)}>
+                            {listingStatusLabels[listing.status]}
+                          </Badge>
+                          {listing.isFeatured ? (
+                            <Badge variant="featured">مميّز</Badge>
+                          ) : null}
+                          {listing.isDemo ||
+                          listing.source === "SOOQNA_SHOWCASE" ? (
+                            <Badge variant="demo">تجريبي</Badge>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="whitespace-nowrap text-xs text-muted">
+                          {listing.postedAt
+                            ? new Date(listing.postedAt).toLocaleString(
+                                intlLocale(locale),
+                                {
+                                  year: "numeric",
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
+                            : "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            onClick={() => startEdit(listing)}
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            تعديل
+                          </Button>
+                          {listing.status === "pending_review" ||
+                          listing.status === "rejected" ||
+                          listing.status === "draft" ? (
+                            <Button
+                              loading={busyId === listing.id}
+                              onClick={() =>
+                                patchListing(listing.id, { status: "active" })
+                              }
+                              size="sm"
+                              type="button"
+                              variant="primary"
+                            >
+                              اعتماد
+                            </Button>
+                          ) : null}
+                          <Button
+                            onClick={() =>
+                              setOpenRowActions((current) =>
+                                current === listing.id ? null : listing.id,
+                              )
+                            }
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            {actionsOpen ? "إخفاء" : "المزيد"}
+                          </Button>
+                        </div>
+                        {actionsOpen ? (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {listing.status !== "rejected" ? (
+                              <Button
+                                loading={busyId === listing.id}
+                                onClick={() => {
+                                  const reason = window
+                                    .prompt("سبب الرفض (اختياري)")
+                                    ?.trim();
+                                  void patchListing(listing.id, {
+                                    status: "rejected",
+                                    rejectReason: reason || undefined,
+                                  });
+                                }}
+                                size="sm"
+                                type="button"
+                                variant="ghost"
+                              >
+                                رفض
+                              </Button>
+                            ) : null}
+                            <Button
+                              loading={busyId === listing.id}
+                              onClick={() =>
+                                patchListing(listing.id, {
+                                  isFeatured: !listing.isFeatured,
+                                })
+                              }
+                              size="sm"
+                              type="button"
+                              variant="secondary"
+                            >
+                              {listing.isFeatured
+                                ? "إلغاء التمييز"
+                                : "تمييز"}
+                            </Button>
+                            <Button
+                              href={`/listings/${listing.slug}`}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              عرض
+                            </Button>
+                            <Button
+                              loading={busyId === listing.id}
+                              onClick={() => {
+                                const ok = window.confirm(
+                                  `حذف الإعلان «${listing.title}» نهائياً من السوق؟`,
+                                );
+                                if (!ok) return;
+                                void deleteListing(listing.id);
+                              }}
+                              size="sm"
+                              type="button"
+                              variant="ghost"
+                            >
+                              حذف
+                            </Button>
+                          </div>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
-                    {isDynamicCategory(listing.categoryId) ? (
+      {editingId
+        ? (() => {
+            const listing = listings.find((row) => row.id === editingId);
+            if (!listing) return null;
+            return (
+              <Card
+                className="admin-boxes__card--wide p-5"
+                variant="flat"
+              >
+                <form
+                  className="grid gap-3"
+                  noValidate
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void saveEdit(listing, event.currentTarget);
+                  }}
+                >
+                  <h2 className="text-sm font-bold text-ink">
+                    تعديل الإعلان · {listingNumberLabel(listing.id)}
+                  </h2>
+                  {isDynamicCategory(listing.categoryId) ? (
+                    <CategoryFieldsForm
+                      key={`edit-${listing.id}`}
+                      categoryId={listing.categoryId}
+                      defaults={{
+                        categorySpecs: listing.categorySpecs,
+                        condition: listing.condition,
+                        contactPhone: listing.contactPhone,
+                        description: listing.description,
+                        features: listing.features,
+                        negotiable: listing.negotiable,
+                        price: listing.price,
+                      }}
+                      errors={editFieldErrors}
+                      heading="تفاصيل القسم"
+                      showContact
+                    />
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input
+                        label="العنوان"
+                        onChange={(event) =>
+                          setEditDraft((current) => ({
+                            ...current,
+                            title: event.target.value,
+                          }))
+                        }
+                        value={editDraft.title}
+                      />
+                      <Input
+                        label="السعر"
+                        inputMode="numeric"
+                        onChange={(event) =>
+                          setEditDraft((current) => ({
+                            ...current,
+                            price: event.target.value,
+                          }))
+                        }
+                        value={editDraft.price}
+                      />
+                      <Select
+                        label="المدينة"
+                        onChange={(event) =>
+                          setEditDraft((current) => ({
+                            ...current,
+                            city: event.target.value,
+                          }))
+                        }
+                        options={cities.map((city) => ({
+                          label: city.name,
+                          value: city.name,
+                        }))}
+                        value={editDraft.city}
+                      />
+                      <Select
+                        label="الحالة"
+                        onChange={(event) =>
+                          setEditDraft((current) => ({
+                            ...current,
+                            condition: event.target.value,
+                          }))
+                        }
+                        options={conditionOptions}
+                        value={editDraft.condition}
+                      />
+                      <Input
+                        label="هاتف التواصل"
+                        onChange={(event) =>
+                          setEditDraft((current) => ({
+                            ...current,
+                            contactPhone: event.target.value,
+                          }))
+                        }
+                        value={editDraft.contactPhone}
+                      />
                       <Input
                         label="اسم البائع"
                         onChange={(event) =>
@@ -1113,174 +1349,74 @@ export function AdminListingsPanel() {
                         }
                         value={editDraft.sellerName}
                       />
-                    ) : null}
-
-                    <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
-                      <p className="text-sm font-semibold text-ink">
-                        معرض الصور
-                      </p>
-                      <AdminListingImageGallery
-                        images={editDraft.images}
-                        onChange={setEditImages}
-                        onUploadingChange={setUploadingImage}
-                        uploading={uploadingImage}
-                      />
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        loading={busyId === listing.id}
-                        size="sm"
-                        type="submit"
-                        variant="primary"
-                      >
-                        حفظ التعديل
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setEditingId(null);
-                          setEditFieldErrors({});
-                          setEditImagesTouched(false);
-                        }}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        إلغاء
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <>
-                    <div className="flex items-start gap-3">
-                      <AdminListingThumb src={listing.imageUrl} />
-                      <div className="min-w-0 flex-1">
-                        <p className="break-words font-semibold text-ink">
-                          {listing.title}
-                        </p>
-                        <p className="mt-1 truncate text-xs text-muted">
-                          {listing.slug}
-                        </p>
-                        <p className="mt-2 truncate text-sm">
-                          {listing.sellerName} — {listing.city}
-                        </p>
+                      <div className="sm:col-span-2">
+                        <Textarea
+                          label="الوصف"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              description: event.target.value,
+                            }))
+                          }
+                          rows={3}
+                          value={editDraft.description}
+                        />
                       </div>
                     </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge variant={listingBadgeVariant(listing.status)}>
-                    {listingStatusLabels[listing.status]}
-                  </Badge>
-                  {listing.isFeatured ? (
-                    <Badge variant="featured">مميّز</Badge>
+                  )}
+
+                  {isDynamicCategory(listing.categoryId) ? (
+                    <Input
+                      label="اسم البائع"
+                      onChange={(event) =>
+                        setEditDraft((current) => ({
+                          ...current,
+                          sellerName: event.target.value,
+                        }))
+                      }
+                      value={editDraft.sellerName}
+                    />
                   ) : null}
-                  {listing.isDemo || listing.source === "SOOQNA_SHOWCASE" ? (
-                    <Badge variant="demo">إعلان تجريبي</Badge>
-                  ) : null}
-                </div>
-                  </>
-                )}
-              </div>
-              {editingId === listing.id ? null : (
-              <div className="shrink-0 text-start">
-                <CurrencyAmount amount={listing.price} size="lg" />
-                <p className="mt-1 text-xs text-muted">
-                    {new Date(listing.postedAt).toLocaleDateString(intlLocale(locale))}
-                </p>
-              </div>
-              )}
-            </div>
-            {editingId === listing.id ? null : (
-            <div className="mt-4 flex flex-wrap gap-2">
-                  <Button
-                    onClick={() => startEdit(listing)}
-                    size="sm"
-                    variant="secondary"
-                  >
-                    تعديل
-                  </Button>
-              {listing.status === "pending_review" ||
-              listing.status === "rejected" ||
-              listing.status === "draft" ? (
-                <Button
-                  loading={busyId === listing.id}
-                  onClick={() => patchListing(listing.id, { status: "active" })}
-                  size="sm"
-                  variant="primary"
-                >
-                  اعتماد
-                </Button>
-              ) : null}
-              <Button
-                onClick={() =>
-                  setOpenRowActions((current) =>
-                    current === listing.id ? null : listing.id,
-                  )
-                }
-                size="sm"
-                type="button"
-                variant="ghost"
-              >
-                {openRowActions === listing.id ? "إخفاء" : "المزيد"}
-              </Button>
-              {openRowActions === listing.id ? (
-                <>
-              {listing.status !== "rejected" ? (
-                <Button
-                  loading={busyId === listing.id}
-                  onClick={() => {
-                    const reason = window.prompt("سبب الرفض (اختياري)")?.trim();
-                    void patchListing(listing.id, {
-                      status: "rejected",
-                      rejectReason: reason || undefined,
-                    });
-                  }}
-                  size="sm"
-                  variant="ghost"
-                >
-                  رفض
-                </Button>
-              ) : null}
-              <Button
-                loading={busyId === listing.id}
-                onClick={() =>
-                  patchListing(listing.id, {
-                    isFeatured: !listing.isFeatured,
-                  })
-                }
-                size="sm"
-                variant="secondary"
-              >
-                {listing.isFeatured ? "إلغاء التمييز" : "تمييز"}
-              </Button>
-              <Button
-                href={`/listings/${listing.slug}`}
-                size="sm"
-                variant="ghost"
-              >
-                عرض
-              </Button>
-              <Button
-                loading={busyId === listing.id}
-                onClick={() => {
-                  const ok = window.confirm(
-                    `حذف الإعلان «${listing.title}» نهائياً من السوق؟`,
-                  );
-                  if (!ok) return;
-                  void deleteListing(listing.id);
-                }}
-                size="sm"
-                variant="ghost"
-              >
-                حذف
-              </Button>
-                </>
-              ) : null}
-            </div>
-            )}
-          </Card>
-        ))}
-        </div>
-      )}
+
+                  <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
+                    <p className="text-sm font-semibold text-ink">
+                      معرض الصور
+                    </p>
+                    <AdminListingImageGallery
+                      images={editDraft.images}
+                      onChange={setEditImages}
+                      onUploadingChange={setUploadingImage}
+                      uploading={uploadingImage}
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      loading={busyId === listing.id}
+                      size="sm"
+                      type="submit"
+                      variant="primary"
+                    >
+                      حفظ التعديل
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setEditingId(null);
+                        setEditFieldErrors({});
+                        setEditImagesTouched(false);
+                      }}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      إلغاء
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            );
+          })()
+        : null}
 
       <Link className="text-sm font-semibold text-primary" href="/admin">
         ← العودة للإدارة
