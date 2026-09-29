@@ -24,6 +24,19 @@ import {
   type SearchFilterState,
 } from "./search-url";
 
+/** Drop an invalid To-year when URL/state arrives inverted (From > To). */
+function sanitizeYearDraft(filters: SearchFilterState): SearchFilterState {
+  const year = filters.ranges?.year;
+  if (!year || !isYearRangeInverted(year.min, year.max)) return filters;
+  return {
+    ...filters,
+    ranges: {
+      ...filters.ranges,
+      year: { min: year.min, max: "" },
+    },
+  };
+}
+
 type SearchFiltersProps = {
   action?: string;
   categories: Category[];
@@ -389,11 +402,13 @@ export function SearchFilters({
   const [sheetOpen, setSheetOpen] = useState(false);
   const urlSignature = buildSearchUrl(selectedFilters, undefined, action);
   const [seenSignature, setSeenSignature] = useState(urlSignature);
-  const [draft, setDraft] = useState<SearchFilterState>(selectedFilters);
+  const [draft, setDraft] = useState<SearchFilterState>(() =>
+    sanitizeYearDraft(selectedFilters),
+  );
 
   if (seenSignature !== urlSignature) {
     setSeenSignature(urlSignature);
-    setDraft(selectedFilters);
+    setDraft(sanitizeYearDraft(selectedFilters));
   }
 
   useEffect(() => {
