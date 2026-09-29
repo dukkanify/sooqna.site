@@ -21,6 +21,7 @@ import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { AddListingErrors, ListingPreview } from "./types";
 import { parseCategoryForm } from "./category-form-utils";
 import { createListingSlug } from "./utils";
+import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 
 const defaultPreview: ListingPreview = {
   city: "",
@@ -389,6 +390,7 @@ export function useAddListingForm(categories: Category[]) {
         subcategory: subcategory || undefined,
         contactPhone: contact || undefined,
         contactMethod: "both",
+        escrowAvailable: isPurchasableCategory(categoryId, featureProfile),
         ...(videoUrl ? { videoUrl } : {}),
       };
 

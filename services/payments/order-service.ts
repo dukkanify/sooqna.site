@@ -7,6 +7,7 @@ import { calculateOrderFees } from "@/services/payments/fee-calculator";
 import {
   getServerListingById,
   getServerListingBySlug,
+  resolveServerListing,
   toListingSnapshot,
   validateLocalListingSnapshot,
 } from "@/services/payments/listing-resolver";
@@ -62,10 +63,11 @@ type ListingCheckoutContext = {
   listing?: import("@/types").Listing;
 };
 
-function resolveListingCheckoutContext(
+async function resolveListingCheckoutContext(
   input: CreateCheckoutInput,
-): ListingCheckoutContext | null {
+): Promise<ListingCheckoutContext | null> {
   const catalog =
+    (await resolveServerListing(input.listingId)) ??
     getServerListingById(input.listingId) ??
     getServerListingBySlug(input.listingId);
 
@@ -137,7 +139,7 @@ export async function initiateCheckout(
 ): Promise<CheckoutSessionResult> {
   await ensureStripeConfigLoaded();
   await hydrateListingCatalog();
-  const context = resolveListingCheckoutContext(input);
+  const context = await resolveListingCheckoutContext(input);
   if (!context) {
     throw new Error("LISTING_NOT_FOUND");
   }
@@ -309,6 +311,8 @@ export async function resumePendingCheckoutForBuyer(
 
   await hydrateListingCatalog();
   const listing =
+    (await resolveServerListing(order.listingId)) ??
+    (order.listingSlug ? await resolveServerListing(order.listingSlug) : undefined) ??
     getServerListingById(order.listingId) ??
     (order.listingSlug ? getServerListingBySlug(order.listingSlug) : undefined);
   return resumeCheckoutForOrder(
