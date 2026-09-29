@@ -878,6 +878,32 @@
   border-bottom: 0;
 }
 
+.admin-listings-table-card {
+  border: 1px solid var(--admin-line);
+  background: #fff;
+}
+
+.admin-listings-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-listings-table {
+  min-width: 72rem;
+}
+
+.admin-listings-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f6f7f9;
+  white-space: nowrap;
+}
+
+.admin-listings-table tbody tr:hover td {
+  background: #fafbfc;
+}
+
 .admin-ops__sidebar-footer .btn,
 .admin-ops__sidebar-footer button {
   margin-top: 0.35rem;
