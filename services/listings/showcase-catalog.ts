@@ -264,13 +264,13 @@ const SEEDS: ShowcaseSeed[] = [
   {
     key: "toyota-oem-filters-showcase",
     categoryId: "cars",
-    subcategory: "قطع غيار",
+    subcategory: "سيارات مستعملة",
     title: "فلاتر تويوتا أصلية — معرض تجريبي",
     titleEnglish: "Toyota OEM filters — showcase",
     description:
-      "نموذج قطع غيار لتوضيح قسم الإكسسوارات دون انتحال محل تجاري حقيقي.",
+      "نموذج إكسسوارات سيارات (فلاتر) ضمن السيارات المستعملة — دون انتحال محل تجاري حقيقي.",
     descriptionEnglish:
-      "An auto-parts showcase for the spare-parts subcategory. Not a real shop listing.",
+      "A car-accessories (filters) showcase under used cars. Not a real shop listing.",
     price: 180,
     emirate: "الشارقة",
     city: "الشارقة",

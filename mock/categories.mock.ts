@@ -12,7 +12,7 @@ export const mockCategories: Category[] = [
     listingCount: 8420,
     imageUrl: categoryImages.cars,
     featuredListingSlug: "mercedes-amg-g63-2024",
-    subcategories: ["سيارات مستعملة", "سيارات فاخرة", "سيارات كهربائية", "قطع غيار"],
+    subcategories: ["سيارات مستعملة", "سيارات فاخرة", "سيارات كهربائية"],
   },
   {
     id: "real-estate",

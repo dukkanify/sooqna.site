@@ -26,6 +26,7 @@ import {
   type CategoryFeatureProfile,
 } from "@/shared/constants/category-feature-profiles";
 import { replaceCategoryFormFields } from "@/services/admin/category-form-store";
+import { stripRetiredSubcategories } from "@/shared/constants/retired-subcategories";
 
 type StoredCategory = Category & {
   enabled: boolean;
@@ -59,6 +60,16 @@ function normalizeSubcategories(input?: string[] | null): string[] {
     next.push(value);
   }
   return next;
+}
+
+function normalizeCategorySubcategories(
+  categoryId: string,
+  input?: string[] | null,
+): string[] {
+  return stripRetiredSubcategories(
+    categoryId,
+    normalizeSubcategories(input),
+  );
 }
 
 function seedCategories(): StoredCategory[] {
@@ -116,16 +127,29 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
         await store.replaceAll(seeded);
         return setCache(seeded);
       }
-      return setCache(
-        stored.map((row, index) =>
-          withResolvedProfile({
-            ...row,
-            subcategories: normalizeSubcategories(row.subcategories),
-            sortOrder:
-              typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
-          }),
-        ),
+      const normalized = stored.map((row, index) =>
+        withResolvedProfile({
+          ...row,
+          subcategories: normalizeCategorySubcategories(
+            row.id,
+            row.subcategories,
+          ),
+          sortOrder:
+            typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
+        }),
       );
+      // Persist once when retired subs (e.g. قطع الغيار) were stripped from durable data.
+      const dirty = normalized.some((row, index) => {
+        const before = normalizeSubcategories(stored[index]?.subcategories);
+        return (
+          before.length !== row.subcategories.length ||
+          before.some((name, i) => name !== row.subcategories[i])
+        );
+      });
+      if (dirty) {
+        await store.replaceAll(normalized);
+      }
+      return setCache(normalized);
     })().finally(() => {
       inflight = null;
     });
@@ -272,7 +296,7 @@ export async function createCategoryRecord(
     (max, row) => Math.max(max, row.sortOrder ?? 0),
     0,
   );
-  const subcategories = normalizeSubcategories(input.subcategories);
+  const subcategories = normalizeCategorySubcategories(slug, input.subcategories);
   const record: StoredCategory = {
     id: slug,
     name: input.name.trim(),
@@ -322,8 +346,8 @@ export async function patchCategoryRecord(
       : categories[index].featureProfile;
   const nextSubcategories =
     patchSubs !== undefined
-      ? normalizeSubcategories(patchSubs)
-      : [...categories[index].subcategories];
+      ? normalizeCategorySubcategories(id, patchSubs)
+      : normalizeCategorySubcategories(id, categories[index].subcategories);
   categories[index] = {
     ...categories[index],
     ...persistPatch,

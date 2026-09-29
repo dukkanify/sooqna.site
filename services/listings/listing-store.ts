@@ -85,6 +85,28 @@ function cloneListings(listings: Listing[]) {
   return listings.map((listing) => ({ ...listing }));
 }
 
+async function remapRetiredSubcategoriesOnCatalog(
+  listings: Listing[],
+): Promise<Listing[]> {
+  const { remapRetiredListingSubcategory } = await import(
+    "@/shared/constants/retired-subcategories"
+  );
+  let dirty = false;
+  const next = listings.map((listing) => {
+    const remapped = remapRetiredListingSubcategory(
+      listing.categoryId,
+      listing.subcategory,
+    );
+    if (!remapped || remapped === listing.subcategory) return listing;
+    dirty = true;
+    return { ...listing, subcategory: remapped };
+  });
+  if (dirty) {
+    await persistAllListings(next).catch(() => undefined);
+  }
+  return next;
+}
+
 function setCache(listings: Listing[]) {
   cacheRows = cloneListings(listings);
   return cacheRows;
@@ -138,8 +160,9 @@ async function loadListingsUncached(): Promise<Listing[]> {
       const merged = hydrateCatalogPhones(
         await mergeMissingSeedListings(stored).catch(() => stored),
       );
+      const remapped = await remapRetiredSubcategoriesOnCatalog(merged);
       const { listings: repairedRows, repaired } =
-        repairPoorQualityListings(merged);
+        repairPoorQualityListings(remapped);
       if (repaired.length > 0) {
         await Promise.all(
           repaired.map((listing) =>
