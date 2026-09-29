@@ -63,6 +63,10 @@ export type RealEstateSpecs = {
   unitNumber?: string;
   totalFloors?: number;
   floor?: string;
+  /** متاح الآن | تاريخ محدد | قيد الإنشاء */
+  availabilityTiming?: string;
+  availabilityDate?: string;
+  expectedHandoverDate?: string;
   amenities: string[];
 };
 
