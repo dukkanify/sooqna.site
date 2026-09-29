@@ -13,11 +13,12 @@ import {
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Button } from "@/shared/ui/Button";
 import { Textarea } from "@/shared/ui/Textarea";
-import Link from "next/link";
 
 type AdminOrderInlineDeskProps = {
   busy: boolean;
   locale: AppLocale;
+  notifyBusy?: boolean;
+  onNotifyPayment?: () => void;
   onReasonChange: (value: string) => void;
   onRefund?: () => void;
   onRelease?: () => void;
@@ -42,9 +43,17 @@ function formatWhen(locale: AppLocale, value?: string) {
   return new Date(value).toLocaleString(intlLocale(locale));
 }
 
+function isAwaitingBuyerPayment(order: Order): boolean {
+  return (
+    order.status === "pending_payment" || order.paymentStatus === "pending"
+  );
+}
+
 export function AdminOrderInlineDesk({
   busy,
   locale,
+  notifyBusy = false,
+  onNotifyPayment,
   onReasonChange,
   onRefund,
   onRelease,
@@ -56,9 +65,15 @@ export function AdminOrderInlineDesk({
   const address = order.deliveryAddressSnapshot;
   const proofUrls = order.sellerProofUrls ?? [];
   const fees = order.fees;
+  const awaitingPayment = isAwaitingBuyerPayment(order);
+  const listingHref = order.listingSlug
+    ? `/listings/${order.listingSlug}`
+    : order.listingId
+      ? `/listings/${order.listingId}`
+      : null;
 
   return (
-    <div className="mt-4 grid gap-4 border-t border-border/70 pt-3">
+    <div className="grid gap-4">
       <div>
         <p className="text-xs font-bold uppercase tracking-wide text-muted">
           مكتب الطلب
@@ -68,6 +83,54 @@ export function AdminOrderInlineDesk({
           الموقع.
         </p>
       </div>
+
+      {awaitingPayment ? (
+        <div className="rounded-[var(--radius-xl)] border border-amber-300/70 bg-amber-50 px-3 py-3 text-sm text-ink">
+          <p className="font-semibold">الدفع مطلوب من المشتري</p>
+          <p className="mt-1 text-xs text-muted">
+            لا يُطلب من الأدمن إكمال الدفع. أرسل إشعاراً للمشتري أو طالب الخدمة
+            ليكمل الدفع من حسابه.
+          </p>
+          {onNotifyPayment && order.buyerId ? (
+            <div className="mt-3">
+              <Button
+                loading={notifyBusy}
+                onClick={onNotifyPayment}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                إشعار المشتري بإكمال الدفع
+              </Button>
+            </div>
+          ) : (
+            <p className="mt-2 text-xs text-muted">
+              لا يوجد مشتري مسجّل لإرسال إشعار داخل التطبيق (طلب ضيف).
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      {listingHref ? (
+        <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface-muted/40 px-3 py-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">
+            معاينة الإعلان
+          </p>
+          <p className="text-sm font-semibold text-ink">{order.listingTitle}</p>
+          <p className="font-mono text-xs text-muted">{order.listingId}</p>
+          <a
+            className="admin-ops__text-link text-xs"
+            href={listingHref}
+            rel="noreferrer"
+            target="_blank"
+          >
+            رابط معاينة مختصر للإعلان
+          </a>
+          <p className="text-[11px] text-muted">
+            يفتح صفحة الإعلان للمرجع فقط — ليس مسار دفع الأدمن.
+          </p>
+        </div>
+      ) : null}
 
       <dl className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface-muted/40 px-3 py-3 sm:grid-cols-2">
         <MetaRow label="حالة الطلب" value={orderStatusLabel(order.status)} />
@@ -246,14 +309,6 @@ export function AdminOrderInlineDesk({
           <Button href="/admin/disputes" size="sm" type="button" variant="ghost">
             مكتب النزاعات
           </Button>
-        ) : null}
-        {order.listingSlug ? (
-          <Link
-            className="admin-ops__text-link self-center text-xs"
-            href={`/listings/${order.listingSlug}`}
-          >
-            صفحة الإعلان (مرجع)
-          </Link>
         ) : null}
       </div>
 

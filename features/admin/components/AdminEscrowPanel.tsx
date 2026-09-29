@@ -21,6 +21,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
+import { Modal } from "@/shared/ui/Modal";
 import { Select } from "@/shared/ui/Select";
 
 type EscrowFilter = "held" | "all" | "released" | "refunded";
@@ -53,12 +54,16 @@ export function AdminEscrowPanel() {
   const [filter, setFilter] = useState<EscrowFilter>("held");
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [notifyBusyId, setNotifyBusyId] = useState<string | null>(null);
   const [deskId, setDeskId] = useState<string | null>(null);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{
     text: string;
     variant: "success" | "error";
   } | null>(null);
+  const deskOrder = deskId
+    ? orders.find((order) => order.id === deskId) ?? null
+    : null;
 
   function load() {
     const user = getSessionUser();
@@ -162,6 +167,45 @@ export function AdminEscrowPanel() {
     }
   }
 
+  async function handleNotifyPayment(orderId: string) {
+    const user = getSessionUser();
+    if (!user) return;
+    setNotifyBusyId(orderId);
+    setMessage(null);
+    try {
+      const res = await adminFetch(
+        `/api/admin/orders/${orderId}/notify-payment`,
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setMessage({
+          variant: "success",
+          text: "تم إرسال إشعار للمشتري لإكمال الدفع.",
+        });
+        load();
+      } else {
+        const err =
+          data && typeof data === "object" && "error" in data
+            ? String((data as { error: unknown }).error)
+            : "";
+        const map: Record<string, string> = {
+          NO_BUYER: "لا يوجد مشتري مسجّل لإرسال الإشعار.",
+          INVALID_STATUS: "الطلب ليس بانتظار الدفع.",
+        };
+        setMessage({
+          variant: "error",
+          text: map[err] ?? "تعذّر إرسال الإشعار.",
+        });
+      }
+    } finally {
+      setNotifyBusyId(null);
+    }
+  }
+
   return (
     <div className="grid gap-5">
       <div className="admin-ops__kpi-grid">
@@ -212,7 +256,6 @@ export function AdminEscrowPanel() {
         <ul className="admin-boxes__grid">
           {filtered.map((order) => {
             const held = isHeld(order);
-            const deskOpen = deskId === order.id;
             return (
               <li key={order.id} className="admin-boxes__card admin-boxes__card--wide">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -252,15 +295,12 @@ export function AdminEscrowPanel() {
 
                 <div className="admin-boxes__card-actions">
                   <Button
-                    aria-expanded={deskOpen}
-                    onClick={() =>
-                      setDeskId((prev) => (prev === order.id ? null : order.id))
-                    }
+                    onClick={() => setDeskId(order.id)}
                     size="sm"
                     type="button"
                     variant="secondary"
                   >
-                    {deskOpen ? "إخفاء المكتب" : "مكتب الطلب"}
+                    عرض
                   </Button>
                   {held ? (
                     <Button
@@ -273,30 +313,40 @@ export function AdminEscrowPanel() {
                     </Button>
                   ) : null}
                 </div>
-
-                {deskOpen ? (
-                  <AdminOrderInlineDesk
-                    busy={busyId === order.id}
-                    locale={locale}
-                    onReasonChange={(value) =>
-                      setReasonDrafts((prev) => ({
-                        ...prev,
-                        [order.id]: value,
-                      }))
-                    }
-                    onRefund={() => handleRefund(order.id)}
-                    onRelease={() => handleRelease(order.id)}
-                    order={order}
-                    reasonDraft={reasonDrafts[order.id] ?? ""}
-                    showRefund={held && order.status !== "refunded"}
-                    showRelease={held}
-                  />
-                ) : null}
               </li>
             );
           })}
         </ul>
       )}
+
+      <Modal
+        description="معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع."
+        onClose={() => setDeskId(null)}
+        open={Boolean(deskOrder)}
+        size="lg"
+        title="مكتب الطلب"
+      >
+        {deskOrder ? (
+          <AdminOrderInlineDesk
+            busy={busyId === deskOrder.id}
+            locale={locale}
+            notifyBusy={notifyBusyId === deskOrder.id}
+            onNotifyPayment={() => handleNotifyPayment(deskOrder.id)}
+            onReasonChange={(value) =>
+              setReasonDrafts((prev) => ({
+                ...prev,
+                [deskOrder.id]: value,
+              }))
+            }
+            onRefund={() => handleRefund(deskOrder.id)}
+            onRelease={() => handleRelease(deskOrder.id)}
+            order={deskOrder}
+            reasonDraft={reasonDrafts[deskOrder.id] ?? ""}
+            showRefund={isHeld(deskOrder) && deskOrder.status !== "refunded"}
+            showRelease={isHeld(deskOrder)}
+          />
+        ) : null}
+      </Modal>
 
       <div className="admin-ops__quick-links">
         <Link

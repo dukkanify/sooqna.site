@@ -2921,5 +2921,13 @@
   "لن يُستبدل بريدك الحالي إلا بعد إدخال رمز التحقق المرسل إلى العنوان الجديد.": "Your current email is not replaced until you enter the code sent to the new address.",
   "تم تحديث بريدك الإلكتروني بنجاح.": "Your email was updated successfully.",
   "تم إلغاء طلب تغيير البريد.": "Email change request cancelled.",
-  "جاري الإرسال...": "Sending..."
+  "جاري الإرسال...": "Sending...",
+  "إشعار المشتري بإكمال الدفع": "Notify buyer to complete payment",
+  "الدفع مطلوب من المشتري": "Payment required from the buyer",
+  "رابط معاينة مختصر للإعلان": "Short listing preview link",
+  "لا يُطلب من الأدمن إكمال الدفع. أرسل إشعاراً للمشتري أو طالب الخدمة ليكمل الدفع من حسابه.": "Admins are not asked to complete payment. Notify the buyer or requester so they can pay from their account.",
+  "يفتح صفحة الإعلان للمرجع فقط — ليس مسار دفع الأدمن.": "Opens the listing page for reference only — not an admin payment path.",
+  "لا يوجد مشتري مسجّل لإرسال إشعار داخل التطبيق (طلب ضيف).": "No registered buyer to notify in-app (guest order).",
+  "تم إرسال إشعار للمشتري لإكمال الدفع.": "Buyer was notified to complete payment.",
+  "معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع.": "Preview the order and listing inside the control panel — without the buyer or payment journey."
 }

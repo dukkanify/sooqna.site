@@ -272,6 +272,12 @@ export async function initiateCheckout(
     );
   }
 
+  // Remind the buyer (not admins) that payment is still required.
+  void notifyBuyerPaymentRequired(order.id, { source: "checkout" }).catch(
+    (error) =>
+      console.error("[Sooqna Notify] payment_required on checkout failed", error),
+  );
+
   if (!isStripeConfigured()) {
     if (!isMockCheckoutAllowed()) {
       throw new Error("STRIPE_NOT_CONFIGURED");
@@ -1236,4 +1242,63 @@ export async function adminReleaseEscrow(
     return working;
   }
   return updateOrder(orderId, { status: "released" });
+}
+
+/**
+ * Notify the buyer that payment is still required for a pending order.
+ * Never used for admin pay flows — admins stay in the control panel.
+ */
+export async function notifyBuyerPaymentRequired(
+  orderId: string,
+  options?: { source?: "checkout" | "admin"; actorId?: string },
+): Promise<Order | null> {
+  const order = await getOrderById(orderId);
+  if (!order) return null;
+  if (
+    order.status !== "pending_payment" &&
+    order.paymentStatus !== "pending"
+  ) {
+    throw new Error("INVALID_STATUS");
+  }
+  if (!order.buyerId) {
+    throw new Error("NO_BUYER");
+  }
+
+  const source = options?.source ?? "admin";
+  const dedupeKey =
+    source === "checkout"
+      ? `payment_required:checkout:${order.id}`
+      : `payment_required:admin:${order.id}:${new Date().toISOString().slice(0, 13)}`;
+
+  await createNotification({
+    userId: order.buyerId,
+    orderId: order.id,
+    type: "payment_required",
+    title: "إكمال الدفع مطلوب",
+    titleEn: "Payment required",
+    body: `طلبك «${order.listingTitle}» بانتظار الدفع (${formatCurrencyLabel(order.fees.total)}). أكمل الدفع من صفحة الطلب.`,
+    bodyEn: `Your order «${order.listingTitle}» is awaiting payment (${formatCurrencyLabel(order.fees.total)}). Complete payment from the order page.`,
+    href: `/orders/${order.id}`,
+    dedupeKey,
+  });
+
+  const message =
+    source === "admin"
+      ? "أُرسل إشعار للمشتري لإكمال الدفع (إجراء إداري)."
+      : "أُرسل إشعار للمشتري بإكمال الدفع بعد إنشاء الطلب.";
+
+  return (
+    (await updateOrder(
+      order.id,
+      {},
+      {
+        type: "payment_required",
+        message,
+        metadata: {
+          source,
+          ...(options?.actorId ? { actorId: options.actorId } : {}),
+        },
+      },
+    )) ?? order
+  );
 }
