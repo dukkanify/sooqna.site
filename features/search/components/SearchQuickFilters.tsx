@@ -14,9 +14,9 @@ import {
 } from "./search-url";
 
 export const SEARCH_PRICE_BANDS = [
-  { label: "حتى 20 ألف", maxPrice: "20000" },
-  { label: "حتى 50 ألف", maxPrice: "50000" },
-  { label: "حتى 100 ألف", maxPrice: "100000" },
+  { label: "0 – 20 ألف AED", maxPrice: "20000", minPrice: "0" },
+  { label: "0 – 50 ألف AED", maxPrice: "50000", minPrice: "0" },
+  { label: "0 – 100 ألف AED", maxPrice: "100000", minPrice: "0" },
 ] as const;
 
 type SearchQuickFiltersProps = {
@@ -113,13 +113,14 @@ export function SearchQuickFilters({
     },
     ...SEARCH_PRICE_BANDS.map((band) => {
       const active =
-        selectedFilters.maxPrice === band.maxPrice && !selectedFilters.minPrice;
+        selectedFilters.maxPrice === band.maxPrice &&
+        (!selectedFilters.minPrice || selectedFilters.minPrice === band.minPrice);
       return {
         label: band.label,
         active,
         href: hrefFor({
           maxPrice: active ? "" : band.maxPrice,
-          minPrice: "",
+          minPrice: active ? "" : band.minPrice,
         }),
       };
     }),
