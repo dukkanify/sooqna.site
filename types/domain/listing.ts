@@ -59,6 +59,10 @@ export type RealEstateSpecs = {
   furnished: string;
   developer: string;
   community: string;
+  buildingName?: string;
+  unitNumber?: string;
+  totalFloors?: number;
+  floor?: string;
   amenities: string[];
 };
 
