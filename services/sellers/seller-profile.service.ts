@@ -1,5 +1,6 @@
 import type { Listing, ListingSeller } from "@/types";
 import { marketplaceSellers } from "@/mock/sellers.mock";
+import { findUserById } from "@/services/auth/user-store";
 import { searchListings } from "@/services/listings";
 
 export async function getSellerListings(sellerId: string): Promise<Listing[]> {
@@ -7,10 +8,10 @@ export async function getSellerListings(sellerId: string): Promise<Listing[]> {
   return searchListings({ sellerId, sort: "newest" });
 }
 
-export function getSellerProfile(
+export async function getSellerProfile(
   sellerId: string,
   listings: Listing[] = [],
-): ListingSeller | undefined {
+): Promise<ListingSeller | undefined> {
   const fromCatalog = Object.values(marketplaceSellers).find(
     (seller) => seller.id === sellerId,
   );
@@ -29,5 +30,26 @@ export function getSellerProfile(
       sellerType: fromCatalog.sellerType,
     };
   }
-  return listings[0]?.seller;
+
+  if (listings[0]?.seller) {
+    return listings[0].seller;
+  }
+
+  // Fall back to registered account so public social links can still render.
+  const account = await findUserById(sellerId);
+  if (!account) return undefined;
+
+  const sellerType =
+    account.accountType === "company" || account.accountType === "business"
+      ? ("business" as const)
+      : ("individual" as const);
+
+  return {
+    id: account.id,
+    name:
+      account.businessProfile?.businessName?.trim() || account.fullName,
+    ...(account.isVerified ? { isVerified: true } : {}),
+    sellerType,
+    ...(account.joinedAt ? { joinedAt: account.joinedAt } : {}),
+  };
 }

@@ -47,6 +47,17 @@ export type BusinessProfile = {
   logoUrl?: string;
 };
 
+/** Optional social / web links edited from the profile page. */
+export type SocialLinks = {
+  instagram?: string;
+  facebook?: string;
+  x?: string;
+  tiktok?: string;
+  linkedin?: string;
+  youtube?: string;
+  website?: string;
+};
+
 export type UserProfile = {
   id: string;
   fullName: string;
@@ -77,6 +88,10 @@ export type UserProfile = {
   subscription?: string;
   walletBalance?: number;
   businessProfile?: BusinessProfile;
+  /** Optional social media / website URLs (validated https). */
+  socialLinks?: SocialLinks;
+  /** When true, filled socialLinks appear on the public seller page. */
+  socialLinksPublic?: boolean;
   preferredLocale?: "ar" | "en";
 };
 
