@@ -4,9 +4,16 @@
  */
 export function sellerDisplayNameFromProfile(user: {
   fullName?: string | null;
-  businessProfile?: { businessName?: string | null } | null;
+  /** Accept partial BusinessProfile snapshots (e.g. after clearing businessName). */
+  businessProfile?: { businessName?: string | null } | object | null;
 }): string {
-  const merchant = user.businessProfile?.businessName?.trim();
+  const raw =
+    user.businessProfile &&
+    typeof user.businessProfile === "object" &&
+    "businessName" in user.businessProfile
+      ? (user.businessProfile as { businessName?: string | null }).businessName
+      : undefined;
+  const merchant = typeof raw === "string" ? raw.trim() : "";
   if (merchant) return merchant;
   return (user.fullName ?? "").trim();
 }
