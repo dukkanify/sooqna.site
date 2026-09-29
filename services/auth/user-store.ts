@@ -405,6 +405,8 @@ export async function updateUserProfile(
     phone?: string;
     city?: string;
     accountType?: StoredUser["accountType"];
+    socialLinks?: StoredUser["socialLinks"];
+    socialLinksPublic?: boolean;
   },
 ): Promise<UserProfile | null> {
   const user = await findUserById(userId);
@@ -414,6 +416,19 @@ export async function updateUserProfile(
   const phone = patch.phone?.trim();
   const city = patch.city?.trim();
   const accountType = patch.accountType;
+  const hasSocialLinksPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "socialLinks",
+  );
+  const hasSocialPublicPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "socialLinksPublic",
+  );
+  const nextSocialLinks = hasSocialLinksPatch
+    ? Object.keys(patch.socialLinks ?? {}).length > 0
+      ? patch.socialLinks
+      : undefined
+    : user.socialLinks;
 
   const updated: StoredUser = {
     ...user,
@@ -421,6 +436,10 @@ export async function updateUserProfile(
     ...(phone !== undefined ? { phone } : {}),
     ...(city ? { city } : {}),
     ...(accountType ? { accountType } : {}),
+    ...(hasSocialLinksPatch ? { socialLinks: nextSocialLinks } : {}),
+    ...(hasSocialPublicPatch
+      ? { socialLinksPublic: Boolean(patch.socialLinksPublic) }
+      : {}),
   };
   await saveUser(updated);
   return toProfile(updated);

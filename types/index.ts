@@ -43,6 +43,7 @@ export type {
   AdminAction,
   AdminActionMatrix,
   AdminPermission,
+  SocialLinks,
   UserProfile,
   UserRole,
 } from "./domain/user";

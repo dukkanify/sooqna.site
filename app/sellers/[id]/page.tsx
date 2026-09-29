@@ -15,10 +15,12 @@ import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { Icon } from "@/shared/ui/Icon";
+import { findUserById } from "@/services/auth/user-store";
 import {
   getSellerListings,
   getSellerProfile,
 } from "@/services/sellers/seller-profile.service";
+import { SellerSocialLinks } from "@/features/sellers/components/SellerSocialLinks";
 
 type SellerPageProps = {
   params: Promise<{ id: string }>;
@@ -68,6 +70,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
   const seller = getSellerProfile(sellerId, listings);
   if (!seller) notFound();
 
+  const account = await findUserById(sellerId);
   const name = sellerName(seller, locale);
   const showRating =
     typeof seller.rating === "number" &&
@@ -142,6 +145,10 @@ export default async function SellerPage({ params }: SellerPageProps) {
                       ) : null}
                     </div>
                   ) : null}
+                  <SellerSocialLinks
+                    links={account?.socialLinks}
+                    publicVisible={Boolean(account?.socialLinksPublic)}
+                  />
                 </div>
               </div>
             </div>

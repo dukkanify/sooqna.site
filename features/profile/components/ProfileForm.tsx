@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
-import type { UserProfile } from "@/types";
+import type { SocialLinks, UserProfile } from "@/types";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -11,7 +11,13 @@ import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { getSessionUser, setSessionUser } from "@/services/storage";
 import { isUaePassEnabled } from "@/shared/constants/feature-flags";
+import { SOCIAL_LINK_PLATFORMS } from "@/shared/constants/social-links";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import {
+  SOCIAL_LINK_INVALID_AR,
+  sanitizeSocialLinks,
+} from "@/shared/validation/social-links";
+import { ProfileSocialLinksFields } from "./ProfileSocialLinksFields";
 
 type ProfileFormProps = {
   user: UserProfile;
@@ -25,6 +31,14 @@ const accountTypeLabels: Record<UserProfile["accountType"], string> = {
   seller: "بائع فردي",
 };
 
+function readSocialLinksFromForm(formData: FormData): SocialLinks {
+  const raw: SocialLinks = {};
+  for (const platform of SOCIAL_LINK_PLATFORMS) {
+    raw[platform] = String(formData.get(`social_${platform}`) ?? "").trim();
+  }
+  return raw;
+}
+
 export function ProfileForm({ user }: ProfileFormProps) {
   const cities = useMarketplaceLocations();
   const [displayUser, setDisplayUser] = useState(() =>
@@ -33,6 +47,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [formRevision, setFormRevision] = useState(0);
+  const [socialErrors, setSocialErrors] = useState<
+    Partial<Record<(typeof SOCIAL_LINK_PLATFORMS)[number], string>>
+  >({});
 
   return (
     <LocalizedTree>
@@ -58,7 +76,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
 
         <form
-          key={displayUser.id}
+          key={`${displayUser.id}-${formRevision}`}
           className="grid gap-5 p-6"
           onSubmit={(event) => {
             event.preventDefault();
@@ -74,6 +92,19 @@ export function ProfileForm({ user }: ProfileFormProps) {
               formData.get("fullName") ?? displayUser.fullName,
             ).trim();
             const phone = String(formData.get("phone") ?? displayUser.phone).trim();
+            const socialRaw = readSocialLinksFromForm(formData);
+            const socialSanitized = sanitizeSocialLinks(socialRaw);
+            const socialLinksPublic = formData.get("socialLinksPublic") === "on";
+
+            if (!socialSanitized.ok) {
+              setSocialErrors({
+                [socialSanitized.platform]: SOCIAL_LINK_INVALID_AR,
+              });
+              setSaveError(true);
+              setSaveMessage(SOCIAL_LINK_INVALID_AR);
+              return;
+            }
+            setSocialErrors({});
 
             setIsSaving(true);
             setSaveMessage("");
@@ -90,12 +121,25 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     phone,
                     city: cityName,
                     accountType,
+                    socialLinks: socialSanitized.links,
+                    socialLinksPublic,
                   }),
                 });
 
                 if (!response.ok) {
+                  const err = (await response.json().catch(() => ({}))) as {
+                    message?: string;
+                    platform?: string;
+                  };
                   setSaveError(true);
-                  setSaveMessage("تعذر حفظ الملف الشخصي. حاول مرة أخرى.");
+                  setSaveMessage(
+                    err.message ?? "تعذر حفظ الملف الشخصي. حاول مرة أخرى.",
+                  );
+                  if (err.platform) {
+                    setSocialErrors({
+                      [err.platform]: err.message ?? SOCIAL_LINK_INVALID_AR,
+                    });
+                  }
                   return;
                 }
 
@@ -106,10 +150,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   phone,
                   city: cityName,
                   accountType,
+                  socialLinks: socialSanitized.links,
+                  socialLinksPublic,
                 };
 
                 setSessionUser(updatedUser);
                 setDisplayUser(updatedUser);
+                setFormRevision((value) => value + 1);
                 setSaveMessage("تم حفظ التغييرات في حسابك.");
               } catch {
                 setSaveError(true);
@@ -165,6 +212,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
               { label: "بائع فردي", value: "seller" },
               { label: "متجر أو معرض", value: "business" },
             ]}
+          />
+
+          <ProfileSocialLinksFields
+            errors={socialErrors}
+            links={displayUser.socialLinks}
+            publicVisible={Boolean(displayUser.socialLinksPublic)}
           />
 
           {saveMessage ? (
