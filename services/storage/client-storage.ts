@@ -154,6 +154,37 @@ export function getLocalListingsForSeller(sellerId: string): Listing[] {
   return getLocalListings().filter((listing) => listing.seller.id === sellerId);
 }
 
+/** Keep local-only listing seller.name snapshots aligned after a profile rename. */
+export function syncLocalListingsSellerDisplayName(
+  sellerId: string,
+  displayName: string,
+): number {
+  if (!canUseStorage()) return 0;
+  const name = displayName.trim();
+  if (!sellerId || !name) return 0;
+
+  const listings = getLocalListings();
+  let changed = 0;
+  const next = listings.map((listing) => {
+    if (listing.seller.id !== sellerId) return listing;
+    if (listing.seller.name === name) return listing;
+    changed += 1;
+    return {
+      ...listing,
+      seller: {
+        ...listing.seller,
+        name,
+      },
+    };
+  });
+  if (changed === 0) return 0;
+  if (!safeSetItem(STORAGE_KEYS.localListings, JSON.stringify(next))) {
+    return 0;
+  }
+  window.dispatchEvent(new Event(STORAGE_EVENTS.listingsChange));
+  return changed;
+}
+
 export type FavoriteRecord = {
   listingId: string;
   slug: string;

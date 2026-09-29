@@ -5,6 +5,7 @@ import {
 import { isMarketplaceAccountReady } from "@/services/auth/account-access";
 import { notifyListingSubmitted } from "@/services/listings/listing-notifications";
 import { getListingById, upsertListing } from "@/services/listings/listing-store";
+import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 import type { Listing } from "@/types";
 
 /** Authenticated upsert used by listing create/edit forms to sync site data into the catalog store. */
@@ -45,10 +46,11 @@ export async function POST(request: Request) {
       seller: {
         ...body.listing.seller,
         id: session.id,
+        // Always prefer live profile display name so renamed accounts stay consistent.
         name:
-          body.listing.seller?.name ||
-          session.businessProfile?.businessName?.trim() ||
-          session.fullName,
+          sellerDisplayNameFromProfile(session) ||
+          body.listing.seller?.name?.trim() ||
+          "",
       },
     });
 

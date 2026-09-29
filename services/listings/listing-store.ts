@@ -618,6 +618,41 @@ export async function updateSellerListingRating(
   bumpListingsCache();
 }
 
+/**
+ * Keep denormalized seller.name on every listing in sync with the profile
+ * display name (businessName → else fullName) after a rename.
+ */
+export async function updateSellerListingDisplayName(
+  sellerId: string,
+  displayName: string,
+): Promise<number> {
+  const name = displayName.trim();
+  if (!sellerId || !name) return 0;
+
+  const listings = await loadListingsUncached();
+  const touched: Listing[] = [];
+  for (let i = 0; i < listings.length; i += 1) {
+    if (listings[i].seller.id !== sellerId) continue;
+    if (listings[i].seller.name === name) continue;
+    listings[i] = {
+      ...listings[i],
+      seller: {
+        ...listings[i].seller,
+        name,
+      },
+    };
+    touched.push(listings[i]);
+  }
+  if (touched.length === 0) return 0;
+
+  for (const listing of touched) {
+    await upsertListingRow(listing);
+  }
+  cacheRows = null;
+  bumpListingsCache();
+  return touched.length;
+}
+
 export function toAdminListingRecord(listing: Listing): AdminListingRecord {
   const media = sanitizeListingMediaFields(listing);
   return {
