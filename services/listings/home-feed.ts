@@ -2,7 +2,6 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import type { Listing } from "@/types";
 import { mockHomeCategorySections } from "@/mock";
-import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { slimListingForCard } from "@/services/listings/listing-card-model";
 import { queryListings } from "@/services/listings/listing-queries";
 import {
@@ -11,6 +10,10 @@ import {
 } from "@/services/listings/listings-cache";
 import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
 import { sortByMostViewed } from "@/services/listings/home-feed-rank";
+import {
+  isEligibleFeaturedPageListing,
+  sortFeaturedPageListings,
+} from "@/shared/listings/featured-page-rules";
 
 export type HomeListingCard = Listing;
 export { slimListingForCard };
@@ -178,8 +181,9 @@ async function buildHomeFeed(): Promise<HomeFeed> {
   const usedIds = new Set<string>();
   const usedCovers = new Set<string>();
 
-  const activeFeatured = sortByMostViewed(
-    featuredRows.filter((listing) => isListingFeaturedActive(listing)),
+  // Same eligibility/order contract as `/featured` (paid + active window).
+  const activeFeatured = sortFeaturedPageListings(
+    featuredRows.filter((listing) => isEligibleFeaturedPageListing(listing)),
   );
 
   // 1) Featured first — never backfill with non-featured catalog rows.
@@ -218,7 +222,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v19-featured-mostviewed-nearby"],
+  ["sooqna-home-feed-v20-featured-rules-mostviewed-nearby"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

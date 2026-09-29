@@ -3,6 +3,10 @@ import { z } from "zod";
 import { BRAND } from "@/shared/constants/brand";
 import { deliverEmailSafely } from "@/services/email/email.service";
 import { checkRateLimit, getClientIp } from "@/services/auth/rate-limit";
+import { getAllUsers } from "@/services/auth/user-store";
+import { createNotification } from "@/services/payments/notification-store";
+import { createSupportMessage } from "@/services/support/support-message-store";
+import { SUPPORT_TOPIC_LABELS } from "@/types/domain/support-message";
 
 const schema = z.object({
   name: z.string().trim().min(2, "NAME_TOO_SHORT").max(80, "NAME_TOO_LONG"),
@@ -16,14 +20,6 @@ const schema = z.object({
     .min(10, "MESSAGE_TOO_SHORT")
     .max(2000, "MESSAGE_TOO_LONG"),
 });
-
-const topicLabels: Record<z.infer<typeof schema>["topic"], string> = {
-  order: "طلب / دفع",
-  listing: "إعلان",
-  escrow: "ضمان مالي",
-  account: "حساب",
-  other: "أخرى",
-};
 
 const fieldMessages: Record<string, string> = {
   NAME_TOO_SHORT: "الاسم يجب أن يكون حرفين على الأقل.",
@@ -65,13 +61,36 @@ export async function POST(request: Request) {
     );
   }
 
+  const topic = SUPPORT_TOPIC_LABELS[parsed.data.topic];
+
+  // Persist first so the control panel always has the message.
+  const saved = await createSupportMessage({
+    name: parsed.data.name,
+    email: parsed.data.email,
+    topic: parsed.data.topic,
+    message: parsed.data.message,
+  });
+
+  const admins = (await getAllUsers()).filter((user) => user.role === "admin");
+  await Promise.all(
+    admins.map((admin) =>
+      createNotification({
+        userId: admin.id,
+        type: "support_message",
+        title: "رسالة تواصل معنا جديدة",
+        body: `${saved.name} — ${topic}`,
+        href: "/admin/support-messages",
+      }),
+    ),
+  );
+
   const inbox = process.env.SUPPORT_EMAIL?.trim() || BRAND.supportEmail;
-  const topic = topicLabels[parsed.data.topic];
   const subject = `رسالة دعم — ${topic} — ${parsed.data.name}`;
   const text = [
     `الاسم: ${parsed.data.name}`,
     `البريد: ${parsed.data.email}`,
     `الموضوع: ${topic}`,
+    `المعرّف: ${saved.id}`,
     "",
     parsed.data.message,
   ].join("\n");
@@ -87,7 +106,7 @@ export async function POST(request: Request) {
     to: inbox,
     subject,
     text,
-    html: `<div style="font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:right;"><p><strong>${parsed.data.name}</strong><br/>${parsed.data.email}</p><p>الموضوع: ${topic}</p><p>${safeMessage}</p></div>`,
+    html: `<div style="font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:right;"><p><strong>${parsed.data.name}</strong><br/>${parsed.data.email}</p><p>الموضوع: ${topic}</p><p>${safeMessage}</p><p style="color:#666;font-size:12px;">لوحة التحكم: /admin/support-messages · ${saved.id}</p></div>`,
   });
 
   await deliverEmailSafely({
@@ -98,5 +117,10 @@ export async function POST(request: Request) {
     html: `<div style="font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:right;"><p>مرحبًا ${parsed.data.name}،</p><p>استلمنا رسالتك حول «${topic}» وسنعود إليك في أقرب وقت.</p><p>فريق ${BRAND.nameAr}</p></div>`,
   });
 
-  return NextResponse.json({ ok: true, emailed });
+  return NextResponse.json({
+    ok: true,
+    emailed,
+    messageId: saved.id,
+    adminPath: "/admin/support-messages",
+  });
 }
