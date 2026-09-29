@@ -11,7 +11,8 @@ const WINDOW_MS = 15 * 60 * 1000;
 const MAX_REQUESTS = 10;
 
 export async function checkRateLimit(key: string): Promise<boolean> {
-  const all = await loadCollection<RateLimitRecord>(FILE);
+  const loaded = await loadCollection<RateLimitRecord>(FILE);
+  const all = Array.isArray(loaded) ? loaded : [];
   const now = Date.now();
   const existing = all.find((item) => item.key === key);
 

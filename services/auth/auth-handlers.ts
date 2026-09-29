@@ -161,12 +161,19 @@ export async function sendOtpForPurpose(input: {
       delivered = await senders.sendLoginOtp(payload);
   }
 
-  if (!delivered && input.purpose === "REGISTER") {
-    await clearOtpResendCooldown({ email: input.email, purpose: "REGISTER" });
+  // Keep OTP when delivery fails for register + email-change flows so the user
+  // can still confirm (demo OTP / resend) without restarting the whole request.
+  if (
+    !delivered &&
+    (input.purpose === "REGISTER" ||
+      input.purpose === "EMAIL_CHANGE" ||
+      input.purpose === "SENSITIVE_ACTION")
+  ) {
+    await clearOtpResendCooldown({ email: input.email, purpose: input.purpose });
     return { delivered: false, code };
   }
 
-  if (!delivered && input.purpose !== "REGISTER") {
+  if (!delivered) {
     await invalidateOtpRecord(record.id);
     throw new Error("EMAIL_SEND_FAILED");
   }

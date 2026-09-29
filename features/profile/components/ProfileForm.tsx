@@ -22,6 +22,7 @@ import {
   SOCIAL_LINK_INVALID_AR,
   sanitizeSocialLinks,
 } from "@/shared/validation/social-links";
+import { ChangeEmailSection } from "./ChangeEmailSection";
 import { ProfileSocialLinksFields } from "./ProfileSocialLinksFields";
 
 type ProfileFormProps = {
@@ -195,6 +196,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <Input
               defaultValue={displayUser.email}
               disabled
+              hint="لتغيير البريد استخدم القسم الآمن أسفل نموذج الحفظ"
               label="البريد الإلكتروني"
               name="email"
               type="email"
@@ -262,6 +264,17 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </Button>
           </div>
         </form>
+
+        {/* Outside the save form so password/OTP fields don't trigger browser save or form submit. */}
+        <div className="border-t border-border/60 p-6 pt-5">
+          <ChangeEmailSection
+            onUserUpdated={(next) => {
+              setDisplayUser(next);
+              setFormRevision((value) => value + 1);
+            }}
+            user={displayUser}
+          />
+        </div>
       </Card>
 
       <div className="grid gap-4">
