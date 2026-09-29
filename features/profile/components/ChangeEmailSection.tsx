@@ -166,14 +166,17 @@ export function ChangeEmailSection({
       }
       const pending = data.pendingEmail ?? email;
       setPendingEmailState(pending);
-      setEmailDeliveryFailed(data.emailDelivered === false);
-      if (
+      const revealedOtp =
         isDemoOtpClientEnabled() &&
         typeof data.otp === "string" &&
         /^\d{6}$/.test(data.otp)
-      ) {
-        saveOtpFallback(pending, data.otp);
-        setInitialOtp(data.otp);
+          ? data.otp
+          : null;
+      // When demo OTP is already on-screen, skip delivery-failed auto-resend noise.
+      setEmailDeliveryFailed(data.emailDelivered === false && !revealedOtp);
+      if (revealedOtp) {
+        saveOtpFallback(pending, revealedOtp);
+        setInitialOtp(revealedOtp);
       } else {
         setInitialOtp(null);
       }
