@@ -59,23 +59,35 @@ function mapJob(item: JobApplication, scope: ActivityScope): ActivityRecord {
 }
 
 function mapViewing(item: ViewingBooking, scope: ActivityScope): ActivityRecord {
+  const proposed =
+    item.status === "modification_proposed" && item.proposedDate && item.proposedTime
+      ? ` · مقترح: ${item.proposedDate} ${item.proposedTime}`
+      : "";
   return {
     id: item.id,
     kind: "viewing_booking",
     scope,
     status: item.status,
     statusLabel: viewingStatusLabel(item.status),
-    title: item.listingTitle,
-    subtitle: `${item.date} · ${item.time}`,
+    title: `معاينة — ${item.listingTitle}`,
+    subtitle: `${item.date} · ${item.time}${proposed} · ${item.visitors} زائر · ${item.phone}`,
     listingId: item.listingId,
     listingTitle: item.listingTitle,
     listingSlug: item.listingSlug,
     counterpartyName: scope === "mine" ? item.sellerName : item.buyerName,
     counterpartyId: scope === "mine" ? item.sellerId : item.buyerId,
     nextAction: nextActionForViewing(item.status, scope),
-    href: listingHref(item.listingId, item.listingSlug),
+    href: `/profile?kind=viewing_booking&scope=${scope}#activity`,
     createdAt: item.createdAt,
     updatedAt: updatedAt(item.updatedAt, item.createdAt),
+    viewingDate: item.date,
+    viewingTime: item.time,
+    viewingPhone: item.phone,
+    viewingVisitors: item.visitors,
+    viewingNotes: item.notes,
+    proposedDate: item.proposedDate,
+    proposedTime: item.proposedTime,
+    proposedNote: item.proposedNote,
   };
 }
 

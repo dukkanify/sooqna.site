@@ -5,6 +5,7 @@ import type { ViewingBooking } from "@/types/domain/viewing-booking";
 import type { Order } from "@/types/domain/order";
 import type { Listing } from "@/types";
 import type { AdminDisputeRecord } from "@/types/domain/admin";
+import { VIEWING_STATUS_LABELS } from "@/shared/listings/viewing-availability";
 
 const JOB_STATUS: Record<JobApplication["status"], string> = {
   submitted: "جديد",
@@ -16,10 +17,7 @@ const JOB_STATUS: Record<JobApplication["status"], string> = {
 };
 
 const VIEWING_STATUS: Record<ViewingBooking["status"], string> = {
-  pending: "بانتظار التأكيد",
-  confirmed: "مؤكد",
-  cancelled: "ملغى",
-  completed: "مكتمل",
+  ...VIEWING_STATUS_LABELS,
 };
 
 const QUOTE_STATUS: Record<QuoteRequest["status"], string> = {
@@ -156,11 +154,14 @@ export function nextActionForJob(status: JobApplication["status"], scope: "mine"
 
 export function nextActionForViewing(status: ViewingBooking["status"], scope: "mine" | "received"): string | undefined {
   if (scope === "mine") {
-    if (status === "pending") return "بانتظار تأكيد الموعد";
+    if (status === "pending") return "بانتظار رد المعلن";
+    if (status === "modification_proposed") return "راجع الموعد المقترح";
     if (status === "confirmed") return "موعد مؤكد";
+    if (status === "cancelled") return "تم إلغاء الموعد";
     return undefined;
   }
-  if (status === "pending") return "أكّد الموعد";
+  if (status === "pending") return "اعتمد أو عدّل أو ألغِ الموعد";
+  if (status === "modification_proposed") return "بانتظار موافقة الطالب";
   if (status === "confirmed") return "أكمل أو ألغِ الموعد";
   return undefined;
 }

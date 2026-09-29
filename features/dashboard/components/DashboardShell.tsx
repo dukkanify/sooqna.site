@@ -38,6 +38,16 @@ const dashboardLinks = [
     label: "البائعون المتابعون",
   },
   {
+    href: "/profile#viewing-availability",
+    icon: "clock" as const,
+    label: "أوقات المعاينة",
+  },
+  {
+    href: "/profile?kind=viewing_booking#activity",
+    icon: "clock" as const,
+    label: "طلبات المعاينة",
+  },
+  {
     href: "/profile#app-settings",
     icon: "grid" as const,
     label: "إعدادات التطبيق",
