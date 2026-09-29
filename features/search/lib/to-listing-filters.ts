@@ -22,8 +22,14 @@ export function toListingSearchFilters(
   const specMin: Record<string, number> = {};
   const specMax: Record<string, number> = {};
   for (const [key, range] of Object.entries(filters.ranges ?? {})) {
-    const min = toNumber(range.min);
-    const max = toNumber(range.max);
+    let min = toNumber(range.min);
+    let max = toNumber(range.max);
+    // Never apply inverted year (or other numeric) ranges — swap for safe queries.
+    if (typeof min === "number" && typeof max === "number" && min > max) {
+      const swap = min;
+      min = max;
+      max = swap;
+    }
     if (typeof min === "number") specMin[key] = min;
     if (typeof max === "number") specMax[key] = max;
   }
