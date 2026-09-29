@@ -12,6 +12,7 @@ import { PageHero } from "@/shared/ui/PageHero";
 import {
   clearSessionUser,
   getSessionUser,
+  setSessionUser,
 } from "@/services/storage";
 import { removeSessionCookie } from "@/services/auth/session-sync";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -94,6 +95,13 @@ export function DashboardShell({
       const sessionUser = getSessionUser();
       if (sessionUser) {
         setDisplayUser(sessionUser);
+        setIsAllowed(true);
+        return;
+      }
+      // SSR already authenticated this page — restore client session instead of bouncing.
+      if (user?.id) {
+        setSessionUser(user);
+        setDisplayUser(user);
         setIsAllowed(true);
         return;
       }
