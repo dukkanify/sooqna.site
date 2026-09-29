@@ -41,6 +41,7 @@ export type AdminPath =
   | "/admin/viewing-bookings"
   | "/admin/quote-requests"
   | "/admin/listing-reports"
+  | "/admin/support-messages"
   | "/admin/settings"
   | "/admin/audit";
 
@@ -225,6 +226,14 @@ const adminLinks: {
     label: "بلاغات الإعلانات",
     group: "more",
     keywords: "بلاغ إبلاغ report guest",
+    permission: "listings",
+  },
+  {
+    href: "/admin/support-messages",
+    icon: "mail",
+    label: "تواصل معنا",
+    group: "more",
+    keywords: "دعم support contact تواصل رسائل inbox",
     permission: "listings",
   },
   {

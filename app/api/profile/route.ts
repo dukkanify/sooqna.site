@@ -20,6 +20,8 @@ const profilePatchSchema = z.object({
   phone: z.string().trim().max(40).optional().default(""),
   city: z.string().trim().min(1).max(80),
   accountType: z.enum(accountTypes),
+  /** Optional; omit to leave unchanged, empty string clears. */
+  businessName: z.string().trim().max(120).optional(),
 });
 
 /** Authenticated self-service profile update — persists to user store + refreshes session. */

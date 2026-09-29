@@ -15,6 +15,7 @@ export type NotificationType =
   | "account_approved"
   | "account_pending_approval"
   | "listing_report"
+  | "support_message"
   | "listing_received"
   | "listing_approved"
   | "listing_rejected"
