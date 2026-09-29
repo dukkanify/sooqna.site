@@ -22,6 +22,7 @@ import type { AddListingErrors, ListingPreview } from "./types";
 import { parseCategoryForm } from "./category-form-utils";
 import { createListingSlug } from "./utils";
 import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
+import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 
 const defaultPreview: ListingPreview = {
   city: "",
@@ -38,11 +39,10 @@ function buildSellerFromSession(user: NonNullable<ReturnType<typeof getSessionUs
     user.accountType === "company" || user.accountType === "business"
       ? ("business" as const)
       : ("individual" as const);
-  const merchantName = user.businessProfile?.businessName?.trim();
 
   return {
     id: user.id,
-    name: merchantName || user.fullName,
+    name: sellerDisplayNameFromProfile(user),
     ...(user.isVerified ? { isVerified: true } : {}),
     sellerType,
     ...(user.joinedAt ? { joinedAt: user.joinedAt } : {}),

@@ -9,7 +9,12 @@ import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
-import { getSessionUser, setSessionUser } from "@/services/storage";
+import {
+  getSessionUser,
+  setSessionUser,
+  syncLocalListingsSellerDisplayName,
+} from "@/services/storage";
+import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 import { isUaePassEnabled } from "@/shared/constants/feature-flags";
 import { SOCIAL_LINK_PLATFORMS } from "@/shared/constants/social-links";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -166,6 +171,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
                 setSessionUser(updatedUser);
                 setDisplayUser(updatedUser);
+                syncLocalListingsSellerDisplayName(
+                  updatedUser.id,
+                  sellerDisplayNameFromProfile(updatedUser),
+                );
                 setFormRevision((value) => value + 1);
                 setSaveMessage("تم حفظ التغييرات في حسابك.");
               } catch {
