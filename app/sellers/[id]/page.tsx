@@ -35,7 +35,7 @@ export async function generateMetadata({
   const { id } = await params;
   const sellerId = decodeURIComponent(id);
   const listings = await getSellerListings(sellerId);
-  const seller = getSellerProfile(sellerId, listings);
+  const seller = await getSellerProfile(sellerId, listings);
   const locale = await getRequestLocale();
 
   if (!seller) {
@@ -67,7 +67,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
     getSellerListings(sellerId),
     getRequestLocale(),
   ]);
-  const seller = getSellerProfile(sellerId, listings);
+  const seller = await getSellerProfile(sellerId, listings);
   if (!seller) notFound();
 
   const account = await findUserById(sellerId);

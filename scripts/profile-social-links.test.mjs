@@ -92,9 +92,11 @@ describe("profile social links wiring", () => {
   it("seller page shows links only when public", () => {
     const page = read("app/sellers/[id]/page.tsx");
     const component = read("features/sellers/components/SellerSocialLinks.tsx");
+    const service = read("services/sellers/seller-profile.service.ts");
     assert.match(page, /SellerSocialLinks/);
     assert.match(page, /findUserById/);
     assert.match(component, /if \(!publicVisible\) return null/);
+    assert.match(service, /Fall back to registered account/);
   });
 
   it("EN phrases cover social link copy", () => {
