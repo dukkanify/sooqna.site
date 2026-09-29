@@ -36,6 +36,8 @@ const profilePatchSchema = z.object({
   accountType: z.enum(accountTypes),
   socialLinks: socialLinksSchema,
   socialLinksPublic: z.boolean().optional(),
+  /** Optional; omit to leave unchanged, empty string clears. */
+  businessName: z.string().trim().max(120).optional(),
 });
 
 /** Authenticated self-service profile update — persists to user store + refreshes session. */
@@ -75,6 +77,11 @@ export async function PATCH(request: Request) {
     socialLinks = sanitized.links;
   }
 
+  const hasBusinessName = Object.prototype.hasOwnProperty.call(
+    parsed.data,
+    "businessName",
+  );
+
   const updated = await updateUserProfile(user.id, {
     fullName: parsed.data.fullName,
     phone: parsed.data.phone,
@@ -84,6 +91,7 @@ export async function PATCH(request: Request) {
     ...(parsed.data.socialLinksPublic !== undefined
       ? { socialLinksPublic: parsed.data.socialLinksPublic }
       : {}),
+    ...(hasBusinessName ? { businessName: parsed.data.businessName } : {}),
   });
   if (!updated) {
     return NextResponse.json({ error: "UPDATE_FAILED" }, { status: 500 });

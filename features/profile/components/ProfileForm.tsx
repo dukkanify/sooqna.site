@@ -95,6 +95,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             const socialRaw = readSocialLinksFromForm(formData);
             const socialSanitized = sanitizeSocialLinks(socialRaw);
             const socialLinksPublic = formData.get("socialLinksPublic") === "on";
+            const businessName = String(formData.get("businessName") ?? "").trim();
 
             if (!socialSanitized.ok) {
               setSocialErrors({
@@ -123,6 +124,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     accountType,
                     socialLinks: socialSanitized.links,
                     socialLinksPublic,
+                    businessName,
                   }),
                 });
 
@@ -152,6 +154,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   accountType,
                   socialLinks: socialSanitized.links,
                   socialLinksPublic,
+                  businessProfile: businessName
+                    ? { ...displayUser.businessProfile, businessName }
+                    : (() => {
+                        const { businessName: _drop, ...rest } =
+                          displayUser.businessProfile ?? {};
+                        return Object.keys(rest).length > 0 ? rest : undefined;
+                      })(),
                 };
 
                 setSessionUser(updatedUser);
@@ -212,6 +221,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
               { label: "بائع فردي", value: "seller" },
               { label: "متجر أو معرض", value: "business" },
             ]}
+          />
+
+          <Input
+            defaultValue={displayUser.businessProfile?.businessName ?? ""}
+            hint="اختياري — يظهر كاسم التاجر على إعلاناتك"
+            label="اسم الشركة / التاجر"
+            name="businessName"
+            placeholder="مثال: معرض النور للسيارات"
+            type="text"
           />
 
           <ProfileSocialLinksFields
