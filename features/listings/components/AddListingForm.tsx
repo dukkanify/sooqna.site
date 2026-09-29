@@ -99,10 +99,10 @@ export function AddListingForm({ categories }: AddListingFormProps) {
     );
   }
 
+  // Only categories with a real field schema use the dynamic step.
+  // featureProfile alone must not force an empty CategoryFieldsForm (pets/fashion/…).
   const useDynamicFields =
-    Boolean(selectedCategoryId) &&
-    (isDynamicCategory(selectedCategoryId) ||
-      Boolean(selectedCategory?.featureProfile));
+    Boolean(selectedCategoryId) && isDynamicCategory(selectedCategoryId);
 
   return (
     <LocalizedTree>

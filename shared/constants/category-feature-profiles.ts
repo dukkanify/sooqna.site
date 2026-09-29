@@ -152,6 +152,7 @@ export const BUILTIN_CATEGORY_PROFILES: Record<string, CategoryFeatureProfile> =
   jobs: "jobs",
   services: "services",
   food: "food",
+  // Contact-only CTA via "general"; form fields come from DYNAMIC pets schema.
   pets: "general",
 };
 
@@ -177,7 +178,12 @@ export function resolveCategoryFeatureProfile(
 
 export function getFormTemplateFields(
   profile: CategoryFeatureProfile,
+  categoryId?: string,
 ): CategoryFieldDefinition[] {
+  if (categoryId === "pets") {
+    const petsFields = getCategoryFields("pets");
+    if (petsFields.length > 0) return petsFields;
+  }
   const meta = getCategoryFeatureProfileMeta(profile);
   const fields = getCategoryFields(meta.formTemplateId);
   if (fields.length > 0) return fields;
