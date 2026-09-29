@@ -169,12 +169,19 @@ export async function saveUser(user: StoredUser): Promise<StoredUser> {
   return persistUser(user);
 }
 
+function optionalBusinessName(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length >= 2 ? trimmed.slice(0, 120) : undefined;
+}
+
 export async function createStandardUser(input: {
   email: string;
   fullName: string;
   passwordHash: string;
   accountType: StoredUser["accountType"];
   phone?: string;
+  /** Optional company / merchant display name (profile businessName). */
+  businessName?: string;
 }): Promise<StoredUser> {
   const email = normalizeAuthEmail(input.email);
   const existing = await findUserByEmail(email);
@@ -185,6 +192,7 @@ export async function createStandardUser(input: {
 
   const now = new Date().toISOString();
   const convertingGuest = Boolean(existing && isGuestConvertible(existing));
+  const businessName = optionalBusinessName(input.businessName);
   const user: StoredUser = {
     id: existing?.id ?? newUserId(),
     fullName: input.fullName.trim(),
@@ -208,6 +216,16 @@ export async function createStandardUser(input: {
         ? "business"
         : "user",
     walletBalance: existing?.walletBalance ?? 0,
+    ...(businessName
+      ? {
+          businessProfile: {
+            ...existing?.businessProfile,
+            businessName,
+          },
+        }
+      : existing?.businessProfile
+        ? { businessProfile: existing.businessProfile }
+        : {}),
   };
 
   return saveUser(user);
@@ -218,6 +236,7 @@ export async function createPendingUser(input: {
   fullName: string;
   accountType: StoredUser["accountType"];
   passwordHash?: string;
+  businessName?: string;
 }): Promise<StoredUser> {
   const email = normalizeAuthEmail(input.email);
   const existing = await findUserByEmail(email);
@@ -228,6 +247,7 @@ export async function createPendingUser(input: {
 
   const now = new Date().toISOString();
   const convertingGuest = Boolean(existing && isGuestConvertible(existing));
+  const businessName = optionalBusinessName(input.businessName);
   const user: StoredUser = {
     id: existing?.id ?? newUserId(),
     fullName: input.fullName,
@@ -250,6 +270,16 @@ export async function createPendingUser(input: {
     passwordHash: input.passwordHash ?? existing?.passwordHash,
     registrationSource: convertingGuest ? "GUEST_CHECKOUT" : existing?.registrationSource ?? "OTP",
     isGuestConverted: convertingGuest,
+    ...(businessName
+      ? {
+          businessProfile: {
+            ...existing?.businessProfile,
+            businessName,
+          },
+        }
+      : existing?.businessProfile
+        ? { businessProfile: existing.businessProfile }
+        : {}),
   };
 
   return saveUser(user);
@@ -405,6 +435,8 @@ export async function updateUserProfile(
     phone?: string;
     city?: string;
     accountType?: StoredUser["accountType"];
+    /** Optional; empty string clears merchant display name. */
+    businessName?: string;
   },
 ): Promise<UserProfile | null> {
   const user = await findUserById(userId);
@@ -414,6 +446,23 @@ export async function updateUserProfile(
   const phone = patch.phone?.trim();
   const city = patch.city?.trim();
   const accountType = patch.accountType;
+  const hasBusinessNamePatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "businessName",
+  );
+  const businessName = hasBusinessNamePatch
+    ? optionalBusinessName(patch.businessName) ?? ""
+    : undefined;
+
+  const nextBusinessProfile =
+    businessName === undefined
+      ? user.businessProfile
+      : businessName
+        ? { ...user.businessProfile, businessName }
+        : (() => {
+            const { businessName: _drop, ...rest } = user.businessProfile ?? {};
+            return Object.keys(rest).length > 0 ? rest : undefined;
+          })();
 
   const updated: StoredUser = {
     ...user,
@@ -421,6 +470,7 @@ export async function updateUserProfile(
     ...(phone !== undefined ? { phone } : {}),
     ...(city ? { city } : {}),
     ...(accountType ? { accountType } : {}),
+    ...(hasBusinessNamePatch ? { businessProfile: nextBusinessProfile } : {}),
   };
   await saveUser(updated);
   return toProfile(updated);
