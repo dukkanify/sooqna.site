@@ -489,10 +489,10 @@ const jobFields: CategoryFieldDefinition[] = [
     required: true,
     titlePart: true,
     options: [
-      { label: "شاغر وظيفي", value: "vacancy" },
-      { label: "باحث عن عمل", value: "seeker" },
+      { label: "توظيف (وظائف)", value: "vacancy" },
+      { label: "باحثون عن عمل", value: "seeker" },
     ],
-    note: "اختر نوع الإعلان لتظهر الحقول المناسبة. صورة الإعلان اختيارية.",
+    note: "يُطابق التصنيف الفرعي: توظيف للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة. صورة الإعلان اختيارية.",
   },
   {
     key: "company",

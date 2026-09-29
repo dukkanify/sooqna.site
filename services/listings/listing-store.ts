@@ -37,6 +37,7 @@ import type {
 } from "@/types/domain/admin";
 import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
 import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
+import { migrateJobsListingFields } from "@/shared/listings/jobs-taxonomy";
 
 let cacheRows: Listing[] | null = null;
 let inflight: Promise<Listing[]> | null = null;
@@ -151,11 +152,21 @@ async function loadListingsUncached(): Promise<Listing[]> {
       const merged = hydrateCatalogPhones(
         await mergeMissingSeedListings(stored).catch(() => stored),
       );
+      const jobsMigrated = merged.map((listing) => migrateJobsListingFields(listing));
+      const jobsChanged = jobsMigrated.filter(
+        (listing, index) => listing !== merged[index],
+      );
       const { listings: repairedRows, repaired } =
-        repairPoorQualityListings(merged);
-      if (repaired.length > 0) {
+        repairPoorQualityListings(jobsMigrated);
+      const persistBatch = [
+        ...jobsChanged,
+        ...repaired.filter(
+          (listing) => !jobsChanged.some((item) => item.id === listing.id),
+        ),
+      ];
+      if (persistBatch.length > 0) {
         await Promise.all(
-          repaired.map((listing) =>
+          persistBatch.map((listing) =>
             upsertListingRow(listing).catch(() => undefined),
           ),
         ).catch(() => undefined);
@@ -300,27 +311,29 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
     slug = `${slugifyTitle(listing.title) || "listing"}-${suffix}`;
   }
 
-  const next: Listing = sanitizeListingMediaFields({
-    ...listing,
-    slug,
-    postedAt,
-    escrowAvailable:
-      listing.escrowAvailable === false
-        ? false
-        : listing.escrowAvailable === true
-          ? true
-          : isPurchasableCategory(listing.categoryId, listing.featureProfile),
-    expiresAt:
-      listing.expiresAt ??
-      computeExpiresAt(postedAt, settings.listingActiveDays),
-    statusHistory: history,
-    rejectionReason:
-      listing.status === "rejected"
-        ? listing.rejectionReason ?? previous?.rejectionReason
-        : listing.status === "active"
-          ? undefined
-          : listing.rejectionReason ?? previous?.rejectionReason,
-  });
+  const next: Listing = sanitizeListingMediaFields(
+    migrateJobsListingFields({
+      ...listing,
+      slug,
+      postedAt,
+      escrowAvailable:
+        listing.escrowAvailable === false
+          ? false
+          : listing.escrowAvailable === true
+            ? true
+            : isPurchasableCategory(listing.categoryId, listing.featureProfile),
+      expiresAt:
+        listing.expiresAt ??
+        computeExpiresAt(postedAt, settings.listingActiveDays),
+      statusHistory: history,
+      rejectionReason:
+        listing.status === "rejected"
+          ? listing.rejectionReason ?? previous?.rejectionReason
+          : listing.status === "active"
+            ? undefined
+            : listing.rejectionReason ?? previous?.rejectionReason,
+    }),
+  );
   if (index >= 0) listings[index] = next;
   else listings.unshift(next);
   await upsertListingRow(next);

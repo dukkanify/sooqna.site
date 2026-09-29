@@ -6,6 +6,11 @@ import {
   fieldVisibleForSpecs,
   matchesFieldPattern,
 } from "@/shared/listings/category-field-visibility";
+import {
+  isCanonicalJobSubcategory,
+  listingTypeFromSubcategory,
+  subcategoryFromListingType,
+} from "@/shared/listings/jobs-taxonomy";
 import { regulatorEmirateError } from "@/shared/listings/real-estate-license";
 
 export type CategoryFormResult = {
@@ -19,6 +24,8 @@ export type CategoryFormResult = {
   emirate?: string;
   /** Jobs (and similar) skip AED price — use salary in specs instead. */
   skipPrice?: boolean;
+  /** Canonical jobs subcategory derived from listingType / subcategory select. */
+  jobSubcategory?: string;
 };
 
 function readFieldValue(
@@ -259,11 +266,33 @@ export function parseCategoryForm(
   }
   const negotiableCheckbox = String(formData.get("negotiable") ?? "") === "on";
 
+  let jobSubcategory: string | undefined;
+  // Jobs: keep listingType ↔ subcategory (توظيف / باحثون عن عمل) aligned.
+  if (isJobs) {
+    const formSubcategory = String(formData.get("subcategory") ?? "").trim();
+    const typed = String(categorySpecs.listingType ?? "").trim();
+    if (isCanonicalJobSubcategory(formSubcategory)) {
+      categorySpecs.listingType = listingTypeFromSubcategory(formSubcategory);
+    } else if (typed === "vacancy" || typed === "seeker") {
+      categorySpecs.listingType = typed;
+    } else if (formSubcategory) {
+      categorySpecs.listingType = listingTypeFromSubcategory(formSubcategory);
+    }
+    if (!categorySpecs.listingType) {
+      errors.listingType = "اختر نوع الإعلان: توظيف أو باحثون عن عمل.";
+    } else {
+      jobSubcategory = subcategoryFromListingType(
+        String(categorySpecs.listingType),
+      );
+    }
+  }
+
   return {
     categorySpecs,
     errors,
     features,
     negotiable: negotiableFromFeatures || negotiableCheckbox || undefined,
+    jobSubcategory,
     title,
     // Prefer the real choice; sentinel only for no-product-condition categories.
     condition: condition ?? "used",

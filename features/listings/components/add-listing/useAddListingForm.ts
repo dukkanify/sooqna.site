@@ -387,7 +387,10 @@ export function useAddListingForm(categories: Category[]) {
         features: parsed.features.length > 0 ? parsed.features : undefined,
         negotiable: parsed.negotiable,
         emirate: parsed.emirate,
-        subcategory: subcategory || undefined,
+        subcategory:
+          (categoryId === "jobs" ? parsed.jobSubcategory : undefined) ||
+          subcategory ||
+          undefined,
         contactPhone: contact || undefined,
         contactMethod: "both",
         escrowAvailable: isPurchasableCategory(categoryId, featureProfile),

@@ -26,6 +26,7 @@ import {
   type CategoryFeatureProfile,
 } from "@/shared/constants/category-feature-profiles";
 import { replaceCategoryFormFields } from "@/services/admin/category-form-store";
+import { ensureJobsCategorySubcategories } from "@/shared/listings/jobs-taxonomy";
 
 type StoredCategory = Category & {
   enabled: boolean;
@@ -116,16 +117,27 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
         await store.replaceAll(seeded);
         return setCache(seeded);
       }
-      return setCache(
-        stored.map((row, index) =>
-          withResolvedProfile({
-            ...row,
-            subcategories: normalizeSubcategories(row.subcategories),
-            sortOrder:
-              typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
-          }),
-        ),
+      const normalized = stored.map((row, index) =>
+        withResolvedProfile({
+          ...row,
+          subcategories: normalizeSubcategories(
+            row.id === "jobs" || row.slug === "jobs"
+              ? ensureJobsCategorySubcategories(row.subcategories)
+              : row.subcategories,
+          ),
+          sortOrder:
+            typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
+        }),
       );
+      const jobsBefore = stored.find((row) => row.id === "jobs" || row.slug === "jobs");
+      const jobsAfter = normalized.find((row) => row.id === "jobs" || row.slug === "jobs");
+      const jobsSubsChanged =
+        JSON.stringify(jobsBefore?.subcategories ?? []) !==
+        JSON.stringify(jobsAfter?.subcategories ?? []);
+      if (jobsSubsChanged) {
+        await store.replaceAll(normalized).catch(() => undefined);
+      }
+      return setCache(normalized);
     })().finally(() => {
       inflight = null;
     });

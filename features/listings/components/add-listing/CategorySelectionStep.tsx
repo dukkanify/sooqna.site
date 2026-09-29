@@ -67,7 +67,11 @@ export function CategorySelectionStep({
       {(selectedCategory?.subcategories.length ?? 0) > 0 ? (
         <div className="mt-4 grid gap-1.5">
           <Select
-            label="القسم الفرعي (اختياري)"
+            label={
+              selectedCategoryId === "jobs"
+                ? "نوع الإعلان"
+                : "القسم الفرعي (اختياري)"
+            }
             name="subcategory"
             optionsAreUgc
             options={(selectedCategory?.subcategories ?? []).map((subcategory) => ({
@@ -77,7 +81,9 @@ export function CategorySelectionStep({
             placeholder="اختر..."
           />
           <p className="text-xs text-muted">
-            من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة.
+            {selectedCategoryId === "jobs"
+              ? "توظيف (وظائف) للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة."
+              : "من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة."}
           </p>
         </div>
       ) : null}
