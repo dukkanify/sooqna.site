@@ -39,6 +39,7 @@ export const CATEGORY_SEARCH_KEYS: Record<string, readonly string[]> = {
   services: ["serviceCategory", "coverageArea"],
   furniture: ["furnitureType", "furnitureTypeOther", "material"],
   food: ["saleType", "cuisine", "portion", "delivery", "freshness", "unitPrice"],
+  pets: ["animalType", "breed", "age", "gender", "vaccinated", "condition"],
 };
 
 const SKIP_FIELD_TYPES = new Set(["textarea", "checkbox-group", "date"]);

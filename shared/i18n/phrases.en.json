@@ -2921,5 +2921,10 @@
   "لن يُستبدل بريدك الحالي إلا بعد إدخال رمز التحقق المرسل إلى العنوان الجديد.": "Your current email is not replaced until you enter the code sent to the new address.",
   "تم تحديث بريدك الإلكتروني بنجاح.": "Your email was updated successfully.",
   "تم إلغاء طلب تغيير البريد.": "Email change request cancelled.",
-  "جاري الإرسال...": "Sending..."
+  "جاري الإرسال...": "Sending...",
+  "السلالة / الصنف": "Breed / variety",
+  "العمر": "Age",
+  "التطعيمات": "Vaccinations",
+  "اختر النوع ليظهر الإعلان في التصنيف الفرعي المناسب.": "Choose the type so the listing appears under the right subcategory.",
+  "تعذر نشر الإعلان — أكمل الحقول المطلوبة أو صحّح الأخطاء أدناه.": "Could not publish the listing — complete the required fields or fix the errors below."
 }

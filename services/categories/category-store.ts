@@ -224,7 +224,7 @@ async function seedFormForProfile(
   categoryId: string,
   profile: CategoryFeatureProfile,
 ) {
-  const defaults = getFormTemplateFields(profile);
+  const defaults = getFormTemplateFields(profile, categoryId);
   if (defaults.length === 0) return;
   await replaceCategoryFormFields(
     categoryId,
