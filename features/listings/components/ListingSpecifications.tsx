@@ -38,6 +38,31 @@ const CAR_SPEC_GROUPS: { title: string; keys: string[] }[] = [
   },
 ];
 
+const RE_SPEC_GROUPS: { title: string; keys: string[] }[] = [
+  {
+    title: "تفاصيل المبنى",
+    keys: ["buildingName", "unitNumber", "floor", "totalFloors"],
+  },
+  {
+    title: "العقار",
+    keys: [
+      "propertyType",
+      "purpose",
+      "bedrooms",
+      "bathrooms",
+      "area",
+      "areaSqft",
+      "parking",
+      "furnished",
+      "completionStatus",
+    ],
+  },
+  {
+    title: "الموقع",
+    keys: ["developer", "community", "emirate", "city"],
+  },
+];
+
 function SpecGrid({ entries }: { entries: SpecEntry[] }) {
   if (entries.length === 0) return null;
   return (
@@ -73,17 +98,25 @@ export function ListingSpecifications({ listing }: ListingSpecificationsProps) {
   }
 
   const isCars = listing.categoryId === "cars";
+  const isRealEstate = listing.categoryId === "real-estate";
+  const groupDefs = isCars
+    ? CAR_SPEC_GROUPS
+    : isRealEstate
+      ? RE_SPEC_GROUPS
+      : null;
   const usedKeys = new Set<string>();
-  const groups = isCars
-    ? CAR_SPEC_GROUPS.map((group) => {
-        const entries = group.keys
-          .map((key) => specEntries.find((entry) => entry.key === key))
-          .filter((entry): entry is SpecEntry => Boolean(entry));
-        for (const entry of entries) usedKeys.add(entry.key);
-        return { title: group.title, entries };
-      }).filter((group) => group.entries.length > 0)
+  const groups = groupDefs
+    ? groupDefs
+        .map((group) => {
+          const entries = group.keys
+            .map((key) => specEntries.find((entry) => entry.key === key))
+            .filter((entry): entry is SpecEntry => Boolean(entry));
+          for (const entry of entries) usedKeys.add(entry.key);
+          return { title: group.title, entries };
+        })
+        .filter((group) => group.entries.length > 0)
     : [];
-  const leftover = isCars
+  const leftover = groupDefs
     ? specEntries.filter((entry) => !usedKeys.has(entry.key))
     : specEntries;
 
@@ -92,7 +125,7 @@ export function ListingSpecifications({ listing }: ListingSpecificationsProps) {
       <Card className="mt-8 marketplace-panel p-5 md:p-6">
         <h2 className="text-lg font-black text-ink">المواصفات والميزات</h2>
 
-        {isCars ? (
+        {groupDefs ? (
           <div className="mt-4 space-y-5">
             {groups.map((group) => (
               <section key={group.title}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { CategoryFieldDefinition, CategorySpecs, Listing, ListingCondition } from "@/types";
 import { getCategoryFields, isDynamicCategory } from "@/shared/constants/category-fields";
 import { getModelsForBrand } from "@/shared/constants/product-brand-models";
@@ -406,64 +406,75 @@ export function CategoryFieldsForm({
         <div className={addListingDynamicFieldsGridClass}>
           {fields.map((field) => {
             const spansFullWidth = field.type === "textarea";
+            const sectionHeading = field.section ? (
+              <div className="col-span-2 min-w-0 pt-1">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-muted">
+                  {field.section}
+                </h3>
+              </div>
+            ) : null;
 
             if (field.key === "condition") {
               return (
-                <div
-                  key={field.key}
-                  className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
-                >
-                  <Select
-                    compact
-                    defaultValue={
-                      conditionDefault !== undefined
-                        ? String(conditionDefault)
-                        : undefined
-                    }
-                    label={field.label}
-                    name={`spec_${field.key}`}
-                    onChange={(event) => onSpecChange(field.key, event.target.value)}
-                    options={field.options ?? []}
-                    placeholder="اختر..."
-                    required={field.required}
-                  />
-                  {errors[field.key] ? (
-                    <FormMessage variant="error">{String(errors[field.key])}</FormMessage>
-                  ) : null}
-                </div>
+                <Fragment key={field.key}>
+                  {sectionHeading}
+                  <div
+                    className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                  >
+                    <Select
+                      compact
+                      defaultValue={
+                        conditionDefault !== undefined
+                          ? String(conditionDefault)
+                          : undefined
+                      }
+                      label={field.label}
+                      name={`spec_${field.key}`}
+                      onChange={(event) => onSpecChange(field.key, event.target.value)}
+                      options={field.options ?? []}
+                      placeholder="اختر..."
+                      required={field.required}
+                    />
+                    {errors[field.key] ? (
+                      <FormMessage variant="error">{String(errors[field.key])}</FormMessage>
+                    ) : null}
+                  </div>
+                </Fragment>
               );
             }
 
             return (
-              <div
-                key={field.key}
-                className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
-              >
-                {renderField(
-                  field,
-                  defaults,
-                  selectedFeatures,
-                  onSpecChange,
-                  optionsForField(field),
-                  field.key === "model"
-                    ? `model-${categoryId}-${specs.brand ?? ""}`
-                    : undefined,
-                  field.key === "brand" || field.key === "model"
-                    ? (specs[field.key] ?? "")
-                    : undefined,
-                  field.key === "model" &&
-                    categoryId === "cars" &&
-                    catalogLoading &&
-                    Boolean(specs.brand?.trim()) &&
-                    (optionsForField(field)?.length ?? 0) === 0,
-                )}
-                {field.note ? (
-                  <p className="mt-1 text-xs text-muted">{field.note}</p>
-                ) : null}
-                {errors[field.key] ? (
-                  <FormMessage variant="error">{String(errors[field.key])}</FormMessage>
-                ) : null}
-              </div>
+              <Fragment key={field.key}>
+                {sectionHeading}
+                <div
+                  className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                >
+                  {renderField(
+                    field,
+                    defaults,
+                    selectedFeatures,
+                    onSpecChange,
+                    optionsForField(field),
+                    field.key === "model"
+                      ? `model-${categoryId}-${specs.brand ?? ""}`
+                      : undefined,
+                    field.key === "brand" || field.key === "model"
+                      ? (specs[field.key] ?? "")
+                      : undefined,
+                    field.key === "model" &&
+                      categoryId === "cars" &&
+                      catalogLoading &&
+                      Boolean(specs.brand?.trim()) &&
+                      (optionsForField(field)?.length ?? 0) === 0,
+                  )}
+                  {field.note ? (
+                    <p className="mt-1 text-xs text-muted">{field.note}</p>
+                  ) : null}
+                  {errors[field.key] ? (
+                    <FormMessage variant="error">{String(errors[field.key])}</FormMessage>
+                  ) : null}
+                </div>
+              </Fragment>
             );
           })}
 
