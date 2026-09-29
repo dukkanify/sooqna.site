@@ -41,6 +41,19 @@ function formatValue(key: string, value: string | number | boolean): string {
   if (key === "mileage") {
     return `${value} كم`;
   }
+  if (
+    (key === "availabilityDate" || key === "expectedHandoverDate") &&
+    typeof value === "string"
+  ) {
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) {
+      return new Date(parsed).toLocaleDateString("ar-AE", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+  }
   return String(value);
 }
 

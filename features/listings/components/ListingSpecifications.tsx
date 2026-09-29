@@ -44,6 +44,10 @@ const RE_SPEC_GROUPS: { title: string; keys: string[] }[] = [
     keys: ["buildingName", "unitNumber", "floor", "totalFloors"],
   },
   {
+    title: "موعد التوفر",
+    keys: ["availabilityTiming", "availabilityDate", "expectedHandoverDate"],
+  },
+  {
     title: "العقار",
     keys: [
       "propertyType",
