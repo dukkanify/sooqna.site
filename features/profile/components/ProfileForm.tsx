@@ -74,6 +74,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
               formData.get("fullName") ?? displayUser.fullName,
             ).trim();
             const phone = String(formData.get("phone") ?? displayUser.phone).trim();
+            const businessName = String(formData.get("businessName") ?? "").trim();
 
             setIsSaving(true);
             setSaveMessage("");
@@ -90,6 +91,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     phone,
                     city: cityName,
                     accountType,
+                    businessName,
                   }),
                 });
 
@@ -106,6 +108,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   phone,
                   city: cityName,
                   accountType,
+                  businessProfile: businessName
+                    ? { ...displayUser.businessProfile, businessName }
+                    : (() => {
+                        const { businessName: _drop, ...rest } =
+                          displayUser.businessProfile ?? {};
+                        return Object.keys(rest).length > 0 ? rest : undefined;
+                      })(),
                 };
 
                 setSessionUser(updatedUser);
@@ -165,6 +174,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
               { label: "بائع فردي", value: "seller" },
               { label: "متجر أو معرض", value: "business" },
             ]}
+          />
+
+          <Input
+            defaultValue={displayUser.businessProfile?.businessName ?? ""}
+            hint="اختياري — يظهر كاسم التاجر على إعلاناتك"
+            label="اسم الشركة / التاجر"
+            name="businessName"
+            placeholder="مثال: معرض النور للسيارات"
+            type="text"
           />
 
           {saveMessage ? (

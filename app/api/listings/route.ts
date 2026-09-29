@@ -45,7 +45,10 @@ export async function POST(request: Request) {
       seller: {
         ...body.listing.seller,
         id: session.id,
-        name: body.listing.seller?.name || session.fullName,
+        name:
+          body.listing.seller?.name ||
+          session.businessProfile?.businessName?.trim() ||
+          session.fullName,
       },
     });
 
