@@ -82,7 +82,20 @@ async function mergeMissingSeedListings(stored: Listing[]): Promise<Listing[]> {
 }
 
 function cloneListings(listings: Listing[]) {
-  return listings.map((listing) => ({ ...listing }));
+  return listings.map((listing) => withEscrowDefault({ ...listing }));
+}
+
+function withEscrowDefault(listing: Listing): Listing {
+  if (listing.escrowAvailable === true || listing.escrowAvailable === false) {
+    return listing;
+  }
+  return {
+    ...listing,
+    escrowAvailable: isPurchasableCategory(
+      listing.categoryId,
+      listing.featureProfile,
+    ),
+  };
 }
 
 function setCache(listings: Listing[]) {
@@ -189,7 +202,9 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
   );
   const persisted = await loadListingById(id).catch(() => null);
   if (persisted) {
-    return applyListingViewCount(sanitizeListingMediaFields(persisted));
+    return applyListingViewCount(
+      sanitizeListingMediaFields(withEscrowDefault(persisted)),
+    );
   }
   const listings = await getAllListings();
   const found = listings.find((listing) => listing.id === id || listing.slug === id);
@@ -204,7 +219,7 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
     "@/shared/listings/listing-slug"
   );
   const withMedia = (listing: Listing | undefined | null) =>
-    listing ? syncLiveCatalogMedia([listing])[0] : undefined;
+    listing ? syncLiveCatalogMedia([withEscrowDefault(listing)])[0] : undefined;
 
   const keys = listingSlugLookupKeys(slug);
   const normalized = normalizeListingSlugParam(slug);
@@ -289,6 +304,12 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
     ...listing,
     slug,
     postedAt,
+    escrowAvailable:
+      listing.escrowAvailable === false
+        ? false
+        : listing.escrowAvailable === true
+          ? true
+          : isPurchasableCategory(listing.categoryId, listing.featureProfile),
     expiresAt:
       listing.expiresAt ??
       computeExpiresAt(postedAt, settings.listingActiveDays),

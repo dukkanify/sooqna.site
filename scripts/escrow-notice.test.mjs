@@ -19,7 +19,7 @@ describe("no-escrow intermediary notice", () => {
     const src = read("shared/listings/escrow-eligibility.ts");
     assert.match(
       src,
-      /export function showsNonEscrowIntermediaryNotice\([^)]*\):\s*boolean \{\s*return false;/,
+      /export function showsNonEscrowIntermediaryNotice\([^)]*\):\s*boolean \{\s*(?:void _listing;\s*)?return false;/,
       "negative no-escrow notice helper must always return false",
     );
   });
