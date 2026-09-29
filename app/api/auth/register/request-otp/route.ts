@@ -20,6 +20,7 @@ const schema = z.object({
   accountType: z.enum(["individual", "company"]),
   email: z.string().email(),
   fullName: z.string().min(3),
+  businessName: z.string().trim().max(120).optional(),
 });
 
 export async function POST(request: Request) {
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
       email,
       fullName: parsed.data.fullName,
       accountType: parsed.data.accountType,
+      businessName: parsed.data.businessName,
     });
 
     try {

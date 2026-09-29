@@ -46,6 +46,7 @@ export function RegisterForm() {
       const nextEmail = String(formData.get("email") ?? "").trim().toLowerCase();
       const password = String(formData.get("password") ?? "").trim();
       const confirmPassword = String(formData.get("confirmPassword") ?? "").trim();
+      const businessName = String(formData.get("businessName") ?? "").trim();
       const accountType = String(formData.get("accountType") ?? "individual") as
         | "individual"
         | "company";
@@ -87,6 +88,7 @@ export function RegisterForm() {
             password,
             confirmPassword,
             accountType,
+            ...(businessName ? { businessName } : {}),
           }),
         });
         const data = await response.json();
@@ -119,6 +121,7 @@ export function RegisterForm() {
           email: nextEmail,
           fullName,
           accountType,
+          ...(businessName ? { businessName } : {}),
         }),
       });
 
@@ -219,6 +222,15 @@ export function RegisterForm() {
           { label: "فرد", value: "individual" },
           { label: "شركة", value: "company" },
         ]}
+      />
+
+      <Input
+        autoComplete="organization"
+        hint="اختياري — يظهر كاسم التاجر على إعلاناتك"
+        label="اسم الشركة / التاجر"
+        name="businessName"
+        placeholder="مثال: معرض النور للسيارات"
+        type="text"
       />
 
       <div>
