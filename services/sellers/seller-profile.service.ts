@@ -2,6 +2,7 @@ import type { Listing, ListingSeller } from "@/types";
 import { marketplaceSellers } from "@/mock/sellers.mock";
 import { findUserById } from "@/services/auth/user-store";
 import { searchListings } from "@/services/listings";
+import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 
 export async function getSellerListings(sellerId: string): Promise<Listing[]> {
   if (!sellerId.trim()) return [];
@@ -31,25 +32,23 @@ export async function getSellerProfile(
     };
   }
 
-  if (listings[0]?.seller) {
-    return listings[0].seller;
+  // Prefer live account display name so renames show even before listing sync lands.
+  const account = await findUserById(sellerId);
+  const snapshot = listings[0]?.seller;
+  if (account) {
+    const sellerType =
+      account.accountType === "company" || account.accountType === "business"
+        ? ("business" as const)
+        : ("individual" as const);
+    return {
+      ...(snapshot ?? {}),
+      id: account.id,
+      name: sellerDisplayNameFromProfile(account),
+      ...(account.isVerified ? { isVerified: true } : {}),
+      sellerType,
+      ...(account.joinedAt ? { joinedAt: account.joinedAt } : {}),
+    };
   }
 
-  // Fall back to registered account so public social links can still render.
-  const account = await findUserById(sellerId);
-  if (!account) return undefined;
-
-  const sellerType =
-    account.accountType === "company" || account.accountType === "business"
-      ? ("business" as const)
-      : ("individual" as const);
-
-  return {
-    id: account.id,
-    name:
-      account.businessProfile?.businessName?.trim() || account.fullName,
-    ...(account.isVerified ? { isVerified: true } : {}),
-    sellerType,
-    ...(account.joinedAt ? { joinedAt: account.joinedAt } : {}),
-  };
+  return snapshot;
 }

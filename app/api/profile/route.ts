@@ -6,7 +6,9 @@ import {
   requireSessionUser,
 } from "@/services/auth/require-session";
 import { updateUserProfile } from "@/services/auth/user-store";
+import { updateSellerListingDisplayName } from "@/services/listings/listing-store";
 import { SOCIAL_LINK_PLATFORMS } from "@/shared/constants/social-links";
+import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 import { sanitizeSocialLinks } from "@/shared/validation/social-links";
 
 const accountTypes = [
@@ -95,6 +97,12 @@ export async function PATCH(request: Request) {
   });
   if (!updated) {
     return NextResponse.json({ error: "UPDATE_FAILED" }, { status: 500 });
+  }
+
+  // Old ads keep a seller.name snapshot — refresh them to the current profile name.
+  const displayName = sellerDisplayNameFromProfile(updated);
+  if (displayName) {
+    await updateSellerListingDisplayName(updated.id, displayName);
   }
 
   await setSessionCookie(updated);
