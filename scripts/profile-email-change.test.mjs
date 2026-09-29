@@ -70,4 +70,20 @@ describe("profile email change", () => {
     assert.match(otp, /EMAIL_CHANGE:\s*"\/api\/profile\/email\/confirm"/);
     assert.match(otp, /resendEndpoint/);
   });
+
+  it("keeps EMAIL_CHANGE OTP when email delivery fails", () => {
+    const handlers = read("services/auth/auth-handlers.ts");
+    assert.match(handlers, /purpose === "EMAIL_CHANGE"/);
+    assert.match(handlers, /clearOtpResendCooldown/);
+    assert.match(
+      handlers,
+      /purpose === "REGISTER"[\s\S]*EMAIL_CHANGE[\s\S]*SENSITIVE_ACTION/,
+    );
+    // Must not invalidate the OTP record on soft delivery failure for these purposes.
+    const softKeep = handlers.match(
+      /Keep OTP when delivery fails[\s\S]*?return \{ delivered: false, code \}/,
+    );
+    assert.ok(softKeep, "soft-fail keep-OTP branch missing");
+    assert.doesNotMatch(softKeep[0], /invalidateOtpRecord/);
+  });
 });
