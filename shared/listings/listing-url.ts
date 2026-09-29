@@ -15,6 +15,6 @@ export function getListingCanonicalUrl(listing: Listing): string {
 }
 
 export function getCheckoutPath(listing: Listing): string {
-  const listingId = listing.id.startsWith("local-") ? listing.id : listing.slug;
-  return `/checkout?listingId=${encodeURIComponent(listingId)}`;
+  const listingRef = listing.slug?.trim() || listing.id;
+  return `/checkout?listingId=${encodeURIComponent(listingRef)}`;
 }
