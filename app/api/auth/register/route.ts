@@ -54,6 +54,8 @@ const schema = z.object({
   password: z.string().min(8),
   confirmPassword: z.string().min(8),
   accountType: z.enum(["individual", "company"]).default("individual"),
+  /** Optional company / merchant name stored on businessProfile.businessName. */
+  businessName: z.string().trim().max(120).optional(),
   next: optionalRedirectPathSchema,
 });
 
@@ -99,6 +101,7 @@ export async function POST(request: Request) {
       fullName,
       passwordHash: hashPassword(password),
       accountType: parsed.data.accountType,
+      businessName: parsed.data.businessName,
     });
     const profile = toUserProfile(stored);
     trackAuthEvent("registration_started", { accountType: profile.accountType });

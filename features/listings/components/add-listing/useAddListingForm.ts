@@ -37,10 +37,11 @@ function buildSellerFromSession(user: NonNullable<ReturnType<typeof getSessionUs
     user.accountType === "company" || user.accountType === "business"
       ? ("business" as const)
       : ("individual" as const);
+  const merchantName = user.businessProfile?.businessName?.trim();
 
   return {
     id: user.id,
-    name: user.fullName,
+    name: merchantName || user.fullName,
     ...(user.isVerified ? { isVerified: true } : {}),
     sellerType,
     ...(user.joinedAt ? { joinedAt: user.joinedAt } : {}),
