@@ -75,6 +75,8 @@ export type AdminListingRecord = {
   features?: string[];
   negotiable?: boolean;
   videoUrl?: string;
+  /** Durable public visit count (marketplace_listing_views). */
+  views?: number;
   isDemo?: boolean;
   /** Confirmed seed/QA fixture — excluded from marketplace totals. */
   isFixture?: boolean;

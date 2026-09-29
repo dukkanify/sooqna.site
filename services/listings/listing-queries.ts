@@ -32,7 +32,10 @@ import {
   isShowcaseListing,
 } from "@/shared/listings/showcase-listing";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
-import { applyListingViewCounts } from "@/services/listings/listing-views-store";
+import {
+  applyListingViewCounts,
+  getListingViewScores,
+} from "@/services/listings/listing-views-store";
 
 const TABLE = "marketplace_listings";
 
@@ -565,6 +568,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
 
 export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
   await ensureCatalogsForPublicRead();
+  const viewScores = await getListingViewScores();
   try {
     if (await ensureListingsTable()) {
       const pool = await getOptionalPostgresPool();
@@ -580,6 +584,7 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             posted_at,
             payload->>'title' AS title,
             payload->>'city' AS city,
+            payload->>'imageUrl' AS image_url,
             COALESCE((payload->>'price')::numeric, 0) AS price,
             COALESCE(payload->>'currency', 'AED') AS currency,
             payload->'seller'->>'name' AS seller_name,
@@ -613,6 +618,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
                 ? row.posted_at.toISOString()
                 : String(row.posted_at ?? ""),
             city: String(row.city ?? ""),
+            imageUrl: row.image_url ? String(row.image_url) : undefined,
+            views: viewScores.get(id) ?? 0,
             isDemo:
               Boolean(row.is_demo) ||
               String(row.source ?? "") === SHOWCASE_SOURCE,
@@ -642,6 +649,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
       isFeatured: listing.isFeatured,
       postedAt: listing.postedAt ?? "",
       city: listing.city,
+      imageUrl: listing.imageUrl ?? listing.images?.[0],
+      views: viewScores.get(listing.id) ?? listing.views ?? 0,
       isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
       isFixture: isConfirmedFixtureListing(listing),
       source: listing.source,

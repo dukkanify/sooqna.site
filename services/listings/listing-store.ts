@@ -625,6 +625,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     categorySpecs: media.categorySpecs,
     features: media.features,
     negotiable: media.negotiable,
+    views: typeof media.views === "number" ? media.views : 0,
     isDemo: media.isDemo === true || media.source === SHOWCASE_SOURCE,
     isFixture: isConfirmedFixtureListing(media),
     source: media.source,
