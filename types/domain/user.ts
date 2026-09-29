@@ -68,6 +68,10 @@ export type UserProfile = {
   isVerified: boolean;
   joinedAt: string;
   emailVerifiedAt?: string | null;
+  /**
+   * New email awaiting OTP confirmation — current `email` stays active until verified.
+   */
+  pendingEmail?: string | null;
   accountStatus?: AccountStatus;
   /** Bumped on password reset so older session cookies stop working. */
   sessionVersion?: number;

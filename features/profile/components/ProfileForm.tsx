@@ -17,6 +17,7 @@ import {
   SOCIAL_LINK_INVALID_AR,
   sanitizeSocialLinks,
 } from "@/shared/validation/social-links";
+import { ChangeEmailSection } from "./ChangeEmailSection";
 import { ProfileSocialLinksFields } from "./ProfileSocialLinksFields";
 
 type ProfileFormProps = {
@@ -186,11 +187,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <Input
               defaultValue={displayUser.email}
               disabled
+              hint="لتغيير البريد استخدم القسم الآمن أدناه"
               label="البريد الإلكتروني"
               name="email"
               type="email"
             />
           </div>
+
+          <ChangeEmailSection
+            onUserUpdated={(next) => {
+              setDisplayUser(next);
+              setFormRevision((value) => value + 1);
+            }}
+            user={displayUser}
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             <Input
