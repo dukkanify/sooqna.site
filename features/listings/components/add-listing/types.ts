@@ -7,6 +7,7 @@ export type AddListingErrors = {
   images?: string;
   package?: string;
   price?: string;
+  subcategory?: string;
   submit?: string;
   title?: string;
 };

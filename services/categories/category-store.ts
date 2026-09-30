@@ -26,6 +26,7 @@ import {
   type CategoryFeatureProfile,
 } from "@/shared/constants/category-feature-profiles";
 import { replaceCategoryFormFields } from "@/services/admin/category-form-store";
+import { stripRetiredSubcategories } from "@/shared/constants/retired-subcategories";
 import { ensureJobsCategorySubcategories } from "@/shared/listings/jobs-taxonomy";
 
 type StoredCategory = Category & {
@@ -60,6 +61,16 @@ function normalizeSubcategories(input?: string[] | null): string[] {
     next.push(value);
   }
   return next;
+}
+
+function normalizeCategorySubcategories(
+  categoryId: string,
+  input?: string[] | null,
+): string[] {
+  return stripRetiredSubcategories(
+    categoryId,
+    normalizeSubcategories(input),
+  );
 }
 
 function seedCategories(): StoredCategory[] {
@@ -120,7 +131,8 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
       const normalized = stored.map((row, index) =>
         withResolvedProfile({
           ...row,
-          subcategories: normalizeSubcategories(
+          subcategories: normalizeCategorySubcategories(
+            row.id,
             row.id === "jobs" || row.slug === "jobs"
               ? ensureJobsCategorySubcategories(row.subcategories)
               : row.subcategories,
@@ -129,12 +141,20 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
             typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
         }),
       );
+      // Persist when retired subs were stripped or jobs taxonomy was ensured.
+      const dirty = normalized.some((row, index) => {
+        const before = normalizeSubcategories(stored[index]?.subcategories);
+        return (
+          before.length !== row.subcategories.length ||
+          before.some((name, i) => name !== row.subcategories[i])
+        );
+      });
       const jobsBefore = stored.find((row) => row.id === "jobs" || row.slug === "jobs");
       const jobsAfter = normalized.find((row) => row.id === "jobs" || row.slug === "jobs");
       const jobsSubsChanged =
         JSON.stringify(jobsBefore?.subcategories ?? []) !==
         JSON.stringify(jobsAfter?.subcategories ?? []);
-      if (jobsSubsChanged) {
+      if (dirty || jobsSubsChanged) {
         await store.replaceAll(normalized).catch(() => undefined);
       }
       return setCache(normalized);
@@ -286,7 +306,7 @@ export async function createCategoryRecord(
     (max, row) => Math.max(max, row.sortOrder ?? 0),
     0,
   );
-  const subcategories = normalizeSubcategories(input.subcategories);
+  const subcategories = normalizeCategorySubcategories(slug, input.subcategories);
   const record: StoredCategory = {
     id: slug,
     name: input.name.trim(),
@@ -336,8 +356,8 @@ export async function patchCategoryRecord(
       : categories[index].featureProfile;
   const nextSubcategories =
     patchSubs !== undefined
-      ? normalizeSubcategories(patchSubs)
-      : [...categories[index].subcategories];
+      ? normalizeCategorySubcategories(id, patchSubs)
+      : normalizeCategorySubcategories(id, categories[index].subcategories);
   categories[index] = {
     ...categories[index],
     ...persistPatch,

@@ -99,6 +99,28 @@ function withEscrowDefault(listing: Listing): Listing {
   };
 }
 
+async function remapRetiredSubcategoriesOnCatalog(
+  listings: Listing[],
+): Promise<Listing[]> {
+  const { remapRetiredListingSubcategory } = await import(
+    "@/shared/constants/retired-subcategories"
+  );
+  let dirty = false;
+  const next = listings.map((listing) => {
+    const remapped = remapRetiredListingSubcategory(
+      listing.categoryId,
+      listing.subcategory,
+    );
+    if (!remapped || remapped === listing.subcategory) return listing;
+    dirty = true;
+    return { ...listing, subcategory: remapped };
+  });
+  if (dirty) {
+    await persistAllListings(next).catch(() => undefined);
+  }
+  return next;
+}
+
 function setCache(listings: Listing[]) {
   cacheRows = cloneListings(listings);
   return cacheRows;
@@ -152,9 +174,12 @@ async function loadListingsUncached(): Promise<Listing[]> {
       const merged = hydrateCatalogPhones(
         await mergeMissingSeedListings(stored).catch(() => stored),
       );
-      const jobsMigrated = merged.map((listing) => migrateJobsListingFields(listing));
+      const remapped = await remapRetiredSubcategoriesOnCatalog(merged);
+      const jobsMigrated = remapped.map((listing) =>
+        migrateJobsListingFields(listing),
+      );
       const jobsChanged = jobsMigrated.filter(
-        (listing, index) => listing !== merged[index],
+        (listing, index) => listing !== remapped[index],
       );
       const { listings: repairedRows, repaired } =
         repairPoorQualityListings(jobsMigrated);

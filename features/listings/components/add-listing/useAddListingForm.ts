@@ -20,6 +20,11 @@ import { uploadListingImages } from "@/services/upload";
 import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { AddListingErrors, ListingPreview } from "./types";
 import { parseCategoryForm } from "./category-form-utils";
+import {
+  SUBCATEGORY_OTHER_ERROR_AR,
+  isOtherOptionValue,
+  resolveListingSubcategory,
+} from "./subcategory-other";
 import { createListingSlug } from "./utils";
 import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
@@ -254,7 +259,14 @@ export function useAddListingForm(categories: Category[]) {
       const isDraft = intent === "draft";
       const categoryId = String(formData.get("categoryId") ?? selectedCategoryId);
       const contact = String(formData.get("contact") ?? "").trim();
-      const subcategory = String(formData.get("subcategory") ?? "").trim();
+      const subcategoryPick = String(formData.get("subcategory") ?? "").trim();
+      const subcategoryOther = String(
+        formData.get("subcategoryOther") ?? "",
+      ).trim();
+      const subcategory = resolveListingSubcategory(
+        subcategoryPick,
+        subcategoryOther,
+      );
       const videoUrl = String(formData.get("videoUrl") ?? "").trim();
       const listingPackage = String(formData.get("package") ?? "free");
       const wantsFeatured = !isDraft && listingPackage === "featured_pending";
@@ -310,6 +322,10 @@ export function useAddListingForm(categories: Category[]) {
           nextErrors.package =
             "بوابة الدفع غير متاحة حالياً. اختر الباقة المجانية أو حاول لاحقاً.";
         }
+      }
+
+      if (isOtherOptionValue(subcategoryPick) && !subcategory) {
+        nextErrors.subcategory = SUBCATEGORY_OTHER_ERROR_AR;
       }
 
       if (Object.keys(nextErrors).length > 0) {
@@ -541,6 +557,24 @@ export function useAddListingForm(categories: Category[]) {
             categoryId: "cars",
             fieldKey: "model",
             value: `${String(specs.brand ?? "").trim()}: ${modelOther}`.trim(),
+            listingId: id,
+          }),
+        }).catch(() => undefined);
+      }
+
+      if (
+        isOtherOptionValue(subcategoryPick) &&
+        subcategory &&
+        subcategory.length >= 2
+      ) {
+        void fetch("/api/option-suggestions", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            categoryId,
+            fieldKey: "subcategory",
+            value: subcategory,
             listingId: id,
           }),
         }).catch(() => undefined);

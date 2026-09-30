@@ -1,9 +1,17 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import type { Category } from "@/types";
 import { CategoryThumbnail } from "@/shared/components/CategoryThumbnail";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
+import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import type { AddListingErrors } from "./types";
+import {
+  isOtherOptionValue,
+  subcategoryOptionsWithOther,
+} from "./subcategory-other";
 import {
   addListingStepCardClass,
   addListingStepDescClass,
@@ -29,6 +37,18 @@ export function CategorySelectionStep({
   selectedCategoryId,
   selectedSubcategory = "",
 }: CategorySelectionStepProps) {
+  const [subcategory, setSubcategory] = useState("");
+  const [subcategoryOther, setSubcategoryOther] = useState("");
+
+  useEffect(() => {
+    setSubcategory("");
+    setSubcategoryOther("");
+  }, [selectedCategoryId]);
+
+  const showSubcategory = Boolean(selectedCategory);
+  const options = subcategoryOptionsWithOther(selectedCategory?.subcategories);
+  const otherSelected = isOtherOptionValue(subcategory);
+
   return (
     <Card className={addListingStepCardClass}>
       <h2 className={addListingStepTitleClass}>1. اختر القسم</h2>
@@ -68,8 +88,8 @@ export function CategorySelectionStep({
         <FormMessage variant="error">{errors.category}</FormMessage>
       ) : null}
 
-      {(selectedCategory?.subcategories.length ?? 0) > 0 ? (
-        <div className="mt-4 grid gap-1.5">
+      {showSubcategory ? (
+        <div className="mt-4 grid gap-2">
           <Select
             key={`${selectedCategoryId}:${selectedSubcategory || "none"}`}
             defaultValue={selectedSubcategory || undefined}
@@ -79,19 +99,39 @@ export function CategorySelectionStep({
                 : "القسم الفرعي (اختياري)"
             }
             name="subcategory"
-            onChange={(event) => onSubcategoryChange?.(event.target.value)}
+            onChange={(event) => {
+              const next = event.target.value;
+              setSubcategory(next);
+              if (!isOtherOptionValue(next)) setSubcategoryOther("");
+              onSubcategoryChange?.(next);
+            }}
             optionsAreUgc
-            options={(selectedCategory?.subcategories ?? []).map((subcategory) => ({
-              label: subcategory,
-              value: subcategory,
-            }))}
+            options={options}
             placeholder="اختر..."
+            value={subcategory}
           />
-          <p className="text-xs text-muted">
-            {selectedCategoryId === "jobs"
-              ? "توظيف (وظائف) للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة."
-              : "من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة."}
-          </p>
+          {otherSelected ? (
+            <Input
+              error={errors.subcategory}
+              hint="سيُحفظ هذا الوصف كقسم فرعي للإعلان، ويمكن للإدارة اعتماده لاحقاً."
+              label="صف القسم الفرعي"
+              maxLength={60}
+              name="subcategoryOther"
+              onChange={(event) => setSubcategoryOther(event.target.value)}
+              placeholder="مثال: كلاسيكية، معدات ثقيلة…"
+              required
+              value={subcategoryOther}
+            />
+          ) : (
+            <p className="text-xs text-muted">
+              {selectedCategoryId === "jobs"
+                ? "توظيف (وظائف) للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة."
+                : "اختر من القائمة، أو «أخرى» لكتابة وصفك إن لم تجد القسم المناسب."}
+            </p>
+          )}
+          {errors.subcategory && !otherSelected ? (
+            <FormMessage variant="error">{errors.subcategory}</FormMessage>
+          ) : null}
         </div>
       ) : null}
     </Card>
