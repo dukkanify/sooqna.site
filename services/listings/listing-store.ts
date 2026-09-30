@@ -7,6 +7,7 @@ import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import {
   computeExpiresAt,
   expireStaleListings,
+  restorePrematurelyExpiredListings,
 } from "@/services/listings/listing-expiry";
 import {
   deleteListingRow,
@@ -137,8 +138,9 @@ async function applyListingExpiry(listings: Listing[]): Promise<Listing[]> {
   expiryApplied = true;
   try {
     const settings = await getAdminSettings();
-    const changed = expireStaleListings(listings, settings.listingActiveDays);
-    if (changed > 0) {
+    const restored = restorePrematurelyExpiredListings(listings);
+    const expired = expireStaleListings(listings, settings.listingActiveDays);
+    if (restored + expired > 0) {
       await persistAllListings(listings).catch(() => undefined);
     }
   } catch {
