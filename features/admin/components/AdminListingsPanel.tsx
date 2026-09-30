@@ -37,6 +37,13 @@ import { Textarea } from "@/shared/ui/Textarea";
 import { intlLocale } from "@/shared/i18n/locale";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import { areasForEmirate } from "@/shared/constants/emirate-areas";
+import {
+  UAE_EMIRATE_NAMES,
+  listingArea,
+  listingMatchesAreaFilter,
+  listingMatchesEmirateFilter,
+} from "@/shared/listings/uae-emirate";
 import { useLocale } from "@/shared/i18n/useLocale";
 
 const statusFilterOptions: { label: string; value: string }[] = [
@@ -188,8 +195,11 @@ export function AdminListingsPanel() {
   const [categoryFilter, setCategoryFilter] = useState(
     () => searchParams.get("category") ?? "all",
   );
-  const [cityFilter, setCityFilter] = useState(
-    () => searchParams.get("city") ?? "all",
+  const [emirateFilter, setEmirateFilter] = useState(
+    () => searchParams.get("emirate") ?? searchParams.get("city") ?? "all",
+  );
+  const [areaFilter, setAreaFilter] = useState(
+    () => searchParams.get("area") ?? "all",
   );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -277,9 +287,8 @@ export function AdminListingsPanel() {
       .filter((listing) =>
         categoryFilter === "all" ? true : listing.categoryId === categoryFilter,
       )
-      .filter((listing) =>
-        cityFilter === "all" ? true : listing.city === cityFilter,
-      )
+      .filter((listing) => listingMatchesEmirateFilter(listing, emirateFilter))
+      .filter((listing) => listingMatchesAreaFilter(listing, areaFilter))
       .filter((listing) => {
         if (!q) return true;
         const contactPhone = (
@@ -293,7 +302,7 @@ export function AdminListingsPanel() {
           (contactPhone?.includes(q) ?? false)
         );
       });
-  }, [listings, statusFilter, categoryFilter, cityFilter, searchQuery]);
+  }, [listings, statusFilter, categoryFilter, emirateFilter, areaFilter, searchQuery]);
 
   const categoryFilterOptions = useMemo(() => {
     const ids = [...new Set(listings.map((listing) => listing.categoryId))].sort();
@@ -307,15 +316,31 @@ export function AdminListingsPanel() {
     ];
   }, [categories, listings]);
 
-  const cityFilterOptions = useMemo(() => {
-    const listingCities = [
-      ...new Set(listings.map((listing) => listing.city).filter(Boolean)),
-    ].sort();
+  const emirateFilterOptions = useMemo(
+    () => [
+      { label: "كل الإمارات", value: "all" },
+      ...UAE_EMIRATE_NAMES.map((name) => ({ label: name, value: name })),
+    ],
+    [],
+  );
+
+  const areaFilterOptions = useMemo(() => {
+    if (emirateFilter === "all") {
+      return [{ label: "كل المناطق", value: "all" }];
+    }
+    const known = areasForEmirate(emirateFilter);
+    const fromListings = listings
+      .filter((listing) => listingMatchesEmirateFilter(listing, emirateFilter))
+      .map((listing) => listingArea(listing))
+      .filter((area): area is string => Boolean(area));
+    const merged = [...new Set([...known, ...fromListings])].sort((a, b) =>
+      a.localeCompare(b, "ar"),
+    );
     return [
-      { label: "كل المدن", value: "all" },
-      ...listingCities.map((city) => ({ label: city, value: city })),
+      { label: "كل مناطق الإمارة", value: "all" },
+      ...merged.map((area) => ({ label: area, value: area })),
     ];
-  }, [listings]);
+  }, [emirateFilter, listings]);
 
   const pendingCount = useMemo(
     () =>
@@ -353,25 +378,36 @@ export function AdminListingsPanel() {
     if (searchQuery.trim()) params.set("q", searchQuery.trim());
     if (statusFilter !== defaultStatusFilter) params.set("status", statusFilter);
     if (categoryFilter !== "all") params.set("category", categoryFilter);
-    if (cityFilter !== "all") params.set("city", cityFilter);
+    if (emirateFilter !== "all") params.set("emirate", emirateFilter);
+    if (areaFilter !== "all") params.set("area", areaFilter);
     const qs = params.toString();
     const next = qs ? `${pathname}?${qs}` : pathname;
     const current = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
     if (next !== current) router.replace(next);
     // Sync URL from filter state only — searchParams identity omitted on purpose.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- URL mirror
-  }, [searchQuery, statusFilter, categoryFilter, cityFilter, pathname, router]);
+  }, [
+    searchQuery,
+    statusFilter,
+    categoryFilter,
+    emirateFilter,
+    areaFilter,
+    pathname,
+    router,
+  ]);
 
   const hasActiveFilters =
     statusFilter !== defaultStatusFilter ||
     categoryFilter !== "all" ||
-    cityFilter !== "all" ||
+    emirateFilter !== "all" ||
+    areaFilter !== "all" ||
     searchQuery.trim().length > 0;
 
   function clearFilters() {
     setStatusFilter(defaultStatusFilter);
     setCategoryFilter("all");
-    setCityFilter("all");
+    setEmirateFilter("all");
+    setAreaFilter("all");
     setSearchQuery("");
   }
 
@@ -1112,12 +1148,24 @@ export function AdminListingsPanel() {
               value={categoryFilter}
             />
           </div>
-          <div className="min-w-[140px]">
+          <div className="min-w-[150px]">
             <Select
-              label="المدينة"
-              onChange={(event) => setCityFilter(event.target.value)}
-              options={cityFilterOptions}
-              value={cityFilter}
+              label="الإمارة"
+              onChange={(event) => {
+                setEmirateFilter(event.target.value);
+                setAreaFilter("all");
+              }}
+              options={emirateFilterOptions}
+              value={emirateFilter}
+            />
+          </div>
+          <div className="min-w-[160px]">
+            <Select
+              disabled={emirateFilter === "all"}
+              label="المنطقة"
+              onChange={(event) => setAreaFilter(event.target.value)}
+              options={areaFilterOptions}
+              value={areaFilter}
             />
           </div>
           {pendingCount > 0 ? (

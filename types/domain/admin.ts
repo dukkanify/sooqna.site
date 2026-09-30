@@ -69,6 +69,7 @@ export type AdminListingRecord = {
   postedAt: string;
   city: string;
   emirate?: string;
+  area?: string;
   condition?: ListingCondition;
   contactPhone?: string;
   imageUrl?: string;

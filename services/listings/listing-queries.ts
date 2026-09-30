@@ -635,6 +635,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             posted_at,
             payload->>'title' AS title,
             payload->>'city' AS city,
+            payload->>'emirate' AS emirate,
+            payload->>'area' AS area,
             payload->>'imageUrl' AS image_url,
             payload->>'featuredUntil' AS featured_until,
             COALESCE((payload->>'price')::numeric, 0) AS price,
@@ -673,6 +675,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
                 ? row.posted_at.toISOString()
                 : String(row.posted_at ?? ""),
             city: String(row.city ?? ""),
+            emirate: row.emirate ? String(row.emirate) : undefined,
+            area: row.area ? String(row.area) : undefined,
             imageUrl: row.image_url ? String(row.image_url) : undefined,
             views: viewScores.get(id) ?? 0,
             isDemo:
@@ -705,6 +709,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
       featuredUntil: listing.featuredUntil,
       postedAt: listing.postedAt ?? "",
       city: listing.city,
+      emirate: listing.emirate,
+      area: listing.area,
       imageUrl: listing.imageUrl ?? listing.images?.[0],
       views: viewScores.get(listing.id) ?? listing.views ?? 0,
       isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
