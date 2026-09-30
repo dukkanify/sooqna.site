@@ -117,6 +117,7 @@ export type AdminListingPatch = Partial<
     | "price"
     | "city"
     | "emirate"
+    | "area"
     | "condition"
     | "contactPhone"
     | "imageUrl"

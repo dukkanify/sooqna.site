@@ -15,7 +15,6 @@ import type {
   AdminListingRecord,
   ListingStatus,
 } from "@/types";
-import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { isDynamicCategory } from "@/shared/constants/category-fields";
 import { listingStatusLabels } from "@/shared/constants/listingStatuses";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
@@ -40,7 +39,10 @@ import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-poli
 import { areasForEmirate } from "@/shared/constants/emirate-areas";
 import {
   UAE_EMIRATE_NAMES,
+  canonicalizeEmirate,
+  extractAreaLabel,
   listingArea,
+  listingEmirate,
   listingMatchesAreaFilter,
   listingMatchesEmirateFilter,
 } from "@/shared/listings/uae-emirate";
@@ -167,7 +169,8 @@ const emptyForm = {
   title: "",
   description: "",
   categoryId: "",
-  city: "دبي",
+  emirate: "دبي",
+  area: "",
   price: "",
   condition: "used",
   status: "active",
@@ -178,8 +181,25 @@ const emptyForm = {
   isFeatured: false,
 };
 
+const emirateFormOptions = UAE_EMIRATE_NAMES.map((name) => ({
+  label: name,
+  value: name,
+}));
+
+function areaFormOptions(emirate: string, extra?: string) {
+  const known = [...areasForEmirate(emirate)];
+  if (extra?.trim() && !known.includes(extra.trim())) {
+    known.push(extra.trim());
+  }
+  return [
+    { label: "كل الإمارة / بدون منطقة محددة", value: "" },
+    ...known
+      .sort((a, b) => a.localeCompare(b, "ar"))
+      .map((area) => ({ label: area, value: area })),
+  ];
+}
+
 export function AdminListingsPanel() {
-  const cities = useMarketplaceLocations();
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -216,7 +236,8 @@ export function AdminListingsPanel() {
     title: "",
     description: "",
     price: "",
-    city: "دبي",
+    emirate: "دبي",
+    area: "",
     condition: "used",
     contactPhone: "",
     imageUrl: "",
@@ -441,6 +462,7 @@ export function AdminListingsPanel() {
         | "features"
         | "negotiable"
         | "emirate"
+        | "area"
       >
     > & {
       rejectReason?: string;
@@ -502,6 +524,10 @@ export function AdminListingsPanel() {
     const images =
       media.images?.filter(Boolean) ??
       (media.imageUrl ? [media.imageUrl] : []);
+    const emirate =
+      listingEmirate(listing) ??
+      canonicalizeEmirate(listing.city) ??
+      "دبي";
     setEditingId(listing.id);
     setEditImagesTouched(false);
     setEditFieldErrors({});
@@ -509,7 +535,8 @@ export function AdminListingsPanel() {
       title: listing.title,
       description: listing.description ?? "",
       price: String(listing.price ?? ""),
-      city: listing.city,
+      emirate,
+      area: listingArea(listing) ?? "",
       condition: listing.condition ?? "used",
       contactPhone: listing.contactPhone ?? "",
       imageUrl: images[0] ?? "",
@@ -545,10 +572,12 @@ export function AdminListingsPanel() {
     let title = editDraft.title.trim();
     let description = editDraft.description.trim();
     let price = Number(editDraft.price);
-    let city = editDraft.city.trim();
+    let emirate =
+      canonicalizeEmirate(editDraft.emirate) || editDraft.emirate.trim() || "دبي";
+    let area = editDraft.area.trim() || undefined;
+    let city = area ? `${emirate} — ${area}` : emirate;
     let condition = editDraft.condition as AdminListingRecord["condition"];
     let contactPhone = editDraft.contactPhone.trim() || undefined;
-    let emirate: string | undefined;
     let categorySpecs = listing.categorySpecs;
     let features = listing.features;
     let negotiable = listing.negotiable;
@@ -586,9 +615,20 @@ export function AdminListingsPanel() {
       description =
         String(formData.get("description") ?? "").trim() || description;
       price = submittedPrice;
-      city = parsed.city || city || listing.city;
+      emirate =
+        canonicalizeEmirate(parsed.emirate) ||
+        canonicalizeEmirate(parsed.city) ||
+        emirate ||
+        listingEmirate(listing) ||
+        "دبي";
+      area =
+        (typeof parsed.categorySpecs.community === "string"
+          ? parsed.categorySpecs.community.trim()
+          : "") ||
+        extractAreaLabel(parsed.city, emirate) ||
+        area;
+      city = area ? `${emirate} — ${area}` : parsed.city || emirate;
       condition = parsed.condition || condition;
-      emirate = parsed.emirate || listing.emirate;
       categorySpecs = {
         ...(listing.categorySpecs ?? {}),
         ...parsed.categorySpecs,
@@ -601,6 +641,9 @@ export function AdminListingsPanel() {
     } else if (!title || !Number.isFinite(price) || price <= 0) {
       window.alert("العنوان والسعر مطلوبان.");
       return;
+    } else if (!emirate.trim()) {
+      window.alert("الإمارة مطلوبة.");
+      return;
     }
 
     const images = editDraft.images.filter(Boolean);
@@ -610,6 +653,8 @@ export function AdminListingsPanel() {
       price,
       city,
       emirate,
+      // Empty string clears a previously saved area.
+      area: area ?? "",
       condition,
       contactPhone,
       // Only touch media when the admin changed the gallery — slim list rows
@@ -639,7 +684,8 @@ export function AdminListingsPanel() {
     if (!isDynamic) {
       formData.set("title", form.title);
       formData.set("price", form.price);
-      formData.set("city", form.city);
+      formData.set("city", form.emirate);
+      formData.set("emirate", form.emirate);
       formData.set("condition", form.condition);
     } else {
       // Ensure price/description always present for parser
@@ -660,7 +706,7 @@ export function AdminListingsPanel() {
     if (!isDynamic) {
       const price = Number(form.price);
       if (!form.title.trim()) nextErrors.title = "العنوان مطلوب.";
-      if (!form.city.trim()) nextErrors.city = "المدينة مطلوبة.";
+      if (!form.emirate.trim()) nextErrors.city = "الإمارة مطلوبة.";
       if (!Number.isFinite(price) || price <= 0) {
         nextErrors.price = "اكتب سعراً صحيحاً.";
       }
@@ -674,7 +720,20 @@ export function AdminListingsPanel() {
 
     const price = Number(formData.get("price") ?? form.price);
     const title = isDynamic ? parsed.title : form.title.trim();
-    const city = isDynamic ? parsed.city : form.city;
+    const emirate = isDynamic
+      ? canonicalizeEmirate(parsed.emirate) ||
+        canonicalizeEmirate(parsed.city) ||
+        form.emirate
+      : canonicalizeEmirate(form.emirate) || form.emirate;
+    const area = isDynamic
+      ? (typeof parsed.categorySpecs.community === "string"
+          ? parsed.categorySpecs.community.trim()
+          : "") ||
+        extractAreaLabel(parsed.city, emirate) ||
+        form.area.trim() ||
+        undefined
+      : form.area.trim() || undefined;
+    const city = area ? `${emirate} — ${area}` : emirate;
     const description = String(
       formData.get("description") ?? form.description,
     ).trim();
@@ -696,11 +755,8 @@ export function AdminListingsPanel() {
             description,
             categoryId: form.categoryId,
             city,
-            emirate: parsed.emirate,
-            area:
-              typeof parsed.categorySpecs.community === "string"
-                ? parsed.categorySpecs.community
-                : undefined,
+            emirate,
+            area,
             price,
             condition: parsed.condition,
             status: form.status,
@@ -726,7 +782,7 @@ export function AdminListingsPanel() {
         if (response.status === 401 || response.status === 403) {
           setCreateError("انتهت صلاحية الجلسة. حدّث الصفحة وسجّل الدخول مجدداً.");
         } else if (code === "INVALID_INPUT" || code === "INVALID_PRICE") {
-          setCreateError("تحقق من العنوان والقسم والمدينة والسعر ثم أعد المحاولة.");
+          setCreateError("تحقق من العنوان والقسم والإمارة والسعر ثم أعد المحاولة.");
         } else {
           setCreateError("تعذر حفظ الإعلان. حاول مرة أخرى.");
         }
@@ -740,7 +796,8 @@ export function AdminListingsPanel() {
       setForm((current) => ({
         ...emptyForm,
         categoryId: current.categoryId,
-        city: current.city,
+        emirate: current.emirate,
+        area: "",
         status: current.status,
       }));
       setFieldErrors({});
@@ -1026,19 +1083,29 @@ export function AdminListingsPanel() {
                 value={form.price}
               />
               <Select
-                label="المدينة"
-                name="city"
+                label="الإمارة"
+                name="emirate"
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    city: event.target.value,
+                    emirate: event.target.value,
+                    area: "",
                   }))
                 }
-                options={cities.map((city) => ({
-                  label: city.name,
-                  value: city.name,
-                }))}
-                value={form.city}
+                options={emirateFormOptions}
+                value={form.emirate}
+              />
+              <Select
+                label="المنطقة"
+                name="area"
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    area: event.target.value,
+                  }))
+                }
+                options={areaFormOptions(form.emirate)}
+                value={form.area}
               />
               <Select
                 label="الحالة"
@@ -1705,18 +1772,30 @@ export function AdminListingsPanel() {
                         value={editDraft.price}
                       />
                       <Select
-                        label="المدينة"
+                        label="الإمارة"
                         onChange={(event) =>
                           setEditDraft((current) => ({
                             ...current,
-                            city: event.target.value,
+                            emirate: event.target.value,
+                            area: "",
                           }))
                         }
-                        options={cities.map((city) => ({
-                          label: city.name,
-                          value: city.name,
-                        }))}
-                        value={editDraft.city}
+                        options={emirateFormOptions}
+                        value={editDraft.emirate}
+                      />
+                      <Select
+                        label="المنطقة"
+                        onChange={(event) =>
+                          setEditDraft((current) => ({
+                            ...current,
+                            area: event.target.value,
+                          }))
+                        }
+                        options={areaFormOptions(
+                          editDraft.emirate,
+                          editDraft.area,
+                        )}
+                        value={editDraft.area}
                       />
                       <Select
                         label="الحالة"
