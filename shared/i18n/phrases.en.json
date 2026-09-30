@@ -2969,5 +2969,16 @@
   "يفتح صفحة الإعلان للمرجع فقط — ليس مسار دفع الأدمن.": "Opens the listing page for reference only — not an admin payment path.",
   "لا يوجد مشتري مسجّل لإرسال إشعار داخل التطبيق (طلب ضيف).": "No registered buyer to notify in-app (guest order).",
   "تم إرسال إشعار للمشتري لإكمال الدفع.": "Buyer was notified to complete payment.",
-  "معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع.": "Preview the order and listing inside the control panel — without the buyer or payment journey."
+  "معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع.": "Preview the order and listing inside the control panel — without the buyer or payment journey.",
+  "المميزة فقط": "Featured only",
+  "صفحة المميزة على الموقع": "Featured page on the site",
+  "صفحة المميزة": "Featured page",
+  "التمييز": "Featured",
+  "كيف نميّز الإعلان المميز؟": "How do we mark a featured listing?",
+  "مفتوح المدة": "Open-ended",
+  "انتهت المميزة": "Featured ended",
+  "عادي": "Regular",
+  "حتى": "Until",
+  "راجع الإعلانات واعتمد أو عدّل أو ميّز مباشرة — النصوص كاملة في الجدول.": "Review listings and approve, edit, or feature them directly — full text in the table.",
+  "جدول منظم بلا قص للنصوص: رقم الإعلان، العنوان، التصنيف، المعلن، الحالة، التمييز، السعر، تاريخ النشر، المشاهدات والإجراءات — مع بحث وفلاتر ووصول لصفحة المميزة.": "Organized table without cut-off text: ad number, title, category, seller, status, featured, price, published date, views and actions — with search, filters, and access to the Featured page."
 }

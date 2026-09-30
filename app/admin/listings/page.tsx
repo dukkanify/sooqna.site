@@ -6,7 +6,7 @@ export default function AdminListingsPage() {
   return (
     <AdminShell
       activePath="/admin/listings"
-      description="جدول منظم: رقم الإعلان، العنوان، التصنيف، المعلن، الحالة، السعر، تاريخ النشر، المشاهدات والإجراءات — مع بحث وفلاتر."
+      description="جدول منظم بلا قص للنصوص: رقم الإعلان، العنوان، التصنيف، المعلن، الحالة، التمييز، السعر، تاريخ النشر، المشاهدات والإجراءات — مع بحث وفلاتر ووصول لصفحة المميزة."
       title="إدارة الإعلانات"
     >
       <Suspense fallback={<p className="text-sm text-muted">جاري التحميل...</p>}>

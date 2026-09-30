@@ -889,7 +889,7 @@
 }
 
 .admin-listings-table {
-  min-width: 72rem;
+  min-width: 88rem;
 }
 
 .admin-listings-table thead th {
@@ -902,6 +902,32 @@
 
 .admin-listings-table tbody tr:hover td {
   background: #fafbfc;
+}
+
+.admin-listings-table tbody tr.admin-listings-row--featured td {
+  background: #fff9ef;
+}
+
+.admin-listings-table tbody tr.admin-listings-row--featured:hover td {
+  background: #fff3d9;
+}
+
+.admin-listings-cell-wrap {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-width: 14rem;
+  vertical-align: top;
+}
+
+.admin-listings-cell-title {
+  max-width: 18rem;
+  min-width: 14rem;
+}
+
+.admin-listings-featured-help {
+  border: 1px solid rgb(201 164 92 / 35%);
+  background: linear-gradient(180deg, #fffbf3 0%, #fff 70%);
 }
 
 .admin-ops__sidebar-footer .btn,

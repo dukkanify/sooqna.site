@@ -405,6 +405,10 @@ export async function createListingFromAdmin(
     condition: input.condition ?? "used",
     status: input.status ?? "active",
     isFeatured: Boolean(input.isFeatured),
+    isPremium: Boolean(input.isFeatured) || undefined,
+    featuredUntil: input.isFeatured
+      ? computeExpiresAt(postedAt, settings.featuredListingDays)
+      : undefined,
     views: 0,
     seller: {
       id: "seller-admin-ops",
@@ -458,6 +462,23 @@ export async function patchListingRecord(
         ? [patch.imageUrl, ...(previous.images ?? []).filter((url) => url !== patch.imageUrl)]
         : previous.images;
 
+  let featuredPatch: Partial<Listing> = {};
+  if (typeof patch.isFeatured === "boolean") {
+    if (patch.isFeatured) {
+      const settings = await getAdminSettings();
+      featuredPatch = {
+        isFeatured: true,
+        isPremium: true,
+        featuredUntil: computeExpiresAt(
+          new Date().toISOString(),
+          settings.featuredListingDays,
+        ),
+      };
+    } else {
+      featuredPatch = { isFeatured: false, featuredUntil: undefined };
+    }
+  }
+
   listings[index] = {
     ...previous,
     ...(patch.title !== undefined ? { title: patch.title.trim() } : {}),
@@ -510,7 +531,7 @@ export async function patchListingRecord(
       ? { videoUrl: patch.videoUrl.trim() || undefined }
       : {}),
     ...(patch.status ? { status: patch.status } : {}),
-    ...(typeof patch.isFeatured === "boolean" ? { isFeatured: patch.isFeatured } : {}),
+    ...featuredPatch,
     ...(patch.status === "rejected"
       ? {
           rejectionReason:
@@ -705,6 +726,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     currency: media.currency,
     status: media.status,
     isFeatured: media.isFeatured,
+    featuredUntil: media.featuredUntil,
     postedAt: media.postedAt ?? "",
     city: media.city,
     emirate: media.emirate,

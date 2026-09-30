@@ -37,6 +37,7 @@ import { useLocale } from "@/shared/i18n/useLocale";
 const statusFilterOptions: { label: string; value: string }[] = [
   { label: "إعلانات السوق", value: "marketplace" },
   { label: "الكل (مع التجريبي)", value: "all" },
+  { label: "المميزة فقط", value: "featured" },
   { label: listingStatusLabels.pending_review, value: "pending_review" },
   { label: listingStatusLabels.active, value: "active" },
   { label: listingStatusLabels.reserved, value: "reserved" },
@@ -46,6 +47,33 @@ const statusFilterOptions: { label: string; value: string }[] = [
   { label: listingStatusLabels.expired, value: "expired" },
   { label: "تجريبي فقط", value: "demo" },
 ];
+
+function isFeaturedWindowLive(
+  listing: Pick<AdminListingRecord, "isFeatured" | "featuredUntil">,
+  nowMs = Date.now(),
+): boolean {
+  if (!listing.isFeatured) return false;
+  if (!listing.featuredUntil) return true;
+  const until = Date.parse(listing.featuredUntil);
+  if (Number.isNaN(until)) return true;
+  return until > nowMs;
+}
+
+function featuredUntilLabel(
+  featuredUntil: string | undefined,
+  locale: Parameters<typeof intlLocale>[0],
+): string {
+  if (!featuredUntil) return "مفتوح المدة";
+  const until = Date.parse(featuredUntil);
+  if (Number.isNaN(until)) return "مفتوح المدة";
+  return new Date(until).toLocaleString(intlLocale(locale), {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function isDemoAdminListing(listing: AdminListingRecord): boolean {
   return listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE";
@@ -232,6 +260,9 @@ export function AdminListingsPanel() {
         if (statusFilter === "demo") return demo;
         if (statusFilter === "marketplace") return marketplace;
         if (statusFilter === "all") return true;
+        if (statusFilter === "featured") {
+          return marketplace && isFeaturedWindowLive(listing);
+        }
         // Status filters show real marketplace ads only (not showcase/fixtures).
         return listing.status === statusFilter && marketplace;
       })
@@ -290,6 +321,15 @@ export function AdminListingsPanel() {
 
   const marketplaceCount = useMemo(
     () => listings.filter((listing) => isMarketplaceAdminListing(listing)).length,
+    [listings],
+  );
+
+  const featuredCount = useMemo(
+    () =>
+      listings.filter(
+        (listing) =>
+          isMarketplaceAdminListing(listing) && isFeaturedWindowLive(listing),
+      ).length,
     [listings],
   );
 
@@ -707,16 +747,52 @@ export function AdminListingsPanel() {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted">راجع الإعلانات واعتمد أو عدّل مباشرة.</p>
-        <Button
-          onClick={() => setShowTools((open) => !open)}
-          size="sm"
-          type="button"
-          variant="secondary"
-        >
-          {showTools ? "إخفاء الأدوات" : "إضافة إعلان / أدوات"}
-        </Button>
+        <p className="text-sm text-muted">
+          راجع الإعلانات واعتمد أو عدّل أو ميّز مباشرة — النصوص كاملة في الجدول.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button href="/featured" size="sm" variant="secondary">
+            صفحة المميزة على الموقع
+          </Button>
+          <Button
+            onClick={() => setShowTools((open) => !open)}
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            {showTools ? "إخفاء الأدوات" : "إضافة إعلان / أدوات"}
+          </Button>
+        </div>
       </div>
+
+      <Card className="admin-listings-featured-help p-4" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">كيف نميّز الإعلان المميز؟</h2>
+        <ul className="mt-2 grid gap-1.5 text-xs leading-6 text-muted sm:grid-cols-2">
+          <li>
+            شارة ذهبية <strong className="text-ink">مميّز</strong> على بطاقة
+            الإعلان وصفحته.
+          </li>
+          <li>
+            يظهر في{" "}
+            <Link className="font-semibold text-secondary underline" href="/featured">
+              /featured
+            </Link>{" "}
+            وفي شريط المميزة بالرئيسية.
+          </li>
+          <li>أولوية ظهور أعلى في نتائج البحث والتصفح أثناء مدة الباقة.</li>
+          <li>
+            من هنا: زر <strong className="text-ink">تمييز</strong> يفعّل الباقة
+            لمدة إعدادات الأدمن، أو{" "}
+            <Link
+              className="font-semibold text-secondary underline"
+              href="/admin/settings"
+            >
+              ضبط الرسوم والأيام
+            </Link>
+            .
+          </li>
+        </ul>
+      </Card>
 
       {showTools ? (
         <>
@@ -987,6 +1063,14 @@ export function AdminListingsPanel() {
               قيد المراجعة ({pendingCount})
             </Button>
           ) : null}
+          <Button
+            onClick={() => setStatusFilter("featured")}
+            size="sm"
+            type="button"
+            variant={statusFilter === "featured" ? "primary" : "ghost"}
+          >
+            المميزة ({featuredCount})
+          </Button>
           {hasActiveFilters ? (
             <Button onClick={clearFilters} size="sm" type="button" variant="ghost">
               مسح الفلاتر
@@ -1002,6 +1086,9 @@ export function AdminListingsPanel() {
             {marketplaceCount > 0 && statusFilter !== "marketplace" ? (
               <span className="ms-2">· سوق: {marketplaceCount}</span>
             ) : null}
+            {featuredCount > 0 ? (
+              <span className="ms-2">· مميزة: {featuredCount}</span>
+            ) : null}
           </p>
         </div>
       </Card>
@@ -1014,7 +1101,9 @@ export function AdminListingsPanel() {
                 لا توجد إعلانات مطابقة لهذه التصفية
                 {statusFilter === "pending_review"
                   ? " — لا يوجد شيء بانتظار المراجعة حالياً."
-                  : "."}
+                  : statusFilter === "featured"
+                    ? " — لا توجد إعلانات مميزة نشطة. استخدم زر تمييز من الجدول."
+                    : "."}
               </p>
               <p className="mt-2 text-xs text-muted">
                 إعلانات السوق الحقيقية: {marketplaceCount} · المخزون كامل:{" "}
@@ -1048,6 +1137,7 @@ export function AdminListingsPanel() {
                   <th>السعر</th>
                   <th>المشاهدات</th>
                   <th>الحالة</th>
+                  <th>التمييز</th>
                   <th>تاريخ النشر</th>
                   <th>الإجراءات</th>
                 </tr>
@@ -1058,8 +1148,14 @@ export function AdminListingsPanel() {
                   const categoryLabel =
                     categoryNameById.get(listing.categoryId) ??
                     listing.categoryId;
+                  const featuredLive = isFeaturedWindowLive(listing);
                   return (
-                    <tr key={listing.id}>
+                    <tr
+                      className={
+                        featuredLive ? "admin-listings-row--featured" : undefined
+                      }
+                      key={listing.id}
+                    >
                       <td>
                         <span
                           className="font-mono text-xs font-semibold text-ink"
@@ -1068,31 +1164,46 @@ export function AdminListingsPanel() {
                           {listingNumberLabel(listing.id)}
                         </span>
                       </td>
-                      <td>
-                        <div className="flex min-w-[12rem] items-center gap-2">
+                      <td className="admin-listings-cell-wrap admin-listings-cell-title">
+                        <div className="flex items-start gap-2">
                           <AdminListingThumb size="sm" src={listing.imageUrl} />
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-ink">
+                            <p
+                              className="font-semibold leading-snug text-ink"
+                              title={listing.title}
+                            >
                               {listing.title}
                             </p>
-                            <p className="truncate text-[11px] text-muted">
+                            <p
+                              className="mt-0.5 break-all text-[11px] leading-snug text-muted"
+                              title={listing.slug}
+                            >
                               {listing.slug}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td>
-                        <p className="max-w-[9rem] truncate font-medium text-ink">
+                      <td className="admin-listings-cell-wrap">
+                        <p
+                          className="font-medium leading-snug text-ink"
+                          title={listing.sellerName || undefined}
+                        >
                           {listing.sellerName || "—"}
                         </p>
                       </td>
-                      <td>
-                        <p className="max-w-[8rem] truncate text-ink">
+                      <td className="admin-listings-cell-wrap">
+                        <p
+                          className="leading-snug text-ink"
+                          title={categoryLabel}
+                        >
                           {categoryLabel}
                         </p>
                       </td>
-                      <td>
-                        <p className="max-w-[7rem] truncate text-muted">
+                      <td className="admin-listings-cell-wrap">
+                        <p
+                          className="leading-snug text-muted"
+                          title={listing.city || undefined}
+                        >
                           {listing.city || "—"}
                         </p>
                       </td>
@@ -1111,14 +1222,30 @@ export function AdminListingsPanel() {
                           <Badge variant={listingBadgeVariant(listing.status)}>
                             {listingStatusLabels[listing.status]}
                           </Badge>
-                          {listing.isFeatured ? (
-                            <Badge variant="featured">مميّز</Badge>
-                          ) : null}
                           {listing.isDemo ||
                           listing.source === "SOOQNA_SHOWCASE" ? (
                             <Badge variant="demo">تجريبي</Badge>
                           ) : null}
                         </div>
+                      </td>
+                      <td className="admin-listings-cell-wrap">
+                        {featuredLive ? (
+                          <div className="flex flex-col items-start gap-1">
+                            <Badge variant="featured">مميّز</Badge>
+                            <span className="text-[11px] leading-snug text-muted">
+                              حتى {featuredUntilLabel(listing.featuredUntil, locale)}
+                            </span>
+                          </div>
+                        ) : listing.isFeatured ? (
+                          <div className="flex flex-col items-start gap-1">
+                            <Badge variant="muted">انتهت المميزة</Badge>
+                            <span className="text-[11px] leading-snug text-muted">
+                              {featuredUntilLabel(listing.featuredUntil, locale)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted">عادي</span>
+                        )}
                       </td>
                       <td>
                         <span className="whitespace-nowrap text-xs text-muted">
@@ -1162,6 +1289,19 @@ export function AdminListingsPanel() {
                             </Button>
                           ) : null}
                           <Button
+                            loading={busyId === listing.id}
+                            onClick={() =>
+                              patchListing(listing.id, {
+                                isFeatured: !listing.isFeatured,
+                              })
+                            }
+                            size="sm"
+                            type="button"
+                            variant={featuredLive ? "ghost" : "secondary"}
+                          >
+                            {featuredLive ? "إلغاء التمييز" : "تمييز"}
+                          </Button>
+                          <Button
                             onClick={() =>
                               setOpenRowActions((current) =>
                                 current === listing.id ? null : listing.id,
@@ -1196,26 +1336,18 @@ export function AdminListingsPanel() {
                               </Button>
                             ) : null}
                             <Button
-                              loading={busyId === listing.id}
-                              onClick={() =>
-                                patchListing(listing.id, {
-                                  isFeatured: !listing.isFeatured,
-                                })
-                              }
-                              size="sm"
-                              type="button"
-                              variant="secondary"
-                            >
-                              {listing.isFeatured
-                                ? "إلغاء التمييز"
-                                : "تمييز"}
-                            </Button>
-                            <Button
                               href={`/listings/${listing.slug}`}
                               size="sm"
                               variant="ghost"
                             >
                               عرض
+                            </Button>
+                            <Button
+                              href="/featured"
+                              size="sm"
+                              variant="ghost"
+                            >
+                              صفحة المميزة
                             </Button>
                             <Button
                               loading={busyId === listing.id}
