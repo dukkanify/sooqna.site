@@ -10,10 +10,7 @@ import {
 } from "@/services/listings/listings-cache";
 import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
 import { sortByMostViewed } from "@/services/listings/home-feed-rank";
-import {
-  isEligibleFeaturedPageListing,
-  sortFeaturedPageListings,
-} from "@/shared/listings/featured-page-rules";
+import { pickDiverseFeaturedListings } from "@/shared/listings/featured-page-rules";
 
 export type HomeListingCard = Listing;
 export { slimListingForCard };
@@ -181,10 +178,8 @@ async function buildHomeFeed(): Promise<HomeFeed> {
   const usedIds = new Set<string>();
   const usedCovers = new Set<string>();
 
-  // Same eligibility/order contract as `/featured` (paid + active window).
-  const activeFeatured = sortFeaturedPageListings(
-    featuredRows.filter((listing) => isEligibleFeaturedPageListing(listing)),
-  );
+  // Same eligibility as `/featured`, then spread category + emirate before covers.
+  const activeFeatured = pickDiverseFeaturedListings(featuredRows, FEATURED_FETCH);
 
   // 1) Featured first — never backfill with non-featured catalog rows.
   const featured = takeDiverse(
@@ -222,7 +217,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v20-featured-rules-mostviewed-nearby"],
+  ["sooqna-home-feed-v21-featured-priority-diverse"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

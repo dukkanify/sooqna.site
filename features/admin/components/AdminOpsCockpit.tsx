@@ -79,11 +79,16 @@ type DashboardPayload = {
   financial:
     | {
         available: true;
+        /** GMV (merchandise / productPrice). */
         transactionVolume: number;
         revenue: number;
         netProfit: number;
+        gatewayFees?: number;
+        buyerCollected?: number;
         heldEscrowAmount: number;
         heldEscrowCount: number;
+        releasedEscrowAmount?: number;
+        releasedEscrowCount?: number;
         successfulPayments: number;
         pendingPayments: number;
         refundedAmount: number;
@@ -466,19 +471,19 @@ export function AdminOpsCockpit() {
             ) : (
               <div className="admin-dash__stat-grid">
                 <div className="admin-dash__stat">
-                  <span>حجم المعاملات</span>
+                  <span>GMV (قيمة البضائع)</span>
                   <strong>
                     <CurrencyAmount amount={data.financial.transactionVolume} size="sm" />
                   </strong>
                 </div>
                 <div className="admin-dash__stat">
-                  <span>إجمالي الإيرادات</span>
+                  <span>عمولات المنصة</span>
                   <strong>
                     <CurrencyAmount amount={data.financial.revenue} size="sm" />
                   </strong>
                 </div>
                 <div className="admin-dash__stat">
-                  <span>صافي الربح</span>
+                  <span>صافي إيراد المنصة</span>
                   <strong>
                     <CurrencyAmount amount={data.financial.netProfit} size="sm" />
                   </strong>
@@ -487,6 +492,15 @@ export function AdminOpsCockpit() {
                   <span>محتجز في مضمون</span>
                   <strong>
                     <CurrencyAmount amount={data.financial.heldEscrowAmount} size="sm" />
+                  </strong>
+                </div>
+                <div className="admin-dash__stat">
+                  <span>محرّر من الضمان</span>
+                  <strong>
+                    <CurrencyAmount
+                      amount={data.financial.releasedEscrowAmount ?? 0}
+                      size="sm"
+                    />
                   </strong>
                 </div>
                 <div className="admin-dash__stat">
@@ -517,7 +531,7 @@ export function AdminOpsCockpit() {
           <div className="admin-dash__section-head">
             <h2 className="admin-dash__section-title">الاتجاهات</h2>
             <p className="admin-dash__section-sub">
-              حجم المدفوعات الناجحة — آخر {data.rangeDays} يوم
+              GMV للمدفوعات الناجحة — آخر {data.rangeDays} يوم
             </p>
           </div>
           {!trendHasData ? (

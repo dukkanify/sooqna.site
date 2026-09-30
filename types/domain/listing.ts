@@ -59,6 +59,14 @@ export type RealEstateSpecs = {
   furnished: string;
   developer: string;
   community: string;
+  buildingName?: string;
+  unitNumber?: string;
+  totalFloors?: number;
+  floor?: string;
+  /** متاح الآن | تاريخ محدد | قيد الإنشاء */
+  availabilityTiming?: string;
+  availabilityDate?: string;
+  expectedHandoverDate?: string;
   amenities: string[];
 };
 

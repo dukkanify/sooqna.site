@@ -30,7 +30,7 @@ export async function GET() {
 
   for (const follow of follows) {
     const listings = await getSellerListings(follow.sellerId);
-    const profile = getSellerProfile(follow.sellerId, listings);
+    const profile = await getSellerProfile(follow.sellerId, listings);
     const account = profile ? null : await findUserById(follow.sellerId);
 
     const name =

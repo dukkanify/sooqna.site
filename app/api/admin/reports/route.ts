@@ -8,6 +8,7 @@ import {
   buildListingCategorySlices,
   buildOrderStatusSlices,
 } from "@/services/admin/admin-analytics";
+import { computeFinanceMetrics } from "@/services/admin/admin-finance-metrics";
 import { getOpenDisputeCount } from "@/services/admin/dispute-store";
 import { getAllUsers } from "@/services/auth/user-store";
 import {
@@ -35,25 +36,31 @@ export async function GET() {
       getAllWalletAccounts(),
     ]);
 
-  const paidOrders = orders.filter((o) => o.paymentStatus === "succeeded");
-  const refundedOrders = orders.filter((o) => o.status === "refunded");
-  const totalVolume = paidOrders.reduce((sum, o) => sum + o.fees.total, 0);
-  const totalFees = paidOrders.reduce((sum, o) => sum + o.fees.platformFee, 0);
-  const gatewayFees = paidOrders.reduce((sum, o) => sum + o.fees.gatewayFee, 0);
+  const finance = computeFinanceMetrics(orders);
 
   return NextResponse.json({
     summary: {
       totalOrders: orders.length,
-      paidOrders: paidOrders.length,
-      refundedOrders: refundedOrders.length,
-      totalVolume,
-      totalPlatformFees: totalFees,
-      totalGatewayFees: gatewayFees,
-      currency: "AED",
+      paidOrders: finance.succeededPaidCount,
+      refundedOrders: finance.refundedCount,
+      /** GMV — merchandise value (productPrice), not buyer fees.total */
+      totalVolume: finance.gmv,
+      gmv: finance.gmv,
+      activeGmv: finance.activeGmv,
+      buyerCollected: finance.buyerCollected,
+      totalPlatformFees: finance.platformRevenue,
+      totalGatewayFees: finance.gatewayFees,
+      netPlatformRevenue: finance.netPlatformRevenue,
+      refundedAmount: finance.refundedAmount,
+      heldEscrowAmount: finance.heldEscrowAmount,
+      heldEscrowCount: finance.heldEscrowCount,
+      releasedEscrowAmount: finance.releasedEscrowAmount,
+      releasedEscrowCount: finance.releasedEscrowCount,
+      currency: finance.currency,
       conversionRate:
         orders.length === 0
           ? 0
-          : Math.round((paidOrders.length / orders.length) * 100),
+          : Math.round((finance.grossPaidCount / orders.length) * 100),
       totalUsers: users.length,
       totalListings: listingStats.totalListings,
       pendingListings: listingStats.pendingListings,

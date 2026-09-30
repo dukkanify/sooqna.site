@@ -22,7 +22,17 @@ type ReportSummary = {
   totalOrders: number;
   totalPlatformFees: number;
   totalUsers: number;
+  /** GMV — merchandise (productPrice). */
   totalVolume: number;
+  gmv?: number;
+  activeGmv?: number;
+  buyerCollected?: number;
+  netPlatformRevenue?: number;
+  refundedAmount?: number;
+  heldEscrowAmount?: number;
+  heldEscrowCount?: number;
+  releasedEscrowAmount?: number;
+  releasedEscrowCount?: number;
 };
 
 type PaymentEvent = {
@@ -137,19 +147,24 @@ export function AdminReportsPanel() {
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">مستردة</p>
           <p className="admin-ops__kpi-value">{summary.refundedOrders}</p>
+          {summary.refundedAmount != null ? (
+            <p className="admin-ops__kpi-hint">
+              <CurrencyAmount amount={summary.refundedAmount} size="sm" />
+            </p>
+          ) : null}
         </div>
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">التحويل</p>
           <p className="admin-ops__kpi-value">{summary.conversionRate}%</p>
         </div>
         <div className="admin-ops__kpi">
-          <p className="admin-ops__kpi-label">حجم المدفوعات</p>
+          <p className="admin-ops__kpi-label">GMV (قيمة البضائع)</p>
           <div className="admin-ops__kpi-value">
-            <CurrencyAmount amount={summary.totalVolume} size="md" />
+            <CurrencyAmount amount={summary.gmv ?? summary.totalVolume} size="md" />
           </div>
         </div>
         <div className="admin-ops__kpi">
-          <p className="admin-ops__kpi-label">رسوم المنصة</p>
+          <p className="admin-ops__kpi-label">عمولات المنصة</p>
           <div className="admin-ops__kpi-value">
             <CurrencyAmount amount={summary.totalPlatformFees} size="md" />
           </div>
@@ -159,6 +174,36 @@ export function AdminReportsPanel() {
           <div className="admin-ops__kpi-value">
             <CurrencyAmount amount={summary.totalGatewayFees} size="md" />
           </div>
+        </div>
+        <div className="admin-ops__kpi">
+          <p className="admin-ops__kpi-label">صافي إيراد المنصة</p>
+          <div className="admin-ops__kpi-value">
+            <CurrencyAmount
+              amount={
+                summary.netPlatformRevenue ??
+                summary.totalPlatformFees - summary.totalGatewayFees
+              }
+              size="md"
+            />
+          </div>
+        </div>
+        <div className="admin-ops__kpi">
+          <p className="admin-ops__kpi-label">محجوز في الضمان</p>
+          <div className="admin-ops__kpi-value">
+            <CurrencyAmount amount={summary.heldEscrowAmount ?? 0} size="md" />
+          </div>
+          <p className="admin-ops__kpi-hint">
+            {summary.heldEscrowCount ?? 0} عملية
+          </p>
+        </div>
+        <div className="admin-ops__kpi">
+          <p className="admin-ops__kpi-label">محرّر من الضمان</p>
+          <div className="admin-ops__kpi-value">
+            <CurrencyAmount amount={summary.releasedEscrowAmount ?? 0} size="md" />
+          </div>
+          <p className="admin-ops__kpi-hint">
+            {summary.releasedEscrowCount ?? 0} عملية
+          </p>
         </div>
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">المحافظ</p>
@@ -171,7 +216,7 @@ export function AdminReportsPanel() {
 
       <section className="admin-ops__panel">
         <div className="admin-ops__panel-head">
-          <h2 className="admin-ops__panel-title">حجم الأسبوع</h2>
+          <h2 className="admin-ops__panel-title">GMV الأسبوع</h2>
           <Link className="admin-ops__text-link" href="/admin/analytics">
             تحليلات أوسع
           </Link>

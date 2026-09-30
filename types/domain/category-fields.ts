@@ -34,6 +34,11 @@ export type CategoryFieldDefinition = {
   options?: CategoryFieldOption[];
   /** Helper note shown under the field */
   note?: string;
+  /**
+   * Optional section heading rendered above this field in the add-listing form
+   * (e.g. «تفاصيل المبنى»).
+   */
+  section?: string;
   /** Included in auto-generated listing title */
   titlePart?: boolean;
   /** Searchable in query matching */

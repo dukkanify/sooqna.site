@@ -3,6 +3,8 @@ import { z } from "zod";
 import { isSessionUser, requireSessionUser } from "@/services/auth/require-session";
 import { updateUserOnboarding } from "@/services/auth/user-store";
 import { setSessionCookie } from "@/services/auth/session-cookie";
+import { updateSellerListingDisplayName } from "@/services/listings/listing-store";
+import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 
 const schema = z.object({
   businessName: z.string().min(2),
@@ -31,6 +33,11 @@ export async function POST(request: Request) {
     contactPhone: parsed.data.contactPhone,
     logoUrl: parsed.data.logoUrl,
   });
+
+  const displayName = sellerDisplayNameFromProfile(user);
+  if (displayName) {
+    await updateSellerListingDisplayName(user.id, displayName);
+  }
 
   await setSessionCookie(user);
   return NextResponse.json({ ok: true, user });
