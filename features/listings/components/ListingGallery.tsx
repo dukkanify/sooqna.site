@@ -179,7 +179,12 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
 
           <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-2.5">
             <div className="hidden min-w-0 flex-1 lg:block">
-              <ListingCardBadges inline listing={listing} />
+              <ListingCardBadges
+                featuredSize="md"
+                inline
+                listing={listing}
+                onMedia
+              />
               {showsEscrowProtection(listing) ? (
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   <Badge variant="escrow">ضمان مالي — دفع عبر المنصة</Badge>

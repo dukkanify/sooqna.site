@@ -28,11 +28,17 @@ import {
   formatPostedTime,
   MARKETPLACE_LISTING_GRID_CLASS,
 } from "@/features/listings/components/listing-card.utils";
-import { getListingCardBadges } from "@/features/listings/components/listing-card-badges";
+import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
+import {
+  getListingCardBadges,
+  isListingFeaturedActive,
+} from "@/features/listings/components/listing-card-badges";
 import { Badge } from "@/shared/ui/Badge";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { Icon } from "@/shared/ui/Icon";
 import { SectionHeader } from "@/shared/ui/SectionHeader";
+
+import "./featured-badge.css";
 
 const ListingLocationMap = dynamic(
   () =>
@@ -88,11 +94,16 @@ export function ListingDetailsView({
 
             <div className="mt-4 min-w-0 lg:hidden">
               <div className="flex flex-wrap items-center gap-2">
-                {getListingCardBadges(listing).map((badge) => (
-                  <Badge key={badge.key} variant={badge.variant}>
-                    {badge.label}
-                  </Badge>
-                ))}
+                {isListingFeaturedActive(listing) ? (
+                  <FeaturedBadge size="md" />
+                ) : null}
+                {getListingCardBadges(listing)
+                  .filter((badge) => badge.key !== "featured")
+                  .map((badge) => (
+                    <Badge key={badge.key} variant={badge.variant}>
+                      {badge.label}
+                    </Badge>
+                  ))}
                 {category ? <Badge variant="muted">{category.name}</Badge> : null}
                 {escrowProtected ? (
                   <Badge variant="escrow">ضمان مالي — دفع عبر المنصة</Badge>
