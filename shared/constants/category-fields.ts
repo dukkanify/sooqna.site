@@ -489,10 +489,10 @@ const jobFields: CategoryFieldDefinition[] = [
     required: true,
     titlePart: true,
     options: [
-      { label: "شاغر وظيفي", value: "vacancy" },
-      { label: "باحث عن عمل", value: "seeker" },
+      { label: "توظيف (وظائف)", value: "vacancy" },
+      { label: "باحثون عن عمل", value: "seeker" },
     ],
-    note: "اختر نوع الإعلان لتظهر الحقول المناسبة. صورة الإعلان اختيارية.",
+    note: "يُطابق التصنيف الفرعي: توظيف للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة. صورة الإعلان اختيارية.",
   },
   {
     key: "company",
@@ -726,6 +726,92 @@ const furnitureFields: CategoryFieldDefinition[] = [
   },
 ];
 
+const petFields: CategoryFieldDefinition[] = [
+  {
+    key: "animalType",
+    label: "النوع",
+    type: "select",
+    required: true,
+    titlePart: true,
+    searchable: true,
+    options: [
+      { label: "قطط", value: "قطط" },
+      { label: "كلاب", value: "كلاب" },
+      { label: "طيور", value: "طيور" },
+      { label: "مستلزمات", value: "مستلزمات" },
+      { label: "أخرى", value: "other" },
+    ],
+    note: "اختر النوع ليظهر الإعلان في التصنيف الفرعي المناسب.",
+  },
+  {
+    key: "animalTypeOther",
+    label: "حدد النوع (أخرى)",
+    type: "text",
+    required: true,
+    titlePart: true,
+    searchable: true,
+    placeholder: "مثال: أرانب، سلاحف…",
+    showWhen: { key: "animalType", values: ["other"] },
+  },
+  {
+    key: "breed",
+    label: "السلالة / الصنف",
+    type: "text",
+    required: false,
+    titlePart: true,
+    searchable: true,
+    placeholder: "مثال: شيرازي، جيرمن…",
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+  },
+  {
+    key: "age",
+    label: "العمر",
+    type: "text",
+    required: true,
+    searchable: true,
+    placeholder: "مثال: 3 أشهر",
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+  },
+  {
+    key: "gender",
+    label: "الجنس",
+    type: "select",
+    required: false,
+    options: [
+      { label: "ذكر", value: "ذكر" },
+      { label: "أنثى", value: "أنثى" },
+      { label: "غير محدد", value: "غير محدد" },
+    ],
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+  },
+  {
+    key: "vaccinated",
+    label: "التطعيمات",
+    type: "select",
+    required: false,
+    options: yesNoOptions,
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+  },
+  {
+    key: "condition",
+    label: "الحالة",
+    type: "select",
+    required: true,
+    options: [
+      { label: "جديد", value: "new" },
+      { label: "مستعمل", value: "used" },
+      { label: "ممتاز", value: "excellent" },
+    ],
+  },
+  {
+    key: "city",
+    label: "المدينة / المنطقة",
+    type: "text",
+    required: true,
+    searchable: true,
+  },
+];
+
 export const DYNAMIC_CATEGORY_IDS = [
   "cars",
   "real-estate",
@@ -735,6 +821,7 @@ export const DYNAMIC_CATEGORY_IDS = [
   "services",
   "food",
   "furniture",
+  "pets",
 ] as const;
 
 export type DynamicCategoryId = (typeof DYNAMIC_CATEGORY_IDS)[number];
@@ -748,6 +835,7 @@ const categoryFieldMap: Record<DynamicCategoryId, CategoryFieldDefinition[]> = {
   services: serviceFields,
   food: foodFields,
   furniture: furnitureFields,
+  pets: petFields,
 };
 
 export function isDynamicCategory(categoryId: string): categoryId is DynamicCategoryId {

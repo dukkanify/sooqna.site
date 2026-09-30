@@ -14,16 +14,20 @@ type CategorySelectionStepProps = {
   categories: Category[];
   errors: AddListingErrors;
   onSelectCategory: (categoryId: string) => void;
+  onSubcategoryChange?: (subcategory: string) => void;
   selectedCategory?: Category;
   selectedCategoryId: string;
+  selectedSubcategory?: string;
 };
 
 export function CategorySelectionStep({
   categories,
   errors,
   onSelectCategory,
+  onSubcategoryChange,
   selectedCategory,
   selectedCategoryId,
+  selectedSubcategory = "",
 }: CategorySelectionStepProps) {
   return (
     <Card className={addListingStepCardClass}>
@@ -67,8 +71,15 @@ export function CategorySelectionStep({
       {(selectedCategory?.subcategories.length ?? 0) > 0 ? (
         <div className="mt-4 grid gap-1.5">
           <Select
-            label="القسم الفرعي (اختياري)"
+            key={`${selectedCategoryId}:${selectedSubcategory || "none"}`}
+            defaultValue={selectedSubcategory || undefined}
+            label={
+              selectedCategoryId === "jobs"
+                ? "نوع الإعلان"
+                : "القسم الفرعي (اختياري)"
+            }
             name="subcategory"
+            onChange={(event) => onSubcategoryChange?.(event.target.value)}
             optionsAreUgc
             options={(selectedCategory?.subcategories ?? []).map((subcategory) => ({
               label: subcategory,
@@ -77,7 +88,9 @@ export function CategorySelectionStep({
             placeholder="اختر..."
           />
           <p className="text-xs text-muted">
-            من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة.
+            {selectedCategoryId === "jobs"
+              ? "توظيف (وظائف) للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة."
+              : "من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة."}
           </p>
         </div>
       ) : null}

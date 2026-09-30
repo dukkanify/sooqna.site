@@ -109,7 +109,16 @@ function scrollToFirstError(
   nextErrors: AddListingErrors & Record<string, string | undefined>,
 ) {
   window.requestAnimationFrame(() => {
-    const detailFields = new Set(["title", "description", "price"]);
+    const detailFields = new Set([
+      "title",
+      "description",
+      "price",
+      "condition",
+      "city",
+      "animalType",
+      "age",
+      "breed",
+    ]);
     const hasDetailError = Object.keys(nextErrors).some((key) => detailFields.has(key));
     const targetId = hasDetailError
       ? "add-listing-details"
@@ -304,11 +313,17 @@ export function useAddListingForm(categories: Category[]) {
       }
 
       if (Object.keys(nextErrors).length > 0) {
+        const fieldHints = Object.entries(nextErrors)
+          .filter(([key, value]) => key !== "submit" && Boolean(value))
+          .map(([, value]) => String(value))
+          .slice(0, 3);
+        const hint =
+          fieldHints.length > 0 ? ` (${fieldHints.join(" · ")})` : "";
         nextErrors.submit = isDraft
-          ? "أكمل العنوان والقسم على الأقل قبل حفظ المسودة."
+          ? `أكمل العنوان والقسم على الأقل قبل حفظ المسودة.${hint}`
           : wantsFeatured
-            ? "أكمل الحقول المطلوبة أعلاه قبل متابعة الدفع."
-            : "أكمل الحقول المطلوبة أعلاه قبل الإرسال.";
+            ? `أكمل الحقول المطلوبة أعلاه قبل متابعة الدفع.${hint}`
+            : `تعذر نشر الإعلان — أكمل الحقول المطلوبة أو صحّح الأخطاء أدناه.${hint}`;
         setErrors(nextErrors);
         scrollToFirstError(nextErrors);
         return;
@@ -387,7 +402,24 @@ export function useAddListingForm(categories: Category[]) {
         features: parsed.features.length > 0 ? parsed.features : undefined,
         negotiable: parsed.negotiable,
         emirate: parsed.emirate,
-        subcategory: subcategory || undefined,
+        subcategory: (() => {
+          if (categoryId === "jobs" && parsed.jobSubcategory) {
+            return parsed.jobSubcategory;
+          }
+          if (categoryId === "pets") {
+            const animalType = String(
+              parsed.categorySpecs?.animalType ?? "",
+            ).trim();
+            if (
+              animalType &&
+              animalType !== "other" &&
+              ["قطط", "كلاب", "طيور", "مستلزمات"].includes(animalType)
+            ) {
+              return animalType;
+            }
+          }
+          return subcategory || undefined;
+        })(),
         contactPhone: contact || undefined,
         contactMethod: "both",
         escrowAvailable: isPurchasableCategory(categoryId, featureProfile),

@@ -62,7 +62,7 @@ export const mockCategories: Category[] = [
     listingCount: 2340,
     imageUrl: categoryImages.jobs,
     featuredListingSlug: "sales-executive-dubai",
-    subcategories: ["مبيعات", "عقارات", "توصيل", "محاسبة", "تصميم"],
+    subcategories: ["توظيف (وظائف)", "باحثون عن عمل"],
   },
   {
     id: "fashion",
