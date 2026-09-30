@@ -9,9 +9,17 @@ import { LIVE_CARS_ALL_BRANDS } from "@/services/listings/live-cars-all-brands";
 import { LIVE_CARS_REMAINING_MODELS } from "@/services/listings/live-cars-remaining-models";
 import { EMIRATE_AREAS } from "@/shared/constants/emirate-areas";
 import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
+import {
+  LIVE_MARKETPLACE_SOURCE,
+  LIVE_MARKETPLACE_LISTING_SQL,
+  isLiveCatalogListing,
+} from "@/shared/listings/live-catalog-listing";
 
-/** Provenance marker — not showcase/demo; public catalog keeps these. */
-export const LIVE_MARKETPLACE_SOURCE = "SOOQNA_LIVE_MARKETPLACE";
+export {
+  LIVE_MARKETPLACE_SOURCE,
+  LIVE_MARKETPLACE_LISTING_SQL,
+  isLiveCatalogListing,
+};
 export const LIVE_MARKETPLACE_COUNT = 317;
 
 type EmiratePack = {
