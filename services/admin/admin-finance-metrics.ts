@@ -70,6 +70,11 @@ export function isMockPaidOrder(order: Order): boolean {
   return false;
 }
 
+/** Admin desks / exports default to real orders only. */
+export function filterRealOrders<T extends Order>(orders: T[]): T[] {
+  return orders.filter((order) => !isMockPaidOrder(order));
+}
+
 export function isRefundedOrder(order: Order): boolean {
   return (
     order.status === "refunded" ||

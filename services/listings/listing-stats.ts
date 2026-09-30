@@ -12,8 +12,10 @@ import {
   isPostgresQuotaOrUnavailableError,
   markPostgresUnavailable,
 } from "@/services/db/postgres";
-import { ensureLiveMarketplaceCatalogPublished } from "@/services/listings/live-marketplace-catalog.service";
-import { ensureShowcaseCatalogPublished } from "@/services/listings/showcase-catalog.service";
+import {
+  LIVE_MARKETPLACE_LISTING_SQL,
+  isLiveCatalogListing,
+} from "@/shared/listings/live-catalog-listing";
 import {
   SHOWCASE_LISTING_SQL,
   isShowcaseListing,
@@ -21,7 +23,10 @@ import {
 
 const TABLE = "marketplace_listings";
 
-/** Real marketplace rows — excludes showcase/demo and confirmed fixtures. */
+/**
+ * User-posted marketplace rows for admin KPIs / desks.
+ * Excludes showcase/demo, confirmed fixtures, and curated live-catalog seed.
+ */
 export function isMarketplaceListing(listing: {
   id?: string;
   slug?: string;
@@ -32,13 +37,14 @@ export function isMarketplaceListing(listing: {
 }): boolean {
   if (isShowcaseListing(listing)) return false;
   if (isConfirmedFixtureListing(listing)) return false;
+  if (isLiveCatalogListing(listing)) return false;
   return true;
 }
 
 export type MarketplaceListingStats = {
-  /** All marketplace rows (any status), excluding demo/fixtures. */
+  /** All marketplace rows (any status), excluding demo/fixtures/live seed. */
   totalListings: number;
-  /** Publicly visible: active + reserved. Matches public catalog counts. */
+  /** User-posted active + reserved (excludes live-catalog seed). */
   activeListings: number;
   pendingListings: number;
   rejectedListings: number;
@@ -46,7 +52,7 @@ export type MarketplaceListingStats = {
   expiredListings: number;
   soldListings: number;
   featuredListings: number;
-  /** Showcase/demo rows only (for admin “تجريبي” views). */
+  /** Showcase/demo + curated live-seed rows (for admin “تجريبي” views). */
   demoListings: number;
   /** Confirmed fixture rows still in storage. */
   fixtureListings: number;
@@ -65,19 +71,13 @@ const EMPTY_STATS: MarketplaceListingStats = {
   fixtureListings: 0,
 };
 
-async function ensureCatalogs(): Promise<void> {
-  await Promise.all([
-    ensureShowcaseCatalogPublished().catch(() => undefined),
-    ensureLiveMarketplaceCatalogPublished().catch(() => 0),
-  ]);
-}
-
 function statsFromRows(
   rows: Array<{
     status: string;
     isFeatured?: boolean;
     isDemo?: boolean;
     isFixture?: boolean;
+    isLiveCatalog?: boolean;
   }>,
 ): MarketplaceListingStats {
   const stats = { ...EMPTY_STATS };
@@ -88,6 +88,11 @@ function statsFromRows(
     }
     if (row.isFixture) {
       stats.fixtureListings += 1;
+      continue;
+    }
+    // Curated live seed is not user-posted — keep out of admin marketplace totals.
+    if (row.isLiveCatalog) {
+      stats.demoListings += 1;
       continue;
     }
     stats.totalListings += 1;
@@ -113,7 +118,8 @@ async function statsFromPostgres(): Promise<MarketplaceListingStats | null> {
        status,
        COALESCE(is_featured, false) AS is_featured,
        (${SHOWCASE_LISTING_SQL}) AS is_demo,
-       (${FIXTURE_LISTING_SQL}) AS is_fixture
+       (${FIXTURE_LISTING_SQL}) AS is_fixture,
+       (${LIVE_MARKETPLACE_LISTING_SQL}) AS is_live_catalog
      FROM ${TABLE}`,
   );
 
@@ -123,6 +129,7 @@ async function statsFromPostgres(): Promise<MarketplaceListingStats | null> {
       isFeatured: Boolean(row.is_featured),
       isDemo: Boolean(row.is_demo),
       isFixture: Boolean(row.is_fixture),
+      isLiveCatalog: Boolean(row.is_live_catalog),
     })),
   );
 }
@@ -134,17 +141,17 @@ function statsFromStored(listings: Listing[]): MarketplaceListingStats {
       isFeatured: listing.isFeatured,
       isDemo: isShowcaseListing(listing),
       isFixture: isConfirmedFixtureListing(listing),
+      isLiveCatalog: isLiveCatalogListing(listing),
     })),
   );
 }
 
 /**
  * Single source of truth for listing totals across admin KPIs, reports,
- * and the listings desk. Marketplace counts exclude showcase + fixtures.
- * `activeListings` matches public `countActivePublicListings`.
+ * and the listings desk. Marketplace counts exclude showcase, fixtures,
+ * and curated live-catalog seed. Admin reads do not auto-publish catalogs.
  */
 export async function getMarketplaceListingStats(): Promise<MarketplaceListingStats> {
-  await ensureCatalogs();
   try {
     const fromDb = await statsFromPostgres();
     if (fromDb) return fromDb;

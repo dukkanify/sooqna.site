@@ -8,7 +8,10 @@ import {
   buildListingCategorySlices,
   buildOrderStatusSlices,
 } from "@/services/admin/admin-analytics";
-import { computeFinanceMetrics } from "@/services/admin/admin-finance-metrics";
+import {
+  computeFinanceMetrics,
+  filterRealOrders,
+} from "@/services/admin/admin-finance-metrics";
 import { getOpenDisputeCount } from "@/services/admin/dispute-store";
 import { getAllUsers } from "@/services/auth/user-store";
 import {
@@ -36,11 +39,12 @@ export async function GET() {
       getAllWalletAccounts(),
     ]);
 
-  const finance = computeFinanceMetrics(orders);
+  const realOrders = filterRealOrders(orders);
+  const finance = computeFinanceMetrics(realOrders);
 
   return NextResponse.json({
     summary: {
-      totalOrders: orders.length,
+      totalOrders: realOrders.length,
       paidOrders: finance.succeededPaidCount,
       refundedOrders: finance.refundedCount,
       /** GMV — merchandise value (productPrice), not buyer fees.total */
@@ -58,16 +62,16 @@ export async function GET() {
       releasedEscrowCount: finance.releasedEscrowCount,
       currency: finance.currency,
       conversionRate:
-        orders.length === 0
+        realOrders.length === 0
           ? 0
-          : Math.round((finance.grossPaidCount / orders.length) * 100),
+          : Math.round((finance.grossPaidCount / realOrders.length) * 100),
       totalUsers: users.length,
       totalListings: listingStats.totalListings,
       pendingListings: listingStats.pendingListings,
       openDisputes,
     },
-    daily: buildDailySeries(orders, 7),
-    orderStatuses: buildOrderStatusSlices(orders),
+    daily: buildDailySeries(realOrders, 7),
+    orderStatuses: buildOrderStatusSlices(realOrders),
     topCategories: buildListingCategorySlices(listings),
     recentEvents: events.slice(0, 30),
     walletAccounts: wallets.length,

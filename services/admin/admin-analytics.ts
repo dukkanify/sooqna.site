@@ -1,7 +1,11 @@
 import type { Order } from "@/types/domain/order";
 import type { AdminListingRecord } from "@/types/domain/admin";
-import { isSucceededPaidOrder } from "@/services/admin/admin-finance-metrics";
+import {
+  filterRealOrders,
+  isSucceededPaidOrder,
+} from "@/services/admin/admin-finance-metrics";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import { isLiveCatalogListing } from "@/shared/listings/live-catalog-listing";
 
 export type DailyPoint = {
   date: string;
@@ -65,7 +69,7 @@ export function buildDailySeries(orders: Order[], days = 7): DailyPoint[] {
 
 export function buildOrderStatusSlices(orders: Order[]): StatusSlice[] {
   const map = new Map<string, number>();
-  for (const order of orders) {
+  for (const order of filterRealOrders(orders)) {
     map.set(order.status, (map.get(order.status) ?? 0) + 1);
   }
 
@@ -99,6 +103,7 @@ function isMarketplaceAdminListing(listing: AdminListingRecord): boolean {
   if (listing.isFixture === true || isConfirmedFixtureListing(listing)) {
     return false;
   }
+  if (isLiveCatalogListing(listing)) return false;
   return true;
 }
 
@@ -118,7 +123,7 @@ export function buildListingCategorySlices(
 
 export function buildPaymentStatusSlices(orders: Order[]): StatusSlice[] {
   const map = new Map<string, number>();
-  for (const order of orders) {
+  for (const order of filterRealOrders(orders)) {
     map.set(order.paymentStatus, (map.get(order.paymentStatus) ?? 0) + 1);
   }
   const labels: Record<string, string> = {

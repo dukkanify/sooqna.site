@@ -8,7 +8,10 @@ import { isMarketplaceListing } from "@/services/listings/listing-stats";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getAdminDisputes } from "@/services/admin/dispute-store";
 import { logAdminAction } from "@/services/admin/admin-audit-store";
-import { computeFinanceMetrics } from "@/services/admin/admin-finance-metrics";
+import {
+  computeFinanceMetrics,
+  filterRealOrders,
+} from "@/services/admin/admin-finance-metrics";
 
 function xmlEscape(value: string): string {
   return value
@@ -78,7 +81,9 @@ export async function GET(request: Request) {
     (listing) =>
       isMarketplaceListing(listing) && inRange(listing.postedAt, startMs),
   );
-  const filteredOrders = orders.filter((order) => inRange(order.createdAt, startMs));
+  const filteredOrders = filterRealOrders(orders).filter((order) =>
+    inRange(order.createdAt, startMs),
+  );
   const filteredDisputes = disputes.filter((dispute) =>
     inRange(dispute.createdAt, startMs),
   );

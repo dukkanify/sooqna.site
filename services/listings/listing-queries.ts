@@ -581,7 +581,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
 }
 
 export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
-  await ensureCatalogsForPublicRead();
+  // Read-only: do not auto-publish showcase/live catalogs into the desk.
   const viewScores = await getListingViewScores();
   try {
     if (await ensureListingsTable()) {
