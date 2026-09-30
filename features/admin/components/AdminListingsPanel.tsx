@@ -1,7 +1,13 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
@@ -12,7 +18,7 @@ import type {
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { isDynamicCategory } from "@/shared/constants/category-fields";
 import { listingStatusLabels } from "@/shared/constants/listingStatuses";
-import { getLocalListings, getSessionUser } from "@/services/storage";
+import { getLocalListings } from "@/services/storage";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import {
   CategoryFieldsForm,
@@ -207,11 +213,10 @@ export function AdminListingsPanel() {
   const [editImagesTouched, setEditImagesTouched] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [openRowActions, setOpenRowActions] = useState<string | null>(null);
+  const toolsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const user = getSessionUser();
-    if (!user || user.role !== "admin") return;
-
+    // Cookie session is enough — do not gate on localStorage (breaks admin create/load).
     const timeoutId = window.setTimeout(() => {
       const localListings = getLocalListings();
       const sync =
@@ -249,6 +254,13 @@ export function AdminListingsPanel() {
 
     return () => window.clearTimeout(timeoutId);
   }, []);
+
+  function openToolsPanel() {
+    setShowTools(true);
+    window.setTimeout(() => {
+      toolsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -402,8 +414,6 @@ export function AdminListingsPanel() {
       rejectReason?: string;
     },
   ) {
-    const session = getSessionUser();
-    if (!session) return;
     setBusyId(id);
     try {
       const response = await adminFetch(`/api/admin/listings/${id}`, {
@@ -441,8 +451,6 @@ export function AdminListingsPanel() {
   }
 
   async function deleteListing(id: string) {
-    const session = getSessionUser();
-    if (!session) return;
     setBusyId(id);
     try {
       const response = await adminFetch(`/api/admin/listings/${id}`, {
@@ -591,8 +599,6 @@ export function AdminListingsPanel() {
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const session = getSessionUser();
-    if (!session) return;
 
     const formData = new FormData(event.currentTarget);
     formData.set("categoryId", form.categoryId);
@@ -684,7 +690,14 @@ export function AdminListingsPanel() {
       });
       const data = await response.json();
       if (!response.ok) {
-        setCreateError("تعذر حفظ الإعلان. حاول مرة أخرى.");
+        const code = String(data?.error ?? "");
+        if (response.status === 401 || response.status === 403) {
+          setCreateError("انتهت صلاحية الجلسة. حدّث الصفحة وسجّل الدخول مجدداً.");
+        } else if (code === "INVALID_INPUT" || code === "INVALID_PRICE") {
+          setCreateError("تحقق من العنوان والقسم والمدينة والسعر ثم أعد المحاولة.");
+        } else {
+          setCreateError("تعذر حفظ الإعلان. حاول مرة أخرى.");
+        }
         return;
       }
       if (data.listings) {
@@ -708,8 +721,6 @@ export function AdminListingsPanel() {
   }
 
   async function handleShowcaseAction(action: "publish" | "hide" | "remove") {
-    const session = getSessionUser();
-    if (!session) return;
     if (action === "remove") {
       const confirmed = window.confirm(
         "حذف كل إعلانات المعرض التجريبي؟ الإعلانات الحقيقية لن تُمس.",
@@ -746,19 +757,26 @@ export function AdminListingsPanel() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="admin-listings-toolbar">
         <p className="text-sm text-muted">
-          راجع الإعلانات واعتمد أو عدّل أو ميّز مباشرة — النصوص كاملة في الجدول.
+          راجع الإعلانات واعتمد أو عدّل أو ميّز مباشرة — النصوص واضحة على الجوال
+          وسطح المكتب.
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="admin-listings-toolbar__actions">
           <Button href="/featured" size="sm" variant="secondary">
             صفحة المميزة على الموقع
           </Button>
           <Button
-            onClick={() => setShowTools((open) => !open)}
+            onClick={() => {
+              if (showTools) {
+                setShowTools(false);
+                return;
+              }
+              openToolsPanel();
+            }}
             size="sm"
             type="button"
-            variant="secondary"
+            variant="primary"
           >
             {showTools ? "إخفاء الأدوات" : "إضافة إعلان / أدوات"}
           </Button>
@@ -795,7 +813,7 @@ export function AdminListingsPanel() {
       </Card>
 
       {showTools ? (
-        <>
+        <div className="grid gap-4" id="admin-listings-tools" ref={toolsRef}>
       <Card className="p-5" variant="flat">
         <h2 className="text-sm font-semibold text-ink">معرض سوقنا التجريبي</h2>
         <p className="mt-2 text-xs leading-6 text-muted">
@@ -1016,11 +1034,11 @@ export function AdminListingsPanel() {
           </div>
         </form>
       </Card>
-        </>
+        </div>
       ) : null}
 
-      <Card className="p-4" variant="flat">
-        <div className="flex flex-wrap items-end gap-3">
+      <Card className="admin-listings-filters p-4" variant="flat">
+        <div className="admin-listings-filters__grid">
           <div className="min-w-[220px] flex-1">
             <Input
               label="بحث"
@@ -1372,6 +1390,159 @@ export function AdminListingsPanel() {
                 })}
               </tbody>
             </table>
+          </div>
+
+          <div className="admin-listings-mobile-list">
+            {filtered.map((listing) => {
+              const actionsOpen = openRowActions === listing.id;
+              const categoryLabel =
+                categoryNameById.get(listing.categoryId) ?? listing.categoryId;
+              const featuredLive = isFeaturedWindowLive(listing);
+              return (
+                <article
+                  className={`admin-listings-mobile-card${
+                    featuredLive ? " admin-listings-row--featured" : ""
+                  }`}
+                  key={`mobile-${listing.id}`}
+                >
+                  <div className="admin-listings-mobile-card__head">
+                    <AdminListingThumb size="md" src={listing.imageUrl} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-[11px] font-semibold text-muted">
+                        #{listingNumberLabel(listing.id)}
+                      </p>
+                      <p className="mt-0.5 font-semibold leading-snug text-ink">
+                        {listing.title}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-muted">
+                        {listing.sellerName || "—"} · {categoryLabel}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="admin-listings-mobile-card__meta">
+                    <span>{listing.city || "—"}</span>
+                    <CurrencyAmount amount={listing.price} size="sm" />
+                    <span>
+                      {(listing.views ?? 0).toLocaleString(intlLocale(locale))}{" "}
+                      مشاهدة
+                    </span>
+                    {listing.postedAt ? (
+                      <span>
+                        {new Date(listing.postedAt).toLocaleDateString(
+                          intlLocale(locale),
+                        )}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant={listingBadgeVariant(listing.status)}>
+                      {listingStatusLabels[listing.status]}
+                    </Badge>
+                    {featuredLive ? (
+                      <Badge variant="featured">مميّز</Badge>
+                    ) : null}
+                  </div>
+                  <div className="admin-listings-mobile-card__actions">
+                    <Button
+                      onClick={() => startEdit(listing)}
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      تعديل
+                    </Button>
+                    {listing.status === "pending_review" ||
+                    listing.status === "rejected" ||
+                    listing.status === "draft" ? (
+                      <Button
+                        loading={busyId === listing.id}
+                        onClick={() =>
+                          patchListing(listing.id, { status: "active" })
+                        }
+                        size="sm"
+                        type="button"
+                        variant="primary"
+                      >
+                        اعتماد
+                      </Button>
+                    ) : null}
+                    <Button
+                      loading={busyId === listing.id}
+                      onClick={() =>
+                        patchListing(listing.id, {
+                          isFeatured: !listing.isFeatured,
+                        })
+                      }
+                      size="sm"
+                      type="button"
+                      variant={featuredLive ? "ghost" : "secondary"}
+                    >
+                      {featuredLive ? "إلغاء التمييز" : "تمييز"}
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        setOpenRowActions((current) =>
+                          current === listing.id ? null : listing.id,
+                        )
+                      }
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      {actionsOpen ? "إخفاء" : "المزيد"}
+                    </Button>
+                  </div>
+                  {actionsOpen ? (
+                    <div className="admin-listings-mobile-card__actions">
+                      <Button
+                        href={`/listings/${listing.slug}`}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        عرض
+                      </Button>
+                      <Button href="/featured" size="sm" variant="ghost">
+                        صفحة المميزة
+                      </Button>
+                      {listing.status !== "rejected" ? (
+                        <Button
+                          loading={busyId === listing.id}
+                          onClick={() => {
+                            const reason = window
+                              .prompt("سبب الرفض (اختياري)")
+                              ?.trim();
+                            void patchListing(listing.id, {
+                              status: "rejected",
+                              rejectReason: reason || undefined,
+                            });
+                          }}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          رفض
+                        </Button>
+                      ) : null}
+                      <Button
+                        loading={busyId === listing.id}
+                        onClick={() => {
+                          const ok = window.confirm(
+                            `حذف الإعلان «${listing.title}» نهائياً من السوق؟`,
+                          );
+                          if (!ok) return;
+                          void deleteListing(listing.id);
+                        }}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        حذف
+                      </Button>
+                    </div>
+                  ) : null}
+                </article>
+              );
+            })}
           </div>
         </Card>
       )}
