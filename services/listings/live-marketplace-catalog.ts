@@ -1731,10 +1731,13 @@ function buildListing(def: SeedDef, index: number): Listing {
     title: def.title,
     titleEnglish: def.titleEnglish,
   });
-  const postedDay = 10 + (index % 20);
-  const postedAt = `2026-08-${String(postedDay).padStart(2, "0")}T10:00:00+04:00`;
+  // Relative recency so seed feed looks fresh (spread over ~10 days).
+  const hoursAgo = 2 + (index % 240);
+  const postedMs = Date.now() - hoursAgo * 60 * 60 * 1000;
+  const postedAt = new Date(postedMs).toISOString();
+  const expiresAt = new Date(postedMs + 120 * 24 * 60 * 60 * 1000).toISOString();
   const featuredUntil = def.featured
-    ? "2026-12-31T23:59:59+04:00"
+    ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
     : undefined;
   const categorySpecs = buildCategorySpecs(def);
 
@@ -1766,7 +1769,7 @@ function buildListing(def: SeedDef, index: number): Listing {
     verifiedSeller: true,
     escrowAvailable: isPurchasableCategory(def.categoryId),
     postedAt,
-    expiresAt: "2026-12-31T23:59:59+04:00",
+    expiresAt,
     contactMethod: "both",
     contactPhone: `9715${String(10000000 + index).slice(0, 8)}`,
     deliveryOption:

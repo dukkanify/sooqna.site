@@ -301,11 +301,13 @@ test("public listing queries hide showcase without deleting rows", () => {
     "utf8",
   );
   assert.match(src, /SHOWCASE_LISTING_SQL/);
+  assert.match(src, /LIVE_MARKETPLACE_LISTING_SQL/);
   assert.match(src, /isHiddenFromPublicCatalog/);
   assert.match(src, /ensureLiveMarketplaceCatalogPublished/);
   assert.match(src, /ensureShowcaseCatalogPublished/);
   assert.match(policy, /SHOWCASE_LISTING_SQL/);
   assert.match(details, /isShowcaseListing/);
+  assert.match(details, /isLiveCatalogListing/);
 });
 
 test("live catalog covers remaining car models and keeps original live-mkt ids", () => {
@@ -328,7 +330,7 @@ test("live catalog covers remaining car models and keeps original live-mkt ids",
   assert.match(remaining, /Toyota Corolla/);
   assert.match(remaining, /Toyota Hilux/);
   assert.match(remaining, /Mercedes-Benz Maybach/);
-  assert.match(version, /v8-car-specs-hydrate/);
+  assert.match(version, /v9-relative-posted-at/);
 });
 
 test("category CTAs are centralized and job seeker is not apply-job", () => {
