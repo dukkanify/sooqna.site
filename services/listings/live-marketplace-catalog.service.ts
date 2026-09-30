@@ -1,5 +1,6 @@
 import { getLiveMarketplaceCatalogListings } from "@/services/listings/live-marketplace-catalog";
 import {
+  deleteLiveMarketplaceListings,
   getDeletedListingIds,
   getMarketplaceFlag,
   insertListingsIfMissing,
@@ -11,6 +12,7 @@ import { isLiveCatalogEnabled } from "@/shared/listings/live-catalog-listing";
 
 const LIVE_CATALOG_VERSION_KEY = "live_marketplace_catalog_version";
 const LIVE_CATALOG_VERSION = "v9-relative-posted-at";
+const LIVE_CATALOG_RETIRED_FLAG = "live_marketplace_catalog_retired";
 
 let ensureInflight: Promise<number> | null = null;
 
@@ -18,7 +20,8 @@ let ensureInflight: Promise<number> | null = null;
  * Publish the professional live marketplace listings.
  * Inserts missing rows, and force-refreshes when catalog version bumps.
  * Never resurrects owner-deleted listing ids.
- * Production is opt-in via SOOQNA_LIVE_CATALOG=true.
+ * Vercel Production/Preview are opt-in via SOOQNA_LIVE_CATALOG=true
+ * (Preview shares production Neon).
  */
 export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
   if (!isLiveCatalogEnabled()) return 0;
@@ -57,4 +60,19 @@ export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
   })();
 
   return ensureInflight;
+}
+
+/**
+ * Hard-delete curated live-mkt seed rows from the store.
+ * Clears the publish version flag so a later opt-in re-publish starts clean.
+ */
+export async function removeLiveMarketplaceCatalog(): Promise<{
+  action: "remove";
+  affected: number;
+}> {
+  const affected = await deleteLiveMarketplaceListings();
+  await setMarketplaceFlag(LIVE_CATALOG_VERSION_KEY, "");
+  await setMarketplaceFlag(LIVE_CATALOG_RETIRED_FLAG, LIVE_CATALOG_VERSION);
+  bumpListingsCache();
+  return { action: "remove", affected };
 }

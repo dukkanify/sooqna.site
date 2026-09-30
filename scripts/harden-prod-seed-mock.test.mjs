@@ -36,9 +36,10 @@ describe("live catalog opt-in", () => {
       process.env.VERCEL_ENV = "preview";
       assert.equal(isLiveCatalogEnabled(), false);
 
+      // Preview shares production Neon — default OFF (same as production).
       delete process.env.SOOQNA_LIVE_CATALOG;
       process.env.VERCEL_ENV = "preview";
-      assert.equal(isLiveCatalogEnabled(), true);
+      assert.equal(isLiveCatalogEnabled(), false);
     } finally {
       for (const [key, value] of Object.entries(prev)) {
         if (value === undefined) delete process.env[key];
