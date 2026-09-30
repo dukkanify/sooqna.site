@@ -8,6 +8,7 @@ import { isMarketplaceListing } from "@/services/listings/listing-stats";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getAdminDisputes } from "@/services/admin/dispute-store";
 import { logAdminAction } from "@/services/admin/admin-audit-store";
+import { computeFinanceMetrics } from "@/services/admin/admin-finance-metrics";
 
 function xmlEscape(value: string): string {
   return value
@@ -82,20 +83,29 @@ export async function GET(request: Request) {
     inRange(dispute.createdAt, startMs),
   );
 
-  const paid = filteredOrders.filter((order) => order.paymentStatus === "succeeded");
-  const gmv = paid.reduce((sum, order) => sum + (order.fees?.total ?? 0), 0);
-  const fees = paid.reduce((sum, order) => sum + (order.fees?.platformFee ?? 0), 0);
+  // Orders already date-filtered; compute metrics on that cohort (no second range cut).
+  const finance = computeFinanceMetrics(filteredOrders, {
+    escrowAsSnapshot: false,
+  });
 
   const summaryRows = [
     ["range", range],
     ["generatedAt", generatedAt],
-    ["currency", "AED"],
+    ["currency", finance.currency],
     ["totalUsers", String(filteredUsers.length)],
     ["totalListings", String(filteredListings.length)],
     ["totalOrders", String(filteredOrders.length)],
-    ["gmv", String(gmv)],
-    ["platformFees", String(fees)],
-    ["paidOrders", String(paid.length)],
+    ["gmv", String(finance.gmv)],
+    ["activeGmv", String(finance.activeGmv)],
+    ["buyerCollected", String(finance.buyerCollected)],
+    ["platformFees", String(finance.platformRevenue)],
+    ["gatewayFees", String(finance.gatewayFees)],
+    ["netPlatformRevenue", String(finance.netPlatformRevenue)],
+    ["refundedAmount", String(finance.refundedAmount)],
+    ["heldEscrowAmount", String(finance.heldEscrowAmount)],
+    ["releasedEscrowAmount", String(finance.releasedEscrowAmount)],
+    ["paidOrders", String(finance.succeededPaidCount)],
+    ["refundedOrders", String(finance.refundedCount)],
   ];
 
   const userRows = filteredUsers.slice(0, 5000).map((user) => [
@@ -121,6 +131,9 @@ export async function GET(request: Request) {
     order.id,
     order.status,
     order.escrowStatus ?? "",
+    String(order.fees?.productPrice ?? 0),
+    String(order.fees?.platformFee ?? 0),
+    String(order.fees?.gatewayFee ?? 0),
     String(order.fees?.total ?? 0),
     order.buyerId ?? "",
     order.sellerId ?? "",
@@ -131,6 +144,7 @@ export async function GET(request: Request) {
     order.id,
     order.stripePaymentIntentId ?? "",
     order.paymentStatus ?? order.status,
+    String(order.fees?.productPrice ?? 0),
     String(order.fees?.total ?? 0),
     order.paidAt ?? "",
   ]);
@@ -141,7 +155,7 @@ export async function GET(request: Request) {
     .map((order) => [
       order.id,
       order.escrowStatus ?? "",
-      String(order.fees?.total ?? 0),
+      String(order.fees?.productPrice ?? 0),
       order.sellerProofAt ?? "",
       order.buyerMatchConfirmedAt ?? "",
     ]);
@@ -170,9 +184,9 @@ export async function GET(request: Request) {
 ${sheet("Summary", ["key", "value"], summaryRows)}
 ${sheet("Users", ["id", "fullName", "email", "role", "status", "createdAt"], userRows)}
 ${sheet("Listings", ["id", "title", "status", "categoryId", "priceAED", "sellerId", "createdAt"], listingRows)}
-${sheet("Orders", ["id", "status", "escrowStatus", "totalAED", "buyerId", "sellerId", "createdAt"], orderRows)}
-${sheet("Payments", ["orderId", "transactionId", "status", "amountAED", "paidAt"], paymentRows)}
-${sheet("Escrow", ["orderId", "escrowStatus", "amountAED", "sellerProofAt", "buyerConfirmAt"], escrowRows)}
+${sheet("Orders", ["id", "status", "escrowStatus", "productPriceAED", "platformFeeAED", "gatewayFeeAED", "buyerTotalAED", "buyerId", "sellerId", "createdAt"], orderRows)}
+${sheet("Payments", ["orderId", "transactionId", "status", "gmvAED", "buyerTotalAED", "paidAt"], paymentRows)}
+${sheet("Escrow", ["orderId", "escrowStatus", "merchandiseAED", "sellerProofAt", "buyerConfirmAt"], escrowRows)}
 ${sheet("Disputes", ["id", "orderId", "status", "amountAED", "createdAt"], disputeRows)}
 </Workbook>`;
 

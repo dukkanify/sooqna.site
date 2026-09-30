@@ -839,7 +839,7 @@ const SEED_DEFS: SeedDef[] = [
       "مطلوب مندوب مبيعات خبرة سنتين فأكثر، راتب أساسي + عمولة، تأمين صحي.",
     descriptionEnglish:
       "Sales executive wanted (2+ years). Base salary + commission and health insurance.",
-    subcategory: "مبيعات",
+    subcategory: "توظيف (وظائف)",
     price: 6500,
     condition: "new",
     features: ["عمولة", "تأمين صحي", "دوام كامل"],
@@ -854,7 +854,7 @@ const SEED_DEFS: SeedDef[] = [
       "فرصة لوسيط عقاري مرخص، عمولات عالية، دعم تسويقي كامل.",
     descriptionEnglish:
       "Opportunity for a licensed agent with high commissions and full marketing support.",
-    subcategory: "عقارات",
+    subcategory: "توظيف (وظائف)",
     price: 8000,
     condition: "new",
     features: ["عمولات عالية", "دعم تسويقي"],
@@ -868,7 +868,7 @@ const SEED_DEFS: SeedDef[] = [
       "سائق توصيل برخصة خفيفة، دوام مرن، بدل وقود، راتب شهري ثابت.",
     descriptionEnglish:
       "Delivery driver with light license, flexible hours, fuel allowance, fixed monthly pay.",
-    subcategory: "سائقين",
+    subcategory: "توظيف (وظائف)",
     price: 3500,
     condition: "new",
     features: ["بدل وقود", "دوام مرن"],
@@ -882,7 +882,7 @@ const SEED_DEFS: SeedDef[] = [
       "مطلوب محاسب خبرة في الضرائب والرواتب، إجادة Excel، دوام مكتبي.",
     descriptionEnglish:
       "Accountant needed with tax/payroll experience, strong Excel, office-based.",
-    subcategory: "محاسبة",
+    subcategory: "توظيف (وظائف)",
     price: 7000,
     condition: "new",
     features: ["ضرائب", "رواتب", "Excel"],
@@ -896,7 +896,7 @@ const SEED_DEFS: SeedDef[] = [
       "مصمم جرافيك محترف لفريق تسويق، Adobe Suite، عمل هجين ممكن.",
     descriptionEnglish:
       "Pro graphic designer for marketing team, Adobe Suite, hybrid work possible.",
-    subcategory: "تصميم",
+    subcategory: "توظيف (وظائف)",
     price: 7500,
     condition: "new",
     features: ["Adobe", "هجين", "مشاريع رقمية"],
@@ -910,7 +910,7 @@ const SEED_DEFS: SeedDef[] = [
       "مطلوب ممرض/ة بترخيص وزارة الصحة، دوام صباحي، راتب مجزي.",
     descriptionEnglish:
       "MOH-licensed nurse wanted for morning shifts with competitive pay.",
-    subcategory: "رعاية صحية",
+    subcategory: "توظيف (وظائف)",
     price: 9000,
     condition: "new",
     features: ["ترخيص وزارة الصحة", "دوام صباحي"],
@@ -924,7 +924,7 @@ const SEED_DEFS: SeedDef[] = [
       "مهندس مدني لمشروع سكني، خبرة مواقع، سيارة عمل موفرة.",
     descriptionEnglish:
       "Civil site engineer for a residential project; company vehicle provided.",
-    subcategory: "هندسة",
+    subcategory: "توظيف (وظائف)",
     price: 11000,
     condition: "new",
     features: ["سيارة عمل", "مشروع سكني"],
@@ -938,7 +938,7 @@ const SEED_DEFS: SeedDef[] = [
       "استقبال فندق 4 نجوم، لغة إنجليزية ممتازة، ورديات متناوبة.",
     descriptionEnglish:
       "4-star hotel front desk role requiring excellent English and rotating shifts.",
-    subcategory: "ضيافة",
+    subcategory: "توظيف (وظائف)",
     price: 4500,
     condition: "new",
     features: ["إنجليزية", "ورديات", "تأمين"],

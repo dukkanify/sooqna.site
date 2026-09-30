@@ -1,6 +1,7 @@
 export type NotificationType =
   | "welcome"
   | "order_paid"
+  | "payment_required"
   | "order_confirmed"
   | "order_released"
   | "order_refunded"

@@ -31,8 +31,12 @@ import {
   SHOWCASE_SOURCE,
   isShowcaseListing,
 } from "@/shared/listings/showcase-listing";
+import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
-import { applyListingViewCounts } from "@/services/listings/listing-views-store";
+import {
+  applyListingViewCounts,
+  getListingViewScores,
+} from "@/services/listings/listing-views-store";
 
 const TABLE = "marketplace_listings";
 
@@ -90,11 +94,7 @@ function sortListings(listings: Listing[], sort?: ListingSearchFilters["sort"]) 
     const firstDemo = first.source === SHOWCASE_SOURCE || first.isDemo === true ? 1 : 0;
     const secondDemo = second.source === SHOWCASE_SOURCE || second.isDemo === true ? 1 : 0;
     if (firstDemo !== secondDemo) return firstDemo - secondDemo;
-    if (sort === "price_asc") return first.price - second.price;
-    if (sort === "price_desc") return second.price - first.price;
-    const firstDate = first.postedAt ?? first.id;
-    const secondDate = second.postedAt ?? second.id;
-    return secondDate.localeCompare(firstDate);
+    return compareListingsWithFeaturedPriority(first, second, sort);
   });
 }
 
@@ -294,12 +294,29 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
     const { where, values } = listingSqlFilter(query);
 
     const showcaseLast = `(CASE WHEN COALESCE(payload->>'source','') = '${SHOWCASE_SOURCE}' THEN 1 ELSE 0 END) ASC`;
-    const order =
+    const featuredFirst = `(CASE
+      WHEN COALESCE(is_featured, false) = true
+       AND (
+         COALESCE(payload->>'featuredUntil', '') = ''
+         OR (payload->>'featuredUntil')::timestamptz > NOW()
+       )
+      THEN 0 ELSE 1 END) ASC`;
+    const featuredRecency = `(CASE
+      WHEN COALESCE(is_featured, false) = true
+       AND (
+         COALESCE(payload->>'featuredUntil', '') = ''
+         OR (payload->>'featuredUntil')::timestamptz > NOW()
+       )
+      THEN COALESCE((payload->>'featuredUntil')::timestamptz, '-infinity'::timestamptz)
+      ELSE '-infinity'::timestamptz
+    END) DESC`;
+    const secondary =
       query.sort === "price_asc"
-        ? `${showcaseLast}, (payload->>'price')::numeric ASC NULLS LAST`
+        ? `(payload->>'price')::numeric ASC NULLS LAST`
         : query.sort === "price_desc"
-          ? `${showcaseLast}, (payload->>'price')::numeric DESC NULLS LAST`
-          : `${showcaseLast}, COALESCE(posted_at, updated_at) DESC NULLS LAST`;
+          ? `(payload->>'price')::numeric DESC NULLS LAST`
+          : `COALESCE(posted_at, updated_at) DESC NULLS LAST`;
+    const order = `${showcaseLast}, ${featuredFirst}, ${featuredRecency}, ${secondary}`;
 
     let sql = `SELECT payload FROM ${TABLE}`;
     if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
@@ -565,6 +582,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
 
 export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
   await ensureCatalogsForPublicRead();
+  const viewScores = await getListingViewScores();
   try {
     if (await ensureListingsTable()) {
       const pool = await getOptionalPostgresPool();
@@ -580,6 +598,7 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             posted_at,
             payload->>'title' AS title,
             payload->>'city' AS city,
+            payload->>'imageUrl' AS image_url,
             COALESCE((payload->>'price')::numeric, 0) AS price,
             COALESCE(payload->>'currency', 'AED') AS currency,
             payload->'seller'->>'name' AS seller_name,
@@ -613,6 +632,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
                 ? row.posted_at.toISOString()
                 : String(row.posted_at ?? ""),
             city: String(row.city ?? ""),
+            imageUrl: row.image_url ? String(row.image_url) : undefined,
+            views: viewScores.get(id) ?? 0,
             isDemo:
               Boolean(row.is_demo) ||
               String(row.source ?? "") === SHOWCASE_SOURCE,
@@ -642,6 +663,8 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
       isFeatured: listing.isFeatured,
       postedAt: listing.postedAt ?? "",
       city: listing.city,
+      imageUrl: listing.imageUrl ?? listing.images?.[0],
+      views: viewScores.get(listing.id) ?? listing.views ?? 0,
       isDemo: listing.isDemo === true || listing.source === SHOWCASE_SOURCE,
       isFixture: isConfirmedFixtureListing(listing),
       source: listing.source,

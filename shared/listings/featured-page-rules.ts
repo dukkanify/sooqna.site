@@ -66,13 +66,118 @@ export function sortFeaturedPageListings(listings: Listing[]): Listing[] {
   return [...listings].sort(compareFeaturedListings);
 }
 
+export function listingLocationKey(
+  listing: Pick<Listing, "emirate" | "city">,
+): string {
+  return (listing.emirate || listing.city || "").trim();
+}
+
+function remainingHasUnusedCategory(
+  pool: Listing[],
+  usedIds: Set<string>,
+  usedCategories: Set<string>,
+): boolean {
+  return pool.some(
+    (listing) =>
+      !usedIds.has(listing.id) && !usedCategories.has(listing.categoryId),
+  );
+}
+
+function remainingHasUnusedLocation(
+  pool: Listing[],
+  usedIds: Set<string>,
+  usedLocations: Set<string>,
+): boolean {
+  return pool.some((listing) => {
+    if (usedIds.has(listing.id)) return false;
+    const loc = listingLocationKey(listing);
+    return loc.length > 0 && !usedLocations.has(loc);
+  });
+}
+
+/**
+ * Homepage featured rail: paid + active window, newest package first,
+ * then avoid repeating the same category or emirate/city while alternatives remain.
+ */
+export function pickDiverseFeaturedListings(
+  listings: Listing[],
+  limit: number,
+  nowMs = Date.now(),
+): Listing[] {
+  const ranked = sortFeaturedPageListings(
+    listings.filter((listing) => isEligibleFeaturedPageListing(listing, nowMs)),
+  );
+  if (limit <= 0) return [];
+  const picked: Listing[] = [];
+  const usedIds = new Set<string>();
+  const usedCategories = new Set<string>();
+  const usedLocations = new Set<string>();
+
+  const tryPick = (spreadCategory: boolean, spreadLocation: boolean) => {
+    for (const listing of ranked) {
+      if (picked.length >= limit) return;
+      if (usedIds.has(listing.id)) continue;
+      const loc = listingLocationKey(listing);
+      if (
+        spreadCategory &&
+        usedCategories.has(listing.categoryId) &&
+        remainingHasUnusedCategory(ranked, usedIds, usedCategories)
+      ) {
+        continue;
+      }
+      if (
+        spreadLocation &&
+        loc &&
+        usedLocations.has(loc) &&
+        remainingHasUnusedLocation(ranked, usedIds, usedLocations)
+      ) {
+        continue;
+      }
+      usedIds.add(listing.id);
+      usedCategories.add(listing.categoryId);
+      if (loc) usedLocations.add(loc);
+      picked.push(listing);
+    }
+  };
+
+  tryPick(true, true);
+  tryPick(true, false);
+  tryPick(false, false);
+  return picked;
+}
+
+/**
+ * Listing grids (home lists, search, categories): paid featured first,
+ * then the caller’s sort. Price sorts still keep featured above regular ads.
+ */
+export function compareListingsWithFeaturedPriority(
+  a: Listing,
+  b: Listing,
+  sort?: "newest" | "price_asc" | "price_desc",
+  nowMs = Date.now(),
+): number {
+  const aFeatured = isEligibleFeaturedPageListing(a, nowMs) ? 0 : 1;
+  const bFeatured = isEligibleFeaturedPageListing(b, nowMs) ? 0 : 1;
+  if (aFeatured !== bFeatured) return aFeatured - bFeatured;
+  if (aFeatured === 0) {
+    const featuredCmp = compareFeaturedListings(a, b);
+    if (featuredCmp !== 0) return featuredCmp;
+  }
+  if (sort === "price_asc") return a.price - b.price;
+  if (sort === "price_desc") return b.price - a.price;
+  const aPosted = a.postedAt ?? a.id;
+  const bPosted = b.postedAt ?? b.id;
+  return bPosted.localeCompare(aPosted);
+}
+
 /** User-facing rule chips shown on `/featured`. */
 export function featuredPageRuleLabels(packageDays: number): string[] {
   const days = Math.max(1, Math.round(packageDays));
   return [
     "الظهور: إعلانات مدفوعة التمييز فقط (نشط أو محجوز)",
+    "الموقع: أول الصفحة الرئيسية ومقدمة قوائم الإعلانات",
     "المدة: طوال أيام الباقة بعد تأكيد الدفع",
     `مدة الباقة الحالية: ${days} يوماً`,
-    "الترتيب: الأحدث تمييزاً أولاً",
+    "الترتيب: الأحدث تمييزاً أولاً — مع تنويع التصنيف والموقع دون تكرار",
   ];
 }

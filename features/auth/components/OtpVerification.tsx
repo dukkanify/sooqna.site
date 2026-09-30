@@ -36,6 +36,8 @@ type OtpVerificationProps = {
   }) => void | Promise<void>;
   purpose: OtpPurpose;
   verifyEndpoint?: string;
+  /** Override default `/api/auth/otp/resend` (e.g. profile email change). */
+  resendEndpoint?: string;
 };
 
 const COOLDOWN_SECONDS = 60;
@@ -50,6 +52,7 @@ const DEFAULT_VERIFY_ENDPOINTS: Partial<Record<OtpPurpose, string>> = {
   LOGIN: "/api/auth/login/verify-otp",
   PASSWORD_RESET: "/api/auth/password/reset/verify-otp",
   SET_PASSWORD: "/api/auth/password/set/verify-otp",
+  EMAIL_CHANGE: "/api/profile/email/confirm",
 };
 
 export function OtpVerification({
@@ -63,6 +66,7 @@ export function OtpVerification({
   onVerified,
   purpose,
   verifyEndpoint,
+  resendEndpoint = "/api/auth/otp/resend",
 }: OtpVerificationProps) {
   const { showToast } = useToast();
   const demoOtpEnabled = isDemoOtpClientEnabled();
@@ -156,7 +160,7 @@ export function OtpVerification({
   const { isLoading: isResending, run: resendOtp } = useAsyncAction(
     useCallback(async () => {
       if (cooldown > 0) return;
-      const response = await fetch("/api/auth/otp/resend", {
+      const response = await fetch(resendEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -196,7 +200,7 @@ export function OtpVerification({
         setDigits(data.otp.split(""));
       }
       trackAuthEventClient("otp_resend", { purpose });
-    }, [cooldown, demoOtpEnabled, email, fullName, purpose]),
+    }, [cooldown, demoOtpEnabled, email, fullName, purpose, resendEndpoint]),
   );
 
   // If the previous send failed, retry once immediately so the user is not

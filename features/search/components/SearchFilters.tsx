@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import type { Category, City } from "@/types";
 import { Button } from "@/shared/ui/Button";
-import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -15,8 +14,10 @@ import {
   type SearchSuggestion,
 } from "./SearchTypeahead";
 import { CategorySmartFields } from "./CategorySmartFields";
+import { PriceRangeFields } from "./PriceRangeFields";
 import { sortByPopularity } from "@/services/search/search-popularity";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
+import { isPriceRangeInverted } from "@/features/search/lib/price-range";
 import { isYearRangeInverted } from "@/features/search/lib/year-range";
 import {
   activeFilterCount,
@@ -231,29 +232,12 @@ function FilterFields({
             onChange={setDraft}
             variant="essential"
           />
-          <p className="pt-0.5 text-[0.7rem] font-bold text-muted">السعر</p>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              compact={compact}
-              defaultValue={draft.minPrice}
-              inputMode="numeric"
-              label="السعر من"
-              min="0"
-              name="minPrice"
-              placeholder="0"
-              type="number"
-            />
-            <Input
-              compact={compact}
-              defaultValue={draft.maxPrice}
-              inputMode="numeric"
-              label="السعر إلى"
-              min="0"
-              name="maxPrice"
-              placeholder="أي سعر"
-              type="number"
-            />
-          </div>
+          <PriceRangeFields
+            compact={compact}
+            draft={draft}
+            easy
+            onChange={setDraft}
+          />
 
           <div className="rounded-2xl border border-border/80 bg-surface-muted/40">
             <button
@@ -358,28 +342,12 @@ function FilterFields({
               />
             ) : null}
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              compact={compact}
-              defaultValue={draft.minPrice}
-              inputMode="numeric"
-              label={easy ? "السعر من" : "من (د.إ)"}
-              min="0"
-              name="minPrice"
-              placeholder="0"
-              type="number"
-            />
-            <Input
-              compact={compact}
-              defaultValue={draft.maxPrice}
-              inputMode="numeric"
-              label={easy ? "السعر إلى" : "إلى (د.إ)"}
-              min="0"
-              name="maxPrice"
-              placeholder="أي سعر"
-              type="number"
-            />
-          </div>
+          <PriceRangeFields
+            compact={compact}
+            draft={draft}
+            easy={easy}
+            onChange={setDraft}
+          />
         </>
       )}
       <input name="country" type="hidden" value={draft.country ?? ""} />
@@ -427,10 +395,12 @@ export function SearchFilters({
 
   const appliedCount = activeFilterCount(selectedFilters);
   const resetHref = action.split("?")[0] || "/search";
+  const priceInvalid = isPriceRangeInverted(draft.minPrice, draft.maxPrice);
   const yearInvalid = isYearRangeInverted(
     draft.ranges?.year?.min,
     draft.ranges?.year?.max,
   );
+  const rangeInvalid = priceInvalid || yearInvalid;
 
   const fieldProps: FilterFieldsProps = {
     categories,
@@ -444,6 +414,7 @@ export function SearchFilters({
 
   const guardRangeSubmit = (event: FormEvent<HTMLFormElement>) => {
     if (
+      isPriceRangeInverted(draft.minPrice, draft.maxPrice) ||
       isYearRangeInverted(draft.ranges?.year?.min, draft.ranges?.year?.max)
     ) {
       event.preventDefault();
@@ -457,7 +428,7 @@ export function SearchFilters({
       </Button>
       <Button
         className="motion-press w-full"
-        disabled={yearInvalid}
+        disabled={rangeInvalid}
         size="sm"
         type="submit"
         variant="primary"

@@ -22,16 +22,20 @@ type CategorySelectionStepProps = {
   categories: Category[];
   errors: AddListingErrors;
   onSelectCategory: (categoryId: string) => void;
+  onSubcategoryChange?: (subcategory: string) => void;
   selectedCategory?: Category;
   selectedCategoryId: string;
+  selectedSubcategory?: string;
 };
 
 export function CategorySelectionStep({
   categories,
   errors,
   onSelectCategory,
+  onSubcategoryChange,
   selectedCategory,
   selectedCategoryId,
+  selectedSubcategory = "",
 }: CategorySelectionStepProps) {
   const [subcategory, setSubcategory] = useState("");
   const [subcategoryOther, setSubcategoryOther] = useState("");
@@ -87,12 +91,19 @@ export function CategorySelectionStep({
       {showSubcategory ? (
         <div className="mt-4 grid gap-2">
           <Select
-            label="القسم الفرعي (اختياري)"
+            key={`${selectedCategoryId}:${selectedSubcategory || "none"}`}
+            defaultValue={selectedSubcategory || undefined}
+            label={
+              selectedCategoryId === "jobs"
+                ? "نوع الإعلان"
+                : "القسم الفرعي (اختياري)"
+            }
             name="subcategory"
             onChange={(event) => {
               const next = event.target.value;
               setSubcategory(next);
               if (!isOtherOptionValue(next)) setSubcategoryOther("");
+              onSubcategoryChange?.(next);
             }}
             optionsAreUgc
             options={options}
@@ -113,7 +124,9 @@ export function CategorySelectionStep({
             />
           ) : (
             <p className="text-xs text-muted">
-              اختر من القائمة، أو «أخرى» لكتابة وصفك إن لم تجد القسم المناسب.
+              {selectedCategoryId === "jobs"
+                ? "توظيف (وظائف) للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة."
+                : "اختر من القائمة، أو «أخرى» لكتابة وصفك إن لم تجد القسم المناسب."}
             </p>
           )}
           {errors.subcategory && !otherSelected ? (

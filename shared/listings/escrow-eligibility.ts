@@ -7,9 +7,22 @@ import {
 import { getListingActionConfig } from "@/shared/constants/listingActionConfig";
 import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 
-/** Listing is marked eligible for escrow when paid through the platform. */
+/**
+ * Goods/food checkout listings get escrow unless the row explicitly opts out
+ * (`escrowAvailable: false`, e.g. showcase). User listings historically omitted
+ * the flag, which hid الضمان المالي and blocked checkout messaging.
+ */
 export function isListingEscrowEligible(listing: Listing): boolean {
-  return listing.escrowAvailable === true;
+  if (listing.escrowAvailable === false) return false;
+  if (listing.escrowAvailable === true) return true;
+  return listingCategorySupportsEscrow(listing);
+}
+
+/** Persistable default for create/upsert when the seller did not set the flag. */
+export function defaultEscrowAvailableForListing(
+  listing: Pick<Listing, "categoryId"> & { featureProfile?: Listing["featureProfile"] },
+): boolean {
+  return listingCategorySupportsEscrow(listing);
 }
 
 /** Integrated platform checkout is available for this listing. */
@@ -21,7 +34,9 @@ export function hasPlatformCheckout(listing: Listing): boolean {
  * True when this listing's category/profile can use escrow at all
  * (goods / retail food). Cars, real estate, jobs, services, etc. return false.
  */
-export function listingCategorySupportsEscrow(listing: Listing): boolean {
+export function listingCategorySupportsEscrow(
+  listing: Pick<Listing, "categoryId"> & { featureProfile?: Listing["featureProfile"] },
+): boolean {
   const profile = resolveCategoryFeatureProfile(
     listing.categoryId,
     listing.featureProfile,

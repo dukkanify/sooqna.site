@@ -35,10 +35,12 @@ export const CATEGORY_SEARCH_KEYS: Record<string, readonly string[]> = {
     "area",
     "furnished",
   ],
-  jobs: ["listingType", "position", "employmentType", "experience", "salary", "location"],
+  // Subcategory filter is the vacancy vs seeker type; keep role/salary filters.
+  jobs: ["position", "employmentType", "experience", "salary", "location"],
   services: ["serviceCategory", "coverageArea"],
   furniture: ["furnitureType", "furnitureTypeOther", "material"],
   food: ["saleType", "cuisine", "portion", "delivery", "freshness", "unitPrice"],
+  pets: ["animalType", "breed", "age", "gender", "vaccinated", "condition"],
 };
 
 const SKIP_FIELD_TYPES = new Set(["textarea", "checkbox-group", "date"]);
@@ -86,14 +88,7 @@ export function getCategorySearchFields(categoryId: string): CategoryFieldDefini
   );
 }
 
-export function fieldVisibleForSpecs(
-  field: CategoryFieldDefinition,
-  specs: Record<string, string>,
-): boolean {
-  if (!field.showWhen) return true;
-  const current = specs[field.showWhen.key] ?? "";
-  return field.showWhen.values.includes(current);
-}
+export { fieldVisibleForSpecs } from "@/shared/listings/category-field-visibility";
 
 export function optionsForSearchField(
   categoryId: string,
@@ -127,7 +122,7 @@ export function optionsForSearchField(
 export function subcategoryFilterLabel(categoryId: string): string {
   if (categoryId === "electronics") return "النوع";
   if (categoryId === "services") return "تصنيف الخدمة";
-  if (categoryId === "jobs") return "التخصص";
+  if (categoryId === "jobs") return "نوع الإعلان";
   return "التصنيف الفرعي";
 }
 

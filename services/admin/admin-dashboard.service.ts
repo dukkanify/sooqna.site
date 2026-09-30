@@ -7,6 +7,7 @@ import {
   buildOrderStatusSlices,
   buildPaymentStatusSlices,
 } from "@/services/admin/admin-analytics";
+import { computeFinanceMetrics } from "@/services/admin/admin-finance-metrics";
 import { getAdminDisputes, getOpenDisputeCount } from "@/services/admin/dispute-store";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import { getAllUsers } from "@/services/auth/user-store";
@@ -154,17 +155,14 @@ export async function buildAdminDashboard(
     categories.map((c) => [c.id, c.name || c.id] as const),
   );
 
-  const paid = orders.filter((o) => o.paymentStatus === "succeeded");
-  const refunded = orders.filter((o) => o.status === "refunded" || o.paymentStatus === "refunded");
+  const finance = computeFinanceMetrics(orders, { sinceMs: rangeStart });
   const heldEscrow = orders.filter((o) => o.escrowStatus === "held");
   const pendingPayments = orders.filter(
     (o) => o.paymentStatus === "pending" || o.paymentStatus === "processing",
   );
   const failedPayments = orders.filter((o) => o.paymentStatus === "failed");
-  const volume = paid.reduce((sum, o) => sum + o.fees.total, 0);
-  const fees = paid.reduce((sum, o) => sum + o.fees.platformFee, 0);
-  const heldAmount = heldEscrow.reduce((sum, o) => sum + o.fees.productPrice, 0);
-  const refundedAmount = refunded.reduce((sum, o) => sum + o.fees.total, 0);
+  const fees = finance.platformRevenue;
+  const heldAmount = finance.heldEscrowAmount;
   const walletHeld = wallets.reduce((sum, w) => sum + w.heldInEscrow, 0);
 
   const marketplaceListings = listings.filter(isMarketplaceListing);
@@ -316,13 +314,13 @@ export async function buildAdminDashboard(
     executive.push(
       {
         key: "revenue",
-        label: "إجمالي الإيرادات",
+        label: "عمولات المنصة",
         value: fees,
         href: "/admin/reports",
         icon: "wallet",
         money: true,
         tone: "success",
-        hint: "رسوم المنصة",
+        hint: `GMV ${finance.gmv.toLocaleString("en-AE")} · صافي ${finance.netPlatformRevenue.toLocaleString("en-AE")}`,
       },
       {
         key: "heldMadmoon",
@@ -331,8 +329,8 @@ export async function buildAdminDashboard(
         href: "/admin/escrow",
         icon: "shield",
         money: true,
-        tone: heldEscrow.length > 0 ? "warning" : "neutral",
-        hint: `${heldEscrow.length} عملية محجوزة`,
+        tone: finance.heldEscrowCount > 0 ? "warning" : "neutral",
+        hint: `${finance.heldEscrowCount} محجوز · ${finance.releasedEscrowCount} محرّر`,
       },
     );
   }
@@ -675,17 +673,22 @@ export async function buildAdminDashboard(
       ? stripeConfigured || isMockCheckoutAllowed()
         ? {
             available: true as const,
-            transactionVolume: volume,
-            revenue: fees,
-            netProfit: fees,
-            heldEscrowAmount: heldAmount,
-            heldEscrowCount: heldEscrow.length,
+            /** GMV — merchandise value in selected range (excludes mock). */
+            transactionVolume: finance.gmv,
+            revenue: finance.platformRevenue,
+            netProfit: finance.netPlatformRevenue,
+            gatewayFees: finance.gatewayFees,
+            buyerCollected: finance.buyerCollected,
+            heldEscrowAmount: finance.heldEscrowAmount,
+            heldEscrowCount: finance.heldEscrowCount,
+            releasedEscrowAmount: finance.releasedEscrowAmount,
+            releasedEscrowCount: finance.releasedEscrowCount,
             walletHeld,
-            successfulPayments: paid.length,
-            pendingPayments: pendingPayments.length,
-            refundedAmount,
-            refundedCount: refunded.length,
-            currency: "AED",
+            successfulPayments: finance.succeededPaidCount,
+            pendingPayments: finance.pendingPaymentCount,
+            refundedAmount: finance.refundedAmount,
+            refundedCount: finance.refundedCount,
+            currency: finance.currency,
           }
         : {
             available: false as const,
@@ -722,12 +725,12 @@ export async function buildAdminDashboard(
     // Backward-compatible fields for any residual consumers
     kpis: {
       totalOrders: orders.length,
-      paidOrders: paid.length,
-      refundedOrders: refunded.length,
-      heldEscrow: heldEscrow.length,
-      volume,
-      fees,
-      currency: "AED",
+      paidOrders: finance.succeededPaidCount,
+      refundedOrders: finance.refundedCount,
+      heldEscrow: finance.heldEscrowCount,
+      volume: finance.gmv,
+      fees: finance.platformRevenue,
+      currency: finance.currency,
       recentEvents: events.length,
       pendingListings: listingStats.pendingListings,
       openDisputes,
@@ -737,13 +740,15 @@ export async function buildAdminDashboard(
       walletAvailable: wallets.reduce((s, w) => s + w.availableBalance, 0),
       walletHeld,
       conversionRate:
-        orders.length === 0 ? 0 : Math.round((paid.length / orders.length) * 100),
+        orders.length === 0
+          ? 0
+          : Math.round((finance.grossPaidCount / orders.length) * 100),
       activeListings: listingStats.activeListings,
       newUsers,
       rejectedListings,
       totalViews,
       totalFavorites,
-      heldAmount,
+      heldAmount: finance.heldEscrowAmount,
     },
     notifications: {
       unread: notifications.filter((n) => !n.read).length,
