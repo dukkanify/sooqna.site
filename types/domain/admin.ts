@@ -64,6 +64,8 @@ export type AdminListingRecord = {
   currency: string;
   status: ListingStatus;
   isFeatured: boolean;
+  /** ISO end of paid/admin Featured package window (missing = open-ended). */
+  featuredUntil?: string;
   postedAt: string;
   city: string;
   emirate?: string;
