@@ -2931,5 +2931,13 @@
   "العمر": "Age",
   "التطعيمات": "Vaccinations",
   "اختر النوع ليظهر الإعلان في التصنيف الفرعي المناسب.": "Choose the type so the listing appears under the right subcategory.",
-  "تعذر نشر الإعلان — أكمل الحقول المطلوبة أو صحّح الأخطاء أدناه.": "Could not publish the listing — complete the required fields or fix the errors below."
+  "تعذر نشر الإعلان — أكمل الحقول المطلوبة أو صحّح الأخطاء أدناه.": "Could not publish the listing — complete the required fields or fix the errors below.",
+  "إشعار المشتري بإكمال الدفع": "Notify buyer to complete payment",
+  "الدفع مطلوب من المشتري": "Payment required from the buyer",
+  "رابط معاينة مختصر للإعلان": "Short listing preview link",
+  "لا يُطلب من الأدمن إكمال الدفع. أرسل إشعاراً للمشتري أو طالب الخدمة ليكمل الدفع من حسابه.": "Admins are not asked to complete payment. Notify the buyer or requester so they can pay from their account.",
+  "يفتح صفحة الإعلان للمرجع فقط — ليس مسار دفع الأدمن.": "Opens the listing page for reference only — not an admin payment path.",
+  "لا يوجد مشتري مسجّل لإرسال إشعار داخل التطبيق (طلب ضيف).": "No registered buyer to notify in-app (guest order).",
+  "تم إرسال إشعار للمشتري لإكمال الدفع.": "Buyer was notified to complete payment.",
+  "معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع.": "Preview the order and listing inside the control panel — without the buyer or payment journey."
 }
