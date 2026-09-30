@@ -1,6 +1,8 @@
 import type { Listing } from "@/types";
 import {
   getAllListings,
+  getListingById,
+  getListingBySlug,
   getListingSync,
 } from "@/services/listings/listing-store";
 
@@ -24,6 +26,20 @@ export function getServerListingById(listingId: string): Listing | undefined {
 
 export function getServerListingBySlug(slug: string): Listing | undefined {
   return getListingSync(slug);
+}
+
+/**
+ * Durable lookup for checkout — includes persisted `local-*` seller listings.
+ * Sync cache helpers miss those rows when checkout skipped catalog hydration.
+ */
+export async function resolveServerListing(
+  idOrSlug: string | undefined | null,
+): Promise<Listing | undefined> {
+  const ref = idOrSlug?.trim();
+  if (!ref) return undefined;
+  const byId = await getListingById(ref);
+  if (byId) return byId;
+  return getListingBySlug(ref);
 }
 
 export async function hydrateListingCatalog(): Promise<void> {

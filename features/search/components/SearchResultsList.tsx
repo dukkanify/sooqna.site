@@ -9,6 +9,7 @@ import {
   type SearchFilterState,
 } from "@/features/search/components/search-url";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 import type { Category, Listing } from "@/types";
 import { ListingCard } from "@/features/listings/components/ListingCard";
@@ -67,11 +68,13 @@ export function SearchResultsList({
       .filter((listing) => listingMatchesSmartFilters(listing, listingFilters))
       .filter((listing) => !listings.some((item) => item.id === listing.id));
 
-    return [...matchingLocalListings, ...listings].sort((a, b) => {
-      if (selectedFilters.sort === "price_asc") return a.price - b.price;
-      if (selectedFilters.sort === "price_desc") return b.price - a.price;
-      return b.id.localeCompare(a.id);
-    });
+    const sort =
+      selectedFilters.sort === "price_asc" || selectedFilters.sort === "price_desc"
+        ? selectedFilters.sort
+        : "newest";
+    return [...matchingLocalListings, ...listings].sort((a, b) =>
+      compareListingsWithFeaturedPriority(a, b, sort),
+    );
   }, [categoryId, listings, localListings, selectedFilters]);
 
   const resultCount =

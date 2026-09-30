@@ -27,6 +27,7 @@ import {
 } from "@/shared/constants/category-feature-profiles";
 import { replaceCategoryFormFields } from "@/services/admin/category-form-store";
 import { stripRetiredSubcategories } from "@/shared/constants/retired-subcategories";
+import { ensureJobsCategorySubcategories } from "@/shared/listings/jobs-taxonomy";
 
 type StoredCategory = Category & {
   enabled: boolean;
@@ -132,13 +133,15 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
           ...row,
           subcategories: normalizeCategorySubcategories(
             row.id,
-            row.subcategories,
+            row.id === "jobs" || row.slug === "jobs"
+              ? ensureJobsCategorySubcategories(row.subcategories)
+              : row.subcategories,
           ),
           sortOrder:
             typeof row.sortOrder === "number" ? row.sortOrder : index + 1,
         }),
       );
-      // Persist once when retired subs (e.g. قطع الغيار) were stripped from durable data.
+      // Persist when retired subs were stripped or jobs taxonomy was ensured.
       const dirty = normalized.some((row, index) => {
         const before = normalizeSubcategories(stored[index]?.subcategories);
         return (
@@ -146,8 +149,13 @@ async function loadCategoryRecordsUncached(): Promise<StoredCategory[]> {
           before.some((name, i) => name !== row.subcategories[i])
         );
       });
-      if (dirty) {
-        await store.replaceAll(normalized);
+      const jobsBefore = stored.find((row) => row.id === "jobs" || row.slug === "jobs");
+      const jobsAfter = normalized.find((row) => row.id === "jobs" || row.slug === "jobs");
+      const jobsSubsChanged =
+        JSON.stringify(jobsBefore?.subcategories ?? []) !==
+        JSON.stringify(jobsAfter?.subcategories ?? []);
+      if (dirty || jobsSubsChanged) {
+        await store.replaceAll(normalized).catch(() => undefined);
       }
       return setCache(normalized);
     })().finally(() => {
@@ -248,7 +256,7 @@ async function seedFormForProfile(
   categoryId: string,
   profile: CategoryFeatureProfile,
 ) {
-  const defaults = getFormTemplateFields(profile);
+  const defaults = getFormTemplateFields(profile, categoryId);
   if (defaults.length === 0) return;
   await replaceCategoryFormFields(
     categoryId,
@@ -263,6 +271,8 @@ async function seedFormForProfile(
       note: field.note,
       options: field.options,
       showWhen: field.showWhen,
+      pattern: field.pattern,
+      patternMessage: field.patternMessage,
       titlePart: field.titlePart,
       searchable: field.searchable,
     })),

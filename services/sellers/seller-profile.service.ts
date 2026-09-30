@@ -1,16 +1,18 @@
 import type { Listing, ListingSeller } from "@/types";
 import { marketplaceSellers } from "@/mock/sellers.mock";
+import { findUserById } from "@/services/auth/user-store";
 import { searchListings } from "@/services/listings";
+import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 
 export async function getSellerListings(sellerId: string): Promise<Listing[]> {
   if (!sellerId.trim()) return [];
   return searchListings({ sellerId, sort: "newest" });
 }
 
-export function getSellerProfile(
+export async function getSellerProfile(
   sellerId: string,
   listings: Listing[] = [],
-): ListingSeller | undefined {
+): Promise<ListingSeller | undefined> {
   const fromCatalog = Object.values(marketplaceSellers).find(
     (seller) => seller.id === sellerId,
   );
@@ -29,5 +31,24 @@ export function getSellerProfile(
       sellerType: fromCatalog.sellerType,
     };
   }
-  return listings[0]?.seller;
+
+  // Prefer live account display name so renames show even before listing sync lands.
+  const account = await findUserById(sellerId);
+  const snapshot = listings[0]?.seller;
+  if (account) {
+    const sellerType =
+      account.accountType === "company" || account.accountType === "business"
+        ? ("business" as const)
+        : ("individual" as const);
+    return {
+      ...(snapshot ?? {}),
+      id: account.id,
+      name: sellerDisplayNameFromProfile(account),
+      ...(account.isVerified ? { isVerified: true } : {}),
+      sellerType,
+      ...(account.joinedAt ? { joinedAt: account.joinedAt } : {}),
+    };
+  }
+
+  return snapshot;
 }

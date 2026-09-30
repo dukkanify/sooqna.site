@@ -21,6 +21,7 @@ type AddListingFormProps = {
 
 export function AddListingForm({ categories }: AddListingFormProps) {
   const detailsSectionRef = useRef<HTMLDivElement>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [defaultContact] = useState(
     () => getSessionUser()?.phone?.trim() ?? "",
   );
@@ -54,6 +55,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
   const handleSelectCategory = useCallback(
     (categoryId: string) => {
       setSelectedCategoryId(categoryId);
+      setSelectedSubcategory("");
       const isJobs = categoryId === "jobs";
       setPreview({
         city: "",
@@ -99,10 +101,10 @@ export function AddListingForm({ categories }: AddListingFormProps) {
     );
   }
 
+  // Only categories with a real field schema use the dynamic step.
+  // featureProfile alone must not force an empty CategoryFieldsForm (pets/fashion/…).
   const useDynamicFields =
-    Boolean(selectedCategoryId) &&
-    (isDynamicCategory(selectedCategoryId) ||
-      Boolean(selectedCategory?.featureProfile));
+    Boolean(selectedCategoryId) && isDynamicCategory(selectedCategoryId);
 
   return (
     <LocalizedTree>
@@ -120,8 +122,10 @@ export function AddListingForm({ categories }: AddListingFormProps) {
           categories={categories}
           errors={errors}
           onSelectCategory={handleSelectCategory}
+          onSubcategoryChange={setSelectedSubcategory}
           selectedCategory={selectedCategory}
           selectedCategoryId={selectedCategoryId}
+          selectedSubcategory={selectedSubcategory}
         />
 
         <div
@@ -134,6 +138,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
               categoryId={selectedCategoryId}
               errors={errors}
               onPreviewChange={handlePreviewChange}
+              subcategory={selectedSubcategory}
             />
           ) : (
             <ListingDetailsStep errors={errors} onPreviewChange={setPreview} />

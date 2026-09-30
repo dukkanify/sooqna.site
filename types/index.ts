@@ -10,6 +10,8 @@ export type {
 export type {
   CategoryFieldDefinition,
   CategoryFieldOption,
+  CategoryFieldShowWhen,
+  CategoryFieldShowWhenRule,
   CategoryFieldType,
   CategorySpecValue,
   CategorySpecs,
@@ -43,6 +45,7 @@ export type {
   AdminAction,
   AdminActionMatrix,
   AdminPermission,
+  SocialLinks,
   UserProfile,
   UserRole,
 } from "./domain/user";

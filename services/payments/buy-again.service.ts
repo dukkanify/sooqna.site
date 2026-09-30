@@ -8,6 +8,7 @@ import {
   getServerListingById,
   getServerListingBySlug,
   hydrateListingCatalog,
+  resolveServerListing,
 } from "@/services/payments/listing-resolver";
 import {
   completeMockPayment,
@@ -63,6 +64,8 @@ export async function evaluateBuyAgainForOrder(
   await ensureStripeConfigLoaded();
 
   const listing =
+    (await resolveServerListing(order.listingId)) ??
+    (order.listingSlug ? await resolveServerListing(order.listingSlug) : undefined) ??
     getServerListingById(order.listingId) ??
     (order.listingSlug ? getServerListingBySlug(order.listingSlug) : undefined) ??
     null;

@@ -1,12 +1,15 @@
 import type { Order } from "@/types/domain/order";
 import type { AdminListingRecord } from "@/types/domain/admin";
+import { isSucceededPaidOrder } from "@/services/admin/admin-finance-metrics";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 
 export type DailyPoint = {
   date: string;
   label: string;
   orders: number;
+  /** GMV for the bucket — merchandise (productPrice), not buyer total. */
   volume: number;
+  /** Platform commissions (platformFee). */
   fees: number;
 };
 
@@ -36,18 +39,24 @@ export function buildDailySeries(orders: Order[], days = 7): DailyPoint[] {
         : `${start.getDate()}/${start.getMonth() + 1}`;
 
     const bucketOrders = orders.filter((order) => {
-      if (order.paymentStatus !== "succeeded") return false;
-      const created = order.createdAt?.slice(0, 10);
-      if (!created) return false;
-      return created >= startKey && created <= endKey;
+      if (!isSucceededPaidOrder(order)) return false;
+      const day = (order.paidAt || order.createdAt)?.slice(0, 10);
+      if (!day) return false;
+      return day >= startKey && day <= endKey;
     });
 
     points.push({
       date: endKey,
       label,
       orders: bucketOrders.length,
-      volume: bucketOrders.reduce((sum, o) => sum + o.fees.total, 0),
-      fees: bucketOrders.reduce((sum, o) => sum + o.fees.platformFee, 0),
+      volume: bucketOrders.reduce(
+        (sum, o) => sum + Math.max(0, o.fees?.productPrice ?? 0),
+        0,
+      ),
+      fees: bucketOrders.reduce(
+        (sum, o) => sum + Math.max(0, o.fees?.platformFee ?? 0),
+        0,
+      ),
     });
   }
 

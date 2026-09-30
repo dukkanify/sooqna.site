@@ -2,6 +2,16 @@ import type { CategoryFieldDefinition, CategorySpecs, ListingCondition } from "@
 import {
   getCategoryFields,
 } from "@/shared/constants/category-fields";
+import {
+  fieldVisibleForSpecs,
+  matchesFieldPattern,
+} from "@/shared/listings/category-field-visibility";
+import {
+  isCanonicalJobSubcategory,
+  listingTypeFromSubcategory,
+  subcategoryFromListingType,
+} from "@/shared/listings/jobs-taxonomy";
+import { regulatorEmirateError } from "@/shared/listings/real-estate-license";
 
 export type CategoryFormResult = {
   categorySpecs: CategorySpecs;
@@ -14,6 +24,8 @@ export type CategoryFormResult = {
   emirate?: string;
   /** Jobs (and similar) skip AED price — use salary in specs instead. */
   skipPrice?: boolean;
+  /** Canonical jobs subcategory derived from listingType / subcategory select. */
+  jobSubcategory?: string;
 };
 
 function readFieldValue(
@@ -138,11 +150,18 @@ export function parseCategoryForm(
     visibilitySpecs[field.key] = String(formData.get(`spec_${field.key}`) ?? "").trim();
   }
 
+  // Pets: step-1 subcategory (قطط/كلاب/…) seeds required animalType so sellers
+  // who only pick the subcategory are not blocked by a duplicate empty select.
+  const PET_ANIMAL_TYPES = ["قطط", "كلاب", "طيور", "مستلزمات"] as const;
+  if (categoryId === "pets" && !visibilitySpecs.animalType) {
+    const subcategory = String(formData.get("subcategory") ?? "").trim();
+    if ((PET_ANIMAL_TYPES as readonly string[]).includes(subcategory)) {
+      visibilitySpecs.animalType = subcategory;
+    }
+  }
+
   for (const field of fields) {
-    if (
-      field.showWhen &&
-      !field.showWhen.values.includes(visibilitySpecs[field.showWhen.key] ?? "")
-    ) {
+    if (!fieldVisibleForSpecs(field, visibilitySpecs)) {
       continue;
     }
 
@@ -156,11 +175,24 @@ export function parseCategoryForm(
       continue;
     }
 
-    const value = raw as string;
+    let value = raw as string;
+    if (
+      !hasFieldValue(value) &&
+      field.key === "animalType" &&
+      visibilitySpecs.animalType
+    ) {
+      value = visibilitySpecs.animalType;
+    }
     if (!hasFieldValue(value)) {
       if (field.required) {
         errors[field.key] = `${field.label} مطلوب.`;
       }
+      continue;
+    }
+
+    const patternError = matchesFieldPattern(field, value);
+    if (patternError) {
+      errors[field.key] = patternError;
       continue;
     }
 
@@ -188,6 +220,17 @@ export function parseCategoryForm(
       }
     } else {
       categorySpecs[field.key] = value;
+    }
+  }
+
+  if (categoryId === "real-estate") {
+    const authorityError = regulatorEmirateError(
+      String(categorySpecs.advertiserType ?? ""),
+      String(categorySpecs.regulatoryAuthority ?? ""),
+      emirate,
+    );
+    if (authorityError) {
+      errors.regulatoryAuthority = authorityError;
     }
   }
 
@@ -220,10 +263,7 @@ export function parseCategoryForm(
 
   const titleParts = fields
     .filter((field) => field.titlePart)
-    .filter((field) => {
-      if (!field.showWhen) return true;
-      return field.showWhen.values.includes(visibilitySpecs[field.showWhen.key] ?? "");
-    })
+    .filter((field) => fieldVisibleForSpecs(field, visibilitySpecs))
     .map((field) => categorySpecs[field.key])
     .filter((value) => hasFieldValue(String(value ?? "")));
 
@@ -243,11 +283,33 @@ export function parseCategoryForm(
   }
   const negotiableCheckbox = String(formData.get("negotiable") ?? "") === "on";
 
+  let jobSubcategory: string | undefined;
+  // Jobs: keep listingType ↔ subcategory (توظيف / باحثون عن عمل) aligned.
+  if (isJobs) {
+    const formSubcategory = String(formData.get("subcategory") ?? "").trim();
+    const typed = String(categorySpecs.listingType ?? "").trim();
+    if (isCanonicalJobSubcategory(formSubcategory)) {
+      categorySpecs.listingType = listingTypeFromSubcategory(formSubcategory);
+    } else if (typed === "vacancy" || typed === "seeker") {
+      categorySpecs.listingType = typed;
+    } else if (formSubcategory) {
+      categorySpecs.listingType = listingTypeFromSubcategory(formSubcategory);
+    }
+    if (!categorySpecs.listingType) {
+      errors.listingType = "اختر نوع الإعلان: توظيف أو باحثون عن عمل.";
+    } else {
+      jobSubcategory = subcategoryFromListingType(
+        String(categorySpecs.listingType),
+      );
+    }
+  }
+
   return {
     categorySpecs,
     errors,
     features,
     negotiable: negotiableFromFeatures || negotiableCheckbox || undefined,
+    jobSubcategory,
     title,
     // Prefer the real choice; sentinel only for no-product-condition categories.
     condition: condition ?? "used",

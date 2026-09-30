@@ -427,6 +427,61 @@ export async function updateUserAdmin(
   return updated;
 }
 
+/** Store a pending email; current email remains the login identity until confirm. */
+export async function setPendingEmail(
+  userId: string,
+  pendingEmail: string | null,
+): Promise<UserProfile | null> {
+  const user = await findUserById(userId);
+  if (!user) return null;
+  const nextPending =
+    pendingEmail === null || pendingEmail === undefined
+      ? null
+      : normalizeAuthEmail(pendingEmail);
+  const updated: StoredUser = {
+    ...user,
+    pendingEmail: nextPending,
+  };
+  await saveUser(updated);
+  return toProfile(updated);
+}
+
+/**
+ * Apply a verified email change. Rejects if the new address is taken by another user.
+ * Clears `pendingEmail` and marks the new address verified.
+ */
+export async function applyEmailChange(
+  userId: string,
+  newEmail: string,
+): Promise<
+  | { ok: true; user: UserProfile }
+  | { ok: false; error: "NOT_FOUND" | "EMAIL_TAKEN" | "INVALID_EMAIL" }
+> {
+  const normalized = normalizeAuthEmail(newEmail);
+  if (!normalized || !normalized.includes("@")) {
+    return { ok: false, error: "INVALID_EMAIL" };
+  }
+
+  const user = await findUserById(userId);
+  if (!user) return { ok: false, error: "NOT_FOUND" };
+
+  const taken = await findUserByEmail(normalized);
+  if (taken && taken.id !== userId) {
+    return { ok: false, error: "EMAIL_TAKEN" };
+  }
+
+  const now = new Date().toISOString();
+  const updated: StoredUser = {
+    ...user,
+    email: normalized,
+    normalizedEmail: normalized,
+    emailVerifiedAt: now,
+    pendingEmail: null,
+  };
+  await saveUser(updated);
+  return { ok: true, user: toProfile(updated) };
+}
+
 /** Self-service profile fields (name, phone, city, account type). Email stays identity-bound. */
 export async function updateUserProfile(
   userId: string,
@@ -435,6 +490,8 @@ export async function updateUserProfile(
     phone?: string;
     city?: string;
     accountType?: StoredUser["accountType"];
+    socialLinks?: StoredUser["socialLinks"];
+    socialLinksPublic?: boolean;
     /** Optional; empty string clears merchant display name. */
     businessName?: string;
   },
@@ -446,6 +503,19 @@ export async function updateUserProfile(
   const phone = patch.phone?.trim();
   const city = patch.city?.trim();
   const accountType = patch.accountType;
+  const hasSocialLinksPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "socialLinks",
+  );
+  const hasSocialPublicPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "socialLinksPublic",
+  );
+  const nextSocialLinks = hasSocialLinksPatch
+    ? Object.keys(patch.socialLinks ?? {}).length > 0
+      ? patch.socialLinks
+      : undefined
+    : user.socialLinks;
   const hasBusinessNamePatch = Object.prototype.hasOwnProperty.call(
     patch,
     "businessName",
@@ -470,6 +540,10 @@ export async function updateUserProfile(
     ...(phone !== undefined ? { phone } : {}),
     ...(city ? { city } : {}),
     ...(accountType ? { accountType } : {}),
+    ...(hasSocialLinksPatch ? { socialLinks: nextSocialLinks } : {}),
+    ...(hasSocialPublicPatch
+      ? { socialLinksPublic: Boolean(patch.socialLinksPublic) }
+      : {}),
     ...(hasBusinessNamePatch ? { businessProfile: nextBusinessProfile } : {}),
   };
   await saveUser(updated);

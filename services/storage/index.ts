@@ -18,6 +18,7 @@ export {
   saveCurrentSearch,
   saveLocalListing,
   setSessionUser,
+  syncLocalListingsSellerDisplayName,
   toggleFavorite,
   type FavoriteRecord,
   type SavedSearch,

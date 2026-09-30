@@ -37,6 +37,7 @@ import type {
 } from "@/types/domain/admin";
 import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
 import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
+import { migrateJobsListingFields } from "@/shared/listings/jobs-taxonomy";
 
 let cacheRows: Listing[] | null = null;
 let inflight: Promise<Listing[]> | null = null;
@@ -82,7 +83,20 @@ async function mergeMissingSeedListings(stored: Listing[]): Promise<Listing[]> {
 }
 
 function cloneListings(listings: Listing[]) {
-  return listings.map((listing) => ({ ...listing }));
+  return listings.map((listing) => withEscrowDefault({ ...listing }));
+}
+
+function withEscrowDefault(listing: Listing): Listing {
+  if (listing.escrowAvailable === true || listing.escrowAvailable === false) {
+    return listing;
+  }
+  return {
+    ...listing,
+    escrowAvailable: isPurchasableCategory(
+      listing.categoryId,
+      listing.featureProfile,
+    ),
+  };
 }
 
 async function remapRetiredSubcategoriesOnCatalog(
@@ -161,11 +175,23 @@ async function loadListingsUncached(): Promise<Listing[]> {
         await mergeMissingSeedListings(stored).catch(() => stored),
       );
       const remapped = await remapRetiredSubcategoriesOnCatalog(merged);
+      const jobsMigrated = remapped.map((listing) =>
+        migrateJobsListingFields(listing),
+      );
+      const jobsChanged = jobsMigrated.filter(
+        (listing, index) => listing !== remapped[index],
+      );
       const { listings: repairedRows, repaired } =
-        repairPoorQualityListings(remapped);
-      if (repaired.length > 0) {
+        repairPoorQualityListings(jobsMigrated);
+      const persistBatch = [
+        ...jobsChanged,
+        ...repaired.filter(
+          (listing) => !jobsChanged.some((item) => item.id === listing.id),
+        ),
+      ];
+      if (persistBatch.length > 0) {
         await Promise.all(
-          repaired.map((listing) =>
+          persistBatch.map((listing) =>
             upsertListingRow(listing).catch(() => undefined),
           ),
         ).catch(() => undefined);
@@ -212,7 +238,9 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
   );
   const persisted = await loadListingById(id).catch(() => null);
   if (persisted) {
-    return applyListingViewCount(sanitizeListingMediaFields(persisted));
+    return applyListingViewCount(
+      sanitizeListingMediaFields(withEscrowDefault(persisted)),
+    );
   }
   const listings = await getAllListings();
   const found = listings.find((listing) => listing.id === id || listing.slug === id);
@@ -227,7 +255,7 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
     "@/shared/listings/listing-slug"
   );
   const withMedia = (listing: Listing | undefined | null) =>
-    listing ? syncLiveCatalogMedia([listing])[0] : undefined;
+    listing ? syncLiveCatalogMedia([withEscrowDefault(listing)])[0] : undefined;
 
   const keys = listingSlugLookupKeys(slug);
   const normalized = normalizeListingSlugParam(slug);
@@ -308,21 +336,29 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
     slug = `${slugifyTitle(listing.title) || "listing"}-${suffix}`;
   }
 
-  const next: Listing = sanitizeListingMediaFields({
-    ...listing,
-    slug,
-    postedAt,
-    expiresAt:
-      listing.expiresAt ??
-      computeExpiresAt(postedAt, settings.listingActiveDays),
-    statusHistory: history,
-    rejectionReason:
-      listing.status === "rejected"
-        ? listing.rejectionReason ?? previous?.rejectionReason
-        : listing.status === "active"
-          ? undefined
-          : listing.rejectionReason ?? previous?.rejectionReason,
-  });
+  const next: Listing = sanitizeListingMediaFields(
+    migrateJobsListingFields({
+      ...listing,
+      slug,
+      postedAt,
+      escrowAvailable:
+        listing.escrowAvailable === false
+          ? false
+          : listing.escrowAvailable === true
+            ? true
+            : isPurchasableCategory(listing.categoryId, listing.featureProfile),
+      expiresAt:
+        listing.expiresAt ??
+        computeExpiresAt(postedAt, settings.listingActiveDays),
+      statusHistory: history,
+      rejectionReason:
+        listing.status === "rejected"
+          ? listing.rejectionReason ?? previous?.rejectionReason
+          : listing.status === "active"
+            ? undefined
+            : listing.rejectionReason ?? previous?.rejectionReason,
+    }),
+  );
   if (index >= 0) listings[index] = next;
   else listings.unshift(next);
   await upsertListingRow(next);
@@ -620,6 +656,41 @@ export async function updateSellerListingRating(
   bumpListingsCache();
 }
 
+/**
+ * Keep denormalized seller.name on every listing in sync with the profile
+ * display name (businessName → else fullName) after a rename.
+ */
+export async function updateSellerListingDisplayName(
+  sellerId: string,
+  displayName: string,
+): Promise<number> {
+  const name = displayName.trim();
+  if (!sellerId || !name) return 0;
+
+  const listings = await loadListingsUncached();
+  const touched: Listing[] = [];
+  for (let i = 0; i < listings.length; i += 1) {
+    if (listings[i].seller.id !== sellerId) continue;
+    if (listings[i].seller.name === name) continue;
+    listings[i] = {
+      ...listings[i],
+      seller: {
+        ...listings[i].seller,
+        name,
+      },
+    };
+    touched.push(listings[i]);
+  }
+  if (touched.length === 0) return 0;
+
+  for (const listing of touched) {
+    await upsertListingRow(listing);
+  }
+  cacheRows = null;
+  bumpListingsCache();
+  return touched.length;
+}
+
 export function toAdminListingRecord(listing: Listing): AdminListingRecord {
   const media = sanitizeListingMediaFields(listing);
   return {
@@ -648,6 +719,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     categorySpecs: media.categorySpecs,
     features: media.features,
     negotiable: media.negotiable,
+    views: typeof media.views === "number" ? media.views : 0,
     isDemo: media.isDemo === true || media.source === SHOWCASE_SOURCE,
     isFixture: isConfirmedFixtureListing(media),
     source: media.source,

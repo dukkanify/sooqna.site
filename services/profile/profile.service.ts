@@ -30,5 +30,11 @@ export async function updateUserProfileDraft(
     phone: payload.phone,
     city: payload.city,
     accountType: payload.accountType,
+    ...(payload.socialLinks !== undefined
+      ? { socialLinks: payload.socialLinks }
+      : {}),
+    ...(payload.socialLinksPublic !== undefined
+      ? { socialLinksPublic: payload.socialLinksPublic }
+      : {}),
   });
 }

@@ -11,6 +11,8 @@ type ModalProps = {
   description?: string;
   onClose: () => void;
   open: boolean;
+  /** Default md (~max-w-lg). Use lg for admin desks. */
+  size?: "md" | "lg";
   title: string;
 };
 
@@ -19,6 +21,7 @@ export function Modal({
   description,
   onClose,
   open,
+  size = "md",
   title,
 }: ModalProps) {
   const t = useTx();
@@ -54,7 +57,11 @@ export function Modal({
         onClick={onClose}
         type="button"
       />
-      <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[var(--radius-2xl)] border border-border bg-surface p-6 shadow-[var(--shadow-lg)]">
+      <div
+        className={`relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-[var(--radius-2xl)] border border-border bg-surface p-6 shadow-[var(--shadow-lg)] ${
+          size === "lg" ? "max-w-2xl" : "max-w-lg"
+        }`}
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-black text-ink" id={titleId}>
