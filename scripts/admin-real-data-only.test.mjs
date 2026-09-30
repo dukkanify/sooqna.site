@@ -25,6 +25,7 @@ describe("admin real-data-only contracts", () => {
     assert.match(src, /if \(isLiveCatalogListing\(listing\)\) return false/);
     assert.match(src, /if \(isShowcaseListing\(listing\)\) return false/);
     assert.match(src, /if \(isConfirmedFixtureListing\(listing\)\) return false/);
+    assert.match(src, /MARKETPLACE_LISTING_EXCLUSION_SQL/);
   });
 
   it("listing-stats does not auto-publish catalogs on admin stats read", () => {

@@ -24,7 +24,18 @@ import {
 const TABLE = "marketplace_listings";
 
 /**
- * User-posted marketplace rows for admin KPIs / desks.
+ * SQL predicate: real user-posted marketplace rows only.
+ * Always excludes showcase/demo, confirmed fixtures, and live-mkt seed —
+ * matching {@link isMarketplaceListing}. Use for every public/admin COUNT.
+ */
+export const MARKETPLACE_LISTING_EXCLUSION_SQL = `(
+  NOT ${FIXTURE_LISTING_SQL}
+  AND NOT ${SHOWCASE_LISTING_SQL}
+  AND NOT ${LIVE_MARKETPLACE_LISTING_SQL}
+)`;
+
+/**
+ * User-posted marketplace rows for admin KPIs / desks / public badges.
  * Excludes showcase/demo, confirmed fixtures, and curated live-catalog seed.
  */
 export function isMarketplaceListing(listing: {

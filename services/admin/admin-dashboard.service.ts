@@ -270,9 +270,9 @@ export async function buildAdminDashboard(
         key: "totalListings",
         label: "إجمالي الإعلانات",
         value: listingStats.totalListings,
-        href: "/admin/listings",
+        href: "/admin/listings?status=marketplace",
         icon: "grid",
-        hint: "إعلانات السوق (بدون تجريبي/وهمي)",
+        hint: "كل حالات السوق الحقيقية (بدون live-mkt/تجريبي)",
       },
       {
         key: "activeListings",
@@ -281,7 +281,7 @@ export async function buildAdminDashboard(
         href: "/admin/listings?status=active",
         icon: "check",
         tone: "success",
-        hint: "منشورة للعامة (نشط + محجوز)",
+        hint: "نفس عدّ الموقع العام: نشط + محجوز فقط",
       },
       {
         key: "pendingListings",
