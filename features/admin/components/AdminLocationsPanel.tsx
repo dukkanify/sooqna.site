@@ -1,104 +1,129 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import type { LocationRecord } from "@/types/domain/location";
-import { getSessionUser } from "@/services/storage";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
+import { FormMessage } from "@/shared/ui/FormMessage";
 import { Icon } from "@/shared/ui/Icon";
 import { Input } from "@/shared/ui/Input";
 
-type Draft = {
+type EditDraft = {
   name: string;
   emirate: string;
   sortOrder: string;
 };
 
-function nextOrderFor(list: LocationRecord[]) {
-  if (list.length === 0) return 1;
-  return Math.max(...list.map((item) => item.sortOrder)) + 1;
-}
-
-function emptyDraft(list: LocationRecord[]): Draft {
-  return { name: "", emirate: "", sortOrder: String(nextOrderFor(list)) };
+function emptyDraft(location?: LocationRecord): EditDraft {
+  return {
+    name: location?.name ?? "",
+    emirate: location?.emirate ?? "",
+    sortOrder: location ? String(location.sortOrder) : "",
+  };
 }
 
 export function AdminLocationsPanel() {
   const [locations, setLocations] = useState<LocationRecord[]>([]);
-  const [draft, setDraft] = useState<Draft>({
-    name: "",
-    emirate: "",
-    sortOrder: "1",
-  });
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  const sorted = useMemo(
-    () => [...locations].sort((a, b) => a.sortOrder - b.sortOrder),
-    [locations],
-  );
-
-  const nextSortOrder = nextOrderFor(locations);
+  const [name, setName] = useState("");
+  const [emirate, setEmirate] = useState("");
+  const [sortOrder, setSortOrder] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [createOk, setCreateOk] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<EditDraft>(emptyDraft());
+  const [editError, setEditError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const user = getSessionUser();
-    if (!user || user.role !== "admin") {
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
     adminFetch("/api/admin/locations")
       .then((res) => res.json())
-      .then((data) => {
-        const list = (data.locations ?? []) as LocationRecord[];
-        setLocations(list);
-        setDraft((prev) =>
-          prev.name || prev.emirate ? prev : emptyDraft(list),
-        );
-      })
+      .then((data) => setLocations(data.locations ?? []))
       .catch(() => setLocations([]))
       .finally(() => setLoading(false));
   }, []);
 
-  function startCreate() {
-    setEditingId(null);
-    setDraft(emptyDraft(locations));
-    setError(null);
-    setSuccess(null);
-  }
+  const nextSortSuggestion = useMemo(() => {
+    if (locations.length === 0) return "1";
+    return String(Math.max(...locations.map((row) => row.sortOrder)) + 1);
+  }, [locations]);
+
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return locations;
+    return locations.filter(
+      (location) =>
+        location.name.toLowerCase().includes(q) ||
+        (location.emirate?.toLowerCase().includes(q) ?? false),
+    );
+  }, [locations, searchQuery]);
 
   function startEdit(location: LocationRecord) {
     setEditingId(location.id);
-    setDraft({
-      name: location.name,
-      emirate: location.emirate ?? "",
-      sortOrder: String(location.sortOrder),
-    });
-    setError(null);
-    setSuccess(null);
-    if (typeof document !== "undefined") {
-      document
-        .getElementById("admin-location-form")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setEditDraft(emptyDraft(location));
+    setEditError("");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditDraft(emptyDraft());
+    setEditError("");
+  }
+
+  async function saveEdit(location: LocationRecord) {
+    const nextName = editDraft.name.trim();
+    if (!nextName) {
+      setEditError("اسم المدينة مطلوب.");
+      return;
+    }
+    const nextOrder = Number(editDraft.sortOrder);
+    if (!Number.isFinite(nextOrder) || nextOrder < 1) {
+      setEditError("ترتيب العرض يجب أن يكون رقماً صحيحاً (1 فأعلى).");
+      return;
+    }
+
+    setBusyId(location.id);
+    setEditError("");
+    try {
+      const response = await adminFetch(`/api/admin/locations/${location.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: nextName,
+          emirate: editDraft.emirate.trim() || "",
+          sortOrder: nextOrder,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.location) {
+        setEditError(
+          response.status === 401 || response.status === 403
+            ? "انتهت صلاحية الجلسة. حدّث الصفحة وسجّل الدخول مجدداً."
+            : "تعذر حفظ التعديل. حاول مرة أخرى.",
+        );
+        return;
+      }
+      setLocations((prev) =>
+        prev
+          .map((item) => (item.id === location.id ? data.location : item))
+          .sort((a, b) => a.sortOrder - b.sortOrder),
+      );
+      cancelEdit();
+    } catch {
+      setEditError("تعذر الاتصال بالخادم.");
+    } finally {
+      setBusyId(null);
     }
   }
 
   async function toggleEnabled(location: LocationRecord) {
-    const session = getSessionUser();
-    if (!session) return;
     setBusyId(location.id);
-    setError(null);
     try {
       const response = await adminFetch(`/api/admin/locations/${location.id}`, {
         method: "PATCH",
@@ -106,342 +131,305 @@ export function AdminLocationsPanel() {
         body: JSON.stringify({ enabled: !location.enabled }),
       });
       const data = await response.json();
-      if (!response.ok || !data.location) {
-        setError("تعذّر تحديث حالة الموقع.");
-        return;
+      if (response.ok && data.location) {
+        setLocations((prev) =>
+          prev.map((item) => (item.id === location.id ? data.location : item)),
+        );
       }
-      setLocations((prev) =>
-        prev.map((item) => (item.id === location.id ? data.location : item)),
-      );
-      setSuccess(
-        data.location.enabled
-          ? `تم تفعيل «${data.location.name}».`
-          : `تم تعطيل «${data.location.name}».`,
-      );
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function moveLocation(location: LocationRecord, direction: -1 | 1) {
-    const index = sorted.findIndex((item) => item.id === location.id);
-    const swapWith = sorted[index + direction];
-    if (!swapWith) return;
-    setBusyId(location.id);
-    setError(null);
-    try {
-      const [resA, resB] = await Promise.all([
-        adminFetch(`/api/admin/locations/${location.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: swapWith.sortOrder }),
-        }),
-        adminFetch(`/api/admin/locations/${swapWith.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: location.sortOrder }),
-        }),
-      ]);
-      const dataA = await resA.json();
-      const dataB = await resB.json();
-      if (!resA.ok || !resB.ok) {
-        setError("تعذّر تغيير ترتيب العرض.");
-        return;
-      }
-      setLocations((prev) =>
-        prev.map((item) => {
-          if (item.id === location.id && dataA.location) return dataA.location;
-          if (item.id === swapWith.id && dataB.location) return dataB.location;
-          return item;
-        }),
-      );
     } finally {
       setBusyId(null);
     }
   }
 
   async function handleDelete(location: LocationRecord) {
-    const session = getSessionUser();
-    if (!session) return;
     const ok = window.confirm(
-      `حذف الموقع «${location.name}» نهائياً؟ لن يظهر في البحث أو إضافة الإعلان.`,
+      `حذف الموقع «${location.name}»؟ سيختفي من البحث ونماذج النشر.`,
     );
     if (!ok) return;
     setBusyId(location.id);
-    setError(null);
     try {
       const response = await adminFetch(`/api/admin/locations/${location.id}`, {
         method: "DELETE",
       });
-      if (!response.ok) {
-        setError("تعذّر حذف الموقع.");
-        return;
+      if (response.ok) {
+        setLocations((prev) => prev.filter((item) => item.id !== location.id));
+        if (editingId === location.id) cancelEdit();
       }
-      const nextList = locations.filter((item) => item.id !== location.id);
-      setLocations(nextList);
-      if (editingId === location.id) {
-        setEditingId(null);
-        setDraft(emptyDraft(nextList));
-      }
-      setSuccess(`تم حذف «${location.name}».`);
     } finally {
       setBusyId(null);
     }
   }
 
-  async function handleSave() {
-    const session = getSessionUser();
-    const trimmedName = draft.name.trim();
-    if (!session || !trimmedName) {
-      setError("اسم المدينة مطلوب.");
+  async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextName = name.trim();
+    if (!nextName) {
+      setCreateError("اكتب اسم المدينة.");
+      return;
+    }
+    const orderValue = sortOrder.trim()
+      ? Number(sortOrder)
+      : Number(nextSortSuggestion);
+    if (!Number.isFinite(orderValue) || orderValue < 1) {
+      setCreateError("ترتيب العرض يجب أن يكون رقماً صحيحاً.");
       return;
     }
 
-    const orderRaw = draft.sortOrder.trim();
-    const parsedOrder = orderRaw ? Number(orderRaw) : NaN;
-    if (orderRaw && (!Number.isFinite(parsedOrder) || parsedOrder < 0)) {
-      setError("ترتيب العرض يجب أن يكون رقماً صالحاً.");
-      return;
-    }
-
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
+    setCreating(true);
+    setCreateError("");
+    setCreateOk("");
     try {
-      if (editingId) {
-        const response = await adminFetch(
-          `/api/admin/locations/${editingId}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: trimmedName,
-              emirate: draft.emirate.trim(),
-              ...(Number.isFinite(parsedOrder)
-                ? { sortOrder: parsedOrder }
-                : {}),
-            }),
-          },
-        );
-        const data = await response.json();
-        if (!response.ok || !data.location) {
-          setError("تعذّر حفظ تعديلات الموقع.");
-          return;
-        }
-        const nextList = locations
-          .map((item) => (item.id === editingId ? data.location : item))
-          .sort((a, b) => a.sortOrder - b.sortOrder);
-        setLocations(nextList);
-        setSuccess(`تم تحديث «${data.location.name}».`);
-        setEditingId(null);
-        setDraft(emptyDraft(nextList));
-        return;
-      }
-
       const response = await adminFetch("/api/admin/locations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: trimmedName,
-          emirate: draft.emirate.trim() || undefined,
-          sortOrder: Number.isFinite(parsedOrder)
-            ? parsedOrder
-            : nextSortOrder,
+          name: nextName,
+          emirate: emirate.trim() || undefined,
+          sortOrder: orderValue,
         }),
       });
       const data = await response.json();
       if (!response.ok || !data.location) {
-        setError("تعذّر إضافة الموقع.");
+        setCreateError(
+          response.status === 401 || response.status === 403
+            ? "انتهت صلاحية الجلسة. حدّث الصفحة وسجّل الدخول مجدداً."
+            : "تعذر حفظ الموقع. حاول مرة أخرى.",
+        );
         return;
       }
-      const nextList = [...locations, data.location].sort(
-        (a, b) => a.sortOrder - b.sortOrder,
+      setLocations((prev) =>
+        [...prev, data.location].sort((a, b) => a.sortOrder - b.sortOrder),
       );
-      setLocations(nextList);
-      setSuccess(`تمت إضافة «${data.location.name}».`);
-      setDraft(emptyDraft(nextList));
+      setName("");
+      setEmirate("");
+      setSortOrder("");
+      setCreateOk(`تمت إضافة «${data.location.name}» بنجاح.`);
+    } catch {
+      setCreateError("تعذر الاتصال بالخادم.");
     } finally {
-      setSaving(false);
+      setCreating(false);
     }
   }
-
-  function onFormKeyDown(event: KeyboardEvent) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      void handleSave();
-    }
-  }
-
-  const isEditing = Boolean(editingId);
 
   return (
-    <div className="grid gap-4">
-      <Card className="p-5" id="admin-location-form" variant="flat">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-              <Icon name={isEditing ? "edit" : "plus"} size={16} />
-              {isEditing ? "تعديل موقع / مدينة" : "إضافة موقع / مدينة"}
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              {isEditing
-                ? "عدّل الاسم أو الإمارة أو الترتيب ثم احفظ — التغيير يظهر فوراً في البحث والهيرو وإضافة الإعلان."
-                : "أدخل اسم المدينة واحفظ. المواقع المفعّلة تظهر فوراً في البحث، الهيرو، إضافة الإعلان، والملف الشخصي."}
-            </p>
+    <div className="admin-locations grid gap-4">
+      <Card className="admin-locations__create p-5" variant="flat">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <Icon name="plus" size={16} />
+          إضافة موقع / مدينة
+        </h2>
+        <p className="mt-2 text-sm text-muted">
+          المواقع المفعّلة تظهر فوراً في البحث، الهيرو، إضافة الإعلان، والملف
+          الشخصي.
+        </p>
+        <form className="mt-4 grid gap-3" onSubmit={handleCreate}>
+          <div className="admin-locations__create-grid">
+            <Input
+              label="اسم المدينة"
+              onChange={(event) => {
+                setName(event.target.value);
+                setCreateError("");
+                setCreateOk("");
+              }}
+              placeholder="مثال: دبي"
+              required
+              value={name}
+            />
+            <Input
+              label="الإمارة (اختياري)"
+              onChange={(event) => setEmirate(event.target.value)}
+              placeholder="مثال: دبي"
+              value={emirate}
+            />
+            <Input
+              hint={`اتركه فارغاً لاستخدام ${nextSortSuggestion}`}
+              label="ترتيب العرض"
+              onChange={(event) => setSortOrder(event.target.value)}
+              placeholder={nextSortSuggestion}
+              type="number"
+              value={sortOrder}
+            />
           </div>
-          {isEditing ? (
-            <Button onClick={startCreate} size="sm" variant="ghost">
-              إلغاء التعديل · إضافة جديد
-            </Button>
+          {createError ? (
+            <FormMessage variant="error">{createError}</FormMessage>
           ) : null}
-        </div>
-
-        {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
-        {success ? (
-          <p className="mt-3 text-sm text-emerald-700">{success}</p>
-        ) : null}
-
-        <div
-          className="mt-4 grid gap-3 sm:grid-cols-[1.4fr_1fr_0.7fr_auto]"
-          onKeyDown={onFormKeyDown}
-        >
-          <Input
-            autoFocus={!isEditing}
-            label="اسم المدينة"
-            onChange={(event) =>
-              setDraft((prev) => ({ ...prev, name: event.target.value }))
-            }
-            placeholder="مثال: دبي"
-            value={draft.name}
-          />
-          <Input
-            label="الإمارة (اختياري)"
-            onChange={(event) =>
-              setDraft((prev) => ({ ...prev, emirate: event.target.value }))
-            }
-            placeholder="مثال: دبي"
-            value={draft.emirate}
-          />
-          <Input
-            label="ترتيب العرض"
-            onChange={(event) =>
-              setDraft((prev) => ({ ...prev, sortOrder: event.target.value }))
-            }
-            placeholder={String(nextSortOrder)}
-            type="number"
-            value={draft.sortOrder}
-          />
-          <div className="flex items-end gap-2">
+          {createOk ? (
+            <FormMessage variant="success">{createOk}</FormMessage>
+          ) : null}
+          <div>
             <Button
-              disabled={!draft.name.trim()}
-              loading={saving}
-              onClick={() => void handleSave()}
+              disabled={!name.trim()}
+              loading={creating}
               size="sm"
+              type="submit"
               variant="primary"
             >
-              {isEditing ? "حفظ التعديل" : "إضافة الموقع"}
+              حفظ الموقع
             </Button>
-            {isEditing ? (
-              <Button
-                disabled={saving}
-                onClick={startCreate}
-                size="sm"
-                variant="ghost"
-              >
-                إلغاء
-              </Button>
-            ) : null}
           </div>
+        </form>
+      </Card>
+
+      <Card className="p-4" variant="flat">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[220px] flex-1">
+            <Input
+              label="بحث سريع"
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="ابحث باسم المدينة أو الإمارة..."
+              value={searchQuery}
+            />
+          </div>
+          <p className="pb-2 text-xs text-muted">
+            {loading
+              ? "جاري التحميل..."
+              : `${filtered.length} من ${locations.length} موقع`}
+          </p>
         </div>
       </Card>
 
       {loading ? (
         <Card className="p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">جاري تحميل المواقع…</p>
+          <p className="text-sm text-muted">جاري تحميل المواقع...</p>
         </Card>
-      ) : sorted.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <Card className="p-8 text-center" variant="flat">
           <p className="text-sm text-muted">
-            لا توجد مواقع بعد. أضف أول مدينة من النموذج أعلاه.
+            {locations.length === 0
+              ? "لا توجد مواقع بعد — أضف أول مدينة من النموذج أعلاه."
+              : "لا توجد نتائج مطابقة للبحث."}
           </p>
         </Card>
       ) : (
-        <div className="admin-boxes__grid">
-          {sorted.map((location, index) => {
-            const isRowEditing = editingId === location.id;
+        <div className="admin-locations__grid admin-boxes__grid">
+          {filtered.map((location) => {
+            const isEditing = editingId === location.id;
             return (
               <Card
                 key={location.id}
-                className={`p-5 ${isRowEditing ? "ring-2 ring-primary/40" : ""}`}
+                className={`admin-locations__card p-5${
+                  isEditing ? " admin-locations__card--editing" : ""
+                }`}
                 variant="flat"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-ink">{location.name}</p>
-                    {location.emirate ? (
-                      <p className="mt-1 text-xs text-muted">
-                        {location.emirate}
-                      </p>
-                    ) : (
-                      <p className="mt-1 text-xs text-muted">بدون إمارة</p>
-                    )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant={location.enabled ? "verified" : "rejected"}
-                      >
+                {isEditing ? (
+                  <div className="grid gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-ink">
+                        تعديل الموقع
+                      </h3>
+                      <Badge variant={location.enabled ? "verified" : "rejected"}>
                         {location.enabled ? "مفعّل" : "معطّل"}
                       </Badge>
-                      <span className="text-xs text-muted">
-                        ترتيب {location.sortOrder}
-                      </span>
+                    </div>
+                    <Input
+                      label="اسم المدينة"
+                      onChange={(event) =>
+                        setEditDraft((current) => ({
+                          ...current,
+                          name: event.target.value,
+                        }))
+                      }
+                      value={editDraft.name}
+                    />
+                    <Input
+                      label="الإمارة (اختياري)"
+                      onChange={(event) =>
+                        setEditDraft((current) => ({
+                          ...current,
+                          emirate: event.target.value,
+                        }))
+                      }
+                      value={editDraft.emirate}
+                    />
+                    <Input
+                      label="ترتيب العرض"
+                      onChange={(event) =>
+                        setEditDraft((current) => ({
+                          ...current,
+                          sortOrder: event.target.value,
+                        }))
+                      }
+                      type="number"
+                      value={editDraft.sortOrder}
+                    />
+                    {editError ? (
+                      <FormMessage variant="error">{editError}</FormMessage>
+                    ) : null}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        loading={busyId === location.id}
+                        onClick={() => void saveEdit(location)}
+                        size="sm"
+                        type="button"
+                        variant="primary"
+                      >
+                        حفظ التعديل
+                      </Button>
+                      <Button
+                        onClick={cancelEdit}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        إلغاء
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      disabled={index === 0 || busyId === location.id}
-                      onClick={() => void moveLocation(location, -1)}
-                      size="sm"
-                      title="تحريك لأعلى"
-                      variant="ghost"
-                    >
-                      ↑
-                    </Button>
-                    <Button
-                      disabled={
-                        index === sorted.length - 1 || busyId === location.id
-                      }
-                      onClick={() => void moveLocation(location, 1)}
-                      size="sm"
-                      title="تحريك لأسفل"
-                      variant="ghost"
-                    >
-                      ↓
-                    </Button>
-                    <Button
-                      onClick={() => startEdit(location)}
-                      size="sm"
-                      variant={isRowEditing ? "secondary" : "ghost"}
-                    >
-                      تعديل
-                    </Button>
-                    <Button
-                      loading={busyId === location.id}
-                      onClick={() => void toggleEnabled(location)}
-                      size="sm"
-                      variant={location.enabled ? "ghost" : "secondary"}
-                    >
-                      {location.enabled ? "تعطيل" : "تفعيل"}
-                    </Button>
-                    <Button
-                      loading={busyId === location.id}
-                      onClick={() => void handleDelete(location)}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      حذف
-                    </Button>
+                ) : (
+                  <div className="grid gap-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-ink">{location.name}</p>
+                        {location.emirate ? (
+                          <p className="mt-1 text-xs text-muted">
+                            {location.emirate}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-xs text-muted">بدون إمارة</p>
+                        )}
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant={location.enabled ? "verified" : "rejected"}
+                          >
+                            {location.enabled ? "مفعّل" : "معطّل"}
+                          </Badge>
+                          <span className="text-xs font-semibold text-muted">
+                            ترتيب: {location.sortOrder}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="admin-locations__actions flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => startEdit(location)}
+                        size="sm"
+                        type="button"
+                        variant="secondary"
+                      >
+                        تعديل
+                      </Button>
+                      <Button
+                        loading={busyId === location.id}
+                        onClick={() => void toggleEnabled(location)}
+                        size="sm"
+                        type="button"
+                        variant={location.enabled ? "ghost" : "secondary"}
+                      >
+                        {location.enabled ? "تعطيل" : "تفعيل"}
+                      </Button>
+                      <Button
+                        loading={busyId === location.id}
+                        onClick={() => void handleDelete(location)}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        حذف
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </Card>
             );
           })}
