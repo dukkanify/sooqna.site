@@ -9,6 +9,8 @@ import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ShareButton } from "@/shared/components/ShareButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
+import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
+import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { Badge } from "@/shared/ui/Badge";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
@@ -20,6 +22,8 @@ import {
   isShowcaseListing,
   showsListingCondition,
 } from "@/shared/listings/showcase-listing";
+
+import "./featured-badge.css";
 
 type ListingSummaryProps = {
   category?: Category;
@@ -57,6 +61,9 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
     <LocalizedTree>
     <Card className="marketplace-panel p-6 lg:sticky lg:top-24 lg:self-start">
       <div className="flex flex-wrap items-center gap-2">
+        {isListingFeaturedActive(listing) ? (
+          <FeaturedBadge size="md" />
+        ) : null}
         {isShowcaseListing(listing) ? (
           <Badge variant="demo">إعلان تجريبي</Badge>
         ) : null}

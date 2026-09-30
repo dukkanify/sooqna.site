@@ -44,7 +44,7 @@ export function getListingCardBadges(listing: Listing): ListingCardBadge[] {
     badges.push({ key: "demo", label: "إعلان تجريبي", variant: "demo" });
   }
   if (isListingFeaturedActive(listing)) {
-    badges.push({ key: "featured", label: "مميز", variant: "featured" });
+    badges.push({ key: "featured", label: "مميّز", variant: "featured" });
   }
   if (isListingFresh(listing)) {
     badges.push({ key: "new", label: "جديد", variant: "new" });
