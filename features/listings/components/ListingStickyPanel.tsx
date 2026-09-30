@@ -35,7 +35,11 @@ import {
 } from "@/shared/listings/showcase-listing";
 import { getCarKeySpecRows } from "@/shared/listings/listing-specs";
 import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
+import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
+import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { Badge } from "@/shared/ui/Badge";
+
+import "./featured-badge.css";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { StartChatButton } from "@/features/chat/components/StartChatButton";
@@ -83,6 +87,9 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
     <LocalizedTree>
     <Card className="marketplace-panel w-full min-w-0 p-6">
         <div className="flex flex-wrap items-center gap-2">
+        {isListingFeaturedActive(listing) ? (
+          <FeaturedBadge size="md" />
+        ) : null}
         {isShowcaseListing(listing) ? (
           <Badge variant="demo">إعلان تجريبي</Badge>
         ) : null}
