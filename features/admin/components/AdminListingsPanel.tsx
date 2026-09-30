@@ -199,6 +199,8 @@ export function AdminListingsPanel() {
   const [formKey, setFormKey] = useState(0);
   const [showcaseBusy, setShowcaseBusy] = useState<string | null>(null);
   const [showcaseMessage, setShowcaseMessage] = useState("");
+  const [liveCatalogBusy, setLiveCatalogBusy] = useState(false);
+  const [liveCatalogMessage, setLiveCatalogMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState({
     title: "",
@@ -749,6 +751,34 @@ export function AdminListingsPanel() {
     }
   }
 
+  async function handleRemoveLiveCatalog() {
+    const confirmed = window.confirm(
+      "حذف كل إعلانات كتالوج live-mkt التجريبية من قاعدة البيانات؟ إعلانات المستخدمين لن تُمس.",
+    );
+    if (!confirmed) return;
+    setLiveCatalogBusy(true);
+    setLiveCatalogMessage("");
+    try {
+      const response = await adminFetch("/api/admin/listings/live-catalog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "remove" }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setLiveCatalogMessage("تعذر حذف كتالوج البذور.");
+        return;
+      }
+      if (Array.isArray(data.listings)) setListings(data.listings);
+      const count = typeof data.affected === "number" ? data.affected : 0;
+      setLiveCatalogMessage(`تم حذف ${count} إعلان بذور live-mkt.`);
+    } catch {
+      setLiveCatalogMessage("تعذر الاتصال بالخادم.");
+    } finally {
+      setLiveCatalogBusy(false);
+    }
+  }
+
   return (
     <div className="grid gap-4">
       <div className="admin-listings-toolbar">
@@ -844,6 +874,31 @@ export function AdminListingsPanel() {
         </div>
         {showcaseMessage ? (
           <p className="mt-3 text-xs font-medium text-muted">{showcaseMessage}</p>
+        ) : null}
+      </Card>
+
+      <Card className="p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">كتالوج البذور live-mkt</h2>
+        <p className="mt-2 text-xs leading-6 text-muted">
+          مخزون تجريبي قديم في قاعدة البيانات. الموقع العام يخفيه تلقائياً؛ استخدم
+          الحذف لتنظيف Neon. إعادة النشر تتطلب{" "}
+          <code className="text-[11px]">SOOQNA_LIVE_CATALOG=true</code>.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            loading={liveCatalogBusy}
+            onClick={() => void handleRemoveLiveCatalog()}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            حذف كتالوج live-mkt
+          </Button>
+        </div>
+        {liveCatalogMessage ? (
+          <p className="mt-3 text-xs font-medium text-muted">
+            {liveCatalogMessage}
+          </p>
         ) : null}
       </Card>
 

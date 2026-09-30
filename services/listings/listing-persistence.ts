@@ -19,6 +19,10 @@ import {
   SHOWCASE_SOURCE,
   type ShowcaseCatalogFlag,
 } from "@/shared/listings/showcase-listing";
+import {
+  LIVE_MARKETPLACE_LISTING_SQL,
+  isLiveCatalogListing,
+} from "@/shared/listings/live-catalog-listing";
 import type { Listing } from "@/types";
 
 const TABLE = "marketplace_listings";
@@ -701,6 +705,24 @@ export async function deleteShowcaseListings(): Promise<number> {
   const next = stored.filter(
     (listing) => listing.source !== SHOWCASE_SOURCE && !listing.id.startsWith("showcase-"),
   );
+  const removed = stored.length - next.length;
+  if (removed > 0) await writeJsonFile(next);
+  return removed;
+}
+
+/** Hard-delete curated live-mkt seed rows (not real user listings). */
+export async function deleteLiveMarketplaceListings(): Promise<number> {
+  if (await ensureListingsTable()) {
+    const pool = await getOptionalPostgresPool();
+    if (!pool) throw new Error("LISTINGS_STORE_UNAVAILABLE");
+    const result = await pool.query(
+      `DELETE FROM ${TABLE} WHERE ${LIVE_MARKETPLACE_LISTING_SQL}`,
+    );
+    return Number((result as { rowCount?: number }).rowCount) || 0;
+  }
+
+  const stored = (await readJsonFile()) ?? [];
+  const next = stored.filter((listing) => !isLiveCatalogListing(listing));
   const removed = stored.length - next.length;
   if (removed > 0) await writeJsonFile(next);
   return removed;

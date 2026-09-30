@@ -20,15 +20,16 @@ export function isLiveCatalogListing(listing: LiveCatalogListingRef): boolean {
 /**
  * Whether curated live-catalog seed may be published / shown publicly.
  * - Explicit `SOOQNA_LIVE_CATALOG=true|false` always wins.
- * - Production defaults OFF (real marketplace only).
- * - Local / Preview defaults ON for demos unless disabled.
+ * - Vercel Production AND Preview default OFF — Preview shares production Neon,
+ *   so auto-seeding on Preview would re-inject live-mkt rows into the live DB.
+ * - Local development defaults ON for demos unless disabled.
  */
 export function isLiveCatalogEnabled(): boolean {
   if (process.env.SOOQNA_LIVE_CATALOG === "true") return true;
   if (process.env.SOOQNA_LIVE_CATALOG === "false") return false;
-  if (process.env.VERCEL_ENV === "production") return false;
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview") {
+  if (process.env.VERCEL_ENV === "production" || process.env.VERCEL_ENV === "preview") {
     return false;
   }
+  if (process.env.NODE_ENV === "production") return false;
   return true;
 }
