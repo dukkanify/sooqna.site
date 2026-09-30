@@ -31,6 +31,11 @@ import {
   SHOWCASE_SOURCE,
   isShowcaseListing,
 } from "@/shared/listings/showcase-listing";
+import {
+  LIVE_MARKETPLACE_LISTING_SQL,
+  isLiveCatalogEnabled,
+  isLiveCatalogListing,
+} from "@/shared/listings/live-catalog-listing";
 import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
 import {
@@ -39,6 +44,16 @@ import {
 } from "@/services/listings/listing-views-store";
 
 const TABLE = "marketplace_listings";
+
+/** SQL fragments that hide demo/seed rows from public marketplace reads. */
+function publicCatalogExclusionSql(): string[] {
+  const parts = [`NOT ${FIXTURE_LISTING_SQL}`, `NOT ${SHOWCASE_LISTING_SQL}`];
+  // Production defaults live catalog OFF — hide rows already seeded into Neon.
+  if (!isLiveCatalogEnabled()) {
+    parts.push(`NOT ${LIVE_MARKETPLACE_LISTING_SQL}`);
+  }
+  return parts;
+}
 
 export type ListingQuerySlim = "card" | "suggest" | "full";
 
@@ -139,7 +154,15 @@ function shouldExcludeFixtures(query: ListingQuery): boolean {
 }
 
 function isHiddenFromPublicCatalog(listing: Listing): boolean {
-  return isConfirmedFixtureListing(listing) || isShowcaseListing(listing);
+  if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
+    return true;
+  }
+  // When live catalog is disabled (production default), hide seed inventory
+  // that may already exist in the shared Neon DB.
+  if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
+    return true;
+  }
+  return false;
 }
 
 async function ensureCatalogsForPublicRead(): Promise<void> {
@@ -246,8 +269,7 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
     );
   }
   if (shouldExcludeFixtures(query)) {
-    where.push(`NOT ${FIXTURE_LISTING_SQL}`);
-    where.push(`NOT ${SHOWCASE_LISTING_SQL}`);
+    where.push(...publicCatalogExclusionSql());
   }
 
   if (query.query?.trim()) {
@@ -408,8 +430,7 @@ function countWhere(
     }
   }
   if (includeFixtures !== true) {
-    where.push(`NOT ${FIXTURE_LISTING_SQL}`);
-    where.push(`NOT ${SHOWCASE_LISTING_SQL}`);
+    where.push(...publicCatalogExclusionSql());
   }
   return {
     sql: where.length > 0 ? ` WHERE ${where.join(" AND ")}` : "",
@@ -503,7 +524,7 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
         const result = await pool.query(
           `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
          FROM ${TABLE}
-         WHERE status IN ('active', 'reserved') AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
+         WHERE status IN ('active', 'reserved') AND ${publicCatalogExclusionSql().join(" AND ")}`,
         );
         for (const row of result.rows) {
           if (typeof row.emirate === "string") add(row.emirate);
@@ -533,7 +554,7 @@ export async function countActivePublicListings(): Promise<number> {
       if (pool) {
         const result = await pool.query(
           `SELECT COUNT(*)::int AS c FROM ${TABLE}
-         WHERE status IN ('active', 'reserved') AND NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}`,
+         WHERE status IN ('active', 'reserved') AND ${publicCatalogExclusionSql().join(" AND ")}`,
         );
         return Number(result.rows[0]?.c) || 0;
       }
@@ -559,7 +580,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
         const result = await pool.query(
           `SELECT seller_id, COUNT(*)::int AS c
            FROM ${TABLE}
-           WHERE NOT ${FIXTURE_LISTING_SQL} AND NOT ${SHOWCASE_LISTING_SQL}
+           WHERE ${publicCatalogExclusionSql().join(" AND ")}
            GROUP BY seller_id`,
         );
         for (const row of result.rows) {

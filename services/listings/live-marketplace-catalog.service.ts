@@ -7,9 +7,10 @@ import {
   upsertListingRow,
 } from "@/services/listings/listing-persistence";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
+import { isLiveCatalogEnabled } from "@/shared/listings/live-catalog-listing";
 
 const LIVE_CATALOG_VERSION_KEY = "live_marketplace_catalog_version";
-const LIVE_CATALOG_VERSION = "v8-car-specs-hydrate";
+const LIVE_CATALOG_VERSION = "v9-relative-posted-at";
 
 let ensureInflight: Promise<number> | null = null;
 
@@ -17,9 +18,10 @@ let ensureInflight: Promise<number> | null = null;
  * Publish the professional live marketplace listings.
  * Inserts missing rows, and force-refreshes when catalog version bumps.
  * Never resurrects owner-deleted listing ids.
+ * Production is opt-in via SOOQNA_LIVE_CATALOG=true.
  */
 export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
-  if (process.env.SOOQNA_LIVE_CATALOG === "false") return 0;
+  if (!isLiveCatalogEnabled()) return 0;
   if (ensureInflight) return ensureInflight;
 
   ensureInflight = (async () => {

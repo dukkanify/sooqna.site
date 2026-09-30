@@ -112,12 +112,15 @@ export function isProductionLike(): boolean {
 
 /**
  * Server-side guard for forced/automatic mock checkout.
- * Never allow silent mock on production-like hosts unless ALLOW_MOCK_CHECKOUT=true
- * (emergency/preview only — do not set on sooqnauae.com).
+ * Opt-in only via ALLOW_MOCK_CHECKOUT=true — never auto-enable on Preview
+ * (Preview often shares the production Neon DB).
+ * Do not set ALLOW_MOCK_CHECKOUT on sooqnauae.com production.
  */
 export function isMockCheckoutAllowed(): boolean {
   if (process.env.ALLOW_MOCK_CHECKOUT === "true") return true;
-  if (process.env.VERCEL_ENV === "preview") return true;
+  if (process.env.VERCEL_ENV === "production" || process.env.VERCEL_ENV === "preview") {
+    return false;
+  }
   if (isProductionLike()) return false;
   return process.env.NODE_ENV !== "production";
 }

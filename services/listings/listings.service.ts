@@ -4,6 +4,10 @@ import { queryListings, countMatchingListings } from "@/services/listings/listin
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 import {
+  isLiveCatalogEnabled,
+  isLiveCatalogListing,
+} from "@/shared/listings/live-catalog-listing";
+import {
   getAllListings,
   getListingBySlug as getStoredListingBySlug,
 } from "@/services/listings/listing-store";
@@ -44,7 +48,9 @@ export async function getListingBySlug(
   if (!listing) return undefined;
   if (
     options?.includeFixtures !== true &&
-    (isConfirmedFixtureListing(listing) || isShowcaseListing(listing))
+    (isConfirmedFixtureListing(listing) ||
+      isShowcaseListing(listing) ||
+      (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)))
   ) {
     return undefined;
   }
