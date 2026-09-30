@@ -14,12 +14,13 @@ import {
 } from "@/services/quote-requests/quote-request-store";
 import {
   getAllViewingBookings,
+  proposeViewingModification,
   updateViewingBookingStatus,
 } from "@/services/viewing-bookings/viewing-booking-store";
 import type { ActivityKind } from "@/types/domain/activity";
 import type { JobApplication } from "@/types/domain/job-application";
 import type { QuoteRequest } from "@/types/domain/quote-request";
-import type { ViewingBooking } from "@/types/domain/viewing-booking";
+import type { ViewingBookingStatus } from "@/types/domain/viewing-booking";
 
 const JOB_STATUSES: JobApplication["status"][] = [
   "submitted",
@@ -30,9 +31,10 @@ const JOB_STATUSES: JobApplication["status"][] = [
   "rejected",
 ];
 
-const VIEWING_STATUSES: ViewingBooking["status"][] = [
+const VIEWING_STATUSES: ViewingBookingStatus[] = [
   "pending",
   "confirmed",
+  "modification_proposed",
   "cancelled",
   "completed",
 ];
@@ -52,16 +54,14 @@ export type ActivityStatusUpdateInput = {
   actorId: string;
   actorName: string;
   actorRole: "admin" | "seller" | "user";
+  proposedDate?: string;
+  proposedTime?: string;
+  proposedNote?: string;
 };
 
 function canManageJob(application: JobApplication, actorId: string, role: string): boolean {
   if (role === "admin") return true;
   return application.employerId === actorId;
-}
-
-function canManageViewing(booking: ViewingBooking, actorId: string, role: string): boolean {
-  if (role === "admin") return true;
-  return booking.sellerId === actorId;
 }
 
 function canManageQuote(request: QuoteRequest, actorId: string, role: string): boolean {
@@ -98,18 +98,52 @@ export async function updateActivityStatus(input: ActivityStatusUpdateInput) {
   }
 
   if (input.kind === "viewing_booking") {
-    if (!VIEWING_STATUSES.includes(input.status as ViewingBooking["status"])) {
+    if (!VIEWING_STATUSES.includes(input.status as ViewingBookingStatus)) {
       throw new Error("INVALID_STATUS");
     }
     const all = await getAllViewingBookings();
     const current = all.find((item) => item.id === input.id);
     if (!current) throw new Error("NOT_FOUND");
-    if (!canManageViewing(current, input.actorId, input.actorRole)) throw new Error("FORBIDDEN");
+
+    const isSeller =
+      input.actorRole === "admin" || current.sellerId === input.actorId;
+    const isBuyer = current.buyerId === input.actorId;
+    if (!isSeller && !isBuyer) throw new Error("FORBIDDEN");
+
+    const nextStatus = input.status as ViewingBookingStatus;
+
+    // Seller proposes a new slot.
+    if (nextStatus === "modification_proposed") {
+      if (!isSeller) throw new Error("FORBIDDEN");
+      if (!input.proposedDate?.trim() || !input.proposedTime?.trim()) {
+        throw new Error("INVALID_PROPOSAL");
+      }
+      const previous = current.status;
+      const updated = await proposeViewingModification({
+        id: input.id,
+        proposedDate: input.proposedDate.trim(),
+        proposedTime: input.proposedTime.trim(),
+        proposedNote: input.proposedNote,
+        proposedBy: input.actorRole === "admin" ? "admin" : "seller",
+      });
+      if (!updated) throw new Error("NOT_FOUND");
+      await notifyViewingStatusChange(updated, previous);
+      return updated;
+    }
+
+    // Buyer may confirm a proposed modification or cancel their request.
+    if (!isSeller) {
+      const buyerAllowed =
+        (nextStatus === "confirmed" && current.status === "modification_proposed") ||
+        (nextStatus === "cancelled" &&
+          (current.status === "pending" ||
+            current.status === "modification_proposed" ||
+            current.status === "confirmed"));
+      if (!buyerAllowed) throw new Error("FORBIDDEN");
+    }
+
     const previous = current.status;
-    const updated = await updateViewingBookingStatus(
-      input.id,
-      input.status as ViewingBooking["status"],
-    );
+    const updated = await updateViewingBookingStatus(input.id, nextStatus);
     if (!updated) throw new Error("NOT_FOUND");
     await notifyViewingStatusChange(updated, previous);
     if (input.actorRole === "admin") {

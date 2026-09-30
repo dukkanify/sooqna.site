@@ -7,6 +7,7 @@ import { ProfileActivityPanel } from "@/features/profile/components/ProfileActiv
 import { ProfileHashScroll } from "@/features/profile/components/ProfileHashScroll";
 import { SecuritySettingsPanel } from "@/features/profile/components/SecuritySettingsPanel";
 import { ProfileForm } from "@/features/profile/components/ProfileForm";
+import { ViewingAvailabilityPanel } from "@/features/profile/components/ViewingAvailabilityPanel";
 import { Card } from "@/shared/ui/Card";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
@@ -56,6 +57,15 @@ export default async function ProfilePage() {
             </p>
             <div className="mt-4">
               <FollowedSellersPanel />
+            </div>
+          </Card>
+          <Card className="mt-6 scroll-mt-24 p-5" id="viewing-availability" variant="flat">
+            <h2 className="text-sm font-semibold text-ink">أوقات المعاينة المتاحة</h2>
+            <p className="mt-1 text-xs leading-6 text-muted">
+              للمعلنين العقاريين — حدّد الأيام والساعات التي تقبل فيها طلبات المعاينة.
+            </p>
+            <div className="mt-4">
+              <ViewingAvailabilityPanel />
             </div>
           </Card>
           <ProfileActivityPanel userId={user.id} />

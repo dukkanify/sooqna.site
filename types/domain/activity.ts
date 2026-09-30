@@ -28,6 +28,15 @@ export type ActivityRecord = {
   href: string;
   createdAt: string;
   updatedAt: string;
+  /** Viewing-request detail (shown instead of listing-only summary). */
+  viewingDate?: string;
+  viewingTime?: string;
+  viewingPhone?: string;
+  viewingVisitors?: number;
+  viewingNotes?: string;
+  proposedDate?: string;
+  proposedTime?: string;
+  proposedNote?: string;
 };
 
 export type ActivitySummary = {

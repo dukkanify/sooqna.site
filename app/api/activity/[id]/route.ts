@@ -16,6 +16,9 @@ const schema = z.object({
     "service_booking",
   ]),
   status: z.string().min(1),
+  proposedDate: z.string().trim().min(1).optional(),
+  proposedTime: z.string().trim().min(1).optional(),
+  proposedNote: z.string().trim().max(500).optional(),
 });
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -38,7 +41,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       status: parsed.data.status,
       actorId: user.id,
       actorName: user.fullName,
-      actorRole: user.role === "admin" ? "admin" : "seller",
+      actorRole:
+        user.role === "admin"
+          ? "admin"
+          : parsed.data.kind === "viewing_booking"
+            ? "user"
+            : "seller",
+      proposedDate: parsed.data.proposedDate,
+      proposedTime: parsed.data.proposedTime,
+      proposedNote: parsed.data.proposedNote,
     });
     return NextResponse.json({ record });
   } catch (error) {

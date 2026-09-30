@@ -74,6 +74,7 @@ export async function POST(request: Request) {
   const available = await getAvailableSlotsForListing(
     payload.listingId,
     payload.date,
+    payload.sellerId,
   );
   if (!available.includes(payload.time)) {
     return NextResponse.json({ error: "SLOT_UNAVAILABLE" }, { status: 409 });
@@ -91,28 +92,21 @@ export async function POST(request: Request) {
 
   const booking = await createViewingBooking(payload);
 
-  const listingHref = listing
-    ? listing.id.startsWith("local-")
-      ? `/listings/local/${listing.id}`
-      : `/listings/${listing.slug}`
-    : payload.listingSlug
-      ? `/listings/${payload.listingSlug}`
-      : "/search";
-
+  const appointmentDetail = `الموعد: ${payload.date} ${payload.time} — الزوار: ${payload.visitors} — التواصل: ${payload.phone}`;
   await Promise.all([
     createNotification({
       userId: payload.buyerId,
       type: "viewing_booking",
-      title: "تم تأكيد حجز المعاينة",
-      body: `معاينة «${payload.listingTitle}» بتاريخ ${payload.date} الساعة ${payload.time}.`,
-      href: listingHref,
+      title: "طلب معاينة — بانتظار الرد",
+      body: `معاينة «${payload.listingTitle}»: ${appointmentDetail}.`,
+      href: "/profile?kind=viewing_booking&scope=mine#activity",
     }),
     createNotification({
       userId: payload.sellerId,
       type: "viewing_booking",
-      title: "حجز معاينة جديد",
-      body: `${payload.buyerName} حجز معاينة لـ «${payload.listingTitle}».`,
-      href: listingHref,
+      title: "طلب معاينة جديد — بانتظار الرد",
+      body: `${payload.buyerName} طلب معاينة لـ «${payload.listingTitle}». ${appointmentDetail}.`,
+      href: "/profile?kind=viewing_booking&scope=received#activity",
     }),
   ]);
 

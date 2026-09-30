@@ -12,6 +12,7 @@ import { useToast } from "@/shared/components/ToastProvider";
 import { Button } from "@/shared/ui/Button";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { Icon } from "@/shared/ui/Icon";
+import { ViewingRequestActions } from "@/features/activity/components/ViewingRequestActions";
 
 type ActivityFeedProps = {
   initialScope?: ActivityScope | "all";
@@ -34,11 +35,7 @@ const STATUS_OPTIONS: Partial<Record<ActivityKind, { value: string; label: strin
     { value: "accepted", label: "مقبول" },
     { value: "rejected", label: "مرفوض" },
   ],
-  viewing_booking: [
-    { value: "confirmed", label: "تأكيد" },
-    { value: "cancelled", label: "إلغاء" },
-    { value: "completed", label: "إكمال" },
-  ],
+  viewing_booking: [],
   quote_request: [
     { value: "quoted", label: "إرسال عرض" },
     { value: "accepted", label: "قبول" },
@@ -115,14 +112,26 @@ export function ActivityFeed({
     return () => window.clearTimeout(timeoutId);
   }, [load]);
 
-  async function patchStatus(item: ActivityRecord, status: string) {
+  async function patchStatus(
+    item: ActivityRecord,
+    status: string,
+    extra?: {
+      proposedDate?: string;
+      proposedTime?: string;
+      proposedNote?: string;
+    },
+  ) {
     setBusyId(item.id);
     try {
       const response = await fetch(`/api/activity/${encodeURIComponent(item.id)}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: item.kind, status }),
+        body: JSON.stringify({
+          kind: item.kind,
+          status,
+          ...extra,
+        }),
       });
       if (!response.ok) {
         showToast("تعذر تحديث الحالة", "error");
@@ -226,6 +235,13 @@ export function ActivityFeed({
                     ))}
                   </div>
                 </div>
+                {item.kind === "viewing_booking" ? (
+                  <ViewingRequestActions
+                    busy={busyId === item.id}
+                    item={item}
+                    onPatch={(status, extra) => patchStatus(item, status, extra)}
+                  />
+                ) : null}
               </li>
             );
           })}

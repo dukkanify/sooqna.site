@@ -83,17 +83,51 @@ export async function notifyViewingStatusChange(
 ): Promise<void> {
   if (booking.status === previousStatus) return;
   const label = viewingStatusLabel(booking.status);
-  const href = booking.listingSlug ? `/listings/${booking.listingSlug}` : "/profile#activity";
+  const href = "/profile?kind=viewing_booking#activity";
+  const slot =
+    booking.status === "modification_proposed" &&
+    booking.proposedDate &&
+    booking.proposedTime
+      ? `${booking.proposedDate} ${booking.proposedTime}`
+      : `${booking.date} ${booking.time}`;
+  const details = [
+    `الموعد: ${slot}`,
+    `عدد الزوار: ${booking.visitors}`,
+    `التواصل: ${booking.phone}`,
+    booking.proposedNote ? `ملاحظة: ${booking.proposedNote}` : "",
+    booking.notes ? `ملاحظات الطلب: ${booking.notes}` : "",
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
   await notifyActivityEvent({
     kind: "viewing_booking",
     recipientId: booking.buyerId,
     recipientEmail: booking.buyerEmail,
-    title: "تحديث حجز المعاينة",
-    body: `حالة حجز «${booking.listingTitle}» (${booking.date} ${booking.time}): ${label}.`,
+    title: `تحديث معاينة — ${label}`,
+    body: `طلب معاينة «${booking.listingTitle}»: ${label}. ${details}`,
     href,
-    sendEmail: ["confirmed", "cancelled", "completed"].includes(booking.status),
+    sendEmail: [
+      "confirmed",
+      "cancelled",
+      "completed",
+      "modification_proposed",
+    ].includes(booking.status),
   });
+
+  // Also notify the advertiser when the buyer accepts a proposed change or cancels.
+  if (
+    previousStatus === "modification_proposed" &&
+    (booking.status === "confirmed" || booking.status === "cancelled")
+  ) {
+    await notifyActivityEvent({
+      kind: "viewing_booking",
+      recipientId: booking.sellerId,
+      title: `رد على تعديل المعاينة — ${label}`,
+      body: `«${booking.listingTitle}» (${slot}): ${label}.`,
+      href: "/profile?kind=viewing_booking&scope=received#activity",
+    });
+  }
 }
 
 export async function notifyQuoteStatusChange(

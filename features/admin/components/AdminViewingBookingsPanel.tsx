@@ -12,7 +12,11 @@ const ADMIN_ACTIONS: Partial<
   Record<ViewingBooking["status"], { value: ViewingBooking["status"]; label: string }[]>
 > = {
   pending: [
-    { value: "confirmed", label: "تأكيد" },
+    { value: "confirmed", label: "اعتماد" },
+    { value: "cancelled", label: "إلغاء" },
+  ],
+  modification_proposed: [
+    { value: "confirmed", label: "اعتماد المقترح" },
     { value: "cancelled", label: "إلغاء" },
   ],
   confirmed: [
@@ -27,7 +31,11 @@ function statusChipClass(status: ViewingBooking["status"]): string {
   if (status === "confirmed" || status === "completed") {
     return " admin-ops__status-chip--ok";
   }
-  if (status === "pending" || status === "cancelled") {
+  if (
+    status === "pending" ||
+    status === "cancelled" ||
+    status === "modification_proposed"
+  ) {
     return " admin-ops__status-chip--warn";
   }
   return "";

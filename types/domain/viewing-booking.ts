@@ -1,3 +1,10 @@
+export type ViewingBookingStatus =
+  | "pending"
+  | "confirmed"
+  | "modification_proposed"
+  | "cancelled"
+  | "completed";
+
 export type ViewingBooking = {
   id: string;
   listingId: string;
@@ -13,7 +20,24 @@ export type ViewingBooking = {
   notes?: string;
   sellerId: string;
   sellerName: string;
-  status: "pending" | "confirmed" | "cancelled" | "completed";
+  status: ViewingBookingStatus;
+  /** Seller-proposed alternative slot (when status is modification_proposed). */
+  proposedDate?: string;
+  proposedTime?: string;
+  proposedNote?: string;
+  proposedBy?: "seller" | "buyer" | "admin";
   createdAt: string;
   updatedAt?: string;
+};
+
+/** Per-seller weekly availability for property viewings. */
+export type SellerViewingAvailability = {
+  /** Same as sellerId — required by durable collection store. */
+  id: string;
+  sellerId: string;
+  /** ISO weekdays 0=Sun … 6=Sat that accept bookings. Empty = all days. */
+  weekdays: number[];
+  /** Allowed time slots (HH:mm). Empty = platform default slots. */
+  timeSlots: string[];
+  updatedAt: string;
 };
