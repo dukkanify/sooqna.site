@@ -1,9 +1,12 @@
 import { Badge } from "@/shared/ui/Badge";
+import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
 import {
   getListingCardBadges,
   type ListingCardBadge,
 } from "@/features/listings/components/listing-card-badges";
 import type { Listing } from "@/types";
+
+import "./featured-badge.css";
 
 type ListingCardBadgesProps = {
   className?: string;
@@ -12,6 +15,10 @@ type ListingCardBadgesProps = {
   badges?: ListingCardBadge[];
   /** Use static flow instead of absolute overlay (gallery/detail). */
   inline?: boolean;
+  /** Larger featured marker on listing gallery. */
+  featuredSize?: "sm" | "md";
+  /** Stronger shadow when badges sit on photos (gallery / cards). */
+  onMedia?: boolean;
 };
 
 export function ListingCardBadges({
@@ -19,25 +26,37 @@ export function ListingCardBadges({
   listing,
   badges,
   inline = false,
+  featuredSize = "sm",
+  onMedia,
 }: ListingCardBadgesProps) {
   const items = badges ?? getListingCardBadges(listing);
   if (items.length === 0) return null;
 
+  const overMedia = onMedia ?? !inline;
+
   const layoutClass = inline
-    ? "relative flex flex-wrap gap-1.5"
-    : "pointer-events-none absolute start-2.5 top-2.5 z-10 flex max-w-[calc(100%-4.5rem)] flex-wrap gap-1";
+    ? "relative flex flex-wrap items-center gap-1.5"
+    : "pointer-events-none absolute start-2.5 top-2.5 z-10 flex max-w-[calc(100%-4.5rem)] flex-wrap items-center gap-1.5";
 
   return (
     <div className={`${layoutClass} ${className}`.trim()}>
-      {items.map((badge) => (
-        <Badge
-          key={badge.key}
-          className="!rounded-full !px-2 !py-0.5 !text-[0.65rem] !font-extrabold shadow-[0_2px_8px_rgb(15_23_42/18%)] backdrop-blur-[2px]"
-          variant={badge.variant}
-        >
-          {badge.label}
-        </Badge>
-      ))}
+      {items.map((badge) =>
+        badge.key === "featured" ? (
+          <FeaturedBadge
+            key={badge.key}
+            onMedia={overMedia}
+            size={featuredSize}
+          />
+        ) : (
+          <Badge
+            key={badge.key}
+            className="rounded-md px-2 py-0.5 text-[0.7rem] font-bold shadow-[0_2px_8px_rgb(15_23_42/14%)]"
+            variant={badge.variant}
+          >
+            {badge.label}
+          </Badge>
+        ),
+      )}
     </div>
   );
 }
