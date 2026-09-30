@@ -5,7 +5,7 @@ export default function AdminLocationsPage() {
   return (
     <AdminShell
       activePath="/admin/locations"
-      description="إدارة المدن والمواقع المعروضة في السوق."
+      description="أضف مدينة بسرعة، وعدّل الاسم أو الإمارة أو الترتيب من البطاقة مباشرة."
       title="المواقع / المدن"
     >
       <AdminLocationsPanel />
