@@ -36,6 +36,10 @@ import {
   isLiveCatalogEnabled,
   isLiveCatalogListing,
 } from "@/shared/listings/live-catalog-listing";
+import {
+  MARKETPLACE_LISTING_EXCLUSION_SQL,
+  isMarketplaceListing,
+} from "@/services/listings/listing-stats";
 import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
 import {
@@ -45,14 +49,21 @@ import {
 
 const TABLE = "marketplace_listings";
 
-/** SQL fragments that hide demo/seed rows from public marketplace reads. */
+/**
+ * Browse/search exclusion: fixtures + showcase always; live-mkt when catalog OFF.
+ * Prefer {@link marketplaceCountExclusionSql} for every COUNT / badge total.
+ */
 function publicCatalogExclusionSql(): string[] {
   const parts = [`NOT ${FIXTURE_LISTING_SQL}`, `NOT ${SHOWCASE_LISTING_SQL}`];
-  // Production defaults live catalog OFF — hide rows already seeded into Neon.
   if (!isLiveCatalogEnabled()) {
     parts.push(`NOT ${LIVE_MARKETPLACE_LISTING_SQL}`);
   }
   return parts;
+}
+
+/** Count/badge exclusion — always matches isMarketplaceListing (no live-mkt). */
+function marketplaceCountExclusionSql(): string {
+  return MARKETPLACE_LISTING_EXCLUSION_SQL;
 }
 
 export type ListingQuerySlim = "card" | "suggest" | "full";
@@ -430,7 +441,8 @@ function countWhere(
     }
   }
   if (includeFixtures !== true) {
-    where.push(...publicCatalogExclusionSql());
+    // Counts must match admin KPIs — always exclude live-mkt seed.
+    where.push(marketplaceCountExclusionSql());
   }
   return {
     sql: where.length > 0 ? ` WHERE ${where.join(" AND ")}` : "",
@@ -479,13 +491,13 @@ export async function countListingsByCategory(
   const stored = await loadPersistedListings();
   for (const listing of stored) {
     if (!statusMatches(listing.status, status)) continue;
-    if (!includeFixtures && isHiddenFromPublicCatalog(listing)) continue;
+    if (!includeFixtures && !isMarketplaceListing(listing)) continue;
     counts.set(listing.categoryId, (counts.get(listing.categoryId) ?? 0) + 1);
   }
   return counts;
 }
 
-/** Publicly visible counts — active + reserved, excluding fixtures/showcase. */
+/** Public badge counts — active + reserved real marketplace only (matches admin KPI). */
 export async function countActiveListingsByCategory(): Promise<Map<string, number>> {
   return countListingsByCategory(["active", "reserved"]);
 }
@@ -524,7 +536,7 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
         const result = await pool.query(
           `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
          FROM ${TABLE}
-         WHERE status IN ('active', 'reserved') AND ${publicCatalogExclusionSql().join(" AND ")}`,
+         WHERE status IN ('active', 'reserved') AND ${marketplaceCountExclusionSql()}`,
         );
         for (const row of result.rows) {
           if (typeof row.emirate === "string") add(row.emirate);
@@ -540,12 +552,16 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
   const stored = await loadPersistedListings();
   for (const listing of stored) {
     if (listing.status !== "active" && listing.status !== "reserved") continue;
-    if (isHiddenFromPublicCatalog(listing)) continue;
+    if (!isMarketplaceListing(listing)) continue;
     add(listing.emirate ?? listing.city);
   }
   return counts;
 }
 
+/**
+ * Public “active marketplace” total — same definition as admin
+ * `getMarketplaceListingStats().activeListings` (active+reserved, no seeds).
+ */
 export async function countActivePublicListings(): Promise<number> {
   await ensureCatalogsForPublicRead();
   try {
@@ -554,7 +570,7 @@ export async function countActivePublicListings(): Promise<number> {
       if (pool) {
         const result = await pool.query(
           `SELECT COUNT(*)::int AS c FROM ${TABLE}
-         WHERE status IN ('active', 'reserved') AND ${publicCatalogExclusionSql().join(" AND ")}`,
+         WHERE status IN ('active', 'reserved') AND ${marketplaceCountExclusionSql()}`,
         );
         return Number(result.rows[0]?.c) || 0;
       }
@@ -567,7 +583,7 @@ export async function countActivePublicListings(): Promise<number> {
   return stored.filter(
     (listing) =>
       (listing.status === "active" || listing.status === "reserved") &&
-        !isHiddenFromPublicCatalog(listing),
+      isMarketplaceListing(listing),
   ).length;
 }
 
@@ -580,7 +596,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
         const result = await pool.query(
           `SELECT seller_id, COUNT(*)::int AS c
            FROM ${TABLE}
-           WHERE ${publicCatalogExclusionSql().join(" AND ")}
+           WHERE ${marketplaceCountExclusionSql()}
            GROUP BY seller_id`,
         );
         for (const row of result.rows) {
@@ -595,7 +611,7 @@ export async function countListingsBySeller(): Promise<Map<string, number>> {
   }
   const stored = await loadPersistedListings();
   for (const listing of stored) {
-    if (isHiddenFromPublicCatalog(listing)) continue;
+    if (!isMarketplaceListing(listing)) continue;
     counts.set(listing.seller.id, (counts.get(listing.seller.id) ?? 0) + 1);
   }
   return counts;

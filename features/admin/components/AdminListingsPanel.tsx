@@ -41,7 +41,7 @@ import { useLocale } from "@/shared/i18n/useLocale";
 
 const statusFilterOptions: { label: string; value: string }[] = [
   { label: "إعلانات السوق", value: "marketplace" },
-  { label: "الكل (مع التجريبي)", value: "all" },
+  { label: "الكل (سوق + live-mkt + تجريبي)", value: "all" },
   { label: "المميزة فقط", value: "featured" },
   { label: listingStatusLabels.pending_review, value: "pending_review" },
   { label: listingStatusLabels.active, value: "active" },
