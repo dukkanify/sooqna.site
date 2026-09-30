@@ -1236,7 +1236,7 @@
   "حالة المنتج": "Item condition",
   "حالة النشر": "Publish status",
   "حالة إعلانك": "Your listing status",
-  "حتى": "Up to",
+  "حتى": "Until",
   "حتى بدون حساب، حفظنا بياناتك ليراجعها فريق الثقة.": "Even without an account, we saved your details for the trust team to review.",
   "حتى لو كنت زائرًا، نحتاج اسمك وبريدك وهاتفك حتى يعرف فريق الثقة من المُبلِغ.": "Even as a guest, we need your name, email, and phone so the trust team knows who is reporting.",
   "حجز الخدمة": "Book service",
@@ -1549,7 +1549,7 @@
   "طوابير العمل التي تحتاج متابعة": "Work queues that need follow-up",
   "طيور": "Birds",
   "ع": "AR",
-  "عادي": "Standard",
+  "عادي": "Regular",
   "عالي": "High",
   "عجمان": "Ajman",
   "عدد الزوار": "Visitor count",
@@ -2977,8 +2977,9 @@
   "كيف نميّز الإعلان المميز؟": "How do we mark a featured listing?",
   "مفتوح المدة": "Open-ended",
   "انتهت المميزة": "Featured ended",
-  "عادي": "Regular",
-  "حتى": "Until",
   "راجع الإعلانات واعتمد أو عدّل أو ميّز مباشرة — النصوص كاملة في الجدول.": "Review listings and approve, edit, or feature them directly — full text in the table.",
-  "جدول منظم بلا قص للنصوص: رقم الإعلان، العنوان، التصنيف، المعلن، الحالة، التمييز، السعر، تاريخ النشر، المشاهدات والإجراءات — مع بحث وفلاتر ووصول لصفحة المميزة.": "Organized table without cut-off text: ad number, title, category, seller, status, featured, price, published date, views and actions — with search, filters, and access to the Featured page."
+  "جدول منظم بلا قص للنصوص: رقم الإعلان، العنوان، التصنيف، المعلن، الحالة، التمييز، السعر، تاريخ النشر، المشاهدات والإجراءات — مع بحث وفلاتر ووصول لصفحة المميزة.": "Organized table without cut-off text: ad number, title, category, seller, status, featured, price, published date, views and actions — with search, filters, and access to the Featured page.",
+  "انتهت صلاحية الجلسة. حدّث الصفحة وسجّل الدخول مجدداً.": "Session expired. Refresh the page and sign in again.",
+  "تحقق من العنوان والقسم والمدينة والسعر ثم أعد المحاولة.": "Check the title, category, city, and price, then try again.",
+  "راجع الإعلانات واعتمد أو عدّل أو ميّز مباشرة — النصوص واضحة على الجوال وسطح المكتب.": "Review listings and approve, edit, or feature them directly — clear text on mobile and desktop."
 }

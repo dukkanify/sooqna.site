@@ -880,36 +880,55 @@
 
 .admin-listings-table-card {
   border: 1px solid var(--admin-line);
-  background: #fff;
+  background: var(--admin-surface);
+  color: var(--admin-ink);
 }
 
 .admin-listings-table-scroll {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-listings-table {
   min-width: 88rem;
+  color: var(--admin-ink);
 }
 
 .admin-listings-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #f6f7f9;
+  background: var(--admin-thead, #f6f7f9);
+  color: var(--admin-muted);
   white-space: nowrap;
 }
 
+.admin-listings-table tbody td {
+  color: var(--admin-ink);
+}
+
 .admin-listings-table tbody tr:hover td {
-  background: #fafbfc;
+  background: var(--admin-row-hover, #fafbfc);
 }
 
 .admin-listings-table tbody tr.admin-listings-row--featured td {
-  background: #fff9ef;
+  background: var(--admin-featured-row, #fff9ef);
 }
 
 .admin-listings-table tbody tr.admin-listings-row--featured:hover td {
-  background: #fff3d9;
+  background: var(--admin-featured-row-hover, #fff3d9);
+}
+
+.admin-listings-table .text-ink,
+.admin-listings-mobile-card .text-ink {
+  color: var(--admin-ink) !important;
+}
+
+.admin-listings-table .text-muted,
+.admin-listings-mobile-card .text-muted,
+.admin-listings-featured-help .text-muted {
+  color: var(--admin-muted) !important;
 }
 
 .admin-listings-cell-wrap {
@@ -927,7 +946,171 @@
 
 .admin-listings-featured-help {
   border: 1px solid rgb(201 164 92 / 35%);
-  background: linear-gradient(180deg, #fffbf3 0%, #fff 70%);
+  background: linear-gradient(
+    180deg,
+    var(--admin-help-top, #fffbf3) 0%,
+    var(--admin-surface) 70%
+  );
+  color: var(--admin-ink);
+}
+
+.admin-listings-featured-help h2,
+.admin-listings-featured-help .text-ink,
+.admin-listings-featured-help strong {
+  color: var(--admin-ink) !important;
+}
+
+.admin-listings-mobile-list {
+  display: none;
+  gap: 0.65rem;
+  padding: 0.75rem;
+}
+
+.admin-listings-mobile-card {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid var(--admin-line);
+  border-radius: 0.85rem;
+  background: var(--admin-surface);
+  color: var(--admin-ink);
+  padding: 0.85rem;
+}
+
+.admin-listings-mobile-card.admin-listings-row--featured {
+  background: var(--admin-featured-row, #fff9ef);
+  border-color: rgb(201 164 92 / 45%);
+}
+
+.admin-listings-mobile-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.admin-listings-mobile-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-muted);
+}
+
+.admin-listings-mobile-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-listings-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.admin-listings-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.admin-listings-filters .admin-listings-filters__grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .admin-listings-table-scroll {
+    display: none;
+  }
+
+  .admin-listings-mobile-list {
+    display: grid;
+  }
+
+  .admin-listings-table {
+    min-width: 0;
+  }
+
+  .admin-listings-toolbar__actions {
+    width: 100%;
+  }
+
+  .admin-listings-toolbar__actions .btn,
+  .admin-listings-toolbar__actions a,
+  .admin-listings-toolbar__actions button {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-height: 2.5rem;
+  }
+
+  .admin-listings-filters .admin-listings-filters__grid > div {
+    flex: 1 1 100%;
+    min-width: 0 !important;
+  }
+
+  .admin-listings-featured-help ul {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Dark mode: keep admin desk readable (no light text on white). */
+html[data-theme="dark"] .admin-ops {
+  --admin-ink: #eef2f8;
+  --admin-ink-soft: #d7deea;
+  --admin-gold: #d4b87a;
+  --admin-gold-deep: #e2c882;
+  --admin-muted: #c5cddc;
+  --admin-line: #2a3448;
+  --admin-surface: #121a2a;
+  --admin-canvas: #0a101c;
+  --admin-ok: #3d8f6a;
+  --admin-ok-bg: #143528;
+  --admin-warn: #f0b429;
+  --admin-warn-bg: #2e2410;
+  --admin-thead: #1a2336;
+  --admin-row-hover: #1a2336;
+  --admin-featured-row: #2a2418;
+  --admin-featured-row-hover: #332b1c;
+  --admin-help-top: #2a2418;
+  background: var(--admin-canvas);
+  color: var(--admin-ink);
+}
+
+html[data-theme="dark"] .admin-ops__topbar {
+  background: var(--admin-surface);
+  border-bottom-color: var(--admin-line);
+}
+
+html[data-theme="dark"] .admin-ops__workspace {
+  color: var(--admin-ink);
+}
+
+html[data-theme="dark"] .admin-ops .bg-surface,
+html[data-theme="dark"] .admin-ops [class*="bg-surface"] {
+  background-color: var(--admin-surface) !important;
+}
+
+html[data-theme="dark"] .admin-ops input,
+html[data-theme="dark"] .admin-ops select,
+html[data-theme="dark"] .admin-ops textarea {
+  color: var(--admin-ink);
+  background-color: #0f1624;
+  border-color: var(--admin-line);
+}
+
+html[data-theme="dark"] .admin-ops input::placeholder,
+html[data-theme="dark"] .admin-ops textarea::placeholder {
+  color: rgb(197 205 220 / 70%);
+}
+
+html[data-theme="dark"] .admin-listings-table-card,
+html[data-theme="dark"] .admin-listings-mobile-card,
+html[data-theme="dark"] .admin-listings-featured-help {
+  border-color: var(--admin-line);
 }
 
 .admin-ops__sidebar-footer .btn,
