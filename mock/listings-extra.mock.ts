@@ -110,7 +110,7 @@ const templates: ExtraTemplate[] = [
   },
   {
     categoryId: "jobs",
-    subcategory: "وظائف شاغرة",
+    subcategory: "توظيف (وظائف)",
     titleArabic: "موظف استقبال — وظيفة {n}",
     titleEnglish: "Receptionist Role {n}",
     price: 4500,

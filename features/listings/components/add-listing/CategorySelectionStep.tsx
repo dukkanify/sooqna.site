@@ -73,7 +73,11 @@ export function CategorySelectionStep({
           <Select
             key={`${selectedCategoryId}:${selectedSubcategory || "none"}`}
             defaultValue={selectedSubcategory || undefined}
-            label="القسم الفرعي (اختياري)"
+            label={
+              selectedCategoryId === "jobs"
+                ? "نوع الإعلان"
+                : "القسم الفرعي (اختياري)"
+            }
             name="subcategory"
             onChange={(event) => onSubcategoryChange?.(event.target.value)}
             optionsAreUgc
@@ -84,7 +88,9 @@ export function CategorySelectionStep({
             placeholder="اختر..."
           />
           <p className="text-xs text-muted">
-            من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة.
+            {selectedCategoryId === "jobs"
+              ? "توظيف (وظائف) للإعلان عن شاغر، وباحثون عن عمل لمن يبحث عن وظيفة."
+              : "من التصنيفات الفرعية المعرّفة لهذه الفئة في لوحة الإدارة."}
           </p>
         </div>
       ) : null}

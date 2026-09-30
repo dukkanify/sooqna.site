@@ -403,6 +403,9 @@ export function useAddListingForm(categories: Category[]) {
         negotiable: parsed.negotiable,
         emirate: parsed.emirate,
         subcategory: (() => {
+          if (categoryId === "jobs" && parsed.jobSubcategory) {
+            return parsed.jobSubcategory;
+          }
           if (categoryId === "pets") {
             const animalType = String(
               parsed.categorySpecs?.animalType ?? "",

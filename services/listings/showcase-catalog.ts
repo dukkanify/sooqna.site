@@ -830,7 +830,7 @@ const SEEDS: ShowcaseSeed[] = [
   {
     key: "sales-executive-vacancy",
     categoryId: "jobs",
-    subcategory: "مبيعات",
+    subcategory: "توظيف (وظائف)",
     title: "شاغر مبيعات — معرض تجريبي",
     titleEnglish: "Sales vacancy — showcase",
     description:
@@ -857,7 +857,7 @@ const SEEDS: ShowcaseSeed[] = [
   {
     key: "property-consultant-vacancy",
     categoryId: "jobs",
-    subcategory: "عقارات",
+    subcategory: "توظيف (وظائف)",
     title: "مستشار عقاري — معرض تجريبي",
     titleEnglish: "Property consultant — showcase",
     description: "نموذج وظيفة عقارية لتغطية تصنيف الوظائف العقارية.",
@@ -882,7 +882,7 @@ const SEEDS: ShowcaseSeed[] = [
   {
     key: "delivery-rider-vacancy",
     categoryId: "jobs",
-    subcategory: "توصيل",
+    subcategory: "توظيف (وظائف)",
     title: "سائق توصيل — معرض تجريبي",
     titleEnglish: "Delivery rider — showcase",
     description: "نموذج وظيفة توصيل لتغطية هذا التصنيف الفرعي.",
@@ -907,7 +907,7 @@ const SEEDS: ShowcaseSeed[] = [
   {
     key: "accountant-vacancy",
     categoryId: "jobs",
-    subcategory: "محاسبة",
+    subcategory: "توظيف (وظائف)",
     title: "محاسب — معرض تجريبي",
     titleEnglish: "Accountant — showcase",
     description: "نموذج وظيفة محاسبة لتغطية هذا التصنيف.",
@@ -932,7 +932,7 @@ const SEEDS: ShowcaseSeed[] = [
   {
     key: "designer-seeker-showcase",
     categoryId: "jobs",
-    subcategory: "تصميم",
+    subcategory: "باحثون عن عمل",
     title: "مصمم يبحث عن عمل — معرض تجريبي",
     titleEnglish: "Designer seeking work — showcase",
     description:
