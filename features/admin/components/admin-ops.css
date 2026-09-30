@@ -16,6 +16,20 @@
   --admin-ok-bg: #ecfdf3;
   --admin-warn: #b54708;
   --admin-warn-bg: #fffaeb;
+  /* Tinted KPI / section surfaces — remapped in dark mode for contrast. */
+  --admin-tone-success-bg: #f6fef9;
+  --admin-tone-success-border: #abefc6;
+  --admin-tone-warning-bg: #fffbeb;
+  --admin-tone-warning-border: #fedf89;
+  --admin-tone-danger-bg: #fff5f5;
+  --admin-tone-danger-border: #fecdca;
+  --admin-kpi-icon-bg: #eef2f6;
+  --admin-action-section-top: #fffaf3;
+  --admin-action-section-bottom: #ffffff;
+  --admin-action-section-border: #f5d0a8;
+  --admin-risk-section-border: #f2c9c9;
+  --admin-skeleton-a: #eef2f6;
+  --admin-skeleton-b: #f8fafc;
   --admin-ease: cubic-bezier(0.22, 1, 0.36, 1);
   display: grid;
   min-height: 100vh;
@@ -1122,6 +1136,19 @@ html[data-theme="dark"] .admin-ops {
   --admin-ok-bg: #143528;
   --admin-warn: #fcd34d;
   --admin-warn-bg: #2e2410;
+  --admin-tone-success-bg: #143528;
+  --admin-tone-success-border: #2f6b4f;
+  --admin-tone-warning-bg: #2e2410;
+  --admin-tone-warning-border: #7a5a16;
+  --admin-tone-danger-bg: #3a1818;
+  --admin-tone-danger-border: #7f2d2d;
+  --admin-kpi-icon-bg: #1a2336;
+  --admin-action-section-top: #2a2418;
+  --admin-action-section-bottom: #182234;
+  --admin-action-section-border: #6b4e2a;
+  --admin-risk-section-border: #6b2f2f;
+  --admin-skeleton-a: #1a2336;
+  --admin-skeleton-b: #243044;
   --admin-thead: #1a2336;
   --admin-row-hover: #1a2336;
   --admin-featured-row: #2a2418;
@@ -1423,8 +1450,13 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
 }
 
 .admin-dash__section--action {
-  border-color: #f5d0a8;
-  background: linear-gradient(180deg, #fffaf3 0%, #ffffff 55%);
+  border-color: var(--admin-action-section-border);
+  background: linear-gradient(
+    180deg,
+    var(--admin-action-section-top) 0%,
+    var(--admin-action-section-bottom) 55%
+  );
+  color: var(--admin-ink);
 }
 
 .admin-dash__details-toggle {
@@ -1434,7 +1466,7 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
 }
 
 .admin-dash__section--risk {
-  border-color: #f2c9c9;
+  border-color: var(--admin-risk-section-border);
 }
 
 .admin-dash__section-head {
@@ -1481,18 +1513,36 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
 }
 
 .admin-dash__kpi--success {
-  border-color: #abefc6;
-  background: #f6fef9;
+  border-color: var(--admin-tone-success-border);
+  background: var(--admin-tone-success-bg);
+  color: var(--admin-ink);
 }
 
 .admin-dash__kpi--warning {
-  border-color: #fedf89;
-  background: #fffbeb;
+  border-color: var(--admin-tone-warning-border);
+  background: var(--admin-tone-warning-bg);
+  color: var(--admin-ink);
 }
 
 .admin-dash__kpi--danger {
-  border-color: #fecdca;
-  background: #fff5f5;
+  border-color: var(--admin-tone-danger-border);
+  background: var(--admin-tone-danger-bg);
+  color: var(--admin-ink);
+}
+
+.admin-dash__kpi--success .admin-dash__kpi-label,
+.admin-dash__kpi--success .admin-dash__kpi-hint,
+.admin-dash__kpi--warning .admin-dash__kpi-label,
+.admin-dash__kpi--warning .admin-dash__kpi-hint,
+.admin-dash__kpi--danger .admin-dash__kpi-label,
+.admin-dash__kpi--danger .admin-dash__kpi-hint {
+  color: var(--admin-muted);
+}
+
+.admin-dash__kpi--success .admin-dash__kpi-value,
+.admin-dash__kpi--warning .admin-dash__kpi-value,
+.admin-dash__kpi--danger .admin-dash__kpi-value {
+  color: var(--admin-ink);
 }
 
 .admin-dash__kpi-top {
@@ -1508,7 +1558,7 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   width: 1.7rem;
   height: 1.7rem;
   border-radius: 0.5rem;
-  background: #eef2f6;
+  background: var(--admin-kpi-icon-bg);
   color: var(--admin-ink-soft);
 }
 
@@ -1820,7 +1870,7 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   margin-top: 0.4rem;
   height: 0.35rem;
   border-radius: 999px;
-  background: #eef2f6;
+  background: var(--admin-kpi-icon-bg);
   overflow: hidden;
 }
 
@@ -1933,7 +1983,12 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
 .admin-dash__skeleton-card {
   height: 5.5rem;
   border-radius: 0.85rem;
-  background: linear-gradient(90deg, #eef2f6 25%, #f8fafc 50%, #eef2f6 75%);
+  background: linear-gradient(
+    90deg,
+    var(--admin-skeleton-a) 25%,
+    var(--admin-skeleton-b) 50%,
+    var(--admin-skeleton-a) 75%
+  );
   background-size: 200% 100%;
   animation: admin-dash-shimmer 1.2s ease-in-out infinite;
 }
