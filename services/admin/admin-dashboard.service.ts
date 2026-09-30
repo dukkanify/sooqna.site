@@ -7,7 +7,10 @@ import {
   buildOrderStatusSlices,
   buildPaymentStatusSlices,
 } from "@/services/admin/admin-analytics";
-import { computeFinanceMetrics } from "@/services/admin/admin-finance-metrics";
+import {
+  computeFinanceMetrics,
+  isMockPaidOrder,
+} from "@/services/admin/admin-finance-metrics";
 import { getAdminDisputes, getOpenDisputeCount } from "@/services/admin/dispute-store";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import { getAllUsers } from "@/services/auth/user-store";
@@ -155,12 +158,13 @@ export async function buildAdminDashboard(
     categories.map((c) => [c.id, c.name || c.id] as const),
   );
 
-  const finance = computeFinanceMetrics(orders, { sinceMs: rangeStart });
-  const heldEscrow = orders.filter((o) => o.escrowStatus === "held");
-  const pendingPayments = orders.filter(
+  const realOrders = orders.filter((o) => !isMockPaidOrder(o));
+  const finance = computeFinanceMetrics(realOrders, { sinceMs: rangeStart });
+  const heldEscrow = realOrders.filter((o) => o.escrowStatus === "held");
+  const pendingPayments = realOrders.filter(
     (o) => o.paymentStatus === "pending" || o.paymentStatus === "processing",
   );
-  const failedPayments = orders.filter((o) => o.paymentStatus === "failed");
+  const failedPayments = realOrders.filter((o) => o.paymentStatus === "failed");
   const fees = finance.platformRevenue;
   const heldAmount = finance.heldEscrowAmount;
   const walletHeld = wallets.reduce((sum, w) => sum + w.heldInEscrow, 0);
@@ -199,7 +203,7 @@ export async function buildAdminDashboard(
     return age != null && age > holdMs;
   });
 
-  const incompleteEvidence = orders.filter((o) => {
+  const incompleteEvidence = realOrders.filter((o) => {
     if (!orderRequiresProductConditionVerification(o)) return false;
     if (o.escrowStatus !== "held" && o.status !== "paid_held_in_escrow" && o.status !== "delivered") {
       return false;
@@ -701,9 +705,9 @@ export async function buildAdminDashboard(
     risk,
     actionCenter: actionItems,
     trends: {
-      daily: buildDailySeries(orders, rangeDays),
-      orderStatuses: canOrders ? buildOrderStatusSlices(orders) : [],
-      paymentStatuses: canPayments ? buildPaymentStatusSlices(orders) : [],
+      daily: buildDailySeries(realOrders, rangeDays),
+      orderStatuses: canOrders ? buildOrderStatusSlices(realOrders) : [],
+      paymentStatuses: canPayments ? buildPaymentStatusSlices(realOrders) : [],
     },
     categoryPerformance: canListings || canCategories ? categoryPerf : [],
     topListings: canListings ? topListings : [],
@@ -724,7 +728,7 @@ export async function buildAdminDashboard(
     },
     // Backward-compatible fields for any residual consumers
     kpis: {
-      totalOrders: orders.length,
+      totalOrders: realOrders.length,
       paidOrders: finance.succeededPaidCount,
       refundedOrders: finance.refundedCount,
       heldEscrow: finance.heldEscrowCount,
@@ -740,9 +744,9 @@ export async function buildAdminDashboard(
       walletAvailable: wallets.reduce((s, w) => s + w.availableBalance, 0),
       walletHeld,
       conversionRate:
-        orders.length === 0
+        realOrders.length === 0
           ? 0
-          : Math.round((finance.grossPaidCount / orders.length) * 100),
+          : Math.round((finance.grossPaidCount / realOrders.length) * 100),
       activeListings: listingStats.activeListings,
       newUsers,
       rejectedListings,

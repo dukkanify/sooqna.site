@@ -9,6 +9,10 @@ import {
   buildOrderStatusSlices,
   buildPaymentStatusSlices,
 } from "@/services/admin/admin-analytics";
+import {
+  computeFinanceMetrics,
+  filterRealOrders,
+} from "@/services/admin/admin-finance-metrics";
 import { getOpenDisputeCount } from "@/services/admin/dispute-store";
 import { getAllUsers } from "@/services/auth/user-store";
 import {
@@ -36,21 +40,20 @@ export async function GET() {
       getAllWalletAccounts(),
     ]);
 
-  const paid = orders.filter((o) => o.paymentStatus === "succeeded");
-  const volume = paid.reduce((sum, o) => sum + o.fees.total, 0);
-  const fees = paid.reduce((sum, o) => sum + o.fees.platformFee, 0);
+  const realOrders = filterRealOrders(orders);
+  const finance = computeFinanceMetrics(realOrders);
 
   return NextResponse.json({
     overview: {
-      totalOrders: orders.length,
-      paidOrders: paid.length,
-      volume,
-      fees,
+      totalOrders: realOrders.length,
+      paidOrders: finance.succeededPaidCount,
+      volume: finance.gmv,
+      fees: finance.platformRevenue,
       currency: "AED",
       conversionRate:
-        orders.length === 0
+        realOrders.length === 0
           ? 0
-          : Math.round((paid.length / orders.length) * 100),
+          : Math.round((finance.grossPaidCount / realOrders.length) * 100),
       totalUsers: users.length,
       totalListings: listingStats.totalListings,
       walletAccounts: wallets.length,
@@ -58,9 +61,9 @@ export async function GET() {
       openDisputes,
       pendingListings: listingStats.pendingListings,
     },
-    daily: buildDailySeries(orders, 14),
-    orderStatuses: buildOrderStatusSlices(orders),
-    paymentStatuses: buildPaymentStatusSlices(orders),
+    daily: buildDailySeries(realOrders, 14),
+    orderStatuses: buildOrderStatusSlices(realOrders),
+    paymentStatuses: buildPaymentStatusSlices(realOrders),
     topCategories: buildListingCategorySlices(listings),
   });
 }

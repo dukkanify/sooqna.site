@@ -1,6 +1,7 @@
 import { isSessionUser } from "@/services/auth/require-session";
 import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
+import { filterRealOrders } from "@/services/admin/admin-finance-metrics";
 import { getAllOrders } from "@/services/payments/order-store";
 
 export async function GET() {
@@ -9,7 +10,7 @@ export async function GET() {
     return admin;
   }
 
-  const orders = await getAllOrders();
+  const orders = filterRealOrders(await getAllOrders());
   const escrowOrders = orders.filter(
     (order) =>
       order.escrowStatus === "held" ||

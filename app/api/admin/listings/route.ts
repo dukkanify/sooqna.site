@@ -6,7 +6,6 @@ import { NextResponse } from "next/server";
 import {
   createListingFromAdmin,
   getAdminListingRecords,
-  upsertListing,
 } from "@/services/listings/listing-store";
 import type { AdminListingCreateInput, Listing } from "@/types";
 
@@ -19,8 +18,8 @@ export async function GET() {
 }
 
 /**
- * Create a listing from admin form, or import/upsert full listing payloads
- * (including localStorage-created ones).
+ * Create a listing from the admin form.
+ * Bulk localStorage import (`listings[]`) is disabled — admin desks are real-data only.
  */
 export async function POST(request: Request) {
   const admin = await requireAdminPermission("listings", "edit");
@@ -55,19 +54,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const incoming = body.listings ?? (body.listing ? [body.listing] : []);
-  if (incoming.length === 0) {
-    return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 });
+  if (body.listings || body.listing) {
+    return NextResponse.json(
+      { error: "BULK_IMPORT_DISABLED" },
+      { status: 410 },
+    );
   }
 
-  const saved = [];
-  for (const listing of incoming) {
-    if (!listing?.id || !listing?.title) continue;
-    saved.push(await upsertListing(listing));
-  }
-
-  return NextResponse.json({
-    imported: saved.length,
-    listings: await getAdminListingRecords(),
-  });
+  return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 });
 }

@@ -18,7 +18,6 @@ import type {
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { isDynamicCategory } from "@/shared/constants/category-fields";
 import { listingStatusLabels } from "@/shared/constants/listingStatuses";
-import { getLocalListings } from "@/services/storage";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import {
   CategoryFieldsForm,
@@ -85,11 +84,17 @@ function isDemoAdminListing(listing: AdminListingRecord): boolean {
   return listing.isDemo === true || listing.source === "SOOQNA_SHOWCASE";
 }
 
-/** Real marketplace rows — excludes showcase demos and confirmed fixtures. */
+/** Real marketplace rows — excludes showcase, fixtures, and live-catalog seed. */
 function isMarketplaceAdminListing(listing: AdminListingRecord): boolean {
   if (isDemoAdminListing(listing)) return false;
   if (listing.isFixture === true) return false;
   if (isConfirmedFixtureListing(listing)) return false;
+  if (
+    listing.source === "SOOQNA_LIVE_MARKETPLACE" ||
+    listing.id.startsWith("live-mkt-")
+  ) {
+    return false;
+  }
   return true;
 }
 
@@ -216,21 +221,10 @@ export function AdminListingsPanel() {
   const toolsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Cookie session is enough — do not gate on localStorage (breaks admin create/load).
+    // Cookie session is enough — GET-only desk load (no localStorage POST sync).
     const timeoutId = window.setTimeout(() => {
-      const localListings = getLocalListings();
-      const sync =
-        localListings.length > 0
-          ? adminFetch("/api/admin/listings", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ listings: localListings }),
-            }).then((res) => res.json())
-          : adminFetch("/api/admin/listings").then((res) => res.json());
-
-      sync
+      adminFetch("/api/admin/listings")
+        .then((res) => res.json())
         .then((data) => setListings(data.listings ?? []))
         .catch(() => setListings([]));
 
