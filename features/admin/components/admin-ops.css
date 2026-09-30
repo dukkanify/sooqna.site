@@ -1,11 +1,16 @@
 .admin-ops {
   --admin-ink: #0b1628;
   --admin-ink-soft: #152238;
+  /* Always a dark solid — for inverted pills/KPIs that need light text on dark. */
+  --admin-inverse: #0b1628;
+  --admin-inverse-soft: #152238;
+  --admin-on-inverse: #ffffff;
   --admin-gold: #c9a962;
   --admin-gold-deep: #9a7d4a;
   --admin-muted: #667085;
   --admin-line: #e4e7ec;
   --admin-surface: #ffffff;
+  --admin-elevated: #fafbfc;
   --admin-canvas: #f5f6f8;
   --admin-ok: #027a48;
   --admin-ok-bg: #ecfdf3;
@@ -293,9 +298,9 @@
 }
 
 .admin-ops__pill--active {
-  border-color: var(--admin-ink);
-  background: var(--admin-ink);
-  color: #fff;
+  border-color: var(--admin-inverse);
+  background: var(--admin-inverse);
+  color: var(--admin-on-inverse);
 }
 
 .admin-ops__pagehead {
@@ -460,18 +465,18 @@
 
 .admin-ops__kpi--feature {
   grid-column: 1 / -1;
-  border-color: var(--admin-ink);
-  background: var(--admin-ink);
-  color: #fff;
+  border-color: var(--admin-inverse);
+  background: var(--admin-inverse);
+  color: var(--admin-on-inverse);
 }
 
 .admin-ops__kpi--feature .admin-ops__kpi-label,
 .admin-ops__kpi--feature .admin-ops__kpi-hint {
-  color: rgb(255 255 255 / 65%);
+  color: rgb(255 255 255 / 72%);
 }
 
 .admin-ops__kpi--feature .admin-ops__kpi-value {
-  color: #fff;
+  color: var(--admin-on-inverse);
 }
 
 .admin-ops__kpi-label {
@@ -566,7 +571,7 @@
   width: 65%;
   max-width: 1.25rem;
   border-radius: 0.25rem 0.25rem 0.15rem 0.15rem;
-  background: var(--admin-ink);
+  background: var(--admin-inverse);
 }
 
 .admin-ops__bar-value {
@@ -608,14 +613,14 @@
   gap: 0.5rem;
   border: 1px solid var(--admin-line);
   border-radius: 0.55rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
   padding: 0.7rem 0.75rem;
   transition: border-color 140ms ease, background 140ms ease;
 }
 
 .admin-ops__map-card:hover {
   border-color: #c8ccd4;
-  background: #fff;
+  background: var(--admin-surface);
 }
 
 .admin-ops__map-title {
@@ -698,12 +703,12 @@
   min-height: 100%;
   border: 1px solid var(--admin-line);
   border-radius: 0.7rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
   padding: 0.85rem 0.9rem;
 }
 
 .admin-ops__queue-item:hover {
-  background: #fff;
+  background: var(--admin-surface);
   border-color: #c8ccd4;
 }
 
@@ -728,12 +733,12 @@
   min-width: 1.75rem;
   place-items: center;
   border-radius: 0.35rem;
-  background: var(--admin-ink);
+  background: var(--admin-inverse);
   padding: 0.18rem 0.45rem;
   font-size: 0.7rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: #fff;
+  color: var(--admin-on-inverse);
 }
 
 .admin-ops__queue-count--alert {
@@ -793,12 +798,12 @@
   min-height: 100%;
   border: 1px solid var(--admin-line);
   border-radius: 0.7rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
   padding: 0.85rem 0.9rem;
 }
 
 .admin-boxes__card:hover {
-  background: #fff;
+  background: var(--admin-surface);
   border-color: #c8ccd4;
 }
 
@@ -876,17 +881,23 @@
   gap: 0.6rem;
   border: 1px solid var(--admin-line);
   border-radius: 0.55rem;
-  background: #fff;
+  background: var(--admin-elevated);
+  color: var(--admin-ink);
   padding: 0.7rem 0.8rem;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
 }
 
+.admin-ops__toggle span {
+  color: inherit;
+}
+
 .admin-ops__toggle input {
   width: 1rem;
   height: 1rem;
-  accent-color: var(--admin-ink);
+  flex-shrink: 0;
+  accent-color: var(--admin-gold-deep);
 }
 
 .admin-ops__table {
@@ -1097,15 +1108,19 @@
 html[data-theme="dark"] .admin-ops {
   --admin-ink: #eef2f8;
   --admin-ink-soft: #d7deea;
+  --admin-inverse: #0b1628;
+  --admin-inverse-soft: #152238;
+  --admin-on-inverse: #ffffff;
   --admin-gold: #d4b87a;
   --admin-gold-deep: #e2c882;
   --admin-muted: #c5cddc;
   --admin-line: #2a3448;
   --admin-surface: #121a2a;
+  --admin-elevated: #182234;
   --admin-canvas: #0a101c;
-  --admin-ok: #3d8f6a;
+  --admin-ok: #6ee7b7;
   --admin-ok-bg: #143528;
-  --admin-warn: #f0b429;
+  --admin-warn: #fcd34d;
   --admin-warn-bg: #2e2410;
   --admin-thead: #1a2336;
   --admin-row-hover: #1a2336;
@@ -1126,8 +1141,18 @@ html[data-theme="dark"] .admin-ops__workspace {
 }
 
 html[data-theme="dark"] .admin-ops .bg-surface,
-html[data-theme="dark"] .admin-ops [class*="bg-surface"] {
+html[data-theme="dark"] .admin-ops [class*="bg-surface"],
+html[data-theme="dark"] .admin-ops .bg-white {
   background-color: var(--admin-surface) !important;
+}
+
+html[data-theme="dark"] .admin-ops .text-ink,
+html[data-theme="dark"] .admin-ops .text-\[\#0b1628\] {
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] .admin-ops .text-muted {
+  color: var(--admin-muted) !important;
 }
 
 html[data-theme="dark"] .admin-ops input,
@@ -1143,10 +1168,66 @@ html[data-theme="dark"] .admin-ops textarea::placeholder {
   color: rgb(197 205 220 / 70%);
 }
 
+html[data-theme="dark"] .admin-ops label,
+html[data-theme="dark"] .admin-ops__panel-title,
+html[data-theme="dark"] .admin-ops__panel-sub,
+html[data-theme="dark"] .admin-ops__title,
+html[data-theme="dark"] .admin-ops__desc {
+  color: inherit;
+}
+
+html[data-theme="dark"] .admin-ops__toggle {
+  background: var(--admin-elevated);
+  border-color: var(--admin-line);
+  color: var(--admin-ink);
+}
+
+html[data-theme="dark"] .admin-ops__toggle span {
+  color: var(--admin-ink);
+}
+
+html[data-theme="dark"] .admin-ops__map-card,
+html[data-theme="dark"] .admin-ops__queue-item,
+html[data-theme="dark"] .admin-boxes__card,
+html[data-theme="dark"] .admin-categories__item,
+html[data-theme="dark"] .admin-users__row,
+html[data-theme="dark"] .admin-dash__action-item,
+html[data-theme="dark"] .admin-dash__risk-card,
+html[data-theme="dark"] .admin-dash__shortcut,
+html[data-theme="dark"] .admin-categories__item--editing {
+  background: var(--admin-elevated);
+  border-color: var(--admin-line);
+  color: var(--admin-ink);
+}
+
+html[data-theme="dark"] .admin-ops__map-card:hover,
+html[data-theme="dark"] .admin-ops__queue-item:hover,
+html[data-theme="dark"] .admin-boxes__card:hover,
+html[data-theme="dark"] .admin-categories__item:hover,
+html[data-theme="dark"] .admin-users__row:hover,
+html[data-theme="dark"] .admin-dash__shortcut:hover {
+  background: var(--admin-surface);
+  border-color: #3a4660;
+}
+
+html[data-theme="dark"] .admin-ops__map-count,
+html[data-theme="dark"] .admin-ops__bar-track {
+  background: #1a2336;
+  color: var(--admin-ink);
+}
+
 html[data-theme="dark"] .admin-listings-table-card,
 html[data-theme="dark"] .admin-listings-mobile-card,
 html[data-theme="dark"] .admin-listings-featured-help {
   border-color: var(--admin-line);
+  color: var(--admin-ink);
+}
+
+/* Soft light status chips → readable on dark canvas */
+html[data-theme="dark"] .admin-ops .bg-error-soft,
+html[data-theme="dark"] .admin-ops .bg-success-soft,
+html[data-theme="dark"] .admin-ops .bg-warning-soft {
+  color: var(--admin-ink);
 }
 
 .admin-ops__sidebar-footer .btn,
@@ -1315,8 +1396,8 @@ html[data-theme="dark"] .admin-listings-featured-help {
 }
 
 .admin-dash__range-btn.is-active {
-  background: var(--admin-ink);
-  color: #fff;
+  background: var(--admin-inverse);
+  color: var(--admin-on-inverse);
 }
 
 .admin-dash__refresh {
@@ -1387,7 +1468,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
   min-height: 6.5rem;
   border: 1px solid var(--admin-line);
   border-radius: 0.85rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
   padding: 0.85rem 0.9rem;
   text-decoration: none;
   color: inherit;
@@ -1467,7 +1548,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
   gap: 0.75rem;
   border: 1px solid var(--admin-line);
   border-radius: 0.75rem;
-  background: #fff;
+  background: var(--admin-surface);
   padding: 0.75rem 0.9rem;
   text-decoration: none;
   color: inherit;
@@ -1534,7 +1615,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
   border: 1px solid var(--admin-line);
   border-radius: 0.7rem;
   padding: 0.65rem 0.75rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
 }
 
 .admin-dash__stat span {
@@ -1612,7 +1693,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
   border: 1px solid var(--admin-line);
   border-radius: 0.85rem;
   padding: 0.85rem 0.95rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
 }
 
 .admin-dash__queue-top {
@@ -1646,10 +1727,10 @@ html[data-theme="dark"] .admin-listings-featured-help {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--admin-ink);
+  border: 1px solid var(--admin-inverse);
   border-radius: 0.55rem;
-  background: var(--admin-ink);
-  color: #fff;
+  background: var(--admin-inverse);
+  color: var(--admin-on-inverse);
   padding: 0.4rem 0.75rem;
   font-size: 0.72rem;
   font-weight: 800;
@@ -1657,7 +1738,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
 }
 
 .admin-dash__queue-btn:hover {
-  background: var(--admin-ink-soft);
+  background: var(--admin-inverse-soft);
 }
 
 .admin-dash__risk-grid {
@@ -1675,7 +1756,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
   padding: 0.75rem 0.85rem;
   text-decoration: none;
   color: inherit;
-  background: #fff;
+  background: var(--admin-surface);
 }
 
 .admin-dash__risk-card:hover {
@@ -1830,7 +1911,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
   align-items: center;
   border: 1px solid var(--admin-line);
   border-radius: 999px;
-  background: #fafbfc;
+  background: var(--admin-elevated);
   padding: 0.4rem 0.8rem;
   font-size: 0.75rem;
   font-weight: 800;
@@ -1840,7 +1921,7 @@ html[data-theme="dark"] .admin-listings-featured-help {
 
 .admin-dash__shortcut:hover {
   border-color: var(--admin-gold);
-  background: #fff;
+  background: var(--admin-surface);
 }
 
 .admin-dash__skeleton-grid {
@@ -1946,18 +2027,18 @@ html[data-theme="dark"] .admin-listings-featured-help {
   min-height: 100%;
   border: 1px solid var(--admin-line);
   border-radius: 0.7rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
   padding: 0.85rem 0.9rem;
 }
 
 .admin-categories__item:hover {
-  background: #fff;
+  background: var(--admin-surface);
   border-color: #c8ccd4;
 }
 
 .admin-categories__item--editing {
   grid-column: 1 / -1;
-  background: #fff;
+  background: var(--admin-surface);
 }
 
 .admin-categories__card-top {
@@ -2073,12 +2154,12 @@ html[data-theme="dark"] .admin-listings-featured-help {
   min-height: 100%;
   border: 1px solid var(--admin-line);
   border-radius: 0.7rem;
-  background: #fafbfc;
+  background: var(--admin-elevated);
   padding: 0.85rem 0.9rem;
 }
 
 .admin-users__row:hover {
-  background: #fff;
+  background: var(--admin-surface);
   border-color: #c8ccd4;
 }
 
