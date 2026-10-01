@@ -27,7 +27,13 @@ type AdminOptionsListEditorProps = {
 };
 
 function moveItem<T>(items: T[], from: number, to: number): T[] {
-  if (from === to || from < 0 || to < 0 || from >= items.length || to >= items.length) {
+  if (
+    from === to ||
+    from < 0 ||
+    to < 0 ||
+    from >= items.length ||
+    to >= items.length
+  ) {
     return items;
   }
   const next = [...items];
@@ -109,12 +115,8 @@ export function AdminOptionsListEditor({
               <li
                 key={`${baseId}-${index}`}
                 className={`admin-options-editor__row grid gap-2 rounded-[var(--radius-lg)] border border-border bg-surface p-2.5 transition-shadow ${
-                  mode === "pair"
-                    ? "sm:grid-cols-[auto_1fr_1fr_auto]"
-                    : "sm:grid-cols-[auto_1fr_auto]"
-                } sm:items-end ${isDragging ? "opacity-60" : ""} ${
-                  isDropTarget ? "ring-2 ring-secondary/50" : ""
-                }`}
+                  isDragging ? "opacity-60" : ""
+                } ${isDropTarget ? "ring-2 ring-secondary/50" : ""}`}
                 draggable
                 onDragEnd={() => {
                   setDragIndex(null);
@@ -134,74 +136,85 @@ export function AdminOptionsListEditor({
                 }}
                 onDrop={(event) => {
                   event.preventDefault();
-                  const from = dragIndex ?? Number(event.dataTransfer.getData("text/plain"));
+                  const from =
+                    dragIndex ?? Number(event.dataTransfer.getData("text/plain"));
                   reorder(from, index);
                   setDragIndex(null);
                   setDropIndex(null);
                 }}
               >
-                <div className="flex items-center gap-1 sm:pb-2">
-                  <span
-                    aria-hidden
-                    className="admin-options-editor__grip inline-flex h-9 w-8 cursor-grab items-center justify-center rounded-[var(--radius-md)] text-muted active:cursor-grabbing"
-                    title="اسحب لإعادة الترتيب"
-                  >
-                    <Icon name="menu" size={16} />
-                  </span>
-                  <span className="min-w-6 text-center text-xs font-bold text-muted tabular-nums">
-                    {index + 1}
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      aria-hidden
+                      className="admin-options-editor__grip inline-flex h-8 w-8 cursor-grab items-center justify-center rounded-[var(--radius-md)] bg-surface-muted/70 text-muted active:cursor-grabbing"
+                      title="اسحب لإعادة الترتيب"
+                    >
+                      <Icon name="menu" size={16} />
+                    </span>
+                    <span className="text-xs font-bold text-muted tabular-nums">
+                      خيار {index + 1}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <Button
+                      aria-label="نقل لأعلى"
+                      disabled={index === 0}
+                      onClick={() => reorder(index, index - 1)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      أعلى
+                    </Button>
+                    <Button
+                      aria-label="نقل لأسفل"
+                      disabled={index === options.length - 1}
+                      onClick={() => reorder(index, index + 1)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      أسفل
+                    </Button>
+                    <Button
+                      aria-label="حذف الخيار"
+                      onClick={() => removeRow(index)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      <span className="inline-flex items-center gap-1 text-rose-600">
+                        <Icon name="close" size={14} />
+                        حذف
+                      </span>
+                    </Button>
+                  </div>
                 </div>
 
-                <Input
-                  label={labelFieldLabel}
-                  onChange={(event) => updateRow(index, { label: event.target.value })}
-                  placeholder={labelPlaceholder}
-                  value={option.label}
-                />
-
-                {mode === "pair" ? (
+                <div
+                  className={`grid gap-2 ${
+                    mode === "pair" ? "sm:grid-cols-2" : ""
+                  }`}
+                >
                   <Input
-                    label={valueFieldLabel}
-                    onChange={(event) => updateRow(index, { value: event.target.value })}
-                    placeholder={valuePlaceholder}
-                    value={option.value}
+                    label={labelFieldLabel}
+                    onChange={(event) =>
+                      updateRow(index, { label: event.target.value })
+                    }
+                    placeholder={labelPlaceholder}
+                    value={option.label}
                   />
-                ) : null}
-
-                <div className="flex flex-wrap items-center gap-1 sm:justify-end sm:pb-0.5">
-                  <Button
-                    aria-label="نقل لأعلى"
-                    disabled={index === 0}
-                    onClick={() => reorder(index, index - 1)}
-                    size="sm"
-                    type="button"
-                    variant="ghost"
-                  >
-                    أعلى
-                  </Button>
-                  <Button
-                    aria-label="نقل لأسفل"
-                    disabled={index === options.length - 1}
-                    onClick={() => reorder(index, index + 1)}
-                    size="sm"
-                    type="button"
-                    variant="ghost"
-                  >
-                    أسفل
-                  </Button>
-                  <Button
-                    aria-label="حذف الخيار"
-                    onClick={() => removeRow(index)}
-                    size="sm"
-                    type="button"
-                    variant="ghost"
-                  >
-                    <span className="inline-flex items-center gap-1">
-                      <Icon name="close" size={14} />
-                      حذف
-                    </span>
-                  </Button>
+                  {mode === "pair" ? (
+                    <Input
+                      label={valueFieldLabel}
+                      onChange={(event) =>
+                        updateRow(index, { value: event.target.value })
+                      }
+                      placeholder={valuePlaceholder}
+                      value={option.value}
+                    />
+                  ) : null}
                 </div>
               </li>
             );
