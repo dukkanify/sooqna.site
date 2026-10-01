@@ -1,7 +1,14 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import Link from "next/link";
 import type {
   AdminAction,
@@ -336,35 +343,136 @@ export function AdminUsersPanel() {
         </div>
       </Card>
 
-      {filtered.length === 0 ? (
-        <p className="admin-users__empty">لا يوجد مستخدمون مطابقون.</p>
-      ) : (
-        <ul className="admin-users__list">
-          {filtered.map((user) => {
-            const status = rowStatus(user);
-            const action = primaryAction(user);
-            const open = openId === user.id;
-            return (
-              <li
-                key={user.id}
-                className={`admin-users__row${open ? " admin-boxes__card--wide" : ""}`}
-              >
-                <div className="admin-users__row-main">
-                  <div className="admin-users__identity">
-                    <p className="admin-users__name">
-                      {user.fullName}
-                      {user.role !== "user" ? (
-                        <span className="admin-users__role">
-                          · {roleLabels[user.role]}
-                        </span>
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>البريد</th>
+                <th>الدور</th>
+                <th>الحالة</th>
+                <th>إعلانات</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    لا يوجد مستخدمون مطابقون.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((user) => {
+                  const status = rowStatus(user);
+                  const action = primaryAction(user);
+                  const open = openId === user.id;
+                  return (
+                    <Fragment key={user.id}>
+                      <tr>
+                        <td className="admin-desk-cell-wrap">
+                          <p className="admin-desk-cell-title font-bold text-ink">
+                            {user.fullName}
+                          </p>
+                        </td>
+                        <td className="admin-desk-cell-wrap">
+                          <span className="text-sm" dir="ltr">
+                            {user.email}
+                          </span>
+                        </td>
+                        <td>{roleLabels[user.role]}</td>
+                        <td>
+                          <Badge variant={status.variant}>{status.label}</Badge>
+                        </td>
+                        <td>{user.listingsCount}</td>
+                        <td>
+                          <div className="flex flex-wrap gap-1">
+                            {action ? (
+                              <Button
+                                loading={busyId === user.id}
+                                onClick={() =>
+                                  patchUser(user.id, action.patch)
+                                }
+                                size="sm"
+                                type="button"
+                                variant="primary"
+                              >
+                                {action.label}
+                              </Button>
+                            ) : null}
+                            <Button
+                              aria-expanded={open}
+                              onClick={() =>
+                                setOpenId((prev) =>
+                                  prev === user.id ? null : user.id,
+                                )
+                              }
+                              size="sm"
+                              type="button"
+                              variant="ghost"
+                            >
+                              {open ? "إخفاء" : "المزيد"}
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                      {open ? (
+                        <tr>
+                          <td className="admin-desk-cell-wrap" colSpan={6}>
+                            <UserDetailPanel
+                              busyId={busyId}
+                              draftFor={draftFor}
+                              draftMatrixFor={draftMatrixFor}
+                              hasUnsavedPermissions={hasUnsavedPermissions}
+                              patchUser={patchUser}
+                              sessionId={session?.id}
+                              sessionIsSuper={sessionIsSuper}
+                              setDraftMatrices={setDraftMatrices}
+                              setDraftPermissions={setDraftPermissions}
+                              toggleDraftAction={toggleDraftAction}
+                              toggleDraftPermission={toggleDraftPermission}
+                              user={user}
+                            />
+                          </td>
+                        </tr>
                       ) : null}
-                    </p>
-                    <p className="admin-users__email" dir="ltr">
-                      {user.email}
-                    </p>
-                  </div>
-                  <div className="admin-users__actions">
+                    </Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {filtered.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا يوجد مستخدمون مطابقون.</p>
+            </li>
+          ) : (
+            filtered.map((user) => {
+              const status = rowStatus(user);
+              const action = primaryAction(user);
+              const open = openId === user.id;
+              return (
+                <li key={user.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-ink">
+                        {user.fullName}
+                      </p>
+                      <p className="text-xs text-muted" dir="ltr">
+                        {user.email}
+                      </p>
+                    </div>
                     <Badge variant={status.variant}>{status.label}</Badge>
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>{roleLabels[user.role]}</span>
+                    <span>{user.listingsCount} إعلان</span>
+                  </div>
+                  <div className="admin-desk-mobile-card__actions">
                     {action ? (
                       <Button
                         loading={busyId === user.id}
@@ -379,7 +487,9 @@ export function AdminUsersPanel() {
                     <Button
                       aria-expanded={open}
                       onClick={() =>
-                        setOpenId((prev) => (prev === user.id ? null : user.id))
+                        setOpenId((prev) =>
+                          prev === user.id ? null : user.id,
+                        )
                       }
                       size="sm"
                       type="button"
@@ -388,206 +498,250 @@ export function AdminUsersPanel() {
                       {open ? "إخفاء" : "المزيد"}
                     </Button>
                   </div>
-                </div>
-
-                {open ? (
-                  <div className="admin-users__more">
-                    <p className="admin-users__meta">
-                      {[
-                        user.phone,
-                        user.city,
-                        `انضم ${user.joinedAt}`,
-                        `${user.listingsCount} إعلان`,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-
-                    <div className="admin-users__more-actions">
-                      {!user.emailVerifiedAt ? (
-                        <Button
-                          loading={busyId === user.id}
-                          onClick={() =>
-                            patchUser(user.id, {
-                              recoveryAction: "resend_verification",
-                            })
-                          }
-                          size="sm"
-                          type="button"
-                          variant="secondary"
-                        >
-                          إعادة إرسال رمز
-                        </Button>
-                      ) : null}
-                      <Button
-                        loading={busyId === user.id}
-                        onClick={() =>
-                          patchUser(user.id, {
-                            recoveryAction: "send_password_reset",
-                          })
-                        }
-                        size="sm"
-                        type="button"
-                        variant="secondary"
-                      >
-                        رابط كلمة المرور
-                      </Button>
-                      {user.accountStatus !== "suspended" ? (
-                        <Button
-                          loading={busyId === user.id}
-                          onClick={() =>
-                            patchUser(user.id, { accountStatus: "suspended" })
-                          }
-                          size="sm"
-                          type="button"
-                          variant="ghost"
-                        >
-                          إيقاف
-                        </Button>
-                      ) : null}
-                      {user.role !== "admin" && sessionIsSuper ? (
-                        <Button
-                          loading={busyId === user.id}
-                          onClick={() =>
-                            patchUser(user.id, {
-                              role: "admin",
-                              adminPermissions: ["listings", "orders"],
-                            })
-                          }
-                          size="sm"
-                          type="button"
-                          variant="secondary"
-                        >
-                          مدير فرعي
-                        </Button>
-                      ) : null}
-                      {user.role === "admin" &&
-                      !isSuperAdminRecord(user) &&
-                      sessionIsSuper &&
-                      user.id !== session?.id ? (
-                        <Button
-                          loading={busyId === user.id}
-                          onClick={() =>
-                            patchUser(user.id, {
-                              role: "user",
-                              adminPermissions: [],
-                            })
-                          }
-                          size="sm"
-                          type="button"
-                          variant="ghost"
-                        >
-                          إلغاء المدير
-                        </Button>
-                      ) : null}
-                    </div>
-
-                    {user.role === "admin" &&
-                    sessionIsSuper &&
-                    !(isSuperAdminRecord(user) && user.id !== session?.id) ? (
-                      <div className="admin-users__perms">
-                        <p className="admin-users__perms-title">صلاحيات المدير</p>
-                        <div className="admin-users__perms-grid">
-                          {ALL_ADMIN_PERMISSIONS.map((permission) => {
-                            const checked = draftFor(user).includes(permission);
-                            const actions =
-                              draftMatrixFor(user)[permission] ?? [
-                                ...ALL_ADMIN_ACTIONS,
-                              ];
-                            return (
-                              <div key={permission}>
-                                <label className="admin-users__perm-label">
-                                  <input
-                                    checked={checked}
-                                    disabled={
-                                      busyId === user.id ||
-                                      (user.id === session?.id && !sessionIsSuper)
-                                    }
-                                    onChange={() =>
-                                      toggleDraftPermission(user, permission)
-                                    }
-                                    type="checkbox"
-                                  />
-                                  {ADMIN_PERMISSION_LABELS[permission]}
-                                </label>
-                                {checked ? (
-                                  <div className="admin-users__perm-actions">
-                                    {ALL_ADMIN_ACTIONS.map((item) => (
-                                      <label
-                                        key={item}
-                                        className="admin-users__perm-action"
-                                      >
-                                        <input
-                                          checked={actions.includes(item)}
-                                          disabled={busyId === user.id}
-                                          onChange={() =>
-                                            toggleDraftAction(
-                                              user,
-                                              permission,
-                                              item,
-                                            )
-                                          }
-                                          type="checkbox"
-                                        />
-                                        {ADMIN_ACTION_LABELS[item]}
-                                      </label>
-                                    ))}
-                                  </div>
-                                ) : null}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="admin-users__more-actions">
-                          <Button
-                            disabled={!hasUnsavedPermissions(user)}
-                            loading={busyId === user.id}
-                            onClick={() =>
-                              patchUser(user.id, {
-                                adminPermissions: draftFor(user),
-                                adminActionMatrix: draftMatrixFor(user),
-                              })
-                            }
-                            size="sm"
-                            type="button"
-                          >
-                            حفظ
-                          </Button>
-                          {hasUnsavedPermissions(user) ? (
-                            <Button
-                              onClick={() => {
-                                setDraftPermissions((prev) => {
-                                  const next = { ...prev };
-                                  delete next[user.id];
-                                  return next;
-                                });
-                                setDraftMatrices((prev) => {
-                                  const next = { ...prev };
-                                  delete next[user.id];
-                                  return next;
-                                });
-                              }}
-                              size="sm"
-                              type="button"
-                              variant="ghost"
-                            >
-                              إلغاء
-                            </Button>
-                          ) : null}
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </li>
-            );
-          })}
+                  {open ? (
+                    <UserDetailPanel
+                      busyId={busyId}
+                      draftFor={draftFor}
+                      draftMatrixFor={draftMatrixFor}
+                      hasUnsavedPermissions={hasUnsavedPermissions}
+                      patchUser={patchUser}
+                      sessionId={session?.id}
+                      sessionIsSuper={sessionIsSuper}
+                      setDraftMatrices={setDraftMatrices}
+                      setDraftPermissions={setDraftPermissions}
+                      toggleDraftAction={toggleDraftAction}
+                      toggleDraftPermission={toggleDraftPermission}
+                      user={user}
+                    />
+                  ) : null}
+                </li>
+              );
+            })
+          )}
         </ul>
-      )}
+      </Card>
 
-      <Link className="text-sm font-semibold text-primary" href="/admin">
+      <Link className="admin-ops__text-link" href="/admin">
         ← العودة للإدارة
       </Link>
+    </div>
+  );
+}
+
+type UserDetailPanelProps = {
+  user: AdminUserRecord;
+  busyId: string | null;
+  sessionIsSuper: boolean;
+  sessionId?: string;
+  patchUser: (id: string, patch: AdminUserPatch) => Promise<void>;
+  draftFor: (user: AdminUserRecord) => AdminPermission[];
+  draftMatrixFor: (user: AdminUserRecord) => AdminActionMatrix;
+  toggleDraftPermission: (
+    user: AdminUserRecord,
+    permission: AdminPermission,
+  ) => void;
+  toggleDraftAction: (
+    user: AdminUserRecord,
+    permission: AdminPermission,
+    action: AdminAction,
+  ) => void;
+  hasUnsavedPermissions: (user: AdminUserRecord) => boolean;
+  setDraftPermissions: Dispatch<
+    SetStateAction<Record<string, AdminPermission[]>>
+  >;
+  setDraftMatrices: Dispatch<SetStateAction<Record<string, AdminActionMatrix>>>;
+};
+
+function UserDetailPanel({
+  user,
+  busyId,
+  sessionIsSuper,
+  sessionId,
+  patchUser,
+  draftFor,
+  draftMatrixFor,
+  toggleDraftPermission,
+  toggleDraftAction,
+  hasUnsavedPermissions,
+  setDraftPermissions,
+  setDraftMatrices,
+}: UserDetailPanelProps) {
+  return (
+    <div className="grid gap-3 py-1">
+      <p className="text-xs font-semibold text-muted">
+        {[
+          user.phone,
+          user.city,
+          `انضم ${user.joinedAt}`,
+          `${user.listingsCount} إعلان`,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </p>
+
+      <div className="flex flex-wrap gap-2">
+        {!user.emailVerifiedAt ? (
+          <Button
+            loading={busyId === user.id}
+            onClick={() =>
+              patchUser(user.id, {
+                recoveryAction: "resend_verification",
+              })
+            }
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            إعادة إرسال رمز
+          </Button>
+        ) : null}
+        <Button
+          loading={busyId === user.id}
+          onClick={() =>
+            patchUser(user.id, {
+              recoveryAction: "send_password_reset",
+            })
+          }
+          size="sm"
+          type="button"
+          variant="secondary"
+        >
+          رابط كلمة المرور
+        </Button>
+        {user.accountStatus !== "suspended" ? (
+          <Button
+            loading={busyId === user.id}
+            onClick={() =>
+              patchUser(user.id, { accountStatus: "suspended" })
+            }
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            إيقاف
+          </Button>
+        ) : null}
+        {user.role !== "admin" && sessionIsSuper ? (
+          <Button
+            loading={busyId === user.id}
+            onClick={() =>
+              patchUser(user.id, {
+                role: "admin",
+                adminPermissions: ["listings", "orders"],
+              })
+            }
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            مدير فرعي
+          </Button>
+        ) : null}
+        {user.role === "admin" &&
+        !isSuperAdminRecord(user) &&
+        sessionIsSuper &&
+        user.id !== sessionId ? (
+          <Button
+            loading={busyId === user.id}
+            onClick={() =>
+              patchUser(user.id, {
+                role: "user",
+                adminPermissions: [],
+              })
+            }
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            إلغاء المدير
+          </Button>
+        ) : null}
+      </div>
+
+      {user.role === "admin" &&
+      sessionIsSuper &&
+      !(isSuperAdminRecord(user) && user.id !== sessionId) ? (
+        <div className="admin-users__perms">
+          <p className="admin-users__perms-title">صلاحيات المدير</p>
+          <div className="admin-users__perms-grid">
+            {ALL_ADMIN_PERMISSIONS.map((permission) => {
+              const checked = draftFor(user).includes(permission);
+              const actions =
+                draftMatrixFor(user)[permission] ?? [...ALL_ADMIN_ACTIONS];
+              return (
+                <div key={permission}>
+                  <label className="admin-users__perm-label">
+                    <input
+                      checked={checked}
+                      disabled={
+                        busyId === user.id ||
+                        (user.id === sessionId && !sessionIsSuper)
+                      }
+                      onChange={() => toggleDraftPermission(user, permission)}
+                      type="checkbox"
+                    />
+                    {ADMIN_PERMISSION_LABELS[permission]}
+                  </label>
+                  {checked ? (
+                    <div className="admin-users__perm-actions">
+                      {ALL_ADMIN_ACTIONS.map((item) => (
+                        <label key={item} className="admin-users__perm-action">
+                          <input
+                            checked={actions.includes(item)}
+                            disabled={busyId === user.id}
+                            onChange={() =>
+                              toggleDraftAction(user, permission, item)
+                            }
+                            type="checkbox"
+                          />
+                          {ADMIN_ACTION_LABELS[item]}
+                        </label>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              disabled={!hasUnsavedPermissions(user)}
+              loading={busyId === user.id}
+              onClick={() =>
+                patchUser(user.id, {
+                  adminPermissions: draftFor(user),
+                  adminActionMatrix: draftMatrixFor(user),
+                })
+              }
+              size="sm"
+              type="button"
+            >
+              حفظ
+            </Button>
+            {hasUnsavedPermissions(user) ? (
+              <Button
+                onClick={() => {
+                  setDraftPermissions((prev) => {
+                    const next = { ...prev };
+                    delete next[user.id];
+                    return next;
+                  });
+                  setDraftMatrices((prev) => {
+                    const next = { ...prev };
+                    delete next[user.id];
+                    return next;
+                  });
+                }}
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                إلغاء
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
