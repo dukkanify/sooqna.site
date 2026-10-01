@@ -93,50 +93,58 @@ export function AdminJobApplicationsPanel() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          طلبات التوظيف الواردة — راجع المتقدمين وحدّث الحالة مباشرة.
+        </p>
+      </div>
+
       {items.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">لا توجد طلبات توظيف.</p>
         </Card>
       ) : (
-        <ul className="admin-ops__queue">
-          {items.map((item) => {
-            const actions = ADMIN_ACTIONS[item.status] ?? [];
-            return (
-              <li key={item.id} className="admin-ops__queue-item">
-                <div>
-                  <p className="admin-ops__queue-label">{item.listingTitle}</p>
-                  <p className="admin-ops__queue-meta">
-                    {item.applicantName} · {item.applicantEmail} · {item.phone}
-                  </p>
-                  <p className="admin-ops__queue-meta">
-                    {item.currentCity} · خبرة {item.yearsOfExperience} سنة ·{" "}
-                    {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span
-                    className={`admin-ops__status-chip${statusChipClass(item.status)}`}
-                  >
-                    {jobStatusLabel(item.status)}
-                  </span>
-                  {actions.map((action) => (
-                    <Button
-                      key={action.value}
-                      loading={busyId === item.id}
-                      onClick={() => patchStatus(item.id, action.value)}
-                      size="sm"
-                      type="button"
-                      variant={action.value === "rejected" ? "ghost" : "secondary"}
+        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+          <ul className="admin-ops__queue p-3">
+            {items.map((item) => {
+              const actions = ADMIN_ACTIONS[item.status] ?? [];
+              return (
+                <li key={item.id} className="admin-ops__queue-item">
+                  <div>
+                    <p className="admin-ops__queue-label">{item.listingTitle}</p>
+                    <p className="admin-ops__queue-meta">
+                      {item.applicantName} · {item.applicantEmail} · {item.phone}
+                    </p>
+                    <p className="admin-ops__queue-meta">
+                      {item.currentCity} · خبرة {item.yearsOfExperience} سنة ·{" "}
+                      {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span
+                      className={`admin-ops__status-chip${statusChipClass(item.status)}`}
                     >
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                      {jobStatusLabel(item.status)}
+                    </span>
+                    {actions.map((action) => (
+                      <Button
+                        key={action.value}
+                        loading={busyId === item.id}
+                        onClick={() => patchStatus(item.id, action.value)}
+                        size="sm"
+                        type="button"
+                        variant={action.value === "rejected" ? "ghost" : "secondary"}
+                      >
+                        {action.label}
+                      </Button>
+                    ))}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
       )}
     </div>
   );

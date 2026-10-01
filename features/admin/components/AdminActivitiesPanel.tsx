@@ -55,9 +55,15 @@ export function AdminActivitiesPanel() {
 
   return (
     <LocalizedTree>
-    <div className="grid gap-4">
-      <Card className="p-4" variant="flat">
-        <div className="grid gap-3 md:grid-cols-4">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          نشاط المنصة الموحّد — طلبات توظيف، معاينات، عروض أسعار، وطلبات.
+        </p>
+      </div>
+
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
           <Input
             label="بحث"
             name="query"
@@ -102,33 +108,35 @@ export function AdminActivitiesPanel() {
       </Card>
 
       {loading ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">جاري التحميل...</p>
         </Card>
       ) : items.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">لا توجد أنشطة مطابقة.</p>
         </Card>
       ) : (
-        <ul className="admin-ops__queue">
-          {items.map((item) => (
-            <li key={`${item.kind}-${item.id}`} className="admin-ops__queue-item">
-              <div>
-                <p className="admin-ops__queue-label">{item.title}</p>
-                <p className="admin-ops__queue-meta">
-                  {activityKindLabel(item.kind)} · {item.statusLabel} ·{" "}
-                  {new Date(item.updatedAt).toLocaleString(intlLocale(locale))}
-                </p>
-                {item.subtitle ? (
-                  <p className="admin-ops__queue-meta">{item.subtitle}</p>
-                ) : null}
-              </div>
-              <Link className="text-xs font-semibold text-primary hover:underline" href={item.href}>
-                فتح
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+          <ul className="admin-ops__queue p-3">
+            {items.map((item) => (
+              <li key={`${item.kind}-${item.id}`} className="admin-ops__queue-item">
+                <div>
+                  <p className="admin-ops__queue-label">{item.title}</p>
+                  <p className="admin-ops__queue-meta">
+                    {activityKindLabel(item.kind)} · {item.statusLabel} ·{" "}
+                    {new Date(item.updatedAt).toLocaleString(intlLocale(locale))}
+                  </p>
+                  {item.subtitle ? (
+                    <p className="admin-ops__queue-meta">{item.subtitle}</p>
+                  ) : null}
+                </div>
+                <Link className="text-xs font-semibold text-primary hover:underline" href={item.href}>
+                  فتح
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
 
       <div className="flex items-center justify-between text-sm text-muted">

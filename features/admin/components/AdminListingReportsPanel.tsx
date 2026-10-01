@@ -178,7 +178,21 @@ export function AdminListingReportsPanel() {
   const guestCount = items.filter((item) => item.guest).length;
 
   return (
-    <div className="grid gap-3">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          بلاغات الإعلانات — راجع السبب واتخذ إجراءً على الإعلان أو المستخدم.
+        </p>
+        <div className="admin-desk-toolbar__actions">
+          <Button href="/admin/listings" size="sm" variant="secondary">
+            الإعلانات
+          </Button>
+          <Button href="/admin/users" size="sm" variant="ghost">
+            المستخدمون
+          </Button>
+        </div>
+      </div>
+
       {message ? (
         <FormMessage variant={message.variant}>{message.text}</FormMessage>
       ) : null}
@@ -198,22 +212,24 @@ export function AdminListingReportsPanel() {
         </div>
       </div>
 
-      <div className="admin-ops__toolbar flex flex-wrap items-end gap-3">
-        <div className="min-w-[11rem]">
-          <Select
-            label="التصفية"
-            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            options={filterOptions}
-            value={statusFilter}
-          />
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
+          <div className="min-w-[11rem]">
+            <Select
+              label="التصفية"
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              options={filterOptions}
+              value={statusFilter}
+            />
+          </div>
+          <p className="pb-2 text-xs font-semibold text-muted">
+            {filtered.length} بلاغ ظاهر
+          </p>
         </div>
-        <p className="pb-2 text-xs text-muted">
-          {filtered.length} بلاغ ظاهر
-        </p>
-      </div>
+      </Card>
 
       {filtered.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">
             {items.length === 0
               ? "لا توجد بلاغات على الإعلانات بعد."
@@ -221,6 +237,7 @@ export function AdminListingReportsPanel() {
           </p>
         </Card>
       ) : (
+        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
         <ul className="admin-boxes__grid">
           {filtered.map((item) => {
             const listingHref = item.listingSlug
@@ -401,6 +418,7 @@ export function AdminListingReportsPanel() {
             );
           })}
         </ul>
+        </Card>
       )}
 
       <div className="admin-ops__quick-links">

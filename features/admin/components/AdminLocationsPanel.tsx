@@ -212,7 +212,13 @@ export function AdminLocationsPanel() {
   }
 
   return (
-    <div className="admin-locations grid gap-4">
+    <div className="admin-desk admin-locations grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          المواقع والمدن — أضف أو عدّل الظهور في البحث والهيرو والإعلانات.
+        </p>
+      </div>
+
       <Card className="admin-locations__create p-5" variant="flat">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Icon name="plus" size={16} />

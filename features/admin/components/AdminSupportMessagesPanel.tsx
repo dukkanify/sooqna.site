@@ -131,7 +131,13 @@ export function AdminSupportMessagesPanel() {
   const openCount = items.filter((item) => item.status === "open").length;
 
   return (
-    <div className="grid gap-3">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          رسائل «تواصل معنا» — ردّ، أغلق، وتابع الحالات المفتوحة.
+        </p>
+      </div>
+
       {message ? (
         <FormMessage variant={message.variant}>{message.text}</FormMessage>
       ) : null}
@@ -147,20 +153,24 @@ export function AdminSupportMessagesPanel() {
         </div>
       </div>
 
-      <div className="admin-ops__toolbar flex flex-wrap items-end gap-3">
-        <div className="min-w-[11rem]">
-          <Select
-            label="التصفية"
-            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            options={filterOptions}
-            value={statusFilter}
-          />
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
+          <div className="min-w-[11rem]">
+            <Select
+              label="التصفية"
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              options={filterOptions}
+              value={statusFilter}
+            />
+          </div>
+          <p className="pb-2 text-xs font-semibold text-muted">
+            {filtered.length} رسالة ظاهرة
+          </p>
         </div>
-        <p className="pb-2 text-xs text-muted">{filtered.length} رسالة ظاهرة</p>
-      </div>
+      </Card>
 
       {filtered.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">
             {items.length === 0
               ? "لا رسائل من نموذج تواصل معنا بعد."
@@ -168,6 +178,7 @@ export function AdminSupportMessagesPanel() {
           </p>
         </Card>
       ) : (
+        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
         <ul className="admin-boxes__grid">
           {filtered.map((item) => {
             const expanded = expandedId === item.id;
@@ -302,6 +313,7 @@ export function AdminSupportMessagesPanel() {
             );
           })}
         </ul>
+        </Card>
       )}
     </div>
   );

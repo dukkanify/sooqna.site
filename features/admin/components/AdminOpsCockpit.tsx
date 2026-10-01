@@ -277,7 +277,12 @@ export function AdminOpsCockpit() {
 
   return (
     <LocalizedTree>
-      <div className="admin-dash">
+      <div className="admin-desk admin-dash grid gap-4">
+        <div className="admin-desk-toolbar">
+          <p className="text-sm text-muted">
+            غرفة التحكم — نظرة تنفيذية على الطوابير، المال، والأداء.
+          </p>
+        </div>
         <div className="admin-dash__toolbar">
           <div className="admin-dash__status">
             <span

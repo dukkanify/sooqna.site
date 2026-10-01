@@ -51,7 +51,14 @@ export function AdminNotificationsPanel() {
   }, []);
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          إشعارات المستخدمين وسجل البريد — راقب القراءة وحالة الإرسال من مكان
+          واحد.
+        </p>
+      </div>
+
       <div className="admin-ops__kpi-grid">
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">كل الإشعارات</p>
@@ -77,63 +84,67 @@ export function AdminNotificationsPanel() {
 
       <h2 className="text-base font-black text-ink">الإشعارات الداخلية</h2>
       {items.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">لا توجد إشعارات في النظام بعد.</p>
         </Card>
       ) : (
-        <ul className="admin-ops__queue">
-          {items.map((item) => (
-            <li key={item.id} className="admin-ops__queue-item">
-              <div>
-                <p className="admin-ops__queue-label">{item.title}</p>
-                <p className="admin-ops__queue-meta">
-                  {item.body} · {item.userId} · {item.type}
-                </p>
-                <p className="admin-ops__queue-meta">
-                  {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
-                </p>
-              </div>
-              <span
-                className={`admin-ops__status-chip${
-                  item.read ? "" : " admin-ops__status-chip--warn"
-                }`}
-              >
-                {item.read ? "مقروء" : "جديد"}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+          <ul className="admin-ops__queue p-3">
+            {items.map((item) => (
+              <li key={item.id} className="admin-ops__queue-item">
+                <div>
+                  <p className="admin-ops__queue-label">{item.title}</p>
+                  <p className="admin-ops__queue-meta">
+                    {item.body} · {item.userId} · {item.type}
+                  </p>
+                  <p className="admin-ops__queue-meta">
+                    {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
+                  </p>
+                </div>
+                <span
+                  className={`admin-ops__status-chip${
+                    item.read ? "" : " admin-ops__status-chip--warn"
+                  }`}
+                >
+                  {item.read ? "مقروء" : "جديد"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
 
-      <h2 className="mt-4 text-base font-black text-ink">سجل البريد الإلكتروني</h2>
+      <h2 className="text-base font-black text-ink">سجل البريد الإلكتروني</h2>
       {emailLogs.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">لم يُسجَّل إرسال بريد بعد.</p>
         </Card>
       ) : (
-        <ul className="admin-ops__queue">
-          {emailLogs.map((item) => (
-            <li key={item.id} className="admin-ops__queue-item">
-              <div>
-                <p className="admin-ops__queue-label">{item.subject}</p>
-                <p className="admin-ops__queue-meta">
-                  {item.to} · {item.type} · {item.entityId}
-                </p>
-                <p className="admin-ops__queue-meta">
-                  {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
-                  {item.error ? ` · ${item.error}` : ""}
-                </p>
-              </div>
-              <span
-                className={`admin-ops__status-chip${
-                  item.status === "failed" ? " admin-ops__status-chip--warn" : ""
-                }`}
-              >
-                {emailStatusLabel[item.status]}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+          <ul className="admin-ops__queue p-3">
+            {emailLogs.map((item) => (
+              <li key={item.id} className="admin-ops__queue-item">
+                <div>
+                  <p className="admin-ops__queue-label">{item.subject}</p>
+                  <p className="admin-ops__queue-meta">
+                    {item.to} · {item.type} · {item.entityId}
+                  </p>
+                  <p className="admin-ops__queue-meta">
+                    {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
+                    {item.error ? ` · ${item.error}` : ""}
+                  </p>
+                </div>
+                <span
+                  className={`admin-ops__status-chip${
+                    item.status === "failed" ? " admin-ops__status-chip--warn" : ""
+                  }`}
+                >
+                  {emailStatusLabel[item.status]}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
     </div>
   );

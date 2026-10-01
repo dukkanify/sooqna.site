@@ -277,36 +277,51 @@ export function AdminOrdersPanel() {
   }
 
   return (
-    <div className="grid gap-4">
-      <div className="admin-ops__toolbar flex flex-wrap items-end gap-3">
-        <div className="min-w-[12rem] flex-1">
-          <Input
-            label="بحث"
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="عنوان، مشتري، بائع، رقم طلب…"
-            value={query}
-          />
-        </div>
-        <div className="min-w-[11rem]">
-          <Select
-            label="التصفية"
-            onChange={(e) => setFilter(e.target.value as OrderFilter)}
-            options={filterOptions}
-            value={filter}
-          />
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          مكتب الطلبات — صفّح، افتح التفاصيل، وأدر الحالة والدليل من بطاقة واحدة.
+        </p>
+        <div className="admin-desk-toolbar__actions">
+          <Button href="/admin/escrow" size="sm" variant="secondary">
+            الضمان
+          </Button>
+          <Button href="/admin/disputes" size="sm" variant="ghost">
+            النزاعات
+          </Button>
         </div>
       </div>
+
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
+          <div className="min-w-[12rem] flex-1">
+            <Input
+              label="بحث"
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="عنوان، مشتري، بائع، رقم طلب…"
+              value={query}
+            />
+          </div>
+          <div className="min-w-[11rem]">
+            <Select
+              label="التصفية"
+              onChange={(e) => setFilter(e.target.value as OrderFilter)}
+              options={filterOptions}
+              value={filter}
+            />
+          </div>
+          <p className="pb-2 text-xs font-semibold text-muted">
+            {filtered.length} من {orders.length} طلب
+          </p>
+        </div>
+      </Card>
 
       {message ? (
         <FormMessage variant={message.variant}>{message.text}</FormMessage>
       ) : null}
 
-      <p className="admin-ops__queue-meta">
-        {filtered.length} من {orders.length} طلب
-      </p>
-
       {filtered.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">
             {orders.length === 0
               ? "لا توجد طلبات بعد."
@@ -314,6 +329,7 @@ export function AdminOrdersPanel() {
           </p>
         </Card>
       ) : (
+        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
         <ul className="admin-boxes__grid">
           {filtered.map((order) => {
             const held = isHeld(order);
@@ -407,6 +423,7 @@ export function AdminOrdersPanel() {
             );
           })}
         </ul>
+        </Card>
       )}
 
       <Modal
