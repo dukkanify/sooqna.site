@@ -260,46 +260,153 @@ export function AdminEscrowPanel() {
         <FormMessage variant={message.variant}>{message.text}</FormMessage>
       ) : null}
 
-      {filtered.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">
-            {orders.length === 0
-              ? "لا توجد معاملات ضمان."
-              : "لا نتائج لهذه التصفية."}
-          </p>
-        </Card>
-      ) : (
-        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
-        <ul className="admin-boxes__grid">
-          {filtered.map((order) => {
-            const held = isHeld(order);
-            return (
-              <li key={order.id} className="admin-boxes__card admin-boxes__card--wide">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="admin-ops__queue-label">{order.listingTitle}</p>
-                    <p className="admin-ops__queue-meta">
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الإعلان</th>
+                <th>الأطراف</th>
+                <th>المبلغ</th>
+                <th>الضمان</th>
+                <th>التاريخ</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    {orders.length === 0
+                      ? "لا توجد معاملات ضمان."
+                      : "لا نتائج لهذه التصفية."}
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((order) => {
+                  const held = isHeld(order);
+                  return (
+                    <tr key={order.id}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">
+                          {order.listingTitle}
+                        </p>
+                        {order.productVerificationStatus ? (
+                          <p className="text-xs text-muted">
+                            التوثيق:{" "}
+                            {productVerificationStatusLabel(
+                              order.productVerificationStatus,
+                            )}
+                          </p>
+                        ) : null}
+                        {order.stripePaymentIntentId ? (
+                          <p className="font-mono text-xs text-muted">
+                            {order.stripePaymentIntentId}
+                          </p>
+                        ) : null}
+                      </td>
+                      <td className="text-xs">
+                        {order.buyerName} → {order.sellerName}
+                      </td>
+                      <td>
+                        <CurrencyAmount
+                          amount={order.fees.productPrice}
+                          size="sm"
+                        />
+                      </td>
+                      <td>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant={held ? "escrow" : "muted"}>
+                            {escrowStatusLabel(order.escrowStatus)}
+                          </Badge>
+                          <span className="admin-ops__status-chip">
+                            {orderStatusLabel(order.status)} ·{" "}
+                            {paymentStatusLabel(order.paymentStatus)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-xs text-muted">
+                        {new Date(order.createdAt).toLocaleString(
+                          intlLocale(locale),
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            onClick={() => setDeskId(order.id)}
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            عرض
+                          </Button>
+                          {held ? (
+                            <Button
+                              loading={busyId === order.id}
+                              onClick={() => handleRelease(order.id)}
+                              size="sm"
+                              type="button"
+                            >
+                              تحرير للبائع
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {filtered.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">
+                {orders.length === 0
+                  ? "لا توجد معاملات ضمان."
+                  : "لا نتائج لهذه التصفية."}
+              </p>
+            </li>
+          ) : (
+            filtered.map((order) => {
+              const held = isHeld(order);
+              return (
+                <li key={order.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {order.listingTitle}
+                    </p>
+                    <CurrencyAmount
+                      amount={order.fees.productPrice}
+                      size="sm"
+                    />
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>
                       {order.buyerName} → {order.sellerName}
-                    </p>
-                    <p className="admin-ops__queue-meta">
-                      {new Date(order.createdAt).toLocaleString(intlLocale(locale))}
-                    </p>
+                    </span>
+                    <span>
+                      {new Date(order.createdAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </span>
                     {order.productVerificationStatus ? (
-                      <p className="admin-ops__queue-meta">
+                      <span>
                         التوثيق:{" "}
                         {productVerificationStatusLabel(
                           order.productVerificationStatus,
                         )}
-                      </p>
+                      </span>
                     ) : null}
                     {order.stripePaymentIntentId ? (
-                      <p className="admin-ops__queue-meta font-mono">
+                      <span className="font-mono">
                         {order.stripePaymentIntentId}
-                      </p>
+                      </span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <CurrencyAmount amount={order.fees.productPrice} size="sm" />
+                  <div className="flex flex-wrap gap-2">
                     <Badge variant={held ? "escrow" : "muted"}>
                       {escrowStatusLabel(order.escrowStatus)}
                     </Badge>
@@ -308,34 +415,32 @@ export function AdminEscrowPanel() {
                       {paymentStatusLabel(order.paymentStatus)}
                     </span>
                   </div>
-                </div>
-
-                <div className="admin-boxes__card-actions">
-                  <Button
-                    onClick={() => setDeskId(order.id)}
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    عرض
-                  </Button>
-                  {held ? (
+                  <div className="admin-desk-mobile-card__actions">
                     <Button
-                      loading={busyId === order.id}
-                      onClick={() => handleRelease(order.id)}
+                      onClick={() => setDeskId(order.id)}
                       size="sm"
                       type="button"
+                      variant="secondary"
                     >
-                      تحرير للبائع
+                      عرض
                     </Button>
-                  ) : null}
-                </div>
-              </li>
-            );
-          })}
+                    {held ? (
+                      <Button
+                        loading={busyId === order.id}
+                        onClick={() => handleRelease(order.id)}
+                        size="sm"
+                        type="button"
+                      >
+                        تحرير للبائع
+                      </Button>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })
+          )}
         </ul>
-        </Card>
-      )}
+      </Card>
 
       <Modal
         description="معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع."

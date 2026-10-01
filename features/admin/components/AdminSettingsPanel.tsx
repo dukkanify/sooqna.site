@@ -61,9 +61,11 @@ export function AdminSettingsPanel() {
 
   if (!settings) {
     return (
-      <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-        <p className="text-sm text-muted">جاري تحميل الإعدادات...</p>
-      </Card>
+      <div className="admin-desk grid gap-4">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
+          <p className="text-sm text-muted">جاري تحميل الإعدادات...</p>
+        </Card>
+      </div>
     );
   }
 
@@ -75,9 +77,9 @@ export function AdminSettingsPanel() {
         </p>
       </div>
 
-      <section className="admin-ops__panel">
-        <h2 className="admin-ops__panel-title">الرسوم والمدفوعات</h2>
-        <p className="admin-ops__panel-sub">
+      <Card className="admin-desk-help p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">الرسوم والمدفوعات</h2>
+        <p className="mt-2 text-xs text-muted">
           تتحكم في نسبة المنصة وبوابة الدفع لكل طلب جديد.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -115,10 +117,13 @@ export function AdminSettingsPanel() {
             }
           />
         </div>
-      </section>
+      </Card>
 
-      <section className="admin-ops__panel">
-        <h2 className="admin-ops__panel-title">تشغيل الموقع</h2>
+      <Card className="admin-desk-help p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">تشغيل الموقع</h2>
+        <p className="mt-2 text-xs text-muted">
+          مدد الضمان والنزاعات والتميّز، مع سياسات التشغيل الأساسية.
+        </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <Input
             label="أيام حجز الضمان"
@@ -235,7 +240,7 @@ export function AdminSettingsPanel() {
             <span>اعتماد الحساب تلقائياً بعد التحقق من البريد</span>
           </label>
         </div>
-      </section>
+      </Card>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button disabled={saving} onClick={handleSave} type="button">

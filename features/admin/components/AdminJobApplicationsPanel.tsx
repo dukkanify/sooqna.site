@@ -100,52 +100,140 @@ export function AdminJobApplicationsPanel() {
         </p>
       </div>
 
-      {items.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">لا توجد طلبات توظيف.</p>
-        </Card>
-      ) : (
-        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
-          <ul className="admin-ops__queue p-3">
-            {items.map((item) => {
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الوظيفة</th>
+                <th>المتقدم</th>
+                <th>المدينة / الخبرة</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    لا توجد طلبات توظيف.
+                  </td>
+                </tr>
+              ) : (
+                items.map((item) => {
+                  const actions = ADMIN_ACTIONS[item.status] ?? [];
+                  return (
+                    <tr key={item.id}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">
+                          {item.listingTitle}
+                        </p>
+                      </td>
+                      <td className="admin-desk-cell-wrap text-xs">
+                        {item.applicantName}
+                        <br />
+                        {item.applicantEmail} · {item.phone}
+                      </td>
+                      <td className="text-xs">
+                        {item.currentCity} · خبرة {item.yearsOfExperience} سنة
+                      </td>
+                      <td className="text-xs text-muted">
+                        {new Date(item.createdAt).toLocaleString(
+                          intlLocale(locale),
+                        )}
+                      </td>
+                      <td>
+                        <span
+                          className={`admin-ops__status-chip${statusChipClass(item.status)}`}
+                        >
+                          {jobStatusLabel(item.status)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          {actions.map((action) => (
+                            <Button
+                              key={action.value}
+                              loading={busyId === item.id}
+                              onClick={() => patchStatus(item.id, action.value)}
+                              size="sm"
+                              type="button"
+                              variant={
+                                action.value === "rejected" ? "ghost" : "secondary"
+                              }
+                            >
+                              {action.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {items.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا توجد طلبات توظيف.</p>
+            </li>
+          ) : (
+            items.map((item) => {
               const actions = ADMIN_ACTIONS[item.status] ?? [];
               return (
-                <li key={item.id} className="admin-ops__queue-item">
-                  <div>
-                    <p className="admin-ops__queue-label">{item.listingTitle}</p>
-                    <p className="admin-ops__queue-meta">
-                      {item.applicantName} · {item.applicantEmail} · {item.phone}
+                <li key={item.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {item.listingTitle}
                     </p>
-                    <p className="admin-ops__queue-meta">
-                      {item.currentCity} · خبرة {item.yearsOfExperience} سنة ·{" "}
-                      {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
                     <span
                       className={`admin-ops__status-chip${statusChipClass(item.status)}`}
                     >
                       {jobStatusLabel(item.status)}
                     </span>
-                    {actions.map((action) => (
-                      <Button
-                        key={action.value}
-                        loading={busyId === item.id}
-                        onClick={() => patchStatus(item.id, action.value)}
-                        size="sm"
-                        type="button"
-                        variant={action.value === "rejected" ? "ghost" : "secondary"}
-                      >
-                        {action.label}
-                      </Button>
-                    ))}
                   </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>{item.applicantName}</span>
+                    <span>
+                      {item.applicantEmail} · {item.phone}
+                    </span>
+                    <span>
+                      {item.currentCity} · خبرة {item.yearsOfExperience} سنة
+                    </span>
+                    <span>
+                      {new Date(item.createdAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </span>
+                  </div>
+                  {actions.length > 0 ? (
+                    <div className="admin-desk-mobile-card__actions">
+                      {actions.map((action) => (
+                        <Button
+                          key={action.value}
+                          loading={busyId === item.id}
+                          onClick={() => patchStatus(item.id, action.value)}
+                          size="sm"
+                          type="button"
+                          variant={
+                            action.value === "rejected" ? "ghost" : "secondary"
+                          }
+                        >
+                          {action.label}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : null}
                 </li>
               );
-            })}
-          </ul>
-        </Card>
-      )}
+            })
+          )}
+        </ul>
+      </Card>
     </div>
   );
 }

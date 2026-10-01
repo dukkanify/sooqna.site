@@ -1,7 +1,15 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type FormEvent,
+  type SetStateAction,
+} from "react";
 import Link from "next/link";
 import type { LocationRecord } from "@/types/domain/location";
 import { Badge } from "@/shared/ui/Badge";
@@ -276,8 +284,8 @@ export function AdminLocationsPanel() {
         </form>
       </Card>
 
-      <Card className="p-4" variant="flat">
-        <div className="flex flex-wrap items-end gap-3">
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid flex flex-wrap items-end gap-3">
           <div className="min-w-[220px] flex-1">
             <Input
               label="بحث سريع"
@@ -295,125 +303,159 @@ export function AdminLocationsPanel() {
       </Card>
 
       {loading ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">جاري تحميل المواقع...</p>
         </Card>
-      ) : filtered.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">
-            {locations.length === 0
-              ? "لا توجد مواقع بعد — أضف أول مدينة من النموذج أعلاه."
-              : "لا توجد نتائج مطابقة للبحث."}
-          </p>
-        </Card>
       ) : (
-        <div className="admin-locations__grid admin-boxes__grid">
-          {filtered.map((location) => {
-            const isEditing = editingId === location.id;
-            return (
-              <Card
-                key={location.id}
-                className={`admin-locations__card p-5${
-                  isEditing ? " admin-locations__card--editing" : ""
-                }`}
-                variant="flat"
-              >
-                {isEditing ? (
-                  <div className="grid gap-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-sm font-bold text-ink">
-                        تعديل الموقع
-                      </h3>
-                      <Badge variant={location.enabled ? "verified" : "rejected"}>
+        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+          <div className="admin-desk-table-scroll">
+            <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+              <thead>
+                <tr>
+                  <th>المدينة</th>
+                  <th>الإمارة</th>
+                  <th>الحالة</th>
+                  <th>الترتيب</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td className="text-muted" colSpan={5}>
+                      {locations.length === 0
+                        ? "لا توجد مواقع بعد — أضف أول مدينة من النموذج أعلاه."
+                        : "لا توجد نتائج مطابقة للبحث."}
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((location) => {
+                    const isEditing = editingId === location.id;
+                    return (
+                      <Fragment key={location.id}>
+                        <tr>
+                          <td className="admin-desk-cell-wrap">
+                            <p className="admin-desk-cell-title font-bold text-ink">
+                              {location.name}
+                            </p>
+                          </td>
+                          <td className="admin-desk-cell-wrap text-sm text-muted">
+                            {location.emirate || "—"}
+                          </td>
+                          <td>
+                            <Badge
+                              variant={
+                                location.enabled ? "verified" : "rejected"
+                              }
+                            >
+                              {location.enabled ? "مفعّل" : "معطّل"}
+                            </Badge>
+                          </td>
+                          <td>{location.sortOrder}</td>
+                          <td>
+                            <div className="flex flex-wrap gap-1">
+                              <Button
+                                aria-expanded={isEditing}
+                                onClick={() =>
+                                  isEditing
+                                    ? cancelEdit()
+                                    : startEdit(location)
+                                }
+                                size="sm"
+                                type="button"
+                                variant={isEditing ? "ghost" : "secondary"}
+                              >
+                                {isEditing ? "إخفاء" : "تعديل"}
+                              </Button>
+                              <Button
+                                loading={busyId === location.id}
+                                onClick={() => void toggleEnabled(location)}
+                                size="sm"
+                                type="button"
+                                variant={
+                                  location.enabled ? "ghost" : "secondary"
+                                }
+                              >
+                                {location.enabled ? "تعطيل" : "تفعيل"}
+                              </Button>
+                              <Button
+                                loading={busyId === location.id}
+                                onClick={() => void handleDelete(location)}
+                                size="sm"
+                                type="button"
+                                variant="ghost"
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                        {isEditing ? (
+                          <tr>
+                            <td className="admin-desk-cell-wrap" colSpan={5}>
+                              <LocationEditPanel
+                                busyId={busyId}
+                                editDraft={editDraft}
+                                editError={editError}
+                                location={location}
+                                onCancel={cancelEdit}
+                                onSave={() => void saveEdit(location)}
+                                setEditDraft={setEditDraft}
+                              />
+                            </td>
+                          </tr>
+                        ) : null}
+                      </Fragment>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <ul className="admin-desk-mobile-list">
+            {filtered.length === 0 ? (
+              <li className="admin-desk-mobile-card">
+                <p className="text-sm text-muted">
+                  {locations.length === 0
+                    ? "لا توجد مواقع بعد — أضف أول مدينة من النموذج أعلاه."
+                    : "لا توجد نتائج مطابقة للبحث."}
+                </p>
+              </li>
+            ) : (
+              filtered.map((location) => {
+                const isEditing = editingId === location.id;
+                return (
+                  <li key={location.id} className="admin-desk-mobile-card">
+                    <div className="admin-desk-mobile-card__head">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-ink">
+                          {location.name}
+                        </p>
+                        <p className="text-xs text-muted">
+                          {location.emirate || "بدون إمارة"}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={location.enabled ? "verified" : "rejected"}
+                      >
                         {location.enabled ? "مفعّل" : "معطّل"}
                       </Badge>
                     </div>
-                    <Input
-                      label="اسم المدينة"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          name: event.target.value,
-                        }))
-                      }
-                      value={editDraft.name}
-                    />
-                    <Input
-                      label="الإمارة (اختياري)"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          emirate: event.target.value,
-                        }))
-                      }
-                      value={editDraft.emirate}
-                    />
-                    <Input
-                      label="ترتيب العرض"
-                      onChange={(event) =>
-                        setEditDraft((current) => ({
-                          ...current,
-                          sortOrder: event.target.value,
-                        }))
-                      }
-                      type="number"
-                      value={editDraft.sortOrder}
-                    />
-                    {editError ? (
-                      <FormMessage variant="error">{editError}</FormMessage>
-                    ) : null}
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        loading={busyId === location.id}
-                        onClick={() => void saveEdit(location)}
-                        size="sm"
-                        type="button"
-                        variant="primary"
-                      >
-                        حفظ التعديل
-                      </Button>
-                      <Button
-                        onClick={cancelEdit}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        إلغاء
-                      </Button>
+                    <div className="admin-desk-mobile-card__meta">
+                      <span>ترتيب {location.sortOrder}</span>
                     </div>
-                  </div>
-                ) : (
-                  <div className="grid gap-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-ink">{location.name}</p>
-                        {location.emirate ? (
-                          <p className="mt-1 text-xs text-muted">
-                            {location.emirate}
-                          </p>
-                        ) : (
-                          <p className="mt-1 text-xs text-muted">بدون إمارة</p>
-                        )}
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <Badge
-                            variant={location.enabled ? "verified" : "rejected"}
-                          >
-                            {location.enabled ? "مفعّل" : "معطّل"}
-                          </Badge>
-                          <span className="text-xs font-semibold text-muted">
-                            ترتيب: {location.sortOrder}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="admin-locations__actions flex flex-wrap gap-2">
+                    <div className="admin-desk-mobile-card__actions">
                       <Button
-                        onClick={() => startEdit(location)}
+                        aria-expanded={isEditing}
+                        onClick={() =>
+                          isEditing ? cancelEdit() : startEdit(location)
+                        }
                         size="sm"
                         type="button"
-                        variant="secondary"
+                        variant={isEditing ? "ghost" : "secondary"}
                       >
-                        تعديل
+                        {isEditing ? "إخفاء" : "تعديل"}
                       </Button>
                       <Button
                         loading={busyId === location.id}
@@ -434,17 +476,105 @@ export function AdminLocationsPanel() {
                         حذف
                       </Button>
                     </div>
-                  </div>
-                )}
-              </Card>
-            );
-          })}
-        </div>
+                    {isEditing ? (
+                      <LocationEditPanel
+                        busyId={busyId}
+                        editDraft={editDraft}
+                        editError={editError}
+                        location={location}
+                        onCancel={cancelEdit}
+                        onSave={() => void saveEdit(location)}
+                        setEditDraft={setEditDraft}
+                      />
+                    ) : null}
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </Card>
       )}
 
-      <Link className="text-sm font-semibold text-primary" href="/admin">
+      <Link className="admin-ops__text-link" href="/admin">
         ← العودة للإدارة
       </Link>
+    </div>
+  );
+}
+
+type LocationEditPanelProps = {
+  location: LocationRecord;
+  editDraft: EditDraft;
+  setEditDraft: Dispatch<SetStateAction<EditDraft>>;
+  editError: string;
+  busyId: string | null;
+  onSave: () => void;
+  onCancel: () => void;
+};
+
+function LocationEditPanel({
+  location,
+  editDraft,
+  setEditDraft,
+  editError,
+  busyId,
+  onSave,
+  onCancel,
+}: LocationEditPanelProps) {
+  return (
+    <div className="grid gap-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-bold text-ink">تعديل الموقع</h3>
+        <Badge variant={location.enabled ? "verified" : "rejected"}>
+          {location.enabled ? "مفعّل" : "معطّل"}
+        </Badge>
+      </div>
+      <Input
+        label="اسم المدينة"
+        onChange={(event) =>
+          setEditDraft((current) => ({
+            ...current,
+            name: event.target.value,
+          }))
+        }
+        value={editDraft.name}
+      />
+      <Input
+        label="الإمارة (اختياري)"
+        onChange={(event) =>
+          setEditDraft((current) => ({
+            ...current,
+            emirate: event.target.value,
+          }))
+        }
+        value={editDraft.emirate}
+      />
+      <Input
+        label="ترتيب العرض"
+        onChange={(event) =>
+          setEditDraft((current) => ({
+            ...current,
+            sortOrder: event.target.value,
+          }))
+        }
+        type="number"
+        value={editDraft.sortOrder}
+      />
+      {editError ? <FormMessage variant="error">{editError}</FormMessage> : null}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          loading={busyId === location.id}
+          onClick={onSave}
+          size="sm"
+          type="button"
+          variant="primary"
+        >
+          حفظ التعديل
+        </Button>
+        <Button onClick={onCancel} size="sm" type="button" variant="ghost">
+          إلغاء
+        </Button>
+      </div>
     </div>
   );
 }
