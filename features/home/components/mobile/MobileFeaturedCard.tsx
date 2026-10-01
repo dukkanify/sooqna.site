@@ -26,13 +26,11 @@ import { useTx } from "@/shared/i18n/useTx";
 import "@/features/listings/components/featured-badge.css";
 
 type MobileFeaturedCardProps = {
-  imageFit?: "contain" | "cover";
   listing: Listing;
   priority?: boolean;
 };
 
 export const MobileFeaturedCard = memo(function MobileFeaturedCard({
-  imageFit = "cover",
   listing,
   priority = false,
 }: MobileFeaturedCardProps) {
@@ -61,7 +59,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
           {imageUrl ? (
             <AppImage
               alt=""
-              className={`mobile-home-featured-card__image ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
+              className="mobile-home-featured-card__image object-cover"
               fill
               loading={priority ? undefined : "lazy"}
               priority={priority}

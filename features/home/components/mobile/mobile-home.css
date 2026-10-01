@@ -1399,6 +1399,12 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   aspect-ratio: 3 / 2;
   overflow: hidden;
   isolation: isolate;
+  background: var(--mh-surface-muted, #eef2f7);
+}
+
+.mobile-home-featured-card__image {
+  object-fit: cover !important;
+  object-position: center;
 }
 
 .mobile-home-featured-card__badge-featured {
