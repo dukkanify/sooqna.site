@@ -21,7 +21,11 @@ import {
   getCategoryBySlug,
 } from "@/services/categories";
 import { getSearchSuggestionTitles } from "@/services/listings/home-feed";
-import { countSearchListings, searchListings } from "@/services/listings";
+import {
+  countSearchListings,
+  resolveSearchResultTotal,
+  searchListings,
+} from "@/services/listings";
 import { getRequestLocale } from "@/shared/i18n/locale";
 import { tx } from "@/shared/i18n/tx";
 
@@ -103,6 +107,7 @@ export default async function CategoryPage({
       getLocations({ enabledOnly: true }),
     ]);
   const cities = locationRows.map((loc) => ({ id: loc.id, name: loc.name }));
+  const resultTotal = resolveSearchResultTotal(listings.length, total);
 
   const suggestions = buildSearchSuggestions({
     categories,
@@ -127,6 +132,7 @@ export default async function CategoryPage({
           />
 
           <CategoryHero
+            activeCount={resultTotal}
             category={category}
             compact={category.id === "cars"}
           />
@@ -169,7 +175,7 @@ export default async function CategoryPage({
                 categories={categories}
                 listings={listings}
                 selectedFilters={selectedFilters}
-                serverTotal={total}
+                serverTotal={resultTotal}
               />
             </div>
           </div>

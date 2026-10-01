@@ -325,6 +325,33 @@ textarea {
   object-position: center;
 }
 
+/* Desk / table: show the full 3D asset without cropping */
+.category-mark--compact {
+  border-radius: 24%;
+  box-shadow:
+    0 1px 2px rgb(18 32 56 / 8%),
+    0 4px 12px rgb(18 32 56 / 8%),
+    inset 0 1px 0 rgb(255 255 255 / 70%);
+}
+
+.category-mark--compact .category-mark__image {
+  object-fit: contain !important;
+  object-position: center center;
+  padding: 18% !important;
+  box-sizing: border-box;
+}
+
+.category-mark--compact .category-mark__glyph {
+  width: 58% !important;
+  height: 58% !important;
+}
+
+/* Keep desk marks still — no homepage hover lift */
+.admin-category-mark .category-mark,
+.admin-category-mark:hover .category-mark {
+  transform: none !important;
+}
+
 .category-mark__glyph {
   position: relative;
   z-index: 1;

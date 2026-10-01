@@ -408,6 +408,18 @@ export async function countMatchingListings(query: ListingQuery = {}): Promise<n
 
   try {
     const { where, values } = listingSqlFilter(countable);
+    // Count after the same payload visibility rules as queryListings.
+    // Bare COUNT(*) can drift when table id/slug columns disagree with
+    // payload.id / payload.source (e.g. live-mkt rows remapped on write).
+    if (shouldExcludeFixtures(countable)) {
+      let sql = `SELECT payload FROM ${TABLE}`;
+      if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
+      const result = await pool.query(sql, values);
+      return result.rows
+        .map((row) => row.payload as Listing)
+        .filter((listing) => !isHiddenFromPublicCatalog(listing)).length;
+    }
+
     let sql = `SELECT COUNT(*)::int AS c FROM ${TABLE}`;
     if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
     const result = await pool.query(sql, values);

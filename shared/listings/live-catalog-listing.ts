@@ -5,6 +5,7 @@ export const LIVE_MARKETPLACE_SOURCE = "SOOQNA_LIVE_MARKETPLACE";
 export const LIVE_MARKETPLACE_LISTING_SQL = `(
   COALESCE(payload->>'source', '') = '${LIVE_MARKETPLACE_SOURCE}'
   OR id LIKE 'live-mkt-%'
+  OR COALESCE(payload->>'id', '') LIKE 'live-mkt-%'
 )`;
 
 export type LiveCatalogListingRef = {
