@@ -12,11 +12,7 @@ import { getAllWalletAccounts } from "@/services/payments/wallet-ledger";
 import { getAllUsers } from "@/services/auth/user-store";
 import type { StoredUser } from "@/types/domain/user";
 
-const DEMO_EMAIL_SUFFIXES = [
-  "@sooqna.demo",
-  "@uaesales.demo",
-  "@example.com",
-] as const;
+const DEMO_EMAIL_SUFFIXES = ["@sooqna.demo", "@uaesales.demo"] as const;
 
 const BLOCKED_USER_ID_SET = new Set<string>(BLOCKED_USER_IDS);
 
