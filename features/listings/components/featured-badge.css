@@ -1,39 +1,117 @@
-/* Featured (مميّز) — professional gold marker for cards + listing detail */
+/* Featured (مميّز) — luxury espresso seal + luminous gold star */
 
 .listing-featured-badge {
+  --featured-seal-ink: #14100a;
+  --featured-seal-mid: #2a2012;
+  --featured-seal-gold: #e8c56a;
+  --featured-seal-gold-deep: #c9a45c;
+  --featured-seal-champagne: #f5e6bc;
+
+  position: relative;
   display: inline-flex;
   align-items: center;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(168 134 66 / 55%);
-  background: linear-gradient(135deg, #f0d89a 0%, #d4b06a 42%, #c9a45c 72%, #a88642 100%);
-  color: #1a1408;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 0.4rem;
+  border: 1px solid rgb(232 197 106 / 48%);
+  background:
+    linear-gradient(
+      145deg,
+      rgb(48 38 20 / 94%) 0%,
+      rgb(26 20 10 / 96%) 48%,
+      rgb(16 12 6 / 97%) 100%
+    );
+  color: var(--featured-seal-champagne);
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   line-height: 1.1;
   white-space: nowrap;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 45%),
-    0 1px 2px rgb(26 20 8 / 12%);
+    0 2px 12px rgb(0 0 0 / 28%),
+    inset 0 1px 0 rgb(255 224 160 / 18%),
+    inset 0 -1px 0 rgb(0 0 0 / 25%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding-inline-start: 0.55rem;
+}
+
+.listing-featured-badge::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset-block: 22%;
+  inset-inline-start: 0;
+  width: 2.5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    #f3e0a8 0%,
+    var(--featured-seal-gold) 45%,
+    var(--featured-seal-gold-deep) 100%
+  );
+  box-shadow: 0 0 10px rgb(232 197 106 / 55%);
+}
+
+.listing-featured-badge__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 36%,
+    rgb(255 230 170 / 14%) 50%,
+    transparent 64%
+  );
+  background-size: 220% 100%;
+  background-position: 120% 0;
+  animation: listing-featured-sheen 5.2s ease-in-out infinite;
+}
+
+.listing-featured-badge > :not(.listing-featured-badge__sheen) {
+  position: relative;
+  z-index: 1;
 }
 
 .listing-featured-badge__star {
-  color: #1a1408;
+  color: var(--featured-seal-gold);
+  filter: drop-shadow(0 0 5px rgb(232 197 106 / 42%));
 }
 
 .listing-featured-badge__star path {
-  fill: #1a1408;
-  stroke: #1a1408;
-  stroke-width: 1.2;
+  fill: var(--featured-seal-gold);
+  stroke: #f0d89a;
+  stroke-width: 0.6;
 }
 
 .listing-featured-badge--media {
-  border-color: rgb(255 255 255 / 40%);
+  border-color: rgb(243 224 168 / 58%);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 50%),
-    0 2px 10px rgb(15 23 42 / 28%),
-    0 0 0 1px rgb(26 20 8 / 8%);
+    0 3px 16px rgb(0 0 0 / 38%),
+    0 0 0 1px rgb(232 197 106 / 12%),
+    inset 0 1px 0 rgb(255 230 170 / 22%),
+    inset 0 -1px 0 rgb(0 0 0 / 30%);
 }
 
 .listing-featured-badge--md {
-  border-radius: 0.55rem;
+  border-radius: 0.45rem;
+  padding-inline-start: 0.7rem;
+}
+
+@keyframes listing-featured-sheen {
+  0%,
+  68% {
+    background-position: 130% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listing-featured-badge__sheen {
+    animation: none;
+    opacity: 0.35;
+    background-position: 50% 0;
+  }
 }

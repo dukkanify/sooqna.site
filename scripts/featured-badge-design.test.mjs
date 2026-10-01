@@ -1,5 +1,5 @@
 /**
- * Featured badge redesign — clearer gold marker with star.
+ * Featured badge redesign — espresso seal + luminous gold star.
  * Run: npm test
  */
 import assert from "node:assert/strict";
@@ -15,15 +15,18 @@ function read(rel) {
 }
 
 describe("featured badge design", () => {
-  it("FeaturedBadge uses gold marker + star, not tiny rounded-full pill", () => {
+  it("FeaturedBadge uses espresso seal + gold star, not muddy mustard pill", () => {
     const badge = read("features/listings/components/FeaturedBadge.tsx");
     const css = read("features/listings/components/featured-badge.css");
     const cards = read("features/listings/components/ListingCardBadges.tsx");
     assert.match(badge, /listing-featured-badge/);
+    assert.match(badge, /listing-featured-badge__sheen/);
     assert.match(badge, /name="star"/);
     assert.match(badge, /مميّز/);
-    assert.match(css, /linear-gradient/);
-    assert.match(css, /#c9a45c/);
+    assert.match(css, /listing-featured-sheen/);
+    assert.match(css, /#e8c56a/);
+    assert.match(css, /backdrop-filter/);
+    assert.doesNotMatch(css, /#f0d89a 0%, #d4b06a/);
     assert.doesNotMatch(cards, /!rounded-full/);
     assert.match(cards, /FeaturedBadge/);
   });
@@ -42,5 +45,11 @@ describe("featured badge design", () => {
   it("EN phrase covers مميّز label", () => {
     const phrases = JSON.parse(read("shared/i18n/phrases.en.json"));
     assert.equal(phrases["مميّز"] ?? phrases["مميز"], "Featured");
+  });
+
+  it("shared Badge featured variant matches seal palette", () => {
+    const badge = read("shared/ui/Badge.tsx");
+    assert.match(badge, /from-\[#2a2012\]/);
+    assert.match(badge, /text-\[#f5e6bc\]/);
   });
 });
