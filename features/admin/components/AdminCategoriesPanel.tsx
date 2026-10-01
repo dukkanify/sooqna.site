@@ -1,7 +1,14 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import Link from "next/link";
 import type { AdminCategoryRecord, CategoryIconName } from "@/types";
 import { getSessionUser } from "@/services/storage";
@@ -145,6 +152,10 @@ export function AdminCategoriesPanel() {
     setSuccess(null);
   }
 
+  function cancelEdit() {
+    setEditingId(null);
+  }
+
   function moveEditSub(index: number, direction: -1 | 1) {
     setEditSubs((current) => {
       const next = [...current];
@@ -274,9 +285,29 @@ export function AdminCategoriesPanel() {
     }
   }
 
+  const editPanelProps = {
+    editName,
+    setEditName,
+    editIcon,
+    setEditIcon,
+    editProfile,
+    setEditProfile,
+    reseedForm,
+    setReseedForm,
+    editSubs,
+    setEditSubs,
+    editSubDraft,
+    setEditSubDraft,
+    moveEditSub,
+    addEditSub,
+    busyId,
+    cancelEdit,
+    saveEdit,
+  };
+
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted">{sorted.length} تصنيف</p>
         <Button
           onClick={() => setShowCreate((prev) => !prev)}
@@ -387,277 +418,453 @@ export function AdminCategoriesPanel() {
         </Card>
       ) : null}
 
-      {sorted.length === 0 ? (
-        <p className="admin-categories__empty">لا توجد فئات.</p>
-      ) : (
-        <ul className="admin-categories__list">
-          {sorted.map((category, index) => {
-            const profile = category.featureProfile ?? "general";
-            const isEditing = editingId === category.id;
-            return (
-              <li
-                key={category.id}
-                className={`admin-categories__item${
-                  isEditing ? " admin-categories__item--editing" : ""
-                }`}
-              >
-                {isEditing ? (
-                  <div className="admin-categories__edit">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Input
-                        label="اسم الفئة"
-                        onChange={(event) => setEditName(event.target.value)}
-                        value={editName}
-                      />
-                      <Select
-                        label="الأيقونة"
-                        onChange={(event) =>
-                          setEditIcon(event.target.value as CategoryIconName)
-                        }
-                        options={CATEGORY_ICON_OPTIONS}
-                        value={editIcon}
-                      />
-                      <Select
-                        label="نوع القسم"
-                        onChange={(event) =>
-                          setEditProfile(
-                            event.target.value as CategoryFeatureProfile,
-                          )
-                        }
-                        options={CATEGORY_FEATURE_PROFILES.map((item) => ({
-                          label: item.label,
-                          value: item.id,
-                        }))}
-                        value={editProfile}
-                      />
-                      <label className="flex items-end gap-2 pb-2 text-xs text-ink">
-                        <input
-                          checked={reseedForm}
-                          onChange={(event) =>
-                            setReseedForm(event.target.checked)
-                          }
-                          type="checkbox"
-                        />
-                        إعادة تهيئة النموذج عند تغيير السلوك
-                      </label>
-                      <div className="sm:col-span-2 grid gap-2 rounded-[var(--radius-lg)] border border-border bg-surface/60 p-3">
-                        <p className="text-sm font-semibold text-ink">
-                          التصنيفات الفرعية
-                        </p>
-                        <p className="text-xs text-muted">
-                          تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم
-                          الفرعي» (وليست حقول النموذج مثل نوع الأثاث).
-                        </p>
-                        {editSubs.length === 0 ? (
-                          <p className="text-xs text-muted">
-                            لا توجد تصنيفات فرعية.
-                          </p>
-                        ) : (
-                          <ul className="grid gap-2">
-                            {editSubs.map((sub, subIndex) => (
-                              <li
-                                className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center"
-                                key={`${sub}-${subIndex}`}
-                              >
-                                <Input
-                                  aria-label={`تصنيف فرعي ${subIndex + 1}`}
-                                  onChange={(event) => {
-                                    const value = event.target.value;
-                                    setEditSubs((current) =>
-                                      current.map((item, rowIndex) =>
-                                        rowIndex === subIndex ? value : item,
-                                      ),
-                                    );
-                                  }}
-                                  value={sub}
-                                />
-                                <div className="flex flex-wrap gap-1">
-                                  <Button
-                                    disabled={subIndex === 0}
-                                    onClick={() => moveEditSub(subIndex, -1)}
-                                    size="sm"
-                                    type="button"
-                                    variant="ghost"
-                                  >
-                                    يمين
-                                  </Button>
-                                  <Button
-                                    disabled={subIndex === editSubs.length - 1}
-                                    onClick={() => moveEditSub(subIndex, 1)}
-                                    size="sm"
-                                    type="button"
-                                    variant="ghost"
-                                  >
-                                    يسار
-                                  </Button>
-                                  <Button
-                                    onClick={() =>
-                                      setEditSubs((current) =>
-                                        current.filter(
-                                          (_, rowIndex) =>
-                                            rowIndex !== subIndex,
-                                        ),
-                                      )
-                                    }
-                                    size="sm"
-                                    type="button"
-                                    variant="ghost"
-                                  >
-                                    حذف
-                                  </Button>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
-                          <Input
-                            label="إضافة تصنيف فرعي"
-                            onChange={(event) =>
-                              setEditSubDraft(event.target.value)
-                            }
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter") {
-                                event.preventDefault();
-                                addEditSub();
-                              }
-                            }}
-                            placeholder="مثال: سيارات فاخرة"
-                            value={editSubDraft}
-                          />
-                          <Button
-                            onClick={addEditSub}
-                            size="sm"
-                            type="button"
-                            variant="secondary"
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الفئة</th>
+                <th>النوع</th>
+                <th>الحالة</th>
+                <th>إعلانات</th>
+                <th>الترتيب</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    لا توجد فئات.
+                  </td>
+                </tr>
+              ) : (
+                sorted.map((category, index) => {
+                  const profile = category.featureProfile ?? "general";
+                  const isEditing = editingId === category.id;
+                  return (
+                    <Fragment key={category.id}>
+                      <tr>
+                        <td className="admin-desk-cell-wrap">
+                          <div className="flex items-center gap-2">
+                            <span aria-hidden>
+                              <CategoryIcon
+                                category={{ icon: category.icon }}
+                                size={22}
+                              />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="admin-desk-cell-title font-bold text-ink">
+                                {category.name}
+                              </p>
+                              <p className="text-xs text-muted" dir="ltr">
+                                {category.slug}
+                              </p>
+                              {category.subcategories.length > 0 ? (
+                                <p className="mt-0.5 text-xs text-muted">
+                                  {category.subcategories.slice(0, 3).join(" · ")}
+                                  {category.subcategories.length > 3 ? "…" : ""}
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <Badge variant="premium">
+                            {PROFILE_LABELS[profile] ?? profile}
+                          </Badge>
+                        </td>
+                        <td>
+                          <Badge
+                            variant={category.enabled ? "verified" : "rejected"}
                           >
-                            إضافة
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Button
-                        loading={busyId === category.id}
-                        onClick={() => void saveEdit(category)}
-                        size="sm"
-                        variant="primary"
-                      >
-                        حفظ
-                      </Button>
-                      <Button
-                        onClick={() => setEditingId(null)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        إلغاء
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="admin-categories__card-top">
-                      <div className="admin-categories__icon" aria-hidden>
+                            {category.enabled ? "مفعّلة" : "معطّلة"}
+                          </Badge>
+                        </td>
+                        <td>{listingCountLabel(category.listingCount, locale)}</td>
+                        <td>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              aria-label="تقديم في الترتيب"
+                              disabled={index === 0 || busyId === category.id}
+                              onClick={() => void moveCategory(category, -1)}
+                              size="sm"
+                              type="button"
+                              variant="ghost"
+                            >
+                              ‹
+                            </Button>
+                            <span className="text-xs font-semibold text-muted">
+                              {index + 1}
+                            </span>
+                            <Button
+                              aria-label="تأخير في الترتيب"
+                              disabled={
+                                index === sorted.length - 1 ||
+                                busyId === category.id
+                              }
+                              onClick={() => void moveCategory(category, 1)}
+                              size="sm"
+                              type="button"
+                              variant="ghost"
+                            >
+                              ›
+                            </Button>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="flex flex-wrap gap-1">
+                            <Button
+                              aria-expanded={isEditing}
+                              onClick={() =>
+                                isEditing
+                                  ? cancelEdit()
+                                  : startEdit(category)
+                              }
+                              size="sm"
+                              type="button"
+                              variant={isEditing ? "ghost" : "secondary"}
+                            >
+                              {isEditing ? "إخفاء" : "تعديل"}
+                            </Button>
+                            <Button
+                              loading={busyId === category.id}
+                              onClick={() => void toggleEnabled(category)}
+                              size="sm"
+                              type="button"
+                              variant={category.enabled ? "ghost" : "secondary"}
+                            >
+                              {category.enabled ? "تعطيل" : "تفعيل"}
+                            </Button>
+                            <Button
+                              loading={busyId === category.id}
+                              onClick={() => void deleteCategory(category)}
+                              size="sm"
+                              type="button"
+                              variant="ghost"
+                            >
+                              حذف
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                      {isEditing ? (
+                        <tr>
+                          <td className="admin-desk-cell-wrap" colSpan={6}>
+                            <CategoryEditPanel
+                              category={category}
+                              {...editPanelProps}
+                            />
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {sorted.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا توجد فئات.</p>
+            </li>
+          ) : (
+            sorted.map((category, index) => {
+              const profile = category.featureProfile ?? "general";
+              const isEditing = editingId === category.id;
+              return (
+                <li key={category.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <span aria-hidden>
                         <CategoryIcon
                           category={{ icon: category.icon }}
-                          size={28}
+                          size={22}
                         />
-                      </div>
-                      <div className="admin-categories__identity">
-                        <p className="admin-categories__name">{category.name}</p>
-                        <p className="admin-categories__slug" dir="ltr">
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-ink">
+                          {category.name}
+                        </p>
+                        <p className="text-xs text-muted" dir="ltr">
                           {category.slug}
                         </p>
                       </div>
-                      <div className="admin-categories__order">
-                        <Button
-                          aria-label="تقديم في الترتيب"
-                          disabled={index === 0 || busyId === category.id}
-                          onClick={() => void moveCategory(category, -1)}
-                          size="sm"
-                          type="button"
-                          variant="ghost"
-                        >
-                          ‹
-                        </Button>
-                        <span className="admin-categories__order-num">
-                          {index + 1}
-                        </span>
-                        <Button
-                          aria-label="تأخير في الترتيب"
-                          disabled={
-                            index === sorted.length - 1 ||
-                            busyId === category.id
-                          }
-                          onClick={() => void moveCategory(category, 1)}
-                          size="sm"
-                          type="button"
-                          variant="ghost"
-                        >
-                          ›
-                        </Button>
-                      </div>
                     </div>
-
-                    <div className="admin-categories__badges">
-                      <Badge
-                        variant={category.enabled ? "verified" : "rejected"}
-                      >
-                        {category.enabled ? "مفعّلة" : "معطّلة"}
-                      </Badge>
-                      <Badge variant="premium">
-                        {PROFILE_LABELS[profile] ?? profile}
-                      </Badge>
-                      <Badge variant="muted">
-                        {listingCountLabel(category.listingCount, locale)}
-                      </Badge>
-                    </div>
-
-                    {category.subcategories.length > 0 ? (
-                      <p className="admin-categories__subs">
-                        {category.subcategories.slice(0, 3).join(" · ")}
-                        {category.subcategories.length > 3 ? "…" : ""}
-                      </p>
-                    ) : (
-                      <p className="admin-categories__subs">بدون فرعيات</p>
-                    )}
-
-                    <div className="admin-categories__actions">
-                      <Button
-                        onClick={() => startEdit(category)}
-                        size="sm"
-                        variant="secondary"
-                      >
-                        تعديل
-                      </Button>
-                      <Button
-                        loading={busyId === category.id}
-                        onClick={() => void toggleEnabled(category)}
-                        size="sm"
-                        variant={category.enabled ? "ghost" : "secondary"}
-                      >
-                        {category.enabled ? "تعطيل" : "تفعيل"}
-                      </Button>
-                      <Button
-                        loading={busyId === category.id}
-                        onClick={() => void deleteCategory(category)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        حذف
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </li>
-            );
-          })}
+                    <Badge
+                      variant={category.enabled ? "verified" : "rejected"}
+                    >
+                      {category.enabled ? "مفعّلة" : "معطّلة"}
+                    </Badge>
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>{PROFILE_LABELS[profile] ?? profile}</span>
+                    <span>
+                      {listingCountLabel(category.listingCount, locale)}
+                    </span>
+                    <span>ترتيب {index + 1}</span>
+                  </div>
+                  {category.subcategories.length > 0 ? (
+                    <p className="text-xs text-muted">
+                      {category.subcategories.slice(0, 3).join(" · ")}
+                      {category.subcategories.length > 3 ? "…" : ""}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted">بدون فرعيات</p>
+                  )}
+                  <div className="admin-desk-mobile-card__actions">
+                    <Button
+                      aria-expanded={isEditing}
+                      onClick={() =>
+                        isEditing ? cancelEdit() : startEdit(category)
+                      }
+                      size="sm"
+                      type="button"
+                      variant={isEditing ? "ghost" : "secondary"}
+                    >
+                      {isEditing ? "إخفاء" : "تعديل"}
+                    </Button>
+                    <Button
+                      disabled={index === 0 || busyId === category.id}
+                      onClick={() => void moveCategory(category, -1)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      ‹
+                    </Button>
+                    <Button
+                      disabled={
+                        index === sorted.length - 1 || busyId === category.id
+                      }
+                      onClick={() => void moveCategory(category, 1)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      ›
+                    </Button>
+                    <Button
+                      loading={busyId === category.id}
+                      onClick={() => void toggleEnabled(category)}
+                      size="sm"
+                      type="button"
+                      variant={category.enabled ? "ghost" : "secondary"}
+                    >
+                      {category.enabled ? "تعطيل" : "تفعيل"}
+                    </Button>
+                    <Button
+                      loading={busyId === category.id}
+                      onClick={() => void deleteCategory(category)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      حذف
+                    </Button>
+                  </div>
+                  {isEditing ? (
+                    <CategoryEditPanel
+                      category={category}
+                      {...editPanelProps}
+                    />
+                  ) : null}
+                </li>
+              );
+            })
+          )}
         </ul>
-      )}
+      </Card>
 
-      <Link className="text-sm font-semibold text-primary" href="/admin">
+      <Link className="admin-ops__text-link" href="/admin">
         ← العودة للإدارة
       </Link>
+    </div>
+  );
+}
+
+type CategoryEditPanelProps = {
+  category: AdminCategoryRecord;
+  editName: string;
+  setEditName: (value: string) => void;
+  editIcon: CategoryIconName;
+  setEditIcon: (value: CategoryIconName) => void;
+  editProfile: CategoryFeatureProfile;
+  setEditProfile: (value: CategoryFeatureProfile) => void;
+  reseedForm: boolean;
+  setReseedForm: (value: boolean) => void;
+  editSubs: string[];
+  setEditSubs: Dispatch<SetStateAction<string[]>>;
+  editSubDraft: string;
+  setEditSubDraft: (value: string) => void;
+  moveEditSub: (index: number, direction: -1 | 1) => void;
+  addEditSub: () => void;
+  busyId: string | null;
+  cancelEdit: () => void;
+  saveEdit: (category: AdminCategoryRecord) => Promise<void>;
+};
+
+function CategoryEditPanel({
+  category,
+  editName,
+  setEditName,
+  editIcon,
+  setEditIcon,
+  editProfile,
+  setEditProfile,
+  reseedForm,
+  setReseedForm,
+  editSubs,
+  setEditSubs,
+  editSubDraft,
+  setEditSubDraft,
+  moveEditSub,
+  addEditSub,
+  busyId,
+  cancelEdit,
+  saveEdit,
+}: CategoryEditPanelProps) {
+  return (
+    <div className="grid gap-3 py-2">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Input
+          label="اسم الفئة"
+          onChange={(event) => setEditName(event.target.value)}
+          value={editName}
+        />
+        <Select
+          label="الأيقونة"
+          onChange={(event) =>
+            setEditIcon(event.target.value as CategoryIconName)
+          }
+          options={CATEGORY_ICON_OPTIONS}
+          value={editIcon}
+        />
+        <Select
+          label="نوع القسم"
+          onChange={(event) =>
+            setEditProfile(event.target.value as CategoryFeatureProfile)
+          }
+          options={CATEGORY_FEATURE_PROFILES.map((item) => ({
+            label: item.label,
+            value: item.id,
+          }))}
+          value={editProfile}
+        />
+        <label className="flex items-end gap-2 pb-2 text-xs text-ink">
+          <input
+            checked={reseedForm}
+            onChange={(event) => setReseedForm(event.target.checked)}
+            type="checkbox"
+          />
+          إعادة تهيئة النموذج عند تغيير السلوك
+        </label>
+        <div className="sm:col-span-2 grid gap-2 rounded-[var(--radius-lg)] border border-border bg-surface/60 p-3">
+          <p className="text-sm font-semibold text-ink">التصنيفات الفرعية</p>
+          <p className="text-xs text-muted">
+            تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم الفرعي»
+            (وليست حقول النموذج مثل نوع الأثاث).
+          </p>
+          {editSubs.length === 0 ? (
+            <p className="text-xs text-muted">لا توجد تصنيفات فرعية.</p>
+          ) : (
+            <ul className="grid gap-2">
+              {editSubs.map((sub, subIndex) => (
+                <li
+                  className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center"
+                  key={`${sub}-${subIndex}`}
+                >
+                  <Input
+                    aria-label={`تصنيف فرعي ${subIndex + 1}`}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setEditSubs((current) =>
+                        current.map((item, rowIndex) =>
+                          rowIndex === subIndex ? value : item,
+                        ),
+                      );
+                    }}
+                    value={sub}
+                  />
+                  <div className="flex flex-wrap gap-1">
+                    <Button
+                      disabled={subIndex === 0}
+                      onClick={() => moveEditSub(subIndex, -1)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      يمين
+                    </Button>
+                    <Button
+                      disabled={subIndex === editSubs.length - 1}
+                      onClick={() => moveEditSub(subIndex, 1)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      يسار
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        setEditSubs((current) =>
+                          current.filter(
+                            (_, rowIndex) => rowIndex !== subIndex,
+                          ),
+                        )
+                      }
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      حذف
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
+            <Input
+              label="إضافة تصنيف فرعي"
+              onChange={(event) => setEditSubDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addEditSub();
+                }
+              }}
+              placeholder="مثال: سيارات فاخرة"
+              value={editSubDraft}
+            />
+            <Button
+              onClick={addEditSub}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              إضافة
+            </Button>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          loading={busyId === category.id}
+          onClick={() => void saveEdit(category)}
+          size="sm"
+          type="button"
+          variant="primary"
+        >
+          حفظ
+        </Button>
+        <Button onClick={cancelEdit} size="sm" type="button" variant="ghost">
+          إلغاء
+        </Button>
+      </div>
     </div>
   );
 }
