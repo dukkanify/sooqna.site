@@ -9,7 +9,7 @@ import {
 } from "@/services/admin/admin-analytics";
 import {
   computeFinanceMetrics,
-  isMockPaidOrder,
+  isNonLiveOpsOrder,
 } from "@/services/admin/admin-finance-metrics";
 import {
   filterRealWalletAccounts,
@@ -163,7 +163,7 @@ export async function buildAdminDashboard(
     categories.map((c) => [c.id, c.name || c.id] as const),
   );
 
-  const realOrders = orders.filter((o) => !isMockPaidOrder(o));
+  const realOrders = orders.filter((o) => !isNonLiveOpsOrder(o));
   const finance = computeFinanceMetrics(realOrders, { sinceMs: rangeStart });
   const heldEscrow = realOrders.filter((o) => o.escrowStatus === "held");
   const pendingPayments = realOrders.filter(

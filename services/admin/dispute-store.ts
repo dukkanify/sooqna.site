@@ -1,3 +1,4 @@
+import { isNonLiveOpsOrder } from "@/services/admin/admin-finance-metrics";
 import { createPayloadCollectionStore } from "@/services/db/durable-json-collection";
 import { getAllOrders } from "@/services/payments/order-store";
 import type { AdminDisputePatch, AdminDisputeRecord } from "@/types/domain/admin";
@@ -10,6 +11,8 @@ const store = createPayloadCollectionStore<AdminDisputeRecord>({
 function isPlaceholderDispute(row: AdminDisputeRecord): boolean {
   return (
     row.orderId.startsWith("order-demo-") ||
+    /(?:^|[-_])demo(?:[-_]|$)/i.test(row.orderId) ||
+    /admin-desk-demo|finance-(?:mock|released|refunded)/i.test(row.orderId) ||
     /^dispute-00\d$/.test(row.id)
   );
 }
@@ -64,6 +67,7 @@ export async function getAdminDisputes(): Promise<AdminDisputeRecord[]> {
 
   for (const order of orders) {
     if (order.status !== "disputed") continue;
+    if (isNonLiveOpsOrder(order)) continue;
     if (byOrder.has(order.id)) continue;
     const row: AdminDisputeRecord = {
       id: `dispute-order-${order.id}`,

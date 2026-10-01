@@ -3,21 +3,21 @@
  * commissions, refunds, and escrow held/released amounts.
  *
  * Definitions (reconcile against order fee breakdown + payment/escrow status):
- * - GMV: sum of merchandise (`fees.productPrice`) for non-mock paid orders
+ * - GMV: sum of merchandise (`fees.productPrice`) for live paid orders
  *   (payment succeeded or later refunded). Buyer `fees.total` is NOT GMV.
  * - Platform revenue / commissions: sum of `fees.platformFee` on those orders.
  * - Gateway fees: sum of `fees.gatewayFee` (payment processing cost).
  * - Net platform revenue: commissions − gateway fees.
  * - Refunds: merchandise amount on refunded orders (matches treasury).
  * - Held / released escrow: seller merchandise currently held or released.
- * - Mock/demo checkouts ("وضع تجريبي") are excluded from approved reports.
+ * - Mock/demo/seed checkouts are excluded from approved reports and ops desks.
  */
 import type { Order } from "@/types/domain/order";
 
 export type FinanceMetrics = {
-  /** Orders considered in finance cohort (non-mock, ever paid). */
+  /** Orders considered in finance cohort (live, ever paid). */
   grossPaidCount: number;
-  /** Currently paymentStatus === succeeded (excludes refunded + mock). */
+  /** Currently paymentStatus === succeeded (excludes refunded + non-live). */
   succeededPaidCount: number;
   refundedCount: number;
   /** Gross merchandise value — product prices of paid (incl. later refunded). */
@@ -58,6 +58,46 @@ export type FinanceMetricsOptions = {
 
 const MOCK_PAYMENT_MESSAGE = "وضع تجريبي";
 
+/** Seed / desk / finance fixture order ids that must never inflate live ops. */
+const NON_LIVE_ORDER_ID_RE =
+  /(?:^|[-_])(?:demo|admin-desk-demo|finance-(?:mock|released|refunded)|e2e)(?:[-_]|$)/i;
+
+function collectPaymentIntentIds(order: Order): string[] {
+  const ids: string[] = [];
+  const stripePi = order.stripePaymentIntentId?.trim();
+  if (stripePi) ids.push(stripePi);
+  for (const event of order.auditLog ?? []) {
+    const fromMeta = event.metadata?.paymentIntentId;
+    if (typeof fromMeta === "string" && fromMeta.trim()) {
+      ids.push(fromMeta.trim());
+    }
+  }
+  return ids;
+}
+
+/** Fake Stripe PaymentIntent ids used by local/seed finance fixtures. */
+export function isNonLivePaymentIntentId(paymentIntentId: string): boolean {
+  const id = paymentIntentId.trim().toLowerCase();
+  if (!id) return false;
+  if (id === "mock") return true;
+  if (id.startsWith("pi_demo_") || id.startsWith("pi_finance_")) return true;
+  if (id.includes("_demo_") || id.includes("-demo-")) return true;
+  return false;
+}
+
+export function isDemoOpsPartyId(userId: string | undefined | null): boolean {
+  const id = (userId || "").trim().toLowerCase();
+  if (!id) return false;
+  if (id.startsWith("demo-") || id.startsWith("qa-") || id.startsWith("qa_")) {
+    return true;
+  }
+  if (id.endsWith("-demo") || id.includes("-demo-") || id.includes("_demo_")) {
+    return true;
+  }
+  return false;
+}
+
+/** Narrow mock-checkout marker (audit message / paymentIntentId === "mock"). */
 export function isMockPaidOrder(order: Order): boolean {
   const events = order.auditLog ?? [];
   for (const event of events) {
@@ -70,9 +110,25 @@ export function isMockPaidOrder(order: Order): boolean {
   return false;
 }
 
-/** Admin desks / exports default to real orders only. */
+/**
+ * Seed, demo, QA, and mock-checkout orders — excluded from every admin ops
+ * desk so launch KPIs match the live Stripe/wallet ledger only.
+ */
+export function isNonLiveOpsOrder(order: Order): boolean {
+  if (isMockPaidOrder(order)) return true;
+  if (NON_LIVE_ORDER_ID_RE.test(order.id || "")) return true;
+  if (isDemoOpsPartyId(order.buyerId) || isDemoOpsPartyId(order.sellerId)) {
+    return true;
+  }
+  if (collectPaymentIntentIds(order).some(isNonLivePaymentIntentId)) {
+    return true;
+  }
+  return false;
+}
+
+/** Admin desks / exports default to live marketplace orders only. */
 export function filterRealOrders<T extends Order>(orders: T[]): T[] {
-  return orders.filter((order) => !isMockPaidOrder(order));
+  return orders.filter((order) => !isNonLiveOpsOrder(order));
 }
 
 export function isRefundedOrder(order: Order): boolean {
@@ -83,16 +139,16 @@ export function isRefundedOrder(order: Order): boolean {
   );
 }
 
-/** Non-mock order that collected payment at least once. */
+/** Live order that collected payment at least once. */
 export function isGrossPaidOrder(order: Order): boolean {
-  if (isMockPaidOrder(order)) return false;
+  if (isNonLiveOpsOrder(order)) return false;
   if (order.paymentStatus === "succeeded") return true;
   if (order.paymentStatus === "refunded") return true;
   return Boolean(order.paidAt);
 }
 
 export function isSucceededPaidOrder(order: Order): boolean {
-  return order.paymentStatus === "succeeded" && !isMockPaidOrder(order);
+  return order.paymentStatus === "succeeded" && !isNonLiveOpsOrder(order);
 }
 
 function orderFinanceTimestampMs(order: Order): number | null {
@@ -141,7 +197,7 @@ export function computeFinanceMetrics(
   const grossPaid = ranged.filter(isGrossPaidOrder);
   const succeeded = ranged.filter(isSucceededPaidOrder);
   const refunded = ranged.filter(
-    (order) => isRefundedOrder(order) && !isMockPaidOrder(order),
+    (order) => isRefundedOrder(order) && !isNonLiveOpsOrder(order),
   );
 
   const gmv = grossPaid.reduce((sum, order) => sum + merchandise(order), 0);
@@ -169,15 +225,15 @@ export function computeFinanceMetrics(
   );
 
   const heldEscrow = escrowSource.filter(
-    (order) => order.escrowStatus === "held" && !isMockPaidOrder(order),
+    (order) => order.escrowStatus === "held" && !isNonLiveOpsOrder(order),
   );
   const releasedEscrow = escrowSource.filter(
-    (order) => order.escrowStatus === "released" && !isMockPaidOrder(order),
+    (order) => order.escrowStatus === "released" && !isNonLiveOpsOrder(order),
   );
 
   const pendingPaymentCount = ranged.filter(
     (order) =>
-      !isMockPaidOrder(order) &&
+      !isNonLiveOpsOrder(order) &&
       (order.paymentStatus === "pending" || order.paymentStatus === "processing"),
   ).length;
 

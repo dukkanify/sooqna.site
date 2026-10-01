@@ -19,7 +19,7 @@ describe("admin wallet real data", () => {
     assert.match(src, /isDemoWalletUserId/);
     assert.match(src, /BLOCKED_USER_IDS/);
     assert.match(src, /@sooqna\.demo/);
-    assert.match(src, /isMockPaidOrder/);
+    assert.match(src, /isNonLiveOpsOrder/);
   });
 
   it("admin desks load filtered wallet payload", () => {

@@ -152,10 +152,16 @@ export function AdminWalletsPanel() {
   return (
     <div className="admin-desk grid gap-4">
       <div className="admin-desk-toolbar">
-        <p className="text-sm text-muted">
-          أرصدة حقيقية من دفتر المحفظة — بدون حسابات تجريبية أو دفعات وهمية.
-          اربط التعديل الإداري بمستخدم فعّال أو راجع الضمان والطلبات.
-        </p>
+        <div className="grid gap-1">
+          <p className="text-sm text-muted">
+            دفتر محافظ لايف جاهز للإطلاق — أرصدة حقيقية فقط (بدون حسابات تجريبية أو
+            دفعات وهمية أو بذور desk/finance).
+          </p>
+          <p className="text-xs leading-6 text-muted">
+            الأصفار طبيعية قبل أول دفع Stripe حقيقي. اربط أي تعديل إداري بمستخدم
+            فعّال، أو راجع الضمان والطلبات المباشرة.
+          </p>
+        </div>
         <div className="admin-desk-toolbar__actions">
           <Button href="/admin/escrow" size="sm" variant="secondary">
             الضمان
@@ -275,7 +281,9 @@ export function AdminWalletsPanel() {
               {filtered.length === 0 ? (
                 <tr>
                   <td className="text-muted" colSpan={6}>
-                    لا توجد محافظ حقيقية مطابقة.
+                    {data.wallets.length === 0
+                      ? "لا محافظ حقيقية بعد — الدفتر نظيف وجاهز لأول عملية لايف."
+                      : "لا توجد محافظ حقيقية مطابقة لبحثك."}
                   </td>
                 </tr>
               ) : (

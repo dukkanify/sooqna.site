@@ -1,11 +1,11 @@
 /**
  * Admin wallet desk — real ledger totals only.
  * Drops demo/QA users, empty auto-created wallets, and transactions tied to
- * mock checkout orders so KPIs match finance desks (filterRealOrders).
+ * non-live/seed orders so KPIs match finance desks (filterRealOrders).
  */
 import type { Order } from "@/types/domain/order";
 import type { WalletAccount, WalletTransaction } from "@/types/domain/wallet";
-import { isMockPaidOrder } from "@/services/admin/admin-finance-metrics";
+import { isNonLiveOpsOrder } from "@/services/admin/admin-finance-metrics";
 import { BLOCKED_USER_IDS } from "@/services/admin/qa-isolated-cleanup";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getAllWalletAccounts } from "@/services/payments/wallet-ledger";
@@ -195,7 +195,7 @@ export async function loadAdminWalletsPayload(): Promise<AdminWalletsPayload> {
   ]);
 
   const mockOrderIds = new Set(
-    orders.filter((order) => isMockPaidOrder(order)).map((order) => order.id),
+    orders.filter((order) => isNonLiveOpsOrder(order)).map((order) => order.id),
   );
   const usersById = new Map(users.map((user) => [user.id, user]));
   const rows = filterRealWalletAccounts(wallets, { mockOrderIds, usersById });
@@ -206,7 +206,9 @@ export async function loadAdminWalletsPayload(): Promise<AdminWalletsPayload> {
   };
 }
 
-/** Mock order id set for callers that already loaded orders. */
+/** Non-live / seed order id set for callers that already loaded orders. */
 export function mockOrderIdSet(orders: Order[]): Set<string> {
-  return new Set(orders.filter((order) => isMockPaidOrder(order)).map((o) => o.id));
+  return new Set(
+    orders.filter((order) => isNonLiveOpsOrder(order)).map((o) => o.id),
+  );
 }
