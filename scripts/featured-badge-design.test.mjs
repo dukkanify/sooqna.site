@@ -32,12 +32,18 @@ describe("featured badge design", () => {
     const card = read("features/listings/components/PremiumListingCard.tsx");
     const badges = read("features/listings/components/ListingCardBadges.tsx");
     const mobile = read("features/home/components/mobile/MobileFeaturedCard.tsx");
+    const css = read("features/listings/components/featured-badge.css");
     assert.match(card, /placement="cap"/);
     assert.match(card, /excludeFeatured/);
     assert.match(card, /marketplace-card--featured/);
+    assert.match(card, /marketplace-card-crown/);
     assert.match(badges, /excludeFeatured/);
     assert.match(mobile, /placement="cap"/);
     assert.match(mobile, /excludeFeatured/);
+    assert.match(mobile, /mobile-home-featured-card__crown/);
+    // Equal crown height keeps featured + regular image tops aligned in grids.
+    assert.match(css, /\.marketplace-card-crown/);
+    assert.match(css, /height:\s*1\.7rem/);
   });
 
   it("listing detail sticky panel and gallery surface FeaturedBadge", () => {

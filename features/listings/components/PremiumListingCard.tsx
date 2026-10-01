@@ -192,15 +192,20 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   const cardClass = `marketplace-card group ${
     featuredLive ? "marketplace-card--featured" : ""
   }`.trim();
-  const featuredCap = featuredLive ? (
-    <FeaturedBadge placement="cap" />
-  ) : null;
+  const crown = (
+    <div
+      aria-hidden={!featuredLive}
+      className="marketplace-card-crown"
+    >
+      {featuredLive ? <FeaturedBadge placement="cap" /> : null}
+    </div>
+  );
 
   if (layout === "row") {
     return (
       <LocalizedTree>
       <article className={`${cardClass} flex flex-col overflow-hidden`}>
-        {featuredCap}
+        {crown}
         <div className="flex min-h-0 flex-1 overflow-hidden">
           <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
           <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
@@ -213,7 +218,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   return (
     <LocalizedTree>
     <article className={`${cardClass} flex h-full flex-col`}>
-      {featuredCap}
+      {crown}
       {imageArea}
       {bodyBlock}
     </article>
