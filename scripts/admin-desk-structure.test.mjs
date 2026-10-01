@@ -30,6 +30,8 @@ const dataDesks = [
   "AdminQuoteRequestsPanel.tsx",
   "AdminSupportMessagesPanel.tsx",
   "AdminListingReportsPanel.tsx",
+  "AdminCategoriesPanel.tsx",
+  "AdminLocationsPanel.tsx",
 ];
 
 describe("admin desk structure parity with listings", () => {
