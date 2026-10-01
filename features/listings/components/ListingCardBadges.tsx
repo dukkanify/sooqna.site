@@ -70,7 +70,7 @@ export function ListingCardBadges({
       {rest.length > 0 ? (
         <div
           className={`pointer-events-none absolute z-10 flex max-w-[calc(100%-4.5rem)] flex-wrap items-center gap-1.5 ${
-            useCorner ? "start-2.5 top-9" : "start-2.5 top-2.5"
+            useCorner ? "start-2.5 top-11" : "start-2.5 top-2.5"
           } ${className}`.trim()}
         >
           {rest.map((badge) => (

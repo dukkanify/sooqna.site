@@ -1,10 +1,10 @@
-/* Featured (مميّز) — metallic gold ribbon + featured card crown */
+/* Featured (مميّز) — diagonal gold sash + featured card crown */
 
 .listing-featured-badge {
-  --featured-gold-hi: #f3e0a8;
-  --featured-gold: #e0bf6a;
+  --featured-gold-hi: #f6e7b4;
+  --featured-gold: #e4c36f;
   --featured-gold-mid: #c9a45c;
-  --featured-gold-deep: #8f6d2e;
+  --featured-gold-deep: #8a6828;
   --featured-ink: #1a1206;
 
   position: relative;
@@ -17,13 +17,13 @@
   background: linear-gradient(
     145deg,
     var(--featured-gold-hi) 0%,
-    var(--featured-gold) 38%,
-    var(--featured-gold-mid) 72%,
+    var(--featured-gold) 36%,
+    var(--featured-gold-mid) 70%,
     var(--featured-gold-deep) 100%
   );
   color: var(--featured-ink);
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   line-height: 1;
   white-space: nowrap;
   box-shadow:
@@ -39,9 +39,9 @@
   pointer-events: none;
   background: linear-gradient(
     115deg,
-    transparent 30%,
-    rgb(255 255 255 / 38%) 48%,
-    transparent 66%
+    transparent 28%,
+    rgb(255 255 255 / 42%) 48%,
+    transparent 68%
   );
   background-size: 220% 100%;
   background-position: 140% 0;
@@ -56,7 +56,7 @@
 
 .listing-featured-badge__star {
   color: var(--featured-ink);
-  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 25%));
+  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 28%));
 }
 
 .listing-featured-badge__star path {
@@ -71,55 +71,49 @@
     0 4px 14px rgb(0 0 0 / 28%);
 }
 
-/* Flush corner ribbon on listing photos */
-.listing-featured-badge--corner {
-  position: absolute;
-  z-index: 12;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  border-radius: 0;
-  border-end-end-radius: 0.75rem;
-  padding-inline: 0.7rem 0.85rem !important;
-  padding-block: 0.42rem !important;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 50%),
-    0 6px 18px rgb(0 0 0 / 28%);
-}
-
-.listing-featured-badge--corner::after {
-  content: "";
-  position: absolute;
-  inset-inline-end: 0;
-  inset-block-end: -7px;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 7px 0 0 7px;
-  border-color: #6a501c transparent transparent transparent;
-}
-
-[dir="rtl"] .listing-featured-badge--corner::after {
-  border-width: 7px 7px 0 0;
-  border-color: #6a501c transparent transparent transparent;
-}
-
-.listing-featured-badge--md.listing-featured-badge--corner {
-  padding-inline: 0.9rem 1.05rem !important;
-  padding-block: 0.55rem !important;
-  border-end-end-radius: 0.85rem;
-}
-
 .listing-featured-badge--md:not(.listing-featured-badge--corner) {
   border-radius: 0.5rem;
 }
 
+/*
+ * Diagonal corner sash — unmistakably premium vs a floating pill.
+ * Lives in the media start-top corner (RTL = top-right).
+ */
+.listing-featured-badge--corner {
+  position: absolute;
+  z-index: 12;
+  inset-block-start: 0.85rem;
+  inset-inline-start: -1.85rem;
+  width: 7.25rem;
+  justify-content: center;
+  gap: 0.28rem;
+  padding-block: 0.32rem;
+  padding-inline: 0.35rem;
+  border-radius: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  transform: rotate(45deg);
+  transform-origin: center;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 50%),
+    0 3px 10px rgb(0 0 0 / 30%);
+}
+
+[dir="rtl"] .listing-featured-badge--corner {
+  transform: rotate(-45deg);
+}
+
+.listing-featured-badge--corner .listing-featured-badge__label {
+  text-transform: none;
+}
+
 /* Featured listing card — gold crown edge + warmer frame */
 .marketplace-card--featured {
-  border-color: rgb(201 164 92 / 48%);
+  border-color: rgb(201 164 92 / 52%);
   box-shadow:
-    0 0 0 1px rgb(201 164 92 / 22%),
+    0 0 0 1px rgb(201 164 92 / 24%),
     0 1px 2px rgb(11 22 40 / 4%),
-    0 10px 28px rgb(201 164 92 / 12%);
+    0 12px 30px rgb(201 164 92 / 14%);
 }
 
 .marketplace-card--featured .marketplace-card-media::before {
@@ -131,27 +125,27 @@
   height: 3px;
   background: linear-gradient(
     90deg,
-    #f3e0a8 0%,
-    #e0bf6a 35%,
+    #f6e7b4 0%,
+    #e4c36f 35%,
     #c9a45c 70%,
-    #a88642 100%
+    #8a6828 100%
   );
   pointer-events: none;
 }
 
 .marketplace-card--featured:hover {
-  border-color: rgb(201 164 92 / 62%);
+  border-color: rgb(201 164 92 / 68%);
   box-shadow:
-    0 0 0 1px rgb(201 164 92 / 30%),
+    0 0 0 1px rgb(201 164 92 / 32%),
     0 4px 10px rgb(11 22 40 / 6%),
-    0 18px 40px rgb(201 164 92 / 16%);
+    0 18px 40px rgb(201 164 92 / 18%);
 }
 
 html[data-theme="dark"] .marketplace-card--featured {
-  border-color: rgb(232 197 106 / 38%);
+  border-color: rgb(232 197 106 / 40%);
   box-shadow:
-    0 0 0 1px rgb(232 197 106 / 14%),
-    0 10px 28px rgb(0 0 0 / 35%);
+    0 0 0 1px rgb(232 197 106 / 16%),
+    0 12px 30px rgb(0 0 0 / 35%);
 }
 
 @keyframes listing-featured-sheen {

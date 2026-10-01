@@ -26,6 +26,7 @@ describe("featured badge design", () => {
     assert.match(badge, /مميّز/);
     assert.match(css, /listing-featured-sheen/);
     assert.match(css, /listing-featured-badge--corner/);
+    assert.match(css, /rotate\(-45deg\)/);
     assert.match(css, /marketplace-card--featured/);
     assert.doesNotMatch(cards, /!rounded-full/);
     assert.match(cards, /FeaturedBadge/);
