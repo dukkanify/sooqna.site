@@ -939,24 +939,28 @@
   border-bottom: 0;
 }
 
-.admin-listings-table-card {
+.admin-listings-table-card,
+.admin-desk-table-card {
   border: 1px solid var(--admin-line);
   background: var(--admin-surface);
   color: var(--admin-ink);
 }
 
-.admin-listings-table-scroll {
+.admin-listings-table-scroll,
+.admin-desk-table-scroll {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.admin-listings-table {
+.admin-listings-table,
+.admin-desk-table {
   min-width: 88rem;
   color: var(--admin-ink);
 }
 
-.admin-listings-table thead th {
+.admin-listings-table thead th,
+.admin-desk-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -965,34 +969,44 @@
   white-space: nowrap;
 }
 
-.admin-listings-table tbody td {
+.admin-listings-table tbody td,
+.admin-desk-table tbody td {
   color: var(--admin-ink);
 }
 
-.admin-listings-table tbody tr:hover td {
+.admin-listings-table tbody tr:hover td,
+.admin-desk-table tbody tr:hover td {
   background: var(--admin-row-hover, #fafbfc);
 }
 
-.admin-listings-table tbody tr.admin-listings-row--featured td {
+.admin-listings-table tbody tr.admin-listings-row--featured td,
+.admin-desk-table tbody tr.admin-desk-row--featured td {
   background: var(--admin-featured-row, #fff9ef);
 }
 
-.admin-listings-table tbody tr.admin-listings-row--featured:hover td {
+.admin-listings-table tbody tr.admin-listings-row--featured:hover td,
+.admin-desk-table tbody tr.admin-desk-row--featured:hover td {
   background: var(--admin-featured-row-hover, #fff3d9);
 }
 
 .admin-listings-table .text-ink,
-.admin-listings-mobile-card .text-ink {
+.admin-desk-table .text-ink,
+.admin-listings-mobile-card .text-ink,
+.admin-desk-mobile-card .text-ink {
   color: var(--admin-ink) !important;
 }
 
 .admin-listings-table .text-muted,
+.admin-desk-table .text-muted,
 .admin-listings-mobile-card .text-muted,
-.admin-listings-featured-help .text-muted {
+.admin-desk-mobile-card .text-muted,
+.admin-listings-featured-help .text-muted,
+.admin-desk-help .text-muted {
   color: var(--admin-muted) !important;
 }
 
-.admin-listings-cell-wrap {
+.admin-listings-cell-wrap,
+.admin-desk-cell-wrap {
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -1000,12 +1014,14 @@
   vertical-align: top;
 }
 
-.admin-listings-cell-title {
+.admin-listings-cell-title,
+.admin-desk-cell-title {
   max-width: 18rem;
   min-width: 14rem;
 }
 
-.admin-listings-featured-help {
+.admin-listings-featured-help,
+.admin-desk-help {
   border: 1px solid rgb(201 164 92 / 35%);
   background: linear-gradient(
     180deg,
@@ -1016,18 +1032,23 @@
 }
 
 .admin-listings-featured-help h2,
+.admin-desk-help h2,
 .admin-listings-featured-help .text-ink,
-.admin-listings-featured-help strong {
+.admin-desk-help .text-ink,
+.admin-listings-featured-help strong,
+.admin-desk-help strong {
   color: var(--admin-ink) !important;
 }
 
-.admin-listings-mobile-list {
+.admin-listings-mobile-list,
+.admin-desk-mobile-list {
   display: none;
   gap: 0.65rem;
   padding: 0.75rem;
 }
 
-.admin-listings-mobile-card {
+.admin-listings-mobile-card,
+.admin-desk-mobile-card {
   display: grid;
   gap: 0.65rem;
   border: 1px solid var(--admin-line);
@@ -1037,18 +1058,21 @@
   padding: 0.85rem;
 }
 
-.admin-listings-mobile-card.admin-listings-row--featured {
+.admin-listings-mobile-card.admin-listings-row--featured,
+.admin-desk-mobile-card.admin-desk-row--featured {
   background: var(--admin-featured-row, #fff9ef);
   border-color: rgb(201 164 92 / 45%);
 }
 
-.admin-listings-mobile-card__head {
+.admin-listings-mobile-card__head,
+.admin-desk-mobile-card__head {
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
 }
 
-.admin-listings-mobile-card__meta {
+.admin-listings-mobile-card__meta,
+.admin-desk-mobile-card__meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 0.75rem;
@@ -1057,13 +1081,15 @@
   color: var(--admin-muted);
 }
 
-.admin-listings-mobile-card__actions {
+.admin-listings-mobile-card__actions,
+.admin-desk-mobile-card__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
 }
 
-.admin-listings-toolbar {
+.admin-listings-toolbar,
+.admin-desk-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1071,13 +1097,15 @@
   gap: 0.65rem;
 }
 
-.admin-listings-toolbar__actions {
+.admin-listings-toolbar__actions,
+.admin-desk-toolbar__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
 }
 
-.admin-listings-filters .admin-listings-filters__grid {
+.admin-listings-filters .admin-listings-filters__grid,
+.admin-desk-filters .admin-desk-filters__grid {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -1085,35 +1113,44 @@
 }
 
 @media (max-width: 768px) {
-  .admin-listings-table-scroll {
+  .admin-listings-table-scroll,
+  .admin-desk-table-scroll {
     display: none;
   }
 
-  .admin-listings-mobile-list {
+  .admin-listings-mobile-list,
+  .admin-desk-mobile-list {
     display: grid;
   }
 
-  .admin-listings-table {
+  .admin-listings-table,
+  .admin-desk-table {
     min-width: 0;
   }
 
-  .admin-listings-toolbar__actions {
+  .admin-listings-toolbar__actions,
+  .admin-desk-toolbar__actions {
     width: 100%;
   }
 
   .admin-listings-toolbar__actions .btn,
+  .admin-desk-toolbar__actions .btn,
   .admin-listings-toolbar__actions a,
-  .admin-listings-toolbar__actions button {
+  .admin-desk-toolbar__actions a,
+  .admin-listings-toolbar__actions button,
+  .admin-desk-toolbar__actions button {
     flex: 1 1 calc(50% - 0.25rem);
     min-height: 2.5rem;
   }
 
-  .admin-listings-filters .admin-listings-filters__grid > div {
+  .admin-listings-filters .admin-listings-filters__grid > div,
+  .admin-desk-filters .admin-desk-filters__grid > div {
     flex: 1 1 100%;
     min-width: 0 !important;
   }
 
-  .admin-listings-featured-help ul {
+  .admin-listings-featured-help ul,
+  .admin-desk-help ul {
     grid-template-columns: 1fr !important;
   }
 }
@@ -1244,8 +1281,11 @@ html[data-theme="dark"] .admin-ops__bar-track {
 }
 
 html[data-theme="dark"] .admin-listings-table-card,
+html[data-theme="dark"] .admin-desk-table-card,
 html[data-theme="dark"] .admin-listings-mobile-card,
-html[data-theme="dark"] .admin-listings-featured-help {
+html[data-theme="dark"] .admin-desk-mobile-card,
+html[data-theme="dark"] .admin-listings-featured-help,
+html[data-theme="dark"] .admin-desk-help {
   border-color: var(--admin-line);
   color: var(--admin-ink);
 }
@@ -2336,4 +2376,157 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   .admin-users__list {
     grid-template-columns: 1fr;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Admin Desk Design System
+   Canonical pattern = listings desk (toolbar → help → filters →
+   table / mobile cards). Aliases: admin-desk-* ≡ admin-listings-*.
+   Shared queues/boxes/users/categories adopt the same surface.
+   ═══════════════════════════════════════════════════════════════ */
+
+.admin-desk {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-ops__workspace > .grid {
+  gap: 1rem;
+}
+
+.admin-ops__workspace .card,
+.admin-ops__workspace [class*="Card"],
+.admin-ops__workspace .admin-ops__panel,
+.admin-ops__workspace .admin-desk-table-card,
+.admin-ops__workspace .admin-listings-table-card {
+  border-color: var(--admin-line);
+  border-radius: 0.85rem;
+  background: var(--admin-surface);
+  color: var(--admin-ink);
+}
+
+/* KPI strip — same radius / surface as listings cards */
+.admin-ops__kpi {
+  border-radius: 0.85rem;
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+/* Queue + boxes: match listings mobile-card language */
+.admin-ops__queue,
+.admin-ops__queue--dense,
+.admin-boxes__grid {
+  gap: 0.65rem;
+  margin-top: 0;
+}
+
+.admin-ops__queue-item,
+.admin-boxes__card {
+  border-radius: 0.85rem;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-line);
+  padding: 0.85rem;
+  transition: border-color 0.15s var(--admin-ease), background 0.15s var(--admin-ease);
+}
+
+.admin-ops__queue-item:hover,
+.admin-boxes__card:hover {
+  background: var(--admin-row-hover, #fafbfc);
+  border-color: var(--admin-line);
+}
+
+.admin-ops__queue-label {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--admin-ink);
+}
+
+.admin-ops__panel {
+  border-radius: 0.85rem;
+  border: 1px solid var(--admin-line);
+  background: var(--admin-surface);
+}
+
+.admin-ops__panel-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--admin-ink);
+}
+
+/* Users / categories — same card surface as listings */
+.admin-users__row,
+.admin-categories__item {
+  border-radius: 0.85rem;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-line);
+}
+
+.admin-users__row:hover,
+.admin-categories__item:hover {
+  background: var(--admin-row-hover, #fafbfc);
+  border-color: var(--admin-line);
+}
+
+.admin-categories__item--editing,
+.admin-locations__card--editing {
+  border-color: rgb(201 164 92 / 45%);
+  background: var(--admin-featured-row, #fff9ef);
+  box-shadow: none;
+}
+
+/* Toolbar used by non-listings desks */
+.admin-ops__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.admin-ops__toolbar.admin-desk-filters__grid,
+.admin-desk-filters .admin-ops__toolbar {
+  align-items: flex-end;
+}
+
+/* Desk help strips on non-listings panels */
+.admin-desk-help h2,
+.admin-desk-help .text-ink,
+.admin-desk-help strong {
+  color: var(--admin-ink) !important;
+}
+
+.admin-desk-help .text-muted {
+  color: var(--admin-muted) !important;
+}
+
+/* Home cockpit KPIs align with desk tokens */
+.admin-dash__kpi {
+  border-radius: 0.85rem;
+  border: 1px solid var(--admin-line);
+  background: var(--admin-surface);
+}
+
+html[data-theme="dark"] .admin-ops__queue-item,
+html[data-theme="dark"] .admin-boxes__card,
+html[data-theme="dark"] .admin-users__row,
+html[data-theme="dark"] .admin-categories__item,
+html[data-theme="dark"] .admin-ops__panel,
+html[data-theme="dark"] .admin-ops__kpi,
+html[data-theme="dark"] .admin-dash__kpi {
+  background: var(--admin-surface);
+  border-color: var(--admin-line);
+  color: var(--admin-ink);
+}
+
+html[data-theme="dark"] .admin-ops__queue-item:hover,
+html[data-theme="dark"] .admin-boxes__card:hover,
+html[data-theme="dark"] .admin-users__row:hover,
+html[data-theme="dark"] .admin-categories__item:hover {
+  background: var(--admin-row-hover, #1a2336);
+}
+
+html[data-theme="dark"] .admin-categories__item--editing,
+html[data-theme="dark"] .admin-locations__card--editing {
+  background: var(--admin-featured-row, #2a2418);
+  border-color: rgb(212 184 122 / 45%);
 }

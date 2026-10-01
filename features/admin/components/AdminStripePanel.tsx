@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { getSessionUser } from "@/services/storage";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Badge } from "@/shared/ui/Badge";
+import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 
@@ -83,9 +84,14 @@ export function AdminStripePanel() {
 
   if (!data) {
     return (
-      <div className="grid gap-5">
+      <div className="admin-desk grid gap-4">
+        <div className="admin-desk-toolbar">
+          <p className="text-sm text-muted">
+            إعدادات Stripe وConnect — حالة المنصة وربط الحسابات.
+          </p>
+        </div>
         <AdminStripeConnectPanel mode="manage" />
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">جاري تحميل حالة Stripe...</p>
         </Card>
       </div>
@@ -95,7 +101,21 @@ export function AdminStripePanel() {
   const { status, links, counts, recentStripeOrders, recentEvents } = data;
 
   return (
-    <div className="grid gap-5">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          إعدادات Stripe وConnect — حالة المنصة وربط الحسابات.
+        </p>
+        <div className="admin-desk-toolbar__actions">
+          <Button href="/admin/escrow" size="sm" variant="secondary">
+            الضمان
+          </Button>
+          <Button href="/admin/orders" size="sm" variant="ghost">
+            الطلبات
+          </Button>
+        </div>
+      </div>
+
       <AdminStripeConnectPanel
         key={`connect-${status.configured ? "ready" : "waiting"}`}
         mode="manage"

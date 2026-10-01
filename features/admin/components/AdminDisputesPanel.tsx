@@ -165,13 +165,27 @@ export function AdminDisputesPanel() {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          مكتب النزاعات — راجع الأدلة واكتب القرار قبل الحكم.
+        </p>
+        <div className="admin-desk-toolbar__actions">
+          <Button href="/admin/orders" size="sm" variant="secondary">
+            الطلبات
+          </Button>
+          <Button href="/admin/escrow" size="sm" variant="ghost">
+            الضمان
+          </Button>
+        </div>
+      </div>
+
       {message ? (
         <FormMessage variant={message.variant}>{message.text}</FormMessage>
       ) : null}
 
-      <Card className="p-4" variant="flat">
-        <div className="flex flex-wrap items-end gap-3">
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
           <div className="min-w-[200px]">
             <Select
               label="تصفية النزاعات"
@@ -188,10 +202,11 @@ export function AdminDisputesPanel() {
       </Card>
 
       {filtered.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">لا توجد نزاعات مطابقة.</p>
         </Card>
       ) : (
+        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
         <div className="admin-boxes__grid">
           {filtered.map((dispute) => {
             const openDesk = expandedId === dispute.id;
@@ -422,6 +437,7 @@ export function AdminDisputesPanel() {
             );
           })}
         </div>
+        </Card>
       )}
 
       <Link className="text-sm font-semibold text-primary" href="/admin">

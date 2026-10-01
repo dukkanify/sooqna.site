@@ -275,7 +275,7 @@ export function AdminCategoriesPanel() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted">{sorted.length} تصنيف</p>
         <Button

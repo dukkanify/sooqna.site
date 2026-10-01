@@ -226,8 +226,8 @@ export function AdminCategoryFormsPanel() {
     : null;
 
   return (
-    <div className="grid gap-5">
-      <Card className="grid gap-3 p-5" variant="flat">
+    <div className="grid gap-4">
+      <Card className="admin-desk-help grid gap-3 p-5" variant="flat">
         <h3 className="text-base font-bold text-ink">منشئ النماذج الديناميكية</h3>
         <p className="text-sm text-muted">
           عدّل حقول إضافة/تعديل الإعلان حسب التصنيف دون تغيير الكود. الفئات الجديدة تُزرع

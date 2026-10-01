@@ -23,33 +23,41 @@ export function AdminAuditPanel() {
   }, []);
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          سجل تدقيق الإجراءات الإدارية — تحرير، استرداد، وتحديث الحالات.
+        </p>
+      </div>
+
       {entries.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">
             لا توجد عمليات مسجّلة بعد. ستظهر هنا إجراءات التحرير والاسترداد
             وتحديث الحالات.
           </p>
         </Card>
       ) : (
-        <ul className="admin-ops__queue">
-          {entries.map((entry) => (
-            <li key={entry.id} className="admin-ops__queue-item">
-              <div>
-                <p className="admin-ops__queue-label">
-                  {entry.action} · {entry.targetType}/{entry.targetId}
-                </p>
-                <p className="admin-ops__queue-meta">
-                  {entry.actorName} ·{" "}
-                  {new Date(entry.createdAt).toLocaleString(intlLocale(locale))}
-                </p>
-                {entry.detail ? (
-                  <p className="admin-ops__queue-meta">{entry.detail}</p>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+          <ul className="admin-ops__queue p-3">
+            {entries.map((entry) => (
+              <li key={entry.id} className="admin-ops__queue-item">
+                <div>
+                  <p className="admin-ops__queue-label">
+                    {entry.action} · {entry.targetType}/{entry.targetId}
+                  </p>
+                  <p className="admin-ops__queue-meta">
+                    {entry.actorName} ·{" "}
+                    {new Date(entry.createdAt).toLocaleString(intlLocale(locale))}
+                  </p>
+                  {entry.detail ? (
+                    <p className="admin-ops__queue-meta">{entry.detail}</p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
     </div>
   );

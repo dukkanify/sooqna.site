@@ -87,50 +87,58 @@ export function AdminViewingBookingsPanel() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          حجوزات معاينة العقارات — اعتمد أو عدّل أو أكمل من هنا.
+        </p>
+      </div>
+
       {items.length === 0 ? (
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">لا توجد حجوزات معاينة.</p>
         </Card>
       ) : (
-        <ul className="admin-ops__queue">
-          {items.map((item) => {
-            const actions = ADMIN_ACTIONS[item.status] ?? [];
-            return (
-              <li key={item.id} className="admin-ops__queue-item">
-                <div>
-                  <p className="admin-ops__queue-label">{item.listingTitle}</p>
-                  <p className="admin-ops__queue-meta">
-                    {item.buyerName} · {item.phone} · {item.visitors} زائر
-                  </p>
-                  <p className="admin-ops__queue-meta">
-                    {item.date} — {item.time}
-                    {item.notes ? ` · ${item.notes}` : ""}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span
-                    className={`admin-ops__status-chip${statusChipClass(item.status)}`}
-                  >
-                    {viewingStatusLabel(item.status)}
-                  </span>
-                  {actions.map((action) => (
-                    <Button
-                      key={action.value}
-                      loading={busyId === item.id}
-                      onClick={() => patchStatus(item.id, action.value)}
-                      size="sm"
-                      type="button"
-                      variant={action.value === "cancelled" ? "ghost" : "secondary"}
+        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+          <ul className="admin-ops__queue p-3">
+            {items.map((item) => {
+              const actions = ADMIN_ACTIONS[item.status] ?? [];
+              return (
+                <li key={item.id} className="admin-ops__queue-item">
+                  <div>
+                    <p className="admin-ops__queue-label">{item.listingTitle}</p>
+                    <p className="admin-ops__queue-meta">
+                      {item.buyerName} · {item.phone} · {item.visitors} زائر
+                    </p>
+                    <p className="admin-ops__queue-meta">
+                      {item.date} — {item.time}
+                      {item.notes ? ` · ${item.notes}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span
+                      className={`admin-ops__status-chip${statusChipClass(item.status)}`}
                     >
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                      {viewingStatusLabel(item.status)}
+                    </span>
+                    {actions.map((action) => (
+                      <Button
+                        key={action.value}
+                        loading={busyId === item.id}
+                        onClick={() => patchStatus(item.id, action.value)}
+                        size="sm"
+                        type="button"
+                        variant={action.value === "cancelled" ? "ghost" : "secondary"}
+                      >
+                        {action.label}
+                      </Button>
+                    ))}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
       )}
     </div>
   );

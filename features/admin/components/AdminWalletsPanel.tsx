@@ -4,7 +4,7 @@ import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { getSessionUser } from "@/services/storage";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
@@ -43,6 +43,7 @@ export function AdminWalletsPanel() {
   const [description, setDescription] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [query, setQuery] = useState("");
 
   function load() {
     const user = getSessionUser();
@@ -58,6 +59,15 @@ export function AdminWalletsPanel() {
   useEffect(() => {
     load();
   }, []);
+
+  const filtered = useMemo(() => {
+    if (!data) return [];
+    const q = query.trim().toLowerCase();
+    if (!q) return data.wallets;
+    return data.wallets.filter((wallet) =>
+      wallet.userId.toLowerCase().includes(q),
+    );
+  }, [data, query]);
 
   async function handleAdjust() {
     const session = getSessionUser();
@@ -97,14 +107,29 @@ export function AdminWalletsPanel() {
 
   if (!data) {
     return (
-      <Card className="p-8 text-center" variant="flat">
+      <Card className="admin-desk-table-card p-8 text-center" variant="flat">
         <p className="text-sm text-muted">جاري تحميل المحافظ...</p>
       </Card>
     );
   }
 
   return (
-    <div className="grid gap-5">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          أرصدة المستخدمين المتاحة والمعلّقة والمحجوزة — عدّل إدارياً أو راجع
+          الحركات مباشرة.
+        </p>
+        <div className="admin-desk-toolbar__actions">
+          <Button href="/admin/escrow" size="sm" variant="secondary">
+            الضمان
+          </Button>
+          <Button href="/admin/orders" size="sm" variant="ghost">
+            الطلبات
+          </Button>
+        </div>
+      </div>
+
       <div className="admin-ops__kpi-grid">
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">عدد المحافظ</p>
@@ -130,9 +155,13 @@ export function AdminWalletsPanel() {
         </div>
       </div>
 
-      <Card className="grid gap-3 p-5" variant="flat">
-        <h2 className="text-sm font-bold text-ink">تعديل رصيد إداري</h2>
-        <div className="grid gap-3 sm:grid-cols-2">
+      <Card className="admin-desk-help p-4" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">تعديل رصيد إداري</h2>
+        <p className="mt-1 text-xs leading-6 text-muted">
+          الإيداع يزيد الرصيد المتاح، والسحب يخصمه. اضغط معرّف محفظة من الجدول
+          لتعبئة الحقل تلقائياً.
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Input
             label="معرّف المستخدم"
             onChange={(e) => setUserId(e.target.value)}
@@ -164,7 +193,7 @@ export function AdminWalletsPanel() {
             value={description}
           />
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           <Button
             loading={busy}
             onClick={handleAdjust}
@@ -173,45 +202,131 @@ export function AdminWalletsPanel() {
           >
             تنفيذ
           </Button>
-          {message ? <p className="text-xs text-muted">{message}</p> : null}
+          {message ? <p className="text-xs font-medium text-muted">{message}</p> : null}
         </div>
       </Card>
 
-      <ul className="admin-ops__queue">
-        {data.wallets.length === 0 ? (
-          <li className="admin-ops__queue-item">
-            <p className="admin-ops__queue-meta">لا توجد محافظ بعد.</p>
-          </li>
-        ) : (
-          data.wallets.map((wallet) => (
-            <li key={wallet.userId} className="admin-ops__queue-item">
-              <div>
-                <button
-                  className="admin-ops__queue-label text-start"
-                  onClick={() => setUserId(wallet.userId)}
-                  type="button"
-                >
-                  {wallet.userId}
-                </button>
-                <p className="admin-ops__queue-meta">
-                  {wallet.transactionsCount} حركة
-                  {wallet.lastTransaction
-                    ? ` · ${wallet.lastTransaction.type} — ${new Date(
-                        wallet.lastTransaction.date,
-                      ).toLocaleString(intlLocale(locale))}`
-                    : ""}
-                </p>
-              </div>
-              <div className="text-end text-xs font-bold">
-                <CurrencyAmount amount={wallet.availableBalance} size="sm" />
-                <p className="admin-ops__queue-meta">
-                  محجوز {wallet.heldInEscrow.toLocaleString(intlLocale(locale))}
-                </p>
-              </div>
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
+          <div className="min-w-[200px] flex-1">
+            <Input
+              label="بحث"
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="معرّف المستخدم..."
+              value={query}
+            />
+          </div>
+          <p className="pb-2 text-xs font-semibold text-muted">
+            {filtered.length} محفظة
+          </p>
+        </div>
+      </Card>
+
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table">
+            <thead>
+              <tr>
+                <th>المستخدم</th>
+                <th>متاح</th>
+                <th>معلّق</th>
+                <th>محجوز</th>
+                <th>الحركات</th>
+                <th>آخر حركة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    لا توجد محافظ مطابقة.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((wallet) => (
+                  <tr key={wallet.userId}>
+                    <td className="admin-desk-cell-wrap">
+                      <button
+                        className="admin-desk-cell-title text-start font-bold text-ink underline-offset-2 hover:underline"
+                        onClick={() => setUserId(wallet.userId)}
+                        type="button"
+                      >
+                        {wallet.userId}
+                      </button>
+                    </td>
+                    <td>
+                      <CurrencyAmount
+                        amount={wallet.availableBalance}
+                        size="sm"
+                      />
+                    </td>
+                    <td>
+                      <CurrencyAmount amount={wallet.pendingBalance} size="sm" />
+                    </td>
+                    <td>
+                      <CurrencyAmount amount={wallet.heldInEscrow} size="sm" />
+                    </td>
+                    <td>{wallet.transactionsCount}</td>
+                    <td className="admin-desk-cell-wrap text-xs text-muted">
+                      {wallet.lastTransaction
+                        ? `${wallet.lastTransaction.type} — ${new Date(
+                            wallet.lastTransaction.date,
+                          ).toLocaleString(intlLocale(locale))}`
+                        : "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {filtered.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا توجد محافظ مطابقة.</p>
             </li>
-          ))
-        )}
-      </ul>
+          ) : (
+            filtered.map((wallet) => (
+              <li key={wallet.userId} className="admin-desk-mobile-card">
+                <div className="admin-desk-mobile-card__head">
+                  <button
+                    className="min-w-0 flex-1 text-start text-sm font-bold text-ink"
+                    onClick={() => setUserId(wallet.userId)}
+                    type="button"
+                  >
+                    {wallet.userId}
+                  </button>
+                  <CurrencyAmount amount={wallet.availableBalance} size="sm" />
+                </div>
+                <div className="admin-desk-mobile-card__meta">
+                  <span>معلّق {wallet.pendingBalance.toLocaleString(intlLocale(locale))}</span>
+                  <span>محجوز {wallet.heldInEscrow.toLocaleString(intlLocale(locale))}</span>
+                  <span>{wallet.transactionsCount} حركة</span>
+                </div>
+                {wallet.lastTransaction ? (
+                  <p className="text-xs text-muted">
+                    {wallet.lastTransaction.type} —{" "}
+                    {new Date(wallet.lastTransaction.date).toLocaleString(
+                      intlLocale(locale),
+                    )}
+                  </p>
+                ) : null}
+                <div className="admin-desk-mobile-card__actions">
+                  <Button
+                    onClick={() => setUserId(wallet.userId)}
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                  >
+                    تعبئة للتعديل
+                  </Button>
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      </Card>
 
       <Link className="admin-ops__text-link" href="/admin/escrow">
         عرض الضمان ←

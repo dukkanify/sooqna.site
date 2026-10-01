@@ -99,7 +99,7 @@ export function AdminReportsPanel() {
 
   if (!summary) {
     return (
-      <Card className="p-8 text-center" variant="flat">
+      <Card className="admin-desk-table-card p-8 text-center" variant="flat">
         <p className="text-sm text-muted">جاري تحميل التقارير...</p>
       </Card>
     );
@@ -108,32 +108,42 @@ export function AdminReportsPanel() {
   const maxVolume = Math.max(...daily.map((d) => d.volume), 1);
 
   return (
-    <div className="grid gap-5">
-      <Card className="flex flex-wrap items-end gap-3 p-4" variant="flat">
-        <label className="grid gap-1 text-xs font-semibold text-ink">
-          نطاق التصدير
-          <select
-            className="rounded-[var(--radius-lg)] border border-border bg-surface px-3 py-2 text-sm"
-            onChange={(event) => setExportRange(event.target.value)}
-            value={exportRange}
-          >
-            <option value="24h">آخر 24 ساعة</option>
-            <option value="7d">آخر 7 أيام</option>
-            <option value="30d">آخر 30 يوم</option>
-            <option value="all">الكل</option>
-          </select>
-        </label>
-        <Button
-          loading={exporting}
-          onClick={() => void downloadExcel()}
-          size="sm"
-          type="button"
-        >
-          تصدير Excel (XLS)
-        </Button>
-        <p className="text-xs text-muted">
-          يشمل Summary وUsers وListings وOrders وPayments وEscrow وDisputes بالدرهم.
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          تقارير مالية وتشغيلية — صدّر Excel أو راجع الملخصات السريعة.
         </p>
+      </div>
+
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
+          <label className="grid gap-1 text-xs font-semibold text-ink">
+            نطاق التصدير
+            <select
+              className="rounded-[var(--radius-lg)] border border-border bg-surface px-3 py-2 text-sm"
+              onChange={(event) => setExportRange(event.target.value)}
+              value={exportRange}
+            >
+              <option value="24h">آخر 24 ساعة</option>
+              <option value="7d">آخر 7 أيام</option>
+              <option value="30d">آخر 30 يوم</option>
+              <option value="all">الكل</option>
+            </select>
+          </label>
+          <div className="flex items-end">
+            <Button
+              loading={exporting}
+              onClick={() => void downloadExcel()}
+              size="sm"
+              type="button"
+            >
+              تصدير Excel (XLS)
+            </Button>
+          </div>
+          <p className="pb-2 text-xs text-muted">
+            يشمل Summary وUsers وListings وOrders وPayments وEscrow وDisputes بالدرهم.
+          </p>
+        </div>
       </Card>
       <div className="admin-ops__kpi-grid admin-ops__kpi-grid--wide">
         <div className="admin-ops__kpi">

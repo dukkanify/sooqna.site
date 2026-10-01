@@ -17,7 +17,13 @@ export function AdminCategoriesWorkspace() {
   const [tab, setTab] = useState<CategoriesTab>("categories");
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          التصنيفات والنماذج وكتالوج السيارات — انتقل بين الأقسام من التبويبات.
+        </p>
+      </div>
+
       <div className="admin-ops__section-tabs" role="tablist" aria-label="أقسام التصنيفات">
         {TABS.map((item) => (
           <button

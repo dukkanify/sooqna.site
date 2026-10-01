@@ -32,14 +32,20 @@ export function AdminFavoritesPanel() {
 
   if (!data) {
     return (
-      <Card className="p-8 text-center" variant="flat">
+      <Card className="admin-desk-table-card p-8 text-center" variant="flat">
         <p className="text-sm text-muted">جاري تحميل المفضلة...</p>
       </Card>
     );
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          إعلانات محفوظة في المفضلة — تابع الشعبية ومن يحفظ ماذا.
+        </p>
+      </div>
+
       <div className="admin-ops__kpi-grid">
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">إجمالي الحفظ</p>
@@ -74,20 +80,23 @@ export function AdminFavoritesPanel() {
         </div>
       </section>
 
-      <ul className="admin-ops__queue">
-        {data.favorites.map((item) => (
-          <li key={item.id} className="admin-ops__queue-item">
-            <div>
-              <p className="admin-ops__queue-label">
-                {item.title || item.listingId}
-              </p>
-              <p className="admin-ops__queue-meta">
-                {item.userId} · {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <ul className="admin-ops__queue p-3">
+          {data.favorites.map((item) => (
+            <li key={item.id} className="admin-ops__queue-item">
+              <div>
+                <p className="admin-ops__queue-label">
+                  {item.title || item.listingId}
+                </p>
+                <p className="admin-ops__queue-meta">
+                  {item.userId} ·{" "}
+                  {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </div>
   );
 }

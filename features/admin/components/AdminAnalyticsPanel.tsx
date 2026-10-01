@@ -48,7 +48,7 @@ export function AdminAnalyticsPanel() {
 
   if (!data) {
     return (
-      <Card className="p-8 text-center" variant="flat">
+      <Card className="admin-desk-table-card p-8 text-center" variant="flat">
         <p className="text-sm text-muted">جاري تحميل التحليلات...</p>
       </Card>
     );
@@ -57,7 +57,13 @@ export function AdminAnalyticsPanel() {
   const maxVolume = Math.max(...data.daily.map((d) => d.volume), 1);
 
   return (
-    <div className="grid gap-5">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          تحليلات المنصة — الحجم، الرسوم، التحويل، واتجاه الأيام الأخيرة.
+        </p>
+      </div>
+
       <div className="admin-ops__kpi-grid admin-ops__kpi-grid--wide">
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">الحجم الكلي</p>

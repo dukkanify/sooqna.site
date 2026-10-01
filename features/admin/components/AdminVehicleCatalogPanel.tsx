@@ -239,7 +239,7 @@ export function AdminVehicleCatalogPanel() {
 
   return (
     <div className="grid gap-4">
-      <Card className="p-5">
+      <Card className="admin-desk-help p-5" variant="flat">
         <h2 className="text-lg font-black text-ink">كتالوج السيارات</h2>
         <p className="mt-2 text-sm text-muted">
           عطّل ماركة/موديل أو أضف موديلاً جديداً دون نشر كود — يظهر فوراً في الإضافة والبحث بعد

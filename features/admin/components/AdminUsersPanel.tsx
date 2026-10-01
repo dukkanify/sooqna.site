@@ -19,6 +19,7 @@ import {
 import { getSessionUser } from "@/services/storage";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
+import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 
@@ -293,39 +294,47 @@ export function AdminUsersPanel() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="admin-desk grid gap-4">
+      <div className="admin-desk-toolbar">
+        <p className="text-sm text-muted">
+          المستخدمون والصلاحيات — اعتمد الحسابات وعدّل الأدوار من القائمة.
+        </p>
+      </div>
+
       {message ? (
         <FormMessage variant={message.variant}>{message.text}</FormMessage>
       ) : null}
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[200px] flex-1">
-          <Input
-            label="بحث"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="اسم أو بريد..."
-            value={query}
-          />
+      <Card className="admin-desk-filters p-4" variant="flat">
+        <div className="admin-desk-filters__grid">
+          <div className="min-w-[200px] flex-1">
+            <Input
+              label="بحث"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="اسم أو بريد..."
+              value={query}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2 pb-2">
+            <Button
+              onClick={() => setStatusFilter("all")}
+              size="sm"
+              type="button"
+              variant={statusFilter === "all" ? "primary" : "ghost"}
+            >
+              الكل ({users.length})
+            </Button>
+            <Button
+              onClick={() => setStatusFilter("pending")}
+              size="sm"
+              type="button"
+              variant={statusFilter === "pending" ? "primary" : "ghost"}
+            >
+              بانتظار ({pendingCount})
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 pb-2">
-          <Button
-            onClick={() => setStatusFilter("all")}
-            size="sm"
-            type="button"
-            variant={statusFilter === "all" ? "primary" : "ghost"}
-          >
-            الكل ({users.length})
-          </Button>
-          <Button
-            onClick={() => setStatusFilter("pending")}
-            size="sm"
-            type="button"
-            variant={statusFilter === "pending" ? "primary" : "ghost"}
-          >
-            بانتظار ({pendingCount})
-          </Button>
-        </div>
-      </div>
+      </Card>
 
       {filtered.length === 0 ? (
         <p className="admin-users__empty">لا يوجد مستخدمون مطابقون.</p>
