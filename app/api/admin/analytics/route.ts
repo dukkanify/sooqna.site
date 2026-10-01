@@ -21,7 +21,7 @@ import {
 } from "@/services/listings/listing-store";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getPaymentEvents } from "@/services/payments/payment-log";
-import { getAllWalletAccounts } from "@/services/payments/wallet-ledger";
+import { loadAdminWalletsPayload } from "@/services/admin/admin-wallet-metrics";
 
 export async function GET() {
   const admin = await requireAdminUser();
@@ -29,7 +29,7 @@ export async function GET() {
     return admin;
   }
 
-  const [users, listingStats, listings, openDisputes, orders, events, wallets] =
+  const [users, listingStats, listings, openDisputes, orders, events, walletDesk] =
     await Promise.all([
       getAllUsers(),
       getListingsModerationSummary(),
@@ -37,7 +37,7 @@ export async function GET() {
       getOpenDisputeCount(),
       getAllOrders(),
       getPaymentEvents(),
-      getAllWalletAccounts(),
+      loadAdminWalletsPayload(),
     ]);
 
   const realOrders = filterRealOrders(orders);
@@ -56,7 +56,7 @@ export async function GET() {
           : Math.round((finance.grossPaidCount / realOrders.length) * 100),
       totalUsers: users.length,
       totalListings: listingStats.totalListings,
-      walletAccounts: wallets.length,
+      walletAccounts: walletDesk.summary.accounts,
       recentEvents: events.length,
       openDisputes,
       pendingListings: listingStats.pendingListings,

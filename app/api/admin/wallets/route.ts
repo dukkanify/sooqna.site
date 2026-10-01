@@ -2,36 +2,9 @@ import { isSessionUser } from "@/services/auth/require-session";
 import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import { logAdminAction } from "@/services/admin/admin-audit-store";
-import {
-  addWalletTransaction,
-  getAllWalletAccounts,
-} from "@/services/payments/wallet-ledger";
+import { loadAdminWalletsPayload } from "@/services/admin/admin-wallet-metrics";
+import { addWalletTransaction } from "@/services/payments/wallet-ledger";
 import type { WalletTransactionType } from "@/types/domain/wallet";
-
-function serializeWallets(
-  wallets: Awaited<ReturnType<typeof getAllWalletAccounts>>,
-) {
-  const summary = {
-    accounts: wallets.length,
-    available: wallets.reduce((sum, w) => sum + w.availableBalance, 0),
-    pending: wallets.reduce((sum, w) => sum + w.pendingBalance, 0),
-    held: wallets.reduce((sum, w) => sum + w.heldInEscrow, 0),
-    currency: "AED" as const,
-  };
-
-  return {
-    summary,
-    wallets: wallets.map((wallet) => ({
-      userId: wallet.userId,
-      availableBalance: wallet.availableBalance,
-      pendingBalance: wallet.pendingBalance,
-      heldInEscrow: wallet.heldInEscrow,
-      currency: wallet.currency,
-      transactionsCount: wallet.transactions.length,
-      lastTransaction: wallet.transactions[0] ?? null,
-    })),
-  };
-}
 
 export async function GET() {
   const admin = await requireAdminPermission("payments", "view");
@@ -39,8 +12,8 @@ export async function GET() {
     return admin;
   }
 
-  const wallets = await getAllWalletAccounts();
-  return NextResponse.json(serializeWallets(wallets));
+  const payload = await loadAdminWalletsPayload();
+  return NextResponse.json(payload);
 }
 
 export async function POST(request: Request) {
@@ -89,7 +62,7 @@ export async function POST(request: Request) {
     detail: `${type === "deposit" ? "إيداع" : "سحب"} ${Math.abs(signedAmount)} د.إ`,
   });
 
-  const wallets = await getAllWalletAccounts();
+  const payload = await loadAdminWalletsPayload();
   return NextResponse.json({
     account: {
       userId: account.userId,
@@ -100,6 +73,6 @@ export async function POST(request: Request) {
       transactionsCount: account.transactions.length,
       lastTransaction: account.transactions[0] ?? null,
     },
-    ...serializeWallets(wallets),
+    ...payload,
   });
 }

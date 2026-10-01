@@ -127,4 +127,25 @@ describe("admin real-data-only contracts", () => {
     assert.match(src, /realOrders/);
     assert.match(src, /buildDailySeries\(realOrders/);
   });
+
+  it("admin wallets / reports / dashboard use real wallet metrics", () => {
+    assert.match(
+      read("app/api/admin/wallets/route.ts"),
+      /loadAdminWalletsPayload/,
+    );
+    assert.match(
+      read("app/api/admin/reports/route.ts"),
+      /loadAdminWalletsPayload/,
+    );
+    assert.match(
+      read("app/api/admin/analytics/route.ts"),
+      /loadAdminWalletsPayload/,
+    );
+    const dashboard = read("services/admin/admin-dashboard.service.ts");
+    assert.match(dashboard, /filterRealWalletAccounts/);
+    assert.match(dashboard, /summarizeAdminWallets/);
+    const orderService = read("services/payments/order-service.ts");
+    assert.match(orderService, /source !== "mock"/);
+  });
 });
+

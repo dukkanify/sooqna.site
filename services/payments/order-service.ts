@@ -459,29 +459,33 @@ async function markOrderPaid(
 
   if (!updated) return {};
 
-  await addWalletTransaction(order.sellerId, {
-    orderId: order.id,
-    type: "escrow_hold",
-    amount: sellerNet,
-    description: `حجز ضمان — ${order.listingTitle}`,
-    status: "pending",
-  });
+  // Mock/demo checkouts must not inflate the real seller wallet ledger or
+  // admin finance desks (those exclude "وضع تجريبي" orders).
+  if (source !== "mock") {
+    await addWalletTransaction(order.sellerId, {
+      orderId: order.id,
+      type: "escrow_hold",
+      amount: sellerNet,
+      description: `حجز ضمان — ${order.listingTitle}`,
+      status: "pending",
+    });
 
-  await addWalletTransaction(order.sellerId, {
-    orderId: order.id,
-    type: "platform_fee",
-    amount: -order.fees.platformFee,
-    description: `رسوم المنصة — ${order.listingTitle}`,
-    status: "completed",
-  });
+    await addWalletTransaction(order.sellerId, {
+      orderId: order.id,
+      type: "platform_fee",
+      amount: -order.fees.platformFee,
+      description: `رسوم المنصة — ${order.listingTitle}`,
+      status: "completed",
+    });
 
-  await recordPaymentTreasury({
-    orderId: order.id,
-    grossAmount: order.fees.productPrice,
-    platformFee: order.fees.platformFee,
-    actor: "system",
-    source: source === "mock" ? "system" : "webhook",
-  });
+    await recordPaymentTreasury({
+      orderId: order.id,
+      grossAmount: order.fees.productPrice,
+      platformFee: order.fees.platformFee,
+      actor: "system",
+      source: "webhook",
+    });
+  }
 
   let finalOrder = updated;
   let guestAccessToken: string | undefined;
@@ -610,6 +614,14 @@ async function creditSellerEscrowRelease(
   description: string,
 ): Promise<{ sellerNet: number; connectPaidOut: boolean }> {
   const sellerNet = order.fees.productPrice;
+  const connectPaidOut = isFreshConnectTransfer(payout);
+  const { isMockPaidOrder } = await import(
+    "@/services/admin/admin-finance-metrics"
+  );
+  if (isMockPaidOrder(order)) {
+    return { sellerNet, connectPaidOut: false };
+  }
+
   await addWalletTransaction(order.sellerId, {
     orderId: order.id,
     type: "escrow_release",
@@ -618,7 +630,6 @@ async function creditSellerEscrowRelease(
     status: "completed",
   });
 
-  const connectPaidOut = isFreshConnectTransfer(payout);
   if (connectPaidOut) {
     await addWalletTransaction(order.sellerId, {
       orderId: order.id,
@@ -1029,25 +1040,31 @@ export async function refundOrder(
   // Unwind the ledger for every status that still reflects seller funds.
   // Held/delivered: reverse pending escrow. Released without Connect: debit available.
   // Released with Connect transfer: Stripe reversal already ran; ledger was net-zero.
-  if (order.status === "paid_held_in_escrow" || order.status === "delivered") {
-    await addWalletTransaction(order.sellerId, {
-      orderId: order.id,
-      type: "refund",
-      amount: -order.fees.productPrice,
-      description: `استرداد — ${order.listingTitle}`,
-      status: "completed",
-    });
-  } else if (
-    (order.status === "confirmed" || order.status === "released") &&
-    !order.stripeTransferId
-  ) {
-    await addWalletTransaction(order.sellerId, {
-      orderId: order.id,
-      type: "withdrawal",
-      amount: -order.fees.productPrice,
-      description: `استرداد بعد التحرير — ${order.listingTitle}`,
-      status: "completed",
-    });
+  // Skip mock/demo checkouts — they never wrote real wallet rows.
+  const { isMockPaidOrder } = await import(
+    "@/services/admin/admin-finance-metrics"
+  );
+  if (!isMockPaidOrder(order)) {
+    if (order.status === "paid_held_in_escrow" || order.status === "delivered") {
+      await addWalletTransaction(order.sellerId, {
+        orderId: order.id,
+        type: "refund",
+        amount: -order.fees.productPrice,
+        description: `استرداد — ${order.listingTitle}`,
+        status: "completed",
+      });
+    } else if (
+      (order.status === "confirmed" || order.status === "released") &&
+      !order.stripeTransferId
+    ) {
+      await addWalletTransaction(order.sellerId, {
+        orderId: order.id,
+        type: "withdrawal",
+        amount: -order.fees.productPrice,
+        description: `استرداد بعد التحرير — ${order.listingTitle}`,
+        status: "completed",
+      });
+    }
   }
 
   if (order.buyerId) {

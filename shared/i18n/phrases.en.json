@@ -3043,5 +3043,12 @@
   "لا يوجد بريد مشتري لإرسال الفاتورة.": "No buyer email to send the invoice.",
   "لا يمكن إرسال الفاتورة قبل تأكيد الدفع.": "Cannot send the invoice before payment is confirmed.",
   "تعذّر إرسال الفاتورة.": "Could not send the invoice.",
-  "مرجع سريع للإعلان المرتبط بهذا الطلب.": "Quick reference for the listing on this order."
+  "مرجع سريع للإعلان المرتبط بهذا الطلب.": "Quick reference for the listing on this order.",
+  "أرصدة حقيقية من دفتر المحفظة — بدون حسابات تجريبية أو دفعات وهمية. اربط التعديل الإداري بمستخدم فعّال أو راجع الضمان والطلبات.": "Real balances from the wallet ledger — no demo accounts or fake payments. Tie admin adjustments to an active user, or review escrow and orders.",
+  "يحدّث دفتر المحفظة فقط (ليس تحويل Stripe). الإيداع يزيد المتاح، والسحب يخصمه. اختر مستخدماً من الجدول لتعبئة المعرّف.": "Updates the wallet ledger only (not a Stripe transfer). Deposits raise available balance; withdrawals reduce it. Pick a user from the table to fill the ID.",
+  "محفظة حقيقية": "real wallet",
+  "لا توجد محافظ حقيقية مطابقة.": "No matching real wallets.",
+  "معلّق ضمان": "Escrow pending",
+  "دفتر المحافظ الحقيقي — أرصدة متاحة ومحجوزة بدون حسابات أو دفعات تجريبية.": "Real wallet ledger — available and held balances without demo accounts or fake payments.",
+  "اسم، بريد، أو معرّف...": "Name, email, or ID…"
 }

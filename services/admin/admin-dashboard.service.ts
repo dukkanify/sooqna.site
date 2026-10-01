@@ -11,6 +11,11 @@ import {
   computeFinanceMetrics,
   isMockPaidOrder,
 } from "@/services/admin/admin-finance-metrics";
+import {
+  filterRealWalletAccounts,
+  mockOrderIdSet,
+  summarizeAdminWallets,
+} from "@/services/admin/admin-wallet-metrics";
 import { getAdminDisputes, getOpenDisputeCount } from "@/services/admin/dispute-store";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import { getAllUsers } from "@/services/auth/user-store";
@@ -167,7 +172,13 @@ export async function buildAdminDashboard(
   const failedPayments = realOrders.filter((o) => o.paymentStatus === "failed");
   const fees = finance.platformRevenue;
   const heldAmount = finance.heldEscrowAmount;
-  const walletHeld = wallets.reduce((sum, w) => sum + w.heldInEscrow, 0);
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const realWallets = filterRealWalletAccounts(wallets, {
+    mockOrderIds: mockOrderIdSet(orders),
+    usersById,
+  });
+  const walletSummary = summarizeAdminWallets(realWallets);
+  const walletHeld = walletSummary.held;
 
   const marketplaceListings = listings.filter(isMarketplaceListing);
   const rejectedListings = listingStats.rejectedListings;
@@ -740,8 +751,8 @@ export async function buildAdminDashboard(
       openDisputes,
       totalUsers: users.length,
       totalListings: listingStats.totalListings,
-      walletAccounts: wallets.length,
-      walletAvailable: wallets.reduce((s, w) => s + w.availableBalance, 0),
+      walletAccounts: walletSummary.accounts,
+      walletAvailable: walletSummary.available,
       walletHeld,
       conversionRate:
         realOrders.length === 0
