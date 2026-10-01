@@ -26,18 +26,18 @@ export function ListingPreviewPanel({
       <Card className="p-5">
         <p className="text-sm font-semibold text-muted">معاينة الإعلان</p>
         <div className="mt-4 overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-surface-muted">
-          <div className="relative h-44">
+          <div className="relative aspect-[3/2] w-full">
             {imagePreviews[0] ? (
               <AppImage
                 alt="معاينة صورة الإعلان"
-                className="h-full w-full"
+                className="object-cover"
                 fallback="none"
                 fill
                 priority
                 src={imagePreviews[0]}
               />
             ) : (
-              <div className="grid h-full place-items-center text-secondary">
+              <div className="grid h-full min-h-[10rem] place-items-center text-secondary">
                 {selectedCategory ? (
                   <CategoryIcon category={selectedCategory} size={36} />
                 ) : (

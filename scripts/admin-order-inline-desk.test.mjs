@@ -1,5 +1,6 @@
 /**
  * Admin orders desk: View opens in-panel modal — never buyer /orders/[id] pay journey.
+ * Includes professional invoice preview + send.
  * Run: npm test
  */
 import assert from "node:assert/strict";
@@ -21,6 +22,8 @@ describe("admin order inline desk", () => {
     assert.match(src, /<Modal/);
     assert.match(src, />\s*عرض\s*</);
     assert.match(src, /notify-payment/);
+    assert.match(src, /send-invoice/);
+    assert.match(src, /onSendInvoice/);
     assert.doesNotMatch(src, /href=\{`\/orders\/\$\{order\.id\}`\}/);
     assert.doesNotMatch(src, /href=\{`\/checkout/);
   });
@@ -30,27 +33,48 @@ describe("admin order inline desk", () => {
     assert.match(src, /AdminOrderInlineDesk/);
     assert.match(src, /<Modal/);
     assert.match(src, />\s*عرض\s*</);
+    assert.match(src, /send-invoice/);
     assert.doesNotMatch(src, /href=\{`\/orders\/\$\{order\.id\}`\}/);
   });
 
-  it("inline desk keeps admin actions, listing preview, and buyer notify", () => {
+  it("inline desk is organized and surfaces invoice actions", () => {
     const src = read("features/admin/components/AdminOrderInlineDesk.tsx");
-    assert.match(src, /مكتب الطلب/);
-    assert.match(src, /دون التحويل لرحلة المشتري/);
-    assert.match(src, /الدفع مطلوب من المشتري/);
-    assert.match(src, /إشعار المشتري بإكمال الدفع/);
-    assert.match(src, /رابط معاينة مختصر للإعلان/);
-    assert.match(src, /تحرير ضمان/);
+    assert.match(src, /مكتب الطلب|ملخص إداري للطلب/);
+    assert.match(src, /لن يتم تحويلك لصفحة الدفع/);
+    assert.match(src, /بانتظار دفع المشتري/);
+    assert.match(src, /تنبيه المشتري لإكمال الدفع/);
+    assert.match(src, /OrderInvoicePreview/);
+    assert.match(src, /تحرير الضمان/);
     assert.match(src, /تأكيد الاسترداد/);
     assert.match(src, /سجل الأحداث/);
     assert.doesNotMatch(src, /\/orders\//);
     assert.doesNotMatch(src, /\/checkout/);
   });
 
-  it("notify-payment admin API exists", () => {
-    const src = read("app/api/admin/orders/[id]/notify-payment/route.ts");
-    assert.match(src, /notifyBuyerPaymentRequired/);
-    assert.match(src, /requireAdminPermission/);
+  it("invoice preview supports view/print and send", () => {
+    const src = read("features/admin/components/OrderInvoicePreview.tsx");
+    assert.match(src, /عرض \/ طباعة/);
+    assert.match(src, /إرسال للمشتري/);
+    assert.match(src, /buildOrderInvoiceHtml/);
+  });
+
+  it("notify-payment and send-invoice admin APIs exist", () => {
+    const notify = read("app/api/admin/orders/[id]/notify-payment/route.ts");
+    const invoice = read("app/api/admin/orders/[id]/send-invoice/route.ts");
+    assert.match(notify, /notifyBuyerPaymentRequired/);
+    assert.match(notify, /requireAdminPermission/);
+    assert.match(invoice, /sendOrderInvoiceEmail/);
+    assert.match(invoice, /requireAdminPermission/);
+  });
+
+  it("paid emails embed professional invoice", () => {
+    const paid = read("services/email/notification-emails.ts");
+    const guest = read("services/email/order-email.service.ts");
+    const invoice = read("services/email/order-invoice.ts");
+    assert.match(paid, /invoiceBlockForPaidEmail/);
+    assert.match(guest, /invoiceBlockForPaidEmail/);
+    assert.match(invoice, /فاتورة ضريبية|Tax invoice/);
+    assert.match(invoice, /invoiceNumberForOrder/);
   });
 
   it("order service notifies buyer for payment_required", () => {
@@ -60,26 +84,22 @@ describe("admin order inline desk", () => {
     assert.match(src, /notifyBuyerPaymentRequired\(order\.id/);
   });
 
-  it("orders page description states in-panel management", () => {
+  it("orders page description mentions invoices", () => {
     const src = read("app/admin/orders/page.tsx");
-    assert.match(src, /دون التحويل لرحلة المشتري/);
+    assert.match(src, /الفواتير|الفاتورة/);
   });
 
-  it("EN phrases cover order desk labels", () => {
+  it("EN phrases cover order desk + invoice labels", () => {
     const phrases = JSON.parse(read("shared/i18n/phrases.en.json"));
     assert.equal(phrases["مكتب الطلب"], "Order desk");
     assert.equal(phrases["استرداد إداري"], "Admin refund");
+    assert.equal(phrases["الفاتورة"], "Invoice");
+    assert.equal(phrases["إرسال للمشتري"], "Send to buyer");
+    assert.equal(phrases["عرض / طباعة"], "View / print");
     assert.equal(
-      phrases["إشعار المشتري بإكمال الدفع"],
-      "Notify buyer to complete payment",
+      phrases["تنبيه المشتري لإكمال الدفع"],
+      "Remind buyer to complete payment",
     );
-    assert.equal(
-      phrases["الدفع مطلوب من المشتري"],
-      "Payment required from the buyer",
-    );
-    assert.equal(
-      phrases["رابط معاينة مختصر للإعلان"],
-      "Short listing preview link",
-    );
+    assert.equal(phrases["بانتظار دفع المشتري"], "Awaiting buyer payment");
   });
 });

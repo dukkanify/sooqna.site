@@ -1,4 +1,7 @@
-import { persistImageFiles } from "@/shared/utils/persist-images";
+import {
+  normalizeListingImageFiles,
+  persistImageFiles,
+} from "@/shared/utils/persist-images";
 
 type UploadApiResponse = {
   url?: string;
@@ -9,18 +12,20 @@ type UploadApiResponse = {
 
 /**
  * Listing image upload helper.
- * Prefer durable server URLs (S3). On ephemeral local/media paths, compress
- * to data URLs so seller photos survive in listing JSON (Postgres).
+ * Normalize every photo to the shared 3:2 cover size first, then prefer
+ * durable server URLs (S3). On ephemeral local/media paths, compress to
+ * data URLs so seller photos survive in listing JSON (Postgres).
  */
 export async function uploadListingImages(files: File[]): Promise<string[]> {
   if (typeof window === "undefined") {
     return persistImageFiles(files);
   }
 
+  const normalized = await normalizeListingImageFiles(files);
   const urls: string[] = [];
   let preferClientPersist = false;
 
-  for (const file of files) {
+  for (const file of normalized) {
     try {
       const form = new FormData();
       form.append("file", file);
@@ -54,9 +59,26 @@ export async function uploadListingImages(files: File[]): Promise<string[]> {
     }
   }
 
-  if (!preferClientPersist && urls.length === files.length) {
+  if (!preferClientPersist && urls.length === normalized.length) {
     return urls;
   }
 
-  return persistImageFiles(files);
+  // Already normalized — write data URLs without a second canvas pass.
+  return Promise.all(
+    normalized.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === "string") {
+              resolve(reader.result);
+              return;
+            }
+            reject(new Error("تعذر قراءة الصورة"));
+          };
+          reader.onerror = () => reject(new Error("تعذر قراءة الصورة"));
+          reader.readAsDataURL(file);
+        }),
+    ),
+  );
 }
