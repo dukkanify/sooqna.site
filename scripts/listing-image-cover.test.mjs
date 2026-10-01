@@ -51,6 +51,7 @@ describe("listing image uniform cover size", () => {
       /\.marketplace-card-image[\s\S]*object-fit:\s*cover\s*!important/,
     );
     assert.match(card, /marketplace-card-media/);
+    assert.match(card, /aspect-\[3\/2\]/);
     assert.doesNotMatch(card, /h-full min-h-full/);
     assert.match(preview, /aspect-\[3\/2\]/);
     assert.match(media, /aspect-\[3\/2\]/);
