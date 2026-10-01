@@ -74,14 +74,30 @@
   border-radius: 0.5rem;
 }
 
-/* Full-width bar above the listing — never overlaps photo badges */
+/*
+ * Fixed crown slot above every marketplace card so Featured and regular
+ * ads share the same image top edge in a grid (no staggered photos).
+ */
+.marketplace-card-crown,
+.mobile-home-featured-card__crown {
+  display: flex;
+  flex-shrink: 0;
+  align-items: stretch;
+  height: 1.7rem;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Full-width bar in the crown — never overlaps photo badges */
 .listing-featured-badge--cap {
   display: flex;
   width: 100%;
+  height: 100%;
+  align-items: center;
   justify-content: center;
   gap: 0.4rem;
   border-radius: 0;
-  padding-block: 0.42rem;
+  padding-block: 0;
   padding-inline: 0.75rem;
   font-size: 0.7rem;
   letter-spacing: 0.08em;

@@ -50,7 +50,12 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
         featuredLive ? "mobile-home-featured-card--featured" : ""
       }`.trim()}
     >
-      {featuredLive ? <FeaturedBadge placement="cap" /> : null}
+      <div
+        aria-hidden={!featuredLive}
+        className="mobile-home-featured-card__crown"
+      >
+        {featuredLive ? <FeaturedBadge placement="cap" /> : null}
+      </div>
       <div className="mobile-home-featured-card__media">
         <Link aria-hidden className="absolute inset-0" href={href} tabIndex={-1}>
           {imageUrl ? (

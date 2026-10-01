@@ -24,6 +24,7 @@ export function Skeleton({
 export function ListingCardSkeleton() {
   return (
     <div aria-busy="true" aria-label="جاري تحميل الإعلان" className="marketplace-card flex h-full flex-col overflow-hidden">
+      <div aria-hidden className="marketplace-card-crown h-[1.7rem] shrink-0" />
       <div className="aspect-[3/2]">
         <Skeleton className="h-full w-full !rounded-none" />
       </div>
