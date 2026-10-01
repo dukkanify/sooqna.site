@@ -55,6 +55,7 @@ export function AdminEscrowPanel() {
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notifyBusyId, setNotifyBusyId] = useState<string | null>(null);
+  const [invoiceBusyId, setInvoiceBusyId] = useState<string | null>(null);
   const [deskId, setDeskId] = useState<string | null>(null);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{
@@ -203,6 +204,49 @@ export function AdminEscrowPanel() {
       }
     } finally {
       setNotifyBusyId(null);
+    }
+  }
+
+  async function handleSendInvoice(orderId: string) {
+    const user = getSessionUser();
+    if (!user) return;
+    setInvoiceBusyId(orderId);
+    setMessage(null);
+    try {
+      const res = await adminFetch(
+        `/api/admin/orders/${orderId}/send-invoice`,
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setMessage({
+          variant: "success",
+          text:
+            String(data.status ?? "sent") === "skipped"
+              ? "الفاتورة مُرسلة مسبقًا — سجّلنا إعادة المحاولة في سجل الطلب."
+              : "تم إرسال الفاتورة إلى بريد المشتري.",
+        });
+        load();
+      } else {
+        const err =
+          data && typeof data === "object" && "error" in data
+            ? String((data as { error: unknown }).error)
+            : "";
+        const map: Record<string, string> = {
+          NO_BUYER_EMAIL: "لا يوجد بريد مشتري لإرسال الفاتورة.",
+          NOT_PAID: "لا يمكن إرسال الفاتورة قبل تأكيد الدفع.",
+          ORDER_NOT_FOUND: "الطلب غير موجود.",
+        };
+        setMessage({
+          variant: "error",
+          text: map[err] ?? "تعذّر إرسال الفاتورة.",
+        });
+      }
+    } finally {
+      setInvoiceBusyId(null);
     }
   }
 
@@ -443,7 +487,7 @@ export function AdminEscrowPanel() {
       </Card>
 
       <Modal
-        description="معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع."
+        description="تفاصيل الطلب والفاتورة والإجراءات — داخل اللوحة فقط."
         onClose={() => setDeskId(null)}
         open={Boolean(deskOrder)}
         size="lg"
@@ -452,6 +496,7 @@ export function AdminEscrowPanel() {
         {deskOrder ? (
           <AdminOrderInlineDesk
             busy={busyId === deskOrder.id}
+            invoiceBusy={invoiceBusyId === deskOrder.id}
             locale={locale}
             notifyBusy={notifyBusyId === deskOrder.id}
             onNotifyPayment={() => handleNotifyPayment(deskOrder.id)}
@@ -463,6 +508,7 @@ export function AdminEscrowPanel() {
             }
             onRefund={() => handleRefund(deskOrder.id)}
             onRelease={() => handleRelease(deskOrder.id)}
+            onSendInvoice={() => handleSendInvoice(deskOrder.id)}
             order={deskOrder}
             reasonDraft={reasonDrafts[deskOrder.id] ?? ""}
             showRefund={isHeld(deskOrder) && deskOrder.status !== "refunded"}

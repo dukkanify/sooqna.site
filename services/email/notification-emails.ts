@@ -184,6 +184,10 @@ export async function emailOrderPaid(order: Order): Promise<void> {
     });
     const english = locale === "en";
     const titleHtml = escapeEmailHtml(order.listingTitle);
+    const { invoiceBlockForPaidEmail } = await import(
+      "@/services/email/send-order-invoice"
+    );
+    const invoice = invoiceBlockForPaidEmail(order, locale);
     await sendTransactionalEmail({
       type: "order_paid",
       to: order.buyerEmail,
@@ -191,15 +195,23 @@ export async function emailOrderPaid(order: Order): Promise<void> {
       entityId: order.id,
       locale,
       subject: english
-        ? `Payment successful — order ${order.id}`
-        : `تم الدفع بنجاح — طلب ${order.id}`,
-      title: english ? "Payment received" : "تم استلام الدفع",
+        ? `Payment successful — invoice for ${order.listingTitle}`
+        : `تم الدفع بنجاح — فاتورة ${order.listingTitle}`,
+      title: english ? "Payment received + invoice" : "تم استلام الدفع والفاتورة",
       bodyHtml: english
-        ? `${greet(order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">Payment for “${titleHtml}” succeeded. The amount is held in escrow until receipt is confirmed.</p>`
-        : `${greet(order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">تم دفع طلب «${titleHtml}» بنجاح. المبلغ محجوز في الضمان حتى تأكيد الاستلام.</p>`,
+        ? `${greet(order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">Payment for “${titleHtml}” succeeded. The amount is held in escrow until receipt is confirmed. Your official invoice is below.</p>${invoice.html}`
+        : `${greet(order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">تم دفع طلب «${titleHtml}» بنجاح. المبلغ محجوز في الضمان حتى تأكيد الاستلام. فاتورتكم الرسمية أدناه.</p>${invoice.html}`,
       bodyLines: english
-        ? [`Payment for “${order.listingTitle}” was received.`, `Order number: ${order.id}`]
-        : [`تم دفع طلب «${order.listingTitle}».`, `رقم الطلب: ${order.id}`],
+        ? [
+            `Payment for “${order.listingTitle}” was received.`,
+            `Order number: ${order.id}`,
+            ...invoice.lines,
+          ]
+        : [
+            `تم دفع طلب «${order.listingTitle}».`,
+            `رقم الطلب: ${order.id}`,
+            ...invoice.lines,
+          ],
       ctaHref: href,
       ctaLabel: english ? "Track order" : "متابعة الطلب",
     });
