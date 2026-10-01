@@ -8,6 +8,8 @@ import { getRequestLocale } from "@/shared/i18n/locale";
 import { tx } from "@/shared/i18n/tx";
 import { getListingBySlug } from "@/services/listings";
 
+import "./category-hero.css";
+
 type CategoryHeroProps = {
   category: Category;
   /** Compact banner for dense browse pages (e.g. cars) — less vertical chrome. */
@@ -35,18 +37,18 @@ export async function CategoryHero({
 
   if (compact) {
     return (
-      <div className="mb-4 overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-white shadow-[var(--shadow-card)]">
-        <div className="relative min-h-[5.5rem] md:min-h-[6.25rem]">
+      <div className="category-hero mb-4 overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-white shadow-[var(--shadow-card)]">
+        <div className="category-hero__media category-hero__media--compact relative w-full">
           <AppImage
             alt={categoryName}
-            className="object-cover"
+            className="category-hero__image"
             fallbackCategory={category.id}
             fill
             priority
             sizes="100vw"
             src={category.imageUrl}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+          <div className="category-hero__shade" />
           <div className="absolute inset-x-0 bottom-0 p-3.5 md:p-4">
             <h1 className="text-xl font-black text-white md:text-2xl">
               {category.id === "cars" ? "سيارات للبيع" : categoryName}
@@ -61,19 +63,19 @@ export async function CategoryHero({
   }
 
   return (
-    <div className="mb-5 overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-white shadow-[var(--shadow-card)]">
+    <div className="category-hero mb-5 overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-white shadow-[var(--shadow-card)]">
       <div className={featuredListing ? "grid lg:grid-cols-[1.15fr_0.85fr]" : ""}>
-        <div className="relative min-h-[7.5rem] md:min-h-[8.5rem] lg:min-h-[11rem]">
+        <div className="category-hero__media relative w-full">
           <AppImage
             alt={categoryName}
-            className="object-cover"
+            className="category-hero__image"
             fallbackCategory={category.id}
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 55vw"
             src={category.imageUrl}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+          <div className="category-hero__shade" />
           <div className="absolute inset-x-0 bottom-0 p-4 md:p-5">
             <Badge variant="featured">{categoryName}</Badge>
             <h1 className="mt-2 text-xl font-bold text-white md:text-2xl">
