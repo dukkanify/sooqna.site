@@ -53,9 +53,16 @@ function buildDemoStoredUser(
 
 /**
  * Seeds / repairs demo accounts (including admin@sooqna.demo) in the durable store.
+ * No-ops on Vercel production/preview unless ALLOW_DEMO_ACCOUNTS=true.
  * Safe to call repeatedly — rehashes when the stored password no longer matches.
  */
 export async function ensureDemoAccounts(): Promise<void> {
+  const { shouldSeedDemoAccounts } = await import(
+    "@/services/auth/demo-accounts-policy"
+  );
+  if (!shouldSeedDemoAccounts()) {
+    return;
+  }
   if (!demoAccountsEnsured) {
     demoAccountsEnsured = (async () => {
       for (const account of demoAccounts) {

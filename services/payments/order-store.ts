@@ -24,6 +24,15 @@ export async function getAllOrders(): Promise<Order[]> {
   return store.listAll();
 }
 
+/** Replace the full order collection (admin purge / migrations). */
+export async function replaceAllOrders(orders: Order[]): Promise<void> {
+  await store.replaceAll(orders);
+}
+
+export async function removeOrderById(orderId: string): Promise<boolean> {
+  return store.removeById(orderId);
+}
+
 export async function getOrderById(orderId: string): Promise<Order | undefined> {
   const orders = await getAllOrders();
   return orders.find((order) => order.id === orderId);

@@ -2,12 +2,17 @@
 
 ## Cursor Cloud specific instructions
 
-This repo is a single Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4 frontend app (`sooqna-web`), an Arabic RTL marketplace for **Sooqna (سوقنا)**. There is no backend, database, or Docker stack in the repo; all data comes from in-memory mocks/stubs under `services/`.
+This repo is a Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4 marketplace for **Sooqna (سوقنا)** — production domain **`https://sooqnauae.com`**.
 
-Standard commands live in `package.json` (`dev`, `build`, `start`, `lint`); see `README.md`. Notes:
+It is **not** mocks-only anymore: durable data lives in Neon Postgres (JSON payload tables) when `DATABASE_URL` is set, with local `.data/` fallback. Stripe Checkout + escrow, Resend email, admin ops desks, chat, and notifications are implemented.
 
-- Dev server: `npm run dev` serves the app on `http://localhost:3000` (Turbopack, hot reload).
-- Implemented routes include `/`, `/categories`, `/categories/[slug]`, `/search`, `/listings/[slug]`, `/login`, `/register`, `/profile`, and `/dashboard/listings`. `/wallet`, `/escrow`, and `/listings/new` are implemented (Connect onboarding, escrow summary, add listing).
-- No env vars are needed for the current mock-data flow. `NEXT_PUBLIC_API_BASE_URL` defaults to `https://api.sooqna.ae/v1` when wired; leaving it unset is fine for mocks.
-- Run `npm test`, `npm run lint`, and `npm run build`. Manual browser QA still recommended for checkout/escrow.
-- Brand: use `Sooqna` / `سوقنا` in all user-facing copy. Legacy `uae-sales-*` keys are migrated automatically — see `BRAND_MIGRATION_REPORT.md`.
+Standard commands live in `package.json` (`dev`, `build`, `start`, `lint`); see `README.md` and `PRODUCTION_DEPLOYMENT_GUIDE.md`.
+
+Notes:
+
+- Dev server: `npm run dev` → `http://localhost:3000` (Turbopack).
+- Routes include marketplace browse/search/listings, auth, wallet/Connect, escrow/checkout, admin desks (`/admin/*`).
+- Production env essentials: `DATABASE_URL`, `SESSION_SECRET`, `CRON_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM_ADDRESS`, Stripe trio, `OTP_PEPPER`. Demo accounts stay **off** on Vercel (`ALLOW_DEMO_ACCOUNTS=false`).
+- Mock checkout and live curated catalog default **off** on Vercel production/preview.
+- Run `npm test`, `npm run lint`, and `npm run build`. Certify one live AED checkout before marketing spend.
+- Brand: `Sooqna` / `سوقنا` in user-facing copy. Support: `support@sooqnauae.com`.

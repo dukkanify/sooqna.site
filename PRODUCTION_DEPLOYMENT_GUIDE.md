@@ -1,7 +1,7 @@
 # Sooqna — Production Deployment Guide
 
-**Production domain:** [https://sooqna.site](https://sooqna.site)  
-**WWW policy:** `www.sooqna.site` → `sooqna.site` (308 redirect via middleware)
+**Production domain:** [https://sooqnauae.com](https://sooqnauae.com)  
+**WWW policy:** `www.sooqnauae.com` → `sooqnauae.com` (308 redirect via middleware)
 
 ---
 
@@ -9,7 +9,7 @@
 
 - Node.js 20+
 - Hosting with HTTPS (Vercel, Railway, etc.)
-- DNS access for `sooqna.site`
+- DNS access for `sooqnauae.com`
 - Stripe live-mode account
 
 ---
@@ -24,12 +24,18 @@ cp .env.production.example .env.production
 
 | Variable | Production value | Required |
 |----------|------------------|----------|
-| `NEXT_PUBLIC_APP_URL` | `https://sooqna.site` | Yes — set at **build time** |
+| `NEXT_PUBLIC_APP_URL` | `https://sooqnauae.com` | Yes — set at **build time** |
 | `STRIPE_SECRET_KEY` | `sk_live_...` | Yes |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` | Yes |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` | Yes |
 | `STRIPE_CURRENCY` | `aed` | Yes |
-| `SESSION_COOKIE_DOMAIN` | `.sooqna.site` | Recommended |
+| `SESSION_COOKIE_DOMAIN` | `.sooqnauae.com` | Recommended |
+| `SESSION_SECRET` | long random | **Yes** — HMAC session cookies |
+| `CRON_SECRET` | long random | **Yes** — escrow auto-release + dispute reminder crons |
+| `OTP_PEPPER` | long random (not the code default) | **Yes** — OTP hashing |
+| `PASSWORD_PEPPER` | stable secret | Recommended — set once; rotating invalidates passwords |
+| `ALLOW_DEMO_ACCOUNTS` | `false` | **Yes on Vercel** — blocks `@sooqna.demo` seed/login |
+| `ALLOW_MOCK_CHECKOUT` | `false` | **Yes on Vercel** |
 | `DATABASE_URL` | `postgres://...` (Neon / Vercel Postgres) | **Yes on Vercel** — user accounts must not use `/tmp` |
 | `S3_BUCKET` + `S3_ACCESS_KEY_ID` + `S3_SECRET_ACCESS_KEY` | AWS / Cloudflare R2 / MinIO | **Recommended** — durable listing photos (without S3, images inline as data URLs in Postgres) |
 | `S3_PUBLIC_BASE_URL` | CDN / public bucket base | Recommended with S3 |
@@ -64,7 +70,7 @@ Use a Vercel Deploy Hook when Git auto-deploy is blocked (e.g. rate limit) or yo
 
 ### 1. Create the hook in Vercel
 
-1. Open [Vercel Dashboard](https://vercel.com) → project **sooqna** (production domain: `sooqna.site`)
+1. Open [Vercel Dashboard](https://vercel.com) → project **sooqna** (production domain: `sooqnauae.com`)
 2. **Settings** → **Git** → **Deploy Hooks**
 3. **Create Hook**
    - Name: `production-main`
@@ -110,8 +116,8 @@ Expected success response:
 Verify:
 
 ```bash
-dig sooqna.site
-dig www.sooqna.site
+dig sooqnauae.com
+dig www.sooqnauae.com
 ```
 
 ---
@@ -128,18 +134,21 @@ dig www.sooqna.site
 **Endpoint URL:**
 
 ```
-https://sooqna.site/api/webhooks/stripe
+https://sooqnauae.com/api/webhooks/stripe
 ```
 
 ### Setup steps
 
 1. Stripe Dashboard → **Developers → Webhooks → Add endpoint**
-2. URL: `https://sooqna.site/api/webhooks/stripe`
-3. Events:
+2. URL: `https://sooqnauae.com/api/webhooks/stripe`
+3. Events (payments + Connect):
    - `checkout.session.completed`
    - `payment_intent.succeeded`
    - `payment_intent.payment_failed`
    - `charge.refunded`
+   - `account.updated`
+   - `capability.updated`
+   - `transfer.created` / `transfer.failed` (if using Connect payouts)
 4. Copy signing secret → `STRIPE_WEBHOOK_SECRET`
 5. Send test event and confirm `200` response
 
@@ -147,8 +156,8 @@ https://sooqna.site/api/webhooks/stripe
 
 | Flow | URL |
 |------|-----|
-| Success | `https://sooqna.site/checkout/success?orderId=[id]` |
-| Cancel | `https://sooqna.site/checkout?listingId=...&payment=cancelled` |
+| Success | `https://sooqnauae.com/checkout/success?orderId=[id]` |
+| Cancel | `https://sooqnauae.com/checkout?listingId=...&payment=cancelled` |
 
 ---
 
@@ -162,7 +171,7 @@ Auth sets an HttpOnly cookie alongside `localStorage`:
 | Secure | `true` (production) |
 | HttpOnly | `true` |
 | SameSite | `Lax` |
-| Domain | `.sooqna.site` |
+| Domain | `.sooqnauae.com` |
 | Path | `/` |
 
 Cookie is set via `POST /api/auth/session` on login/register and cleared on logout.
@@ -173,7 +182,7 @@ Cookie is set via `POST /api/auth/session` on login/register and cleared on logo
 
 `middleware.ts` handles:
 
-- `www.sooqna.site` → `https://sooqna.site` (308)
+- `www.sooqnauae.com` → `https://sooqnauae.com` (308)
 - HTTP → HTTPS redirect in production
 - HSTS response header
 
@@ -183,13 +192,13 @@ Cookie is set via `POST /api/auth/session` on login/register and cleared on logo
 
 | # | Test | Expected |
 |---|------|----------|
-| 1 | Open `https://sooqna.site` | Site loads over HTTPS |
-| 2 | Open `https://www.sooqna.site` | Redirects to apex |
-| 3 | View `/sitemap.xml` | URLs use `https://sooqna.site` |
-| 4 | View page source JSON-LD | Organization URL is `https://sooqna.site` |
+| 1 | Open `https://sooqnauae.com` | Site loads over HTTPS |
+| 2 | Open `https://www.sooqnauae.com` | Redirects to apex |
+| 3 | View `/sitemap.xml` | URLs use `https://sooqnauae.com` |
+| 4 | View page source JSON-LD | Organization URL is `https://sooqnauae.com` |
 | 5 | Login as demo user | Session cookie set (`sooqna_session`) |
 | 6 | Logout | Cookie cleared |
-| 7 | Buy Now → Checkout → Stripe | Redirect URLs use `sooqna.site` |
+| 7 | Buy Now → Checkout → Stripe | Redirect URLs use `sooqnauae.com` |
 | 8 | Stripe webhook test event | `POST /api/webhooks/stripe` returns 200 |
 | 9 | `npm run build` with prod env | No localhost in output metadata |
 
