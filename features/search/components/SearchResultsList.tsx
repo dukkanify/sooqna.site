@@ -9,7 +9,6 @@ import {
   type SearchFilterState,
 } from "@/features/search/components/search-url";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
-import { SEARCH_RESULT_LIMIT } from "@/services/listings";
 import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 import type { Category, Listing } from "@/types";
@@ -24,6 +23,8 @@ import {
 } from "@/services/storage";
 
 const PAGE_SIZE = 12;
+/** Keep in sync with SEARCH_RESULT_LIMIT in listings.service (client-safe). */
+const SERVER_RESULT_CAP = 260;
 
 type SearchResultsListProps = {
   basePath?: string;
@@ -84,7 +85,7 @@ export function SearchResultsList({
   // Short server pages are complete — never trust an inflated SQL COUNT
   // (e.g. “8 إعلان” above four rendered cards).
   const resultCount =
-    typeof serverTotal === "number" && listings.length >= SEARCH_RESULT_LIMIT
+    typeof serverTotal === "number" && listings.length >= SERVER_RESULT_CAP
       ? serverTotal + localExtra
       : visibleListings.length;
 

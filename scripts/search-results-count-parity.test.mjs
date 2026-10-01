@@ -78,9 +78,10 @@ describe("search results count parity", () => {
 
   it("SearchResultsList ignores inflated serverTotal on short pages", () => {
     const list = read("features/search/components/SearchResultsList.tsx");
-    assert.match(list, /SEARCH_RESULT_LIMIT/);
-    assert.match(list, /listings\.length >= SEARCH_RESULT_LIMIT/);
+    assert.match(list, /SERVER_RESULT_CAP = 260/);
+    assert.match(list, /listings\.length >= SERVER_RESULT_CAP/);
     assert.match(list, /visibleListings\.length/);
+    assert.doesNotMatch(list, /from "@\/services\/listings"/);
   });
 
   it("package.json registers the parity test", () => {
