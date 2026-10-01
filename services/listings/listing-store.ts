@@ -494,6 +494,9 @@ export async function patchListingRecord(
     ...(patch.emirate !== undefined
       ? { emirate: patch.emirate.trim() || undefined }
       : {}),
+    ...(patch.area !== undefined
+      ? { area: patch.area.trim() || undefined }
+      : {}),
     ...(patch.condition !== undefined ? { condition: patch.condition } : {}),
     ...(patch.contactPhone !== undefined
       ? { contactPhone: patch.contactPhone.trim() || undefined }

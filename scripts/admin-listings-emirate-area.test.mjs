@@ -48,13 +48,39 @@ describe("admin listings emirate/area UI", () => {
     );
   });
 
+  it("create/edit forms cascade emirate → area (not flat city dropdown)", () => {
+    const panel = read("features/admin/components/AdminListingsPanel.tsx");
+    assert.match(panel, /emirateFormOptions/);
+    assert.match(panel, /function areaFormOptions/);
+    assert.match(panel, /emirate: "دبي"/);
+    assert.match(panel, /area: ""/);
+    assert.match(panel, /name="emirate"/);
+    assert.match(panel, /name="area"/);
+    assert.match(panel, /listingEmirate\(listing\)/);
+    assert.match(panel, /listingArea\(listing\)/);
+    // Persist both fields on create + edit.
+    assert.match(panel, /emirate,\s*\n\s*area,/);
+    assert.match(panel, /form\.area\.trim\(\)/);
+    assert.match(panel, /editDraft\.emirate/);
+    assert.match(panel, /editDraft\.area/);
+    // No marketplace locations flat list on forms.
+    assert.doesNotMatch(panel, /useMarketplaceLocations/);
+    assert.doesNotMatch(panel, /label="المدينة"/);
+    assert.doesNotMatch(panel, /cities\.map/);
+  });
+
   it("admin listing records expose emirate and area", () => {
     const types = read("types/domain/admin.ts");
     assert.match(types, /emirate\?: string;/);
     assert.match(types, /area\?: string;/);
+    assert.match(types, /\|\s*"area"/);
 
     const queries = read("services/listings/listing-queries.ts");
     assert.match(queries, /payload->>'emirate' AS emirate/);
     assert.match(queries, /payload->>'area' AS area/);
+
+    const store = read("services/listings/listing-store.ts");
+    assert.match(store, /patch\.area !== undefined/);
+    assert.match(store, /area: input\.area\?\.trim/);
   });
 });

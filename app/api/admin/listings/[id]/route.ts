@@ -51,7 +51,8 @@ export async function PATCH(request: Request, context: RouteParams) {
     detail: [
       body.title ? `عنوان` : null,
       typeof body.price === "number" ? `سعر ${body.price}` : null,
-      body.city ? `مدينة ${body.city}` : null,
+      body.emirate ? `إمارة ${body.emirate}` : body.city ? `مدينة ${body.city}` : null,
+      body.area ? `منطقة ${body.area}` : null,
       body.imageUrl || body.images?.length ? "صورة" : null,
       body.categorySpecs ? "مواصفات" : null,
       body.status ? `حالة ${body.status}` : null,
