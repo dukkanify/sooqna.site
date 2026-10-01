@@ -1020,6 +1020,28 @@
   min-width: 14rem;
 }
 
+/* Options list editor — professional rows instead of label:value CSV */
+.admin-options-editor {
+  background: color-mix(in srgb, var(--surface, #fff) 88%, transparent);
+}
+
+.admin-options-editor__grip {
+  user-select: none;
+  touch-action: none;
+}
+
+.admin-options-editor__row:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--secondary, #c9a45c) 45%,
+    var(--border, #e5e7eb)
+  );
+}
+
+html[data-theme="dark"] .admin-options-editor {
+  background: color-mix(in srgb, #1a1620 92%, transparent);
+}
+
 .admin-listings-featured-help,
 .admin-desk-help {
   border: 1px solid rgb(201 164 92 / 35%);

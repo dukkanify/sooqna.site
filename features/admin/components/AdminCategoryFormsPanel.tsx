@@ -1,6 +1,7 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
+import { AdminOptionsListEditor } from "@/features/admin/components/AdminOptionsListEditor";
 import { useCallback, useEffect, useState } from "react";
 import { getSessionUser } from "@/services/storage";
 import { Button } from "@/shared/ui/Button";
@@ -12,6 +13,8 @@ import {
   getCategoryFeatureProfileMeta,
   resolveCategoryFeatureProfile,
 } from "@/shared/constants/category-feature-profiles";
+
+const OPTION_FIELD_TYPES = new Set(["select", "combobox", "checkbox-group"]);
 
 type StoredField = {
   id?: string;
@@ -155,10 +158,25 @@ export function AdminCategoryFormsPanel() {
     setBusy(true);
     setMessage(null);
     try {
+      const payloadFields = fields.map((field) => {
+        const cleanedOptions = (field.options ?? [])
+          .map((option) => {
+            const label = option.label.trim();
+            const value = option.value.trim() || label;
+            return { label, value };
+          })
+          .filter((option) => option.label.length > 0);
+        return {
+          ...field,
+          options: OPTION_FIELD_TYPES.has(field.type)
+            ? cleanedOptions
+            : field.options,
+        };
+      });
       const response = await adminFetch("/api/admin/category-forms", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryId, fields }),
+        body: JSON.stringify({ categoryId, fields: payloadFields }),
       });
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as {
@@ -250,89 +268,92 @@ export function AdminCategoryFormsPanel() {
           </p>
         ) : null}
         <div className="grid gap-3">
-          {fields.map((field, index) => (
-            <div
-              key={`${field.fieldKey}-${index}`}
-              className="grid gap-2 rounded-[var(--radius-xl)] border border-border p-3 sm:grid-cols-2"
-            >
-              <Input
-                label="المفتاح"
-                onChange={(event) =>
-                  updateField(index, { fieldKey: event.target.value })
-                }
-                value={field.fieldKey}
-              />
-              <Input
-                label="التسمية"
-                onChange={(event) => updateField(index, { label: event.target.value })}
-                value={field.label}
-              />
-              <Select
-                label="النوع"
-                onChange={(event) => updateField(index, { type: event.target.value })}
-                options={TYPE_OPTIONS}
-                value={field.type}
-              />
-              <Input
-                label="الترتيب"
-                onChange={(event) =>
-                  updateField(index, {
-                    sortOrder: Number(event.target.value) || 0,
-                  })
-                }
-                type="number"
-                value={String(field.sortOrder)}
-              />
-              <Input
-                label="خيارات القائمة (label:value مفصولة بفاصلة)"
-                onChange={(event) => {
-                  const options = event.target.value
-                    .split(",")
-                    .map((part) => part.trim())
-                    .filter(Boolean)
-                    .map((part) => {
-                      const [label, value] = part.split(":").map((s) => s.trim());
-                      return { label: label || part, value: value || label || part };
-                    });
-                  updateField(index, { options });
-                }}
-                placeholder="غرف نوم:غرف نوم, كنب:كنب"
-                value={(field.options ?? [])
-                  .map((option) => `${option.label}:${option.value}`)
-                  .join(", ")}
-              />
-              <Input
-                label="التحقق / الملاحظة"
-                onChange={(event) =>
-                  updateField(index, {
-                    validation: event.target.value,
-                    note: event.target.value,
-                  })
-                }
-                value={field.validation ?? field.note ?? ""}
-              />
-              <label className="flex items-center gap-2 text-xs text-ink">
-                <input
-                  checked={field.required}
+          {fields.map((field, index) => {
+            const usesOptions = OPTION_FIELD_TYPES.has(field.type);
+            return (
+              <div
+                key={`${field.fieldKey}-${index}`}
+                className="grid gap-2 rounded-[var(--radius-xl)] border border-border p-3 sm:grid-cols-2"
+              >
+                <Input
+                  hint="معرّف داخلي للحقل — لا يظهر للمستخدم النهائي"
+                  label="معرّف الحقل"
                   onChange={(event) =>
-                    updateField(index, { required: event.target.checked })
+                    updateField(index, { fieldKey: event.target.value })
                   }
-                  type="checkbox"
+                  value={field.fieldKey}
                 />
-                مطلوب
-              </label>
-              <label className="flex items-center gap-2 text-xs text-ink">
-                <input
-                  checked={field.enabled}
+                <Input
+                  label="اسم الحقل الظاهر"
                   onChange={(event) =>
-                    updateField(index, { enabled: event.target.checked })
+                    updateField(index, { label: event.target.value })
                   }
-                  type="checkbox"
+                  value={field.label}
                 />
-                مفعّل / ظاهر
-              </label>
-            </div>
-          ))}
+                <Select
+                  label="نوع الحقل"
+                  onChange={(event) =>
+                    updateField(index, { type: event.target.value })
+                  }
+                  options={TYPE_OPTIONS}
+                  value={field.type}
+                />
+                <Input
+                  label="ترتيب العرض"
+                  onChange={(event) =>
+                    updateField(index, {
+                      sortOrder: Number(event.target.value) || 0,
+                    })
+                  }
+                  type="number"
+                  value={String(field.sortOrder)}
+                />
+                {usesOptions ? (
+                  <AdminOptionsListEditor
+                    description="كل صف خيار مستقل — اسم يظهر للمستخدم وقيمة تُحفظ في النظام. يمكن السحب لإعادة الترتيب."
+                    labelPlaceholder="مثال: شقة"
+                    onChange={(options) => updateField(index, { options })}
+                    options={field.options ?? []}
+                    title="خيارات القائمة"
+                    valuePlaceholder="مثال: شقة"
+                  />
+                ) : null}
+                <div className={usesOptions ? undefined : "sm:col-span-2"}>
+                  <Input
+                    label="ملاحظة توضيحية"
+                    onChange={(event) =>
+                      updateField(index, {
+                        validation: event.target.value,
+                        note: event.target.value,
+                      })
+                    }
+                    placeholder="اختياري — نص مساعدة تحت الحقل"
+                    value={field.validation ?? field.note ?? ""}
+                  />
+                </div>
+                <label className="flex items-center gap-2 text-xs text-ink">
+                  <input
+                    checked={field.required}
+                    onChange={(event) =>
+                      updateField(index, { required: event.target.checked })
+                    }
+                    type="checkbox"
+                  />
+                  مطلوب
+                </label>
+                <label className="flex items-center gap-2 text-xs text-ink">
+                  <input
+                    checked={field.enabled}
+                    onChange={(event) =>
+                      updateField(index, { enabled: event.target.checked })
+                    }
+                    type="checkbox"
+                  />
+                  مفعّل / ظاهر
+                </label>
+              </div>
+            );
+          })}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={addField} size="sm" type="button" variant="secondary">
