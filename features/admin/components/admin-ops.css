@@ -2390,6 +2390,12 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   gap: 1rem;
 }
 
+/* Compact tables (finance / short column sets) — listings stays wide */
+.admin-desk-table.admin-desk-table--compact,
+.admin-ops__table.admin-desk-table--compact {
+  min-width: 44rem;
+}
+
 .admin-ops__workspace > .grid {
   gap: 1rem;
 }

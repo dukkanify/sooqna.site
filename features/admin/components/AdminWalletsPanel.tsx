@@ -224,7 +224,7 @@ export function AdminWalletsPanel() {
 
       <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
         <div className="admin-desk-table-scroll">
-          <table className="admin-ops__table admin-desk-table">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
             <thead>
               <tr>
                 <th>المستخدم</th>
