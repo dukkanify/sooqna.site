@@ -57,8 +57,9 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   const imageArea = (
     <div
-      className={`marketplace-card-media relative overflow-hidden ${layout === "row" ? "h-full min-h-full w-full" : "aspect-[3/2]"}`}
+      className={`marketplace-card-media relative overflow-hidden ${layout === "row" ? "marketplace-card-media--row" : ""}`}
     >
+
       {imageUrl ? (
         <Link aria-hidden className="absolute inset-0" href={href} tabIndex={-1}>
           <AppImage
