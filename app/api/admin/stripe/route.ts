@@ -4,6 +4,10 @@ import {
   requireAdminUser,
 } from "@/services/auth/require-session";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
+import {
+  filterRealOrders,
+  isNonLiveOpsOrder,
+} from "@/services/admin/admin-finance-metrics";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getPaymentEvents } from "@/services/payments/payment-log";
 import {
@@ -24,13 +28,35 @@ import { resetStripeClient } from "@/services/payments/stripe.service";
 async function buildStripePayload() {
   const config = await ensureStripeConfigLoaded(true);
   const settings = await getAdminSettings();
-  const [orders, events] = await Promise.all([getAllOrders(), getPaymentEvents()]);
+  const [allOrders, events] = await Promise.all([
+    getAllOrders(),
+    getPaymentEvents(),
+  ]);
+  const orders = filterRealOrders(allOrders);
+  const nonLiveOrderIds = new Set(
+    allOrders.filter((order) => isNonLiveOpsOrder(order)).map((order) => order.id),
+  );
 
   const withStripe = orders.filter((o) => Boolean(o.stripePaymentIntentId));
   const failed = orders.filter(
     (o) => o.paymentStatus === "failed" || o.paymentStatus === "pending",
   );
   const refunded = orders.filter((o) => o.status === "refunded");
+  const liveEvents = events.filter((event) => {
+    const record = event as {
+      orderId?: unknown;
+      payload?: { orderId?: unknown; source?: unknown };
+    };
+    const orderId =
+      typeof record.orderId === "string"
+        ? record.orderId
+        : typeof record.payload?.orderId === "string"
+          ? record.payload.orderId
+          : null;
+    if (record.payload?.source === "mock") return false;
+    if (!orderId) return true;
+    return !nonLiveOrderIds.has(orderId);
+  });
   const base = settings.stripeDashboardUrl.replace(/\/$/, "");
   const envManaged = Boolean(process.env.STRIPE_SECRET_KEY?.trim());
 
@@ -63,7 +89,7 @@ async function buildStripePayload() {
       ordersWithStripe: withStripe.length,
       failedOrPending: failed.length,
       refunded: refunded.length,
-      events: events.length,
+      events: liveEvents.length,
     },
     recentStripeOrders: withStripe.slice(0, 12).map((order) => ({
       id: order.id,
@@ -74,7 +100,7 @@ async function buildStripePayload() {
       stripePaymentIntentId: order.stripePaymentIntentId,
       createdAt: order.createdAt,
     })),
-    recentEvents: events.slice(0, 20),
+    recentEvents: liveEvents.slice(0, 20),
   };
 }
 
