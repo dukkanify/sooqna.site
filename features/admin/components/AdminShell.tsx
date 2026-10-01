@@ -18,6 +18,7 @@ import { BRAND } from "@/shared/constants/brand";
 import { hasAdminPermission } from "@/services/auth/admin-permission-checks";
 import { clearSessionUser, getSessionUser } from "@/services/storage";
 import { removeSessionCookie } from "@/services/auth/session-sync";
+import { AdminAssistantFab } from "@/features/admin/components/AdminAssistantFab";
 import "./admin-ops.css";
 
 export type AdminPath =
@@ -43,7 +44,8 @@ export type AdminPath =
   | "/admin/listing-reports"
   | "/admin/support-messages"
   | "/admin/settings"
-  | "/admin/audit";
+  | "/admin/audit"
+  | "/admin/assistant";
 
 type AdminShellProps = {
   activePath: AdminPath;
@@ -124,6 +126,13 @@ const adminLinks: {
     group: "primary",
     keywords: "رسوم صيانة stripe url إعدادات الموقع",
     permission: "settings",
+  },
+  {
+    href: "/admin/assistant",
+    icon: "star",
+    label: "مساعد التعلّم",
+    group: "primary",
+    keywords: "ai مساعد تعلم شرح مساعدة help assistant learning",
   },
   {
     href: "/admin/analytics",
@@ -477,6 +486,7 @@ export function AdminShell({
           </div>
 
           {children}
+          <AdminAssistantFab />
         </div>
       </div>
     </div>
