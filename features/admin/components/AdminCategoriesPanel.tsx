@@ -15,7 +15,7 @@ import { getSessionUser } from "@/services/storage";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
-import { CategoryIcon } from "@/shared/ui/CategoryIcon";
+import { CategoryMark } from "@/shared/components/CategoryMark";
 import { Icon } from "@/shared/ui/Icon";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
@@ -336,14 +336,35 @@ export function AdminCategoriesPanel() {
               }))}
               value={featureProfile}
             />
-            <Select
-              label="الأيقونة"
-              onChange={(event) =>
-                setIcon(event.target.value as CategoryIconName)
-              }
-              options={CATEGORY_ICON_OPTIONS}
-              value={icon}
-            />
+            <div className="grid gap-2">
+              <span className="text-sm font-medium text-ink">الأيقونة</span>
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden
+                  className="admin-category-mark relative size-12 shrink-0"
+                >
+                  <CategoryMark
+                    category={{
+                      id: "preview",
+                      icon,
+                      name: name || "فئة",
+                      imageUrl: undefined,
+                    }}
+                    compact
+                    iconSize={28}
+                  />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <Select
+                    onChange={(event) =>
+                      setIcon(event.target.value as CategoryIconName)
+                    }
+                    options={CATEGORY_ICON_OPTIONS}
+                    value={icon}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="mt-4">
@@ -416,11 +437,15 @@ export function AdminCategoriesPanel() {
                     <Fragment key={category.id}>
                       <tr>
                         <td className="admin-desk-cell-wrap">
-                          <div className="flex items-center gap-2">
-                            <span aria-hidden>
-                              <CategoryIcon
-                                category={{ icon: category.icon }}
-                                size={22}
+                          <div className="flex items-center gap-3">
+                            <span
+                              aria-hidden
+                              className="admin-category-mark relative size-12 shrink-0"
+                            >
+                              <CategoryMark
+                                category={category}
+                                compact
+                                iconSize={28}
                               />
                             </span>
                             <div className="min-w-0">
@@ -548,11 +573,15 @@ export function AdminCategoriesPanel() {
               return (
                 <li key={category.id} className="admin-desk-mobile-card">
                   <div className="admin-desk-mobile-card__head">
-                    <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <span aria-hidden>
-                        <CategoryIcon
-                          category={{ icon: category.icon }}
-                          size={22}
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <span
+                        aria-hidden
+                        className="admin-category-mark relative size-12 shrink-0"
+                      >
+                        <CategoryMark
+                          category={category}
+                          compact
+                          iconSize={28}
                         />
                       </span>
                       <div className="min-w-0">
@@ -697,14 +726,34 @@ function CategoryEditPanel({
           onChange={(event) => setEditName(event.target.value)}
           value={editName}
         />
-        <Select
-          label="الأيقونة"
-          onChange={(event) =>
-            setEditIcon(event.target.value as CategoryIconName)
-          }
-          options={CATEGORY_ICON_OPTIONS}
-          value={editIcon}
-        />
+        <div className="grid gap-2">
+          <span className="text-sm font-medium text-ink">الأيقونة</span>
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="admin-category-mark relative size-12 shrink-0"
+            >
+              <CategoryMark
+                category={{
+                  id: category.id,
+                  icon: editIcon,
+                  name: editName || category.name,
+                }}
+                compact
+                iconSize={28}
+              />
+            </span>
+            <div className="min-w-0 flex-1">
+              <Select
+                onChange={(event) =>
+                  setEditIcon(event.target.value as CategoryIconName)
+                }
+                options={CATEGORY_ICON_OPTIONS}
+                value={editIcon}
+              />
+            </div>
+          </div>
+        </div>
         <Select
           label="نوع القسم"
           onChange={(event) =>

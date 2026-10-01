@@ -4,11 +4,17 @@ import { getCategory3dIconSrc } from "@/shared/constants/category-3d-icons";
 import { CategoryGlyph } from "@/shared/components/CategoryGlyph";
 
 type CategoryMarkProps = {
-  category?: Pick<Category, "id" | "icon" | "name" | "imageUrl">;
+  category?: Pick<Category, "id" | "icon" | "name"> &
+    Partial<Pick<Category, "imageUrl">>;
   className?: string;
   iconSize?: number;
   selected?: boolean;
   variant?: "category" | "more";
+  /**
+   * Smaller desk/table mark — full icon with contain (no crop),
+   * same 3D assets as the homepage.
+   */
+  compact?: boolean;
 };
 
 /**
@@ -21,6 +27,7 @@ export function CategoryMark({
   iconSize = 36,
   selected = false,
   variant = "category",
+  compact = false,
 }: CategoryMarkProps) {
   const iconName: CategoryIconName | "grid" =
     variant === "more" ? "grid" : (category?.icon ?? "grid");
@@ -31,7 +38,7 @@ export function CategoryMark({
       aria-hidden
       className={`category-mark ${selected ? "category-mark--selected" : ""} ${
         variant === "more" ? "category-mark--more" : ""
-      } ${className}`.trim()}
+      } ${compact ? "category-mark--compact" : ""} ${className}`.trim()}
     >
       <span className="category-mark__glow" />
       {src ? (
