@@ -1,4 +1,4 @@
-/* Featured (مميّز) — diagonal gold sash + featured card crown */
+/* Featured (مميّز) — gold cap above the ad + compact chip for detail */
 
 .listing-featured-badge {
   --featured-gold-hi: #f6e7b4;
@@ -23,13 +23,12 @@
   );
   color: var(--featured-ink);
   font-weight: 900;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   line-height: 1;
   white-space: nowrap;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 55%),
-    inset 0 -1px 0 rgb(80 55 15 / 22%),
-    0 2px 8px rgb(26 20 8 / 18%);
+    inset 0 -1px 0 rgb(80 55 15 / 18%);
 }
 
 .listing-featured-badge__sheen {
@@ -40,7 +39,7 @@
   background: linear-gradient(
     115deg,
     transparent 28%,
-    rgb(255 255 255 / 42%) 48%,
+    rgb(255 255 255 / 40%) 48%,
     transparent 68%
   );
   background-size: 220% 100%;
@@ -68,77 +67,41 @@
 .listing-featured-badge--media {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 55%),
-    0 4px 14px rgb(0 0 0 / 28%);
+    0 3px 12px rgb(0 0 0 / 22%);
 }
 
-.listing-featured-badge--md:not(.listing-featured-badge--corner) {
+.listing-featured-badge--md {
   border-radius: 0.5rem;
 }
 
-/*
- * Diagonal corner sash — unmistakably premium vs a floating pill.
- * Lives in the media start-top corner (RTL = top-right).
- */
-.listing-featured-badge--corner {
-  position: absolute;
-  z-index: 12;
-  inset-block-start: 0.85rem;
-  inset-inline-start: -1.85rem;
-  width: 7.25rem;
+/* Full-width bar above the listing — never overlaps photo badges */
+.listing-featured-badge--cap {
+  display: flex;
+  width: 100%;
   justify-content: center;
-  gap: 0.28rem;
-  padding-block: 0.32rem;
-  padding-inline: 0.35rem;
+  gap: 0.4rem;
   border-radius: 0;
-  font-size: 0.68rem;
+  padding-block: 0.42rem;
+  padding-inline: 0.75rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
-  transform: rotate(45deg);
-  transform-origin: center;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 50%),
-    0 3px 10px rgb(0 0 0 / 30%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
-[dir="rtl"] .listing-featured-badge--corner {
-  transform: rotate(-45deg);
-}
-
-.listing-featured-badge--corner .listing-featured-badge__label {
-  text-transform: none;
-}
-
-/* Featured listing card — gold crown edge + warmer frame */
 .marketplace-card--featured {
   border-color: rgb(201 164 92 / 52%);
   box-shadow:
-    0 0 0 1px rgb(201 164 92 / 24%),
+    0 0 0 1px rgb(201 164 92 / 22%),
     0 1px 2px rgb(11 22 40 / 4%),
-    0 12px 30px rgb(201 164 92 / 14%);
-}
-
-.marketplace-card--featured .marketplace-card-media::before {
-  content: "";
-  position: absolute;
-  z-index: 4;
-  inset-inline: 0;
-  inset-block-start: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    #f6e7b4 0%,
-    #e4c36f 35%,
-    #c9a45c 70%,
-    #8a6828 100%
-  );
-  pointer-events: none;
+    0 12px 30px rgb(201 164 92 / 12%);
 }
 
 .marketplace-card--featured:hover {
   border-color: rgb(201 164 92 / 68%);
   box-shadow:
-    0 0 0 1px rgb(201 164 92 / 32%),
+    0 0 0 1px rgb(201 164 92 / 30%),
     0 4px 10px rgb(11 22 40 / 6%),
-    0 18px 40px rgb(201 164 92 / 18%);
+    0 18px 40px rgb(201 164 92 / 16%);
 }
 
 html[data-theme="dark"] .marketplace-card--featured {
@@ -146,6 +109,13 @@ html[data-theme="dark"] .marketplace-card--featured {
   box-shadow:
     0 0 0 1px rgb(232 197 106 / 16%),
     0 12px 30px rgb(0 0 0 / 35%);
+}
+
+.mobile-home-featured-card--featured {
+  border-color: rgb(201 164 92 / 45%);
+  box-shadow:
+    0 0 0 1px rgb(201 164 92 / 18%),
+    0 8px 20px rgb(201 164 92 / 12%);
 }
 
 @keyframes listing-featured-sheen {
