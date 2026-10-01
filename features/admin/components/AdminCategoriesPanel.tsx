@@ -19,7 +19,6 @@ import { CategoryIcon } from "@/shared/ui/CategoryIcon";
 import { Icon } from "@/shared/ui/Icon";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
-import { Textarea } from "@/shared/ui/Textarea";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { useLocale } from "@/shared/i18n/useLocale";
 import {
@@ -29,6 +28,7 @@ import {
   slugifyCategoryName,
   type CategoryFeatureProfile,
 } from "@/shared/constants/category-feature-profiles";
+import { AdminOptionsListEditor } from "@/features/admin/components/AdminOptionsListEditor";
 
 const PROFILE_LABELS = Object.fromEntries(
   CATEGORY_FEATURE_PROFILES.map((profile) => [profile.id, profile.label]),
@@ -52,8 +52,7 @@ export function AdminCategoriesPanel() {
     useState<CategoryFeatureProfile>("general");
   const [reseedForm, setReseedForm] = useState(true);
   const [editSubs, setEditSubs] = useState<string[]>([]);
-  const [editSubDraft, setEditSubDraft] = useState("");
-  const [createSubsText, setCreateSubsText] = useState("");
+  const [createSubs, setCreateSubs] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -147,33 +146,12 @@ export function AdminCategoriesPanel() {
     setEditProfile(category.featureProfile ?? "general");
     setReseedForm(true);
     setEditSubs([...category.subcategories]);
-    setEditSubDraft("");
     setError(null);
     setSuccess(null);
   }
 
   function cancelEdit() {
     setEditingId(null);
-  }
-
-  function moveEditSub(index: number, direction: -1 | 1) {
-    setEditSubs((current) => {
-      const next = [...current];
-      const target = index + direction;
-      if (target < 0 || target >= next.length) return current;
-      const [row] = next.splice(index, 1);
-      next.splice(target, 0, row);
-      return next;
-    });
-  }
-
-  function addEditSub() {
-    const value = editSubDraft.trim();
-    if (!value) return;
-    setEditSubs((current) =>
-      current.includes(value) ? current : [...current, value],
-    );
-    setEditSubDraft("");
   }
 
   async function saveEdit(category: AdminCategoryRecord) {
@@ -251,18 +229,15 @@ export function AdminCategoriesPanel() {
           icon,
           featureProfile,
           seedForm: true,
-          subcategories: createSubsText
-            .split(/[\n,،]+/)
-            .map((item) => item.trim())
-            .filter(Boolean),
+          subcategories: createSubs.map((item) => item.trim()).filter(Boolean),
         }),
       });
       const data = await response.json();
       if (!response.ok) {
         if (data.error === "SLUG_TAKEN") {
-          setError("المعرّف مستخدم مسبقاً — غيّر الاسم أو الـ slug.");
+          setError("المعرّف مستخدم مسبقاً — غيّر الاسم أو معرّف الرابط.");
         } else if (data.error === "INVALID_SLUG") {
-          setError("معرّف غير صالح — استخدم حروفاً إنجليزية وأرقاماً.");
+          setError("معرّف غير صالح — استخدم حروفاً إنجليزية وأرقاماً وشرطات.");
         } else {
           setError("تعذر حفظ الفئة. حاول مرة أخرى.");
         }
@@ -273,7 +248,7 @@ export function AdminCategoriesPanel() {
         setName("");
         setSlug("");
         setSlugTouched(false);
-        setCreateSubsText("");
+        setCreateSubs([]);
         setFeatureProfile("general");
         setShowCreate(false);
         setSuccess(
@@ -296,10 +271,6 @@ export function AdminCategoriesPanel() {
     setReseedForm,
     editSubs,
     setEditSubs,
-    editSubDraft,
-    setEditSubDraft,
-    moveEditSub,
-    addEditSub,
     busyId,
     cancelEdit,
     saveEdit,
@@ -340,7 +311,8 @@ export function AdminCategoriesPanel() {
               value={name}
             />
             <Input
-              label="المعرّف (slug)"
+              hint="يُنشأ تلقائياً من الاسم — يمكن تعديله بحروف إنجليزية وأرقام"
+              label="معرّف الرابط"
               onChange={(event) => {
                 setSlugTouched(true);
                 setSlug(event.target.value);
@@ -374,20 +346,18 @@ export function AdminCategoriesPanel() {
             />
           </div>
 
-          <div className="mt-4 grid gap-1.5">
-            <Textarea
-              label="تصنيفات فرعية (اختياري)"
-              onChange={(event) => setCreateSubsText(event.target.value)}
-              placeholder={
-                "سطر أو فاصلة لكل تصنيف\nمثال: فاخرة، اقتصادية، دفع رباعي"
-              }
-              rows={3}
-              value={createSubsText}
+          <div className="mt-4">
+            <AdminOptionsListEditor
+              addButtonLabel="إضافة تصنيف فرعي"
+              description="تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة القسم الفرعي."
+              emptyText="لا توجد تصنيفات فرعية — يمكنك المتابعة بدونها أو إضافة واحدة الآن."
+              labelFieldLabel="اسم التصنيف الفرعي"
+              labelPlaceholder="مثال: فاخرة"
+              mode="label-only"
+              onChange={(rows) => setCreateSubs(rows.map((row) => row.label))}
+              options={createSubs.map((label) => ({ label, value: label }))}
+              title="التصنيفات الفرعية (اختياري)"
             />
-            <p className="text-xs text-muted">
-              تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم
-              الفرعي» (وليست حقول النموذج مثل نوع الأثاث).
-            </p>
           </div>
 
           <div className="mt-4 rounded-[var(--radius-xl)] border border-border/80 bg-[#f8f6f1] p-4">
@@ -698,10 +668,6 @@ type CategoryEditPanelProps = {
   setReseedForm: (value: boolean) => void;
   editSubs: string[];
   setEditSubs: Dispatch<SetStateAction<string[]>>;
-  editSubDraft: string;
-  setEditSubDraft: (value: string) => void;
-  moveEditSub: (index: number, direction: -1 | 1) => void;
-  addEditSub: () => void;
   busyId: string | null;
   cancelEdit: () => void;
   saveEdit: (category: AdminCategoryRecord) => Promise<void>;
@@ -719,10 +685,6 @@ function CategoryEditPanel({
   setReseedForm,
   editSubs,
   setEditSubs,
-  editSubDraft,
-  setEditSubDraft,
-  moveEditSub,
-  addEditSub,
   busyId,
   cancelEdit,
   saveEdit,
@@ -762,94 +724,17 @@ function CategoryEditPanel({
           />
           إعادة تهيئة النموذج عند تغيير السلوك
         </label>
-        <div className="sm:col-span-2 grid gap-2 rounded-[var(--radius-lg)] border border-border bg-surface/60 p-3">
-          <p className="text-sm font-semibold text-ink">التصنيفات الفرعية</p>
-          <p className="text-xs text-muted">
-            تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة «القسم الفرعي»
-            (وليست حقول النموذج مثل نوع الأثاث).
-          </p>
-          {editSubs.length === 0 ? (
-            <p className="text-xs text-muted">لا توجد تصنيفات فرعية.</p>
-          ) : (
-            <ul className="grid gap-2">
-              {editSubs.map((sub, subIndex) => (
-                <li
-                  className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center"
-                  key={`${sub}-${subIndex}`}
-                >
-                  <Input
-                    aria-label={`تصنيف فرعي ${subIndex + 1}`}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setEditSubs((current) =>
-                        current.map((item, rowIndex) =>
-                          rowIndex === subIndex ? value : item,
-                        ),
-                      );
-                    }}
-                    value={sub}
-                  />
-                  <div className="flex flex-wrap gap-1">
-                    <Button
-                      disabled={subIndex === 0}
-                      onClick={() => moveEditSub(subIndex, -1)}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      يمين
-                    </Button>
-                    <Button
-                      disabled={subIndex === editSubs.length - 1}
-                      onClick={() => moveEditSub(subIndex, 1)}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      يسار
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        setEditSubs((current) =>
-                          current.filter(
-                            (_, rowIndex) => rowIndex !== subIndex,
-                          ),
-                        )
-                      }
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      حذف
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
-            <Input
-              label="إضافة تصنيف فرعي"
-              onChange={(event) => setEditSubDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  addEditSub();
-                }
-              }}
-              placeholder="مثال: سيارات فاخرة"
-              value={editSubDraft}
-            />
-            <Button
-              onClick={addEditSub}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              إضافة
-            </Button>
-          </div>
-        </div>
+        <AdminOptionsListEditor
+          addButtonLabel="إضافة تصنيف فرعي"
+          description="تظهر في خطوة «اختر القسم» عند إضافة إعلان — قائمة القسم الفرعي."
+          emptyText="لا توجد تصنيفات فرعية."
+          labelFieldLabel="اسم التصنيف الفرعي"
+          labelPlaceholder="مثال: سيارات فاخرة"
+          mode="label-only"
+          onChange={(rows) => setEditSubs(rows.map((row) => row.label))}
+          options={editSubs.map((label) => ({ label, value: label }))}
+          title="التصنيفات الفرعية"
+        />
       </div>
       <div className="flex flex-wrap gap-2">
         <Button
