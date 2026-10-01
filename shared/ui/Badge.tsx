@@ -23,7 +23,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   premium: "border-secondary/35 bg-secondary-soft text-[#8a7040]",
   escrow: "border-success/20 bg-success-soft text-success",
   featured:
-    "border-[#e8c56a]/50 bg-gradient-to-br from-[#2a2012] via-[#1a140a] to-[#100c06] text-[#f5e6bc] shadow-[inset_0_1px_0_rgb(255_224_160/18%)]",
+    "border-[#c9a45c]/55 bg-gradient-to-br from-[#f3e0a8] via-[#e0bf6a] to-[#8f6d2e] text-[#1a1206] shadow-[inset_0_1px_0_rgb(255_255_255/45%)]",
   new: "border-sky-500/25 bg-sky-50 text-sky-700",
   sold: "border-border bg-surface-muted text-muted",
   pending: "border-amber-500/25 bg-amber-50 text-amber-800",

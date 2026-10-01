@@ -33,21 +33,19 @@ export function ListingCardBadges({
   if (items.length === 0) return null;
 
   const overMedia = onMedia ?? !inline;
+  const featured = items.find((badge) => badge.key === "featured");
+  const rest = items.filter((badge) => badge.key !== "featured");
+  const useCorner = Boolean(featured) && !inline;
 
-  const layoutClass = inline
-    ? "relative flex flex-wrap items-center gap-1.5"
-    : "pointer-events-none absolute start-2.5 top-2.5 z-10 flex max-w-[calc(100%-4.5rem)] flex-wrap items-center gap-1.5";
-
-  return (
-    <div className={`${layoutClass} ${className}`.trim()}>
-      {items.map((badge) =>
-        badge.key === "featured" ? (
-          <FeaturedBadge
-            key={badge.key}
-            onMedia={overMedia}
-            size={featuredSize}
-          />
-        ) : (
+  if (inline) {
+    return (
+      <div
+        className={`relative flex flex-wrap items-center gap-1.5 ${className}`.trim()}
+      >
+        {featured ? (
+          <FeaturedBadge onMedia={overMedia} size={featuredSize} />
+        ) : null}
+        {rest.map((badge) => (
           <Badge
             key={badge.key}
             className="rounded-md px-2 py-0.5 text-[0.7rem] font-bold shadow-[0_2px_8px_rgb(15_23_42/14%)]"
@@ -55,8 +53,37 @@ export function ListingCardBadges({
           >
             {badge.label}
           </Badge>
-        ),
-      )}
-    </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {featured ? (
+        <FeaturedBadge
+          corner
+          onMedia={overMedia}
+          size={featuredSize}
+        />
+      ) : null}
+      {rest.length > 0 ? (
+        <div
+          className={`pointer-events-none absolute z-10 flex max-w-[calc(100%-4.5rem)] flex-wrap items-center gap-1.5 ${
+            useCorner ? "start-2.5 top-9" : "start-2.5 top-2.5"
+          } ${className}`.trim()}
+        >
+          {rest.map((badge) => (
+            <Badge
+              key={badge.key}
+              className="rounded-md px-2 py-0.5 text-[0.7rem] font-bold shadow-[0_2px_8px_rgb(15_23_42/14%)]"
+              variant={badge.variant}
+            >
+              {badge.label}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
+    </>
   );
 }

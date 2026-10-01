@@ -17,6 +17,7 @@ import { getCarCardMetaLine } from "@/shared/listings/listing-specs";
 import { Badge } from "@/shared/ui/Badge";
 import { Icon } from "@/shared/ui/Icon";
 import { ListingCardBadges } from "./ListingCardBadges";
+import { isListingFeaturedActive } from "./listing-card-badges";
 import {
   getListingHref,
   getListingImageUrl,
@@ -49,6 +50,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   const displaySeller = sellerName(listing.seller, locale);
 
   const showEscrow = showsEscrowProtection(listing);
+  const featuredLive = isListingFeaturedActive(listing);
 
   const imageArea = (
     <div
@@ -184,10 +186,14 @@ export const PremiumListingCard = memo(function PremiumListingCard({
     </div>
   );
 
+  const cardClass = `marketplace-card group ${
+    featuredLive ? "marketplace-card--featured" : ""
+  }`.trim();
+
   if (layout === "row") {
     return (
       <LocalizedTree>
-      <article className="marketplace-card group flex overflow-hidden">
+      <article className={`${cardClass} flex overflow-hidden`}>
         <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
         <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
       </article>
@@ -197,7 +203,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   return (
     <LocalizedTree>
-    <article className="marketplace-card group flex h-full flex-col">
+    <article className={`${cardClass} flex h-full flex-col`}>
       {imageArea}
       {bodyBlock}
     </article>

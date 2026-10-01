@@ -1,55 +1,35 @@
-/* Featured (مميّز) — luxury espresso seal + luminous gold star */
+/* Featured (مميّز) — metallic gold ribbon + featured card crown */
 
 .listing-featured-badge {
-  --featured-seal-ink: #14100a;
-  --featured-seal-mid: #2a2012;
-  --featured-seal-gold: #e8c56a;
-  --featured-seal-gold-deep: #c9a45c;
-  --featured-seal-champagne: #f5e6bc;
+  --featured-gold-hi: #f3e0a8;
+  --featured-gold: #e0bf6a;
+  --featured-gold-mid: #c9a45c;
+  --featured-gold-deep: #8f6d2e;
+  --featured-ink: #1a1206;
 
   position: relative;
   display: inline-flex;
   align-items: center;
   overflow: hidden;
   isolation: isolate;
-  border-radius: 0.4rem;
-  border: 1px solid rgb(232 197 106 / 48%);
-  background:
-    linear-gradient(
-      145deg,
-      rgb(48 38 20 / 94%) 0%,
-      rgb(26 20 10 / 96%) 48%,
-      rgb(16 12 6 / 97%) 100%
-    );
-  color: var(--featured-seal-champagne);
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  line-height: 1.1;
+  border: 0;
+  border-radius: 0.45rem;
+  background: linear-gradient(
+    145deg,
+    var(--featured-gold-hi) 0%,
+    var(--featured-gold) 38%,
+    var(--featured-gold-mid) 72%,
+    var(--featured-gold-deep) 100%
+  );
+  color: var(--featured-ink);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
   white-space: nowrap;
   box-shadow:
-    0 2px 12px rgb(0 0 0 / 28%),
-    inset 0 1px 0 rgb(255 224 160 / 18%),
-    inset 0 -1px 0 rgb(0 0 0 / 25%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding-inline-start: 0.55rem;
-}
-
-.listing-featured-badge::before {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  inset-block: 22%;
-  inset-inline-start: 0;
-  width: 2.5px;
-  border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    #f3e0a8 0%,
-    var(--featured-seal-gold) 45%,
-    var(--featured-seal-gold-deep) 100%
-  );
-  box-shadow: 0 0 10px rgb(232 197 106 / 55%);
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    inset 0 -1px 0 rgb(80 55 15 / 22%),
+    0 2px 8px rgb(26 20 8 / 18%);
 }
 
 .listing-featured-badge__sheen {
@@ -58,50 +38,126 @@
   z-index: 0;
   pointer-events: none;
   background: linear-gradient(
-    110deg,
-    transparent 36%,
-    rgb(255 230 170 / 14%) 50%,
-    transparent 64%
+    115deg,
+    transparent 30%,
+    rgb(255 255 255 / 38%) 48%,
+    transparent 66%
   );
   background-size: 220% 100%;
-  background-position: 120% 0;
-  animation: listing-featured-sheen 5.2s ease-in-out infinite;
+  background-position: 140% 0;
+  animation: listing-featured-sheen 4.8s ease-in-out infinite;
 }
 
-.listing-featured-badge > :not(.listing-featured-badge__sheen) {
+.listing-featured-badge__star,
+.listing-featured-badge__label {
   position: relative;
   z-index: 1;
 }
 
 .listing-featured-badge__star {
-  color: var(--featured-seal-gold);
-  filter: drop-shadow(0 0 5px rgb(232 197 106 / 42%));
+  color: var(--featured-ink);
+  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 25%));
 }
 
 .listing-featured-badge__star path {
-  fill: var(--featured-seal-gold);
-  stroke: #f0d89a;
-  stroke-width: 0.6;
+  fill: var(--featured-ink);
+  stroke: var(--featured-ink);
+  stroke-width: 0.8;
 }
 
 .listing-featured-badge--media {
-  border-color: rgb(243 224 168 / 58%);
   box-shadow:
-    0 3px 16px rgb(0 0 0 / 38%),
-    0 0 0 1px rgb(232 197 106 / 12%),
-    inset 0 1px 0 rgb(255 230 170 / 22%),
-    inset 0 -1px 0 rgb(0 0 0 / 30%);
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    0 4px 14px rgb(0 0 0 / 28%);
 }
 
-.listing-featured-badge--md {
-  border-radius: 0.45rem;
-  padding-inline-start: 0.7rem;
+/* Flush corner ribbon on listing photos */
+.listing-featured-badge--corner {
+  position: absolute;
+  z-index: 12;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  border-radius: 0;
+  border-end-end-radius: 0.75rem;
+  padding-inline: 0.7rem 0.85rem !important;
+  padding-block: 0.42rem !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 50%),
+    0 6px 18px rgb(0 0 0 / 28%);
+}
+
+.listing-featured-badge--corner::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: -7px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 7px 0 0 7px;
+  border-color: #6a501c transparent transparent transparent;
+}
+
+[dir="rtl"] .listing-featured-badge--corner::after {
+  border-width: 7px 7px 0 0;
+  border-color: #6a501c transparent transparent transparent;
+}
+
+.listing-featured-badge--md.listing-featured-badge--corner {
+  padding-inline: 0.9rem 1.05rem !important;
+  padding-block: 0.55rem !important;
+  border-end-end-radius: 0.85rem;
+}
+
+.listing-featured-badge--md:not(.listing-featured-badge--corner) {
+  border-radius: 0.5rem;
+}
+
+/* Featured listing card — gold crown edge + warmer frame */
+.marketplace-card--featured {
+  border-color: rgb(201 164 92 / 48%);
+  box-shadow:
+    0 0 0 1px rgb(201 164 92 / 22%),
+    0 1px 2px rgb(11 22 40 / 4%),
+    0 10px 28px rgb(201 164 92 / 12%);
+}
+
+.marketplace-card--featured .marketplace-card-media::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  inset-inline: 0;
+  inset-block-start: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #f3e0a8 0%,
+    #e0bf6a 35%,
+    #c9a45c 70%,
+    #a88642 100%
+  );
+  pointer-events: none;
+}
+
+.marketplace-card--featured:hover {
+  border-color: rgb(201 164 92 / 62%);
+  box-shadow:
+    0 0 0 1px rgb(201 164 92 / 30%),
+    0 4px 10px rgb(11 22 40 / 6%),
+    0 18px 40px rgb(201 164 92 / 16%);
+}
+
+html[data-theme="dark"] .marketplace-card--featured {
+  border-color: rgb(232 197 106 / 38%);
+  box-shadow:
+    0 0 0 1px rgb(232 197 106 / 14%),
+    0 10px 28px rgb(0 0 0 / 35%);
 }
 
 @keyframes listing-featured-sheen {
   0%,
-  68% {
-    background-position: 130% 0;
+  62% {
+    background-position: 140% 0;
   }
   100% {
     background-position: -40% 0;
@@ -111,7 +167,7 @@
 @media (prefers-reduced-motion: reduce) {
   .listing-featured-badge__sheen {
     animation: none;
-    opacity: 0.35;
+    opacity: 0.25;
     background-position: 50% 0;
   }
 }

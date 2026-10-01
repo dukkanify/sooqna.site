@@ -7,15 +7,18 @@ type FeaturedBadgeProps = {
   size?: "sm" | "md";
   /** Stronger contrast when overlaid on photos. */
   onMedia?: boolean;
+  /** Flush luxury ribbon in the media corner (cards). */
+  corner?: boolean;
 };
 
 /**
- * Brand Featured marker — espresso seal, gold accent bar, luminous star.
+ * Brand Featured marker — metallic gold ribbon with star + soft sheen.
  */
 export function FeaturedBadge({
   className = "",
   size = "sm",
   onMedia = false,
+  corner = false,
 }: FeaturedBadgeProps) {
   const sizeClass =
     size === "md"
@@ -26,16 +29,18 @@ export function FeaturedBadge({
     <span
       className={`listing-featured-badge ${sizeClass} ${
         onMedia ? "listing-featured-badge--media" : ""
-      } ${className}`.trim()}
+      } ${corner ? "listing-featured-badge--corner" : ""} ${className}`.trim()}
       title="إعلان مميّز — باقة التمييز"
     >
       <span aria-hidden className="listing-featured-badge__sheen" />
       <Icon
         className="listing-featured-badge__star shrink-0"
         name="star"
-        size={size === "md" ? 14 : 12}
+        size={size === "md" ? 15 : 12}
       />
-      <Copy text="مميّز" />
+      <span className="listing-featured-badge__label">
+        <Copy text="مميّز" />
+      </span>
     </span>
   );
 }
