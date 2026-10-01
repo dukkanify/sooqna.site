@@ -75,20 +75,38 @@
 }
 
 /*
- * Fixed crown slot above every marketplace card so Featured and regular
- * ads share the same image top edge in a grid (no staggered photos).
+ * Featured-only gold cap overlaid on the photo top edge.
+ * Regular ads keep zero reserved space (no empty white strip).
+ * Image tops stay aligned in grids because the crown is out of flow.
  */
 .marketplace-card-crown,
 .mobile-home-featured-card__crown {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  z-index: 16;
   display: flex;
-  flex-shrink: 0;
   align-items: stretch;
   height: 1.7rem;
   overflow: hidden;
-  background: transparent;
+  pointer-events: none;
 }
 
-/* Full-width bar in the crown — never overlaps photo badges */
+.marketplace-card-badges--below-crown {
+  top: 2.2rem !important;
+}
+
+.marketplace-card-media-actions--below-crown {
+  top: 2.2rem;
+}
+
+.mobile-home-featured-card--featured .mobile-home-featured-card__actions,
+.mobile-home-featured-card--featured .mobile-home-featured-card__media .absolute.start-2.top-2,
+.mobile-home-featured-card--featured .listing-card-badges-below-crown {
+  top: 2.15rem !important;
+}
+
+/* Full-width bar in the crown — sits on the photo, badges shift below */
 .listing-featured-badge--cap {
   display: flex;
   width: 100%;
@@ -101,7 +119,9 @@
   padding-inline: 0.75rem;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 45%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 45%),
+    0 4px 14px rgb(0 0 0 / 18%);
 }
 
 .marketplace-card--featured {

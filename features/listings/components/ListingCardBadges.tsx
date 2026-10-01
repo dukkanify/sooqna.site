@@ -20,8 +20,8 @@ type ListingCardBadgesProps = {
   /** Stronger shadow when badges sit on photos (gallery / cards). */
   onMedia?: boolean;
   /**
-   * Skip Featured here — cards render it as a cap above the ad
-   * so it never overlaps photo badges like «جديد».
+   * Skip Featured here — cards render it as an overlay cap on the photo
+   * top edge so it never overlaps photo badges like «جديد».
    */
   excludeFeatured?: boolean;
 };
