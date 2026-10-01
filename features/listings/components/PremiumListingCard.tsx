@@ -59,8 +59,6 @@ export const PremiumListingCard = memo(function PremiumListingCard({
     <div
       className={`marketplace-card-media relative aspect-[3/2] w-full overflow-hidden ${layout === "row" ? "marketplace-card-media--row" : ""}`}
     >
-
-
       {imageUrl ? (
         <Link aria-hidden className="absolute inset-0" href={href} tabIndex={-1}>
           <AppImage
@@ -87,9 +85,23 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </div>
       )}
 
-      <ListingCardBadges excludeFeatured listing={listing} />
+      {featuredLive ? (
+        <div className="marketplace-card-crown">
+          <FeaturedBadge placement="cap" />
+        </div>
+      ) : null}
 
-      <div className="absolute end-3 top-3 z-20 flex gap-1.5">
+      <ListingCardBadges
+        className={featuredLive ? "marketplace-card-badges--below-crown" : undefined}
+        excludeFeatured
+        listing={listing}
+      />
+
+      <div
+        className={`marketplace-card-media-actions absolute end-3 z-20 flex gap-1.5 ${
+          featuredLive ? "marketplace-card-media-actions--below-crown" : "top-3"
+        }`}
+      >
         <FavoriteButton
           className="card-media-action !min-h-8 !size-8 !min-w-8 !rounded-full !p-0"
           iconOnly
@@ -194,20 +206,11 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   const cardClass = `marketplace-card group ${
     featuredLive ? "marketplace-card--featured" : ""
   }`.trim();
-  const crown = (
-    <div
-      aria-hidden={!featuredLive}
-      className="marketplace-card-crown"
-    >
-      {featuredLive ? <FeaturedBadge placement="cap" /> : null}
-    </div>
-  );
 
   if (layout === "row") {
     return (
       <LocalizedTree>
       <article className={`${cardClass} flex flex-col overflow-hidden`}>
-        {crown}
         <div className="flex min-h-0 flex-1 overflow-hidden">
           <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
           <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
@@ -220,7 +223,6 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   return (
     <LocalizedTree>
     <article className={`${cardClass} flex h-full flex-col`}>
-      {crown}
       {imageArea}
       {bodyBlock}
     </article>

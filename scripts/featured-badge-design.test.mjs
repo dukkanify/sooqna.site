@@ -28,22 +28,26 @@ describe("featured badge design", () => {
     assert.doesNotMatch(css, /listing-featured-badge--corner/);
   });
 
-  it("cards put Featured above the ad and keep other badges on the photo", () => {
+  it("cards overlay Featured on the photo only when live — no empty crown gap", () => {
     const card = read("features/listings/components/PremiumListingCard.tsx");
     const badges = read("features/listings/components/ListingCardBadges.tsx");
     const mobile = read("features/home/components/mobile/MobileFeaturedCard.tsx");
     const css = read("features/listings/components/featured-badge.css");
+    const skeleton = read("shared/ui/Skeleton.tsx");
     assert.match(card, /placement="cap"/);
     assert.match(card, /excludeFeatured/);
     assert.match(card, /marketplace-card--featured/);
     assert.match(card, /marketplace-card-crown/);
+    assert.match(card, /featuredLive \? \(/);
     assert.match(badges, /excludeFeatured/);
     assert.match(mobile, /placement="cap"/);
     assert.match(mobile, /excludeFeatured/);
     assert.match(mobile, /mobile-home-featured-card__crown/);
-    // Equal crown height keeps featured + regular image tops aligned in grids.
     assert.match(css, /\.marketplace-card-crown/);
-    assert.match(css, /height:\s*1\.7rem/);
+    assert.match(css, /position:\s*absolute/);
+    assert.match(css, /marketplace-card-badges--below-crown/);
+    // Regular cards must not reserve an empty white crown strip.
+    assert.doesNotMatch(skeleton, /marketplace-card-crown/);
   });
 
   it("listing detail sticky panel and gallery surface FeaturedBadge", () => {
