@@ -132,6 +132,7 @@ export default async function CategoryPage({
           />
 
           <CategoryHero
+            activeCount={resultTotal}
             category={category}
             compact={category.id === "cars"}
           />

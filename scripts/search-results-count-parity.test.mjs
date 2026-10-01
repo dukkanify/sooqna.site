@@ -70,10 +70,18 @@ describe("search results count parity", () => {
     const category = read("app/categories/[slug]/page.tsx");
     assert.match(category, /resolveSearchResultTotal/);
     assert.match(category, /serverTotal=\{resultTotal\}/);
+    assert.match(category, /activeCount=\{resultTotal\}/);
 
     const search = read("app/search/page.tsx");
     assert.match(search, /resolveSearchResultTotal/);
     assert.match(search, /serverTotal=\{resultTotal\}/);
+
+    const hero = read("features/categories/components/CategoryHero.tsx");
+    assert.match(hero, /activeCount\?: number/);
+    assert.match(
+      hero,
+      /typeof activeCount === "number" \? activeCount : category\.listingCount/,
+    );
   });
 
   it("SearchResultsList ignores inflated serverTotal on short pages", () => {
