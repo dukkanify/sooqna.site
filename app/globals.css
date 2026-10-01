@@ -1483,11 +1483,19 @@ html[data-theme="dark"] .market-header__drawer-account {
 
 .marketplace-card-media {
   isolation: isolate;
+  width: 100%;
+  aspect-ratio: 3 / 2;
   background: var(--color-surface-muted);
 }
 
+.marketplace-card-media--row {
+  aspect-ratio: 3 / 2;
+  height: auto;
+  min-height: 0;
+}
+
 .marketplace-card-image {
-  object-fit: cover;
+  object-fit: cover !important;
   object-position: center;
   transition: transform 0.55s var(--ease-premium);
 }

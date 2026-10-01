@@ -58,11 +58,11 @@ export function MediaContactStep({
                 {imagePreviews.map((url, index) => (
                   <div
                     key={`${url}-${index}`}
-                    className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface"
+                    className="relative aspect-[3/2] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface"
                   >
                     <AppImage
                       alt={`معاينة صورة ${index + 1}`}
-                      className="h-full w-full"
+                      className="object-cover"
                       fill
                       priority={index === 0}
                       src={url}
@@ -86,7 +86,7 @@ export function MediaContactStep({
                 ))}
 
                 {imagePreviews.length < MAX_IMAGES ? (
-                  <label className="grid aspect-[4/3] cursor-pointer place-items-center rounded-[var(--radius-xl)] border border-dashed border-secondary bg-surface p-3 text-center text-xs font-semibold text-primary transition hover:bg-secondary/10">
+                  <label className="grid aspect-[3/2] cursor-pointer place-items-center rounded-[var(--radius-xl)] border border-dashed border-secondary bg-surface p-3 text-center text-xs font-semibold text-primary transition hover:bg-secondary/10">
                     <input
                       accept="image/*"
                       aria-label="إضافة صور أخرى"

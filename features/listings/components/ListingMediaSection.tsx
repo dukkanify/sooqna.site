@@ -39,11 +39,11 @@ export function ListingMediaSection({
                 {existingImages.map((url, index) => (
                   <div
                     key={`existing-${index}`}
-                    className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface"
+                    className="relative aspect-[3/2] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface"
                   >
                     <AppImage
                       alt={`صورة محفوظة ${index + 1}`}
-                      className="h-full w-full"
+                      className="object-cover"
                       fill
                       src={url}
                     />
@@ -82,11 +82,11 @@ export function ListingMediaSection({
                 {imagePreviews.map((url, index) => (
                   <div
                     key={`${url}-${index}`}
-                    className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface"
+                    className="relative aspect-[3/2] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface"
                   >
                     <AppImage
                       alt={`معاينة صورة جديدة ${index + 1}`}
-                      className="h-full w-full"
+                      className="object-cover"
                       fill
                       src={url}
                     />
