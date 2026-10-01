@@ -1,5 +1,5 @@
 /**
- * Featured badge redesign — espresso seal + luminous gold star.
+ * Featured badge — gold cap above the ad (never overlaps photo badges).
  * Run: npm test
  */
 import assert from "node:assert/strict";
@@ -15,20 +15,29 @@ function read(rel) {
 }
 
 describe("featured badge design", () => {
-  it("FeaturedBadge uses espresso seal + gold star, not muddy mustard pill", () => {
+  it("FeaturedBadge supports above-ad cap placement", () => {
     const badge = read("features/listings/components/FeaturedBadge.tsx");
     const css = read("features/listings/components/featured-badge.css");
-    const cards = read("features/listings/components/ListingCardBadges.tsx");
-    assert.match(badge, /listing-featured-badge/);
-    assert.match(badge, /listing-featured-badge__sheen/);
-    assert.match(badge, /name="star"/);
+    assert.match(badge, /placement\?:\s*"cap"\s*\|\s*"chip"/);
+    assert.match(badge, /listing-featured-badge--cap/);
     assert.match(badge, /مميّز/);
+    assert.match(badge, /name="star"/);
+    assert.match(css, /listing-featured-badge--cap/);
     assert.match(css, /listing-featured-sheen/);
-    assert.match(css, /#e8c56a/);
-    assert.match(css, /backdrop-filter/);
-    assert.doesNotMatch(css, /#f0d89a 0%, #d4b06a/);
-    assert.doesNotMatch(cards, /!rounded-full/);
-    assert.match(cards, /FeaturedBadge/);
+    assert.doesNotMatch(css, /rotate\(-45deg\)/);
+    assert.doesNotMatch(css, /listing-featured-badge--corner/);
+  });
+
+  it("cards put Featured above the ad and keep other badges on the photo", () => {
+    const card = read("features/listings/components/PremiumListingCard.tsx");
+    const badges = read("features/listings/components/ListingCardBadges.tsx");
+    const mobile = read("features/home/components/mobile/MobileFeaturedCard.tsx");
+    assert.match(card, /placement="cap"/);
+    assert.match(card, /excludeFeatured/);
+    assert.match(card, /marketplace-card--featured/);
+    assert.match(badges, /excludeFeatured/);
+    assert.match(mobile, /placement="cap"/);
+    assert.match(mobile, /excludeFeatured/);
   });
 
   it("listing detail sticky panel and gallery surface FeaturedBadge", () => {
@@ -47,9 +56,9 @@ describe("featured badge design", () => {
     assert.equal(phrases["مميّز"] ?? phrases["مميز"], "Featured");
   });
 
-  it("shared Badge featured variant matches seal palette", () => {
+  it("shared Badge featured variant matches metallic gold ribbon", () => {
     const badge = read("shared/ui/Badge.tsx");
-    assert.match(badge, /from-\[#2a2012\]/);
-    assert.match(badge, /text-\[#f5e6bc\]/);
+    assert.match(badge, /from-\[#f3e0a8\]/);
+    assert.match(badge, /to-\[#8f6d2e\]/);
   });
 });

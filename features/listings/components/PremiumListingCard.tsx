@@ -16,7 +16,9 @@ import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import { getCarCardMetaLine } from "@/shared/listings/listing-specs";
 import { Badge } from "@/shared/ui/Badge";
 import { Icon } from "@/shared/ui/Icon";
+import { FeaturedBadge } from "./FeaturedBadge";
 import { ListingCardBadges } from "./ListingCardBadges";
+import { isListingFeaturedActive } from "./listing-card-badges";
 import {
   getListingHref,
   getListingImageUrl,
@@ -24,6 +26,8 @@ import {
   formatPostedTime,
   formatViews,
 } from "./listing-card.utils";
+
+import "./featured-badge.css";
 
 export type PremiumListingCardProps = {
   categoryName?: string;
@@ -49,6 +53,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   const displaySeller = sellerName(listing.seller, locale);
 
   const showEscrow = showsEscrowProtection(listing);
+  const featuredLive = isListingFeaturedActive(listing);
 
   const imageArea = (
     <div
@@ -80,7 +85,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </div>
       )}
 
-      <ListingCardBadges listing={listing} />
+      <ListingCardBadges excludeFeatured listing={listing} />
 
       <div className="absolute end-3 top-3 z-20 flex gap-1.5">
         <FavoriteButton
@@ -184,12 +189,22 @@ export const PremiumListingCard = memo(function PremiumListingCard({
     </div>
   );
 
+  const cardClass = `marketplace-card group ${
+    featuredLive ? "marketplace-card--featured" : ""
+  }`.trim();
+  const featuredCap = featuredLive ? (
+    <FeaturedBadge placement="cap" />
+  ) : null;
+
   if (layout === "row") {
     return (
       <LocalizedTree>
-      <article className="marketplace-card group flex overflow-hidden">
-        <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
-        <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
+      <article className={`${cardClass} flex flex-col overflow-hidden`}>
+        {featuredCap}
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
+          <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
+        </div>
       </article>
       </LocalizedTree>
     );
@@ -197,7 +212,8 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   return (
     <LocalizedTree>
-    <article className="marketplace-card group flex h-full flex-col">
+    <article className={`${cardClass} flex h-full flex-col`}>
+      {featuredCap}
       {imageArea}
       {bodyBlock}
     </article>

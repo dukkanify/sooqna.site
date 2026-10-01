@@ -6,7 +6,9 @@ import type { Listing } from "@/types";
 import { AppImage } from "@/shared/components/AppImage";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
+import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
 import { ListingCardBadges } from "@/features/listings/components/ListingCardBadges";
+import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { formatCurrencyDisplay } from "@/shared/utils/currency";
 import { Icon } from "@/shared/ui/Icon";
 import {
@@ -20,6 +22,8 @@ import {
 import { useLocale } from "@/shared/i18n/useLocale";
 import { intlLocale } from "@/shared/i18n/locale";
 import { useTx } from "@/shared/i18n/useTx";
+
+import "@/features/listings/components/featured-badge.css";
 
 type MobileFeaturedCardProps = {
   imageFit?: "contain" | "cover";
@@ -38,9 +42,15 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
   const imageUrl = getListingImageUrl(listing);
   const location = getListingLocation(listing);
   const photoCount = getListingImages(listing).length;
+  const featuredLive = isListingFeaturedActive(listing);
 
   return (
-    <article className="mobile-home-featured-card w-[var(--mh-card-width)] min-w-[10.75rem] max-w-[13rem] shrink-0 flex-none snap-start">
+    <article
+      className={`mobile-home-featured-card w-[var(--mh-card-width)] min-w-[10.75rem] max-w-[13rem] shrink-0 flex-none snap-start overflow-hidden ${
+        featuredLive ? "mobile-home-featured-card--featured" : ""
+      }`.trim()}
+    >
+      {featuredLive ? <FeaturedBadge placement="cap" /> : null}
       <div className="mobile-home-featured-card__media">
         <Link aria-hidden className="absolute inset-0" href={href} tabIndex={-1}>
           {imageUrl ? (
@@ -60,7 +70,11 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
           )}
         </Link>
 
-        <ListingCardBadges className="!start-2 !top-2" listing={listing} />
+        <ListingCardBadges
+          className="!start-2 !top-2"
+          excludeFeatured
+          listing={listing}
+        />
 
         <div className="mobile-home-featured-card__actions">
           <FavoriteButton

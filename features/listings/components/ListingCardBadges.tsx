@@ -19,6 +19,11 @@ type ListingCardBadgesProps = {
   featuredSize?: "sm" | "md";
   /** Stronger shadow when badges sit on photos (gallery / cards). */
   onMedia?: boolean;
+  /**
+   * Skip Featured here — cards render it as a cap above the ad
+   * so it never overlaps photo badges like «جديد».
+   */
+  excludeFeatured?: boolean;
 };
 
 export function ListingCardBadges({
@@ -28,8 +33,11 @@ export function ListingCardBadges({
   inline = false,
   featuredSize = "sm",
   onMedia,
+  excludeFeatured = false,
 }: ListingCardBadgesProps) {
-  const items = badges ?? getListingCardBadges(listing);
+  const items = (badges ?? getListingCardBadges(listing)).filter((badge) =>
+    excludeFeatured ? badge.key !== "featured" : true,
+  );
   if (items.length === 0) return null;
 
   const overMedia = onMedia ?? !inline;
@@ -45,6 +53,7 @@ export function ListingCardBadges({
           <FeaturedBadge
             key={badge.key}
             onMedia={overMedia}
+            placement="chip"
             size={featuredSize}
           />
         ) : (
