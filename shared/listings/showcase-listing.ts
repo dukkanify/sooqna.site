@@ -7,7 +7,9 @@ export const SHOWCASE_LISTING_SQL = `(
   COALESCE(payload->>'source', '') = '${SHOWCASE_SOURCE}'
   OR COALESCE(payload->>'isDemo', '') IN ('true', 't')
   OR id LIKE 'showcase-%'
+  OR COALESCE(payload->>'id', '') LIKE 'showcase-%'
   OR seller_id = '${SHOWCASE_SELLER_ID}'
+  OR COALESCE(payload->'seller'->>'id', '') = '${SHOWCASE_SELLER_ID}'
 )`;
 
 export type ShowcaseCatalogFlag = "published" | "hidden" | "removed";

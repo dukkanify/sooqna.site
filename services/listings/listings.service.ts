@@ -20,7 +20,23 @@ import {
 export type { ListingSearchFilters };
 
 const SEARCH_FETCH_LIMIT = 280;
-const SEARCH_RESULT_LIMIT = 260;
+/** Public search/category pages fetch at most this many rows per request. */
+export const SEARCH_RESULT_LIMIT = 260;
+
+/**
+ * Prefer the fetched result length when the page was not truncated.
+ * SQL COUNT can otherwise drift above the listings actually returned
+ * (column vs payload visibility mismatch), which showed as “8 إعلان”
+ * above a 4-card grid.
+ */
+export function resolveSearchResultTotal(
+  fetchedCount: number,
+  countedTotal: number,
+  resultLimit: number = SEARCH_RESULT_LIMIT,
+): number {
+  if (fetchedCount < resultLimit) return fetchedCount;
+  return Math.max(countedTotal, fetchedCount);
+}
 const RELATED_LIMIT = 3;
 
 export const getListings = cache(async (): Promise<Listing[]> => {

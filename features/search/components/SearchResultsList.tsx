@@ -9,6 +9,7 @@ import {
   type SearchFilterState,
 } from "@/features/search/components/search-url";
 import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import { SEARCH_RESULT_LIMIT } from "@/services/listings";
 import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 import type { Category, Listing } from "@/types";
@@ -77,10 +78,14 @@ export function SearchResultsList({
     );
   }, [categoryId, listings, localListings, selectedFilters]);
 
+  const localExtra = visibleListings.filter((listing) =>
+    listing.id.startsWith("local-"),
+  ).length;
+  // Short server pages are complete — never trust an inflated SQL COUNT
+  // (e.g. “8 إعلان” above four rendered cards).
   const resultCount =
-    typeof serverTotal === "number"
-      ? serverTotal +
-        visibleListings.filter((listing) => listing.id.startsWith("local-")).length
+    typeof serverTotal === "number" && listings.length >= SEARCH_RESULT_LIMIT
+      ? serverTotal + localExtra
       : visibleListings.length;
 
   useEffect(() => {

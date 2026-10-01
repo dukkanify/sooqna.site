@@ -11,7 +11,11 @@ import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { getCategories } from "@/services/categories";
 import { getSearchSuggestionTitles } from "@/services/listings/home-feed";
-import { countSearchListings, searchListings } from "@/services/listings";
+import {
+  countSearchListings,
+  resolveSearchResultTotal,
+  searchListings,
+} from "@/services/listings";
 import { getRequestLocale } from "@/shared/i18n/locale";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -66,6 +70,7 @@ export default async function SearchPage({
       getLocations({ enabledOnly: true }),
     ]);
   const cities = locationRows.map((loc) => ({ id: loc.id, name: loc.name }));
+  const resultTotal = resolveSearchResultTotal(listings.length, total);
 
   const suggestions = buildSearchSuggestions({
     categories,
@@ -116,7 +121,7 @@ export default async function SearchPage({
                 categories={categories}
                 listings={listings}
                 selectedFilters={selectedFilters}
-                serverTotal={total}
+                serverTotal={resultTotal}
               />
             </div>
           </div>
