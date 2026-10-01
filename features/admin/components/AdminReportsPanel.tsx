@@ -288,25 +288,72 @@ export function AdminReportsPanel() {
               Stripe
             </Link>
           </div>
-          <ul className="admin-ops__queue" style={{ marginTop: "0.85rem" }}>
-            {events.length === 0 ? (
-              <li className="admin-ops__queue-item">
-                <p className="admin-ops__queue-meta">لا أحداث بعد.</p>
-              </li>
-            ) : (
-              events.map((event) => (
-                <li key={event.id} className="admin-ops__queue-item">
-                  <div>
-                    <p className="admin-ops__queue-label">{event.type}</p>
-                    <p className="admin-ops__queue-meta">
-                      {new Date(event.createdAt).toLocaleString(intlLocale(locale))}
-                      {event.orderId ? ` — ${event.orderId}` : ""}
-                    </p>
-                  </div>
+          <Card
+            className="admin-desk-table-card mt-3 overflow-hidden p-0"
+            variant="flat"
+          >
+            <div className="admin-desk-table-scroll">
+              <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+                <thead>
+                  <tr>
+                    <th>النوع</th>
+                    <th>الطلب</th>
+                    <th>التاريخ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.length === 0 ? (
+                    <tr>
+                      <td className="text-muted" colSpan={3}>
+                        لا أحداث بعد.
+                      </td>
+                    </tr>
+                  ) : (
+                    events.map((event) => (
+                      <tr key={event.id}>
+                        <td className="admin-desk-cell-wrap">
+                          <p className="admin-desk-cell-title">{event.type}</p>
+                        </td>
+                        <td className="font-mono text-xs">
+                          {event.orderId ?? "—"}
+                        </td>
+                        <td className="text-xs text-muted">
+                          {new Date(event.createdAt).toLocaleString(
+                            intlLocale(locale),
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <ul className="admin-desk-mobile-list">
+              {events.length === 0 ? (
+                <li className="admin-desk-mobile-card">
+                  <p className="text-sm text-muted">لا أحداث بعد.</p>
                 </li>
-              ))
-            )}
-          </ul>
+              ) : (
+                events.map((event) => (
+                  <li key={event.id} className="admin-desk-mobile-card">
+                    <div className="admin-desk-mobile-card__head">
+                      <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                        {event.type}
+                      </p>
+                    </div>
+                    <div className="admin-desk-mobile-card__meta">
+                      {event.orderId ? <span>{event.orderId}</span> : null}
+                      <span>
+                        {new Date(event.createdAt).toLocaleString(
+                          intlLocale(locale),
+                        )}
+                      </span>
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          </Card>
         </section>
       </div>
     </div>

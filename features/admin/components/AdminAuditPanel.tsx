@@ -30,35 +30,86 @@ export function AdminAuditPanel() {
         </p>
       </div>
 
-      {entries.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">
-            لا توجد عمليات مسجّلة بعد. ستظهر هنا إجراءات التحرير والاسترداد
-            وتحديث الحالات.
-          </p>
-        </Card>
-      ) : (
-        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
-          <ul className="admin-ops__queue p-3">
-            {entries.map((entry) => (
-              <li key={entry.id} className="admin-ops__queue-item">
-                <div>
-                  <p className="admin-ops__queue-label">
-                    {entry.action} · {entry.targetType}/{entry.targetId}
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الإجراء</th>
+                <th>الهدف</th>
+                <th>المنفّذ</th>
+                <th>التفاصيل</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={5}>
+                    لا توجد عمليات مسجّلة بعد. ستظهر هنا إجراءات التحرير
+                    والاسترداد وتحديث الحالات.
+                  </td>
+                </tr>
+              ) : (
+                entries.map((entry) => (
+                  <tr key={entry.id}>
+                    <td className="admin-desk-cell-wrap">
+                      <p className="admin-desk-cell-title">{entry.action}</p>
+                    </td>
+                    <td className="font-mono text-xs">
+                      {entry.targetType}/{entry.targetId}
+                    </td>
+                    <td>{entry.actorName}</td>
+                    <td className="admin-desk-cell-wrap text-xs text-muted">
+                      {entry.detail || "—"}
+                    </td>
+                    <td className="text-xs text-muted">
+                      {new Date(entry.createdAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {entries.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">
+                لا توجد عمليات مسجّلة بعد. ستظهر هنا إجراءات التحرير والاسترداد
+                وتحديث الحالات.
+              </p>
+            </li>
+          ) : (
+            entries.map((entry) => (
+              <li key={entry.id} className="admin-desk-mobile-card">
+                <div className="admin-desk-mobile-card__head">
+                  <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                    {entry.action}
                   </p>
-                  <p className="admin-ops__queue-meta">
-                    {entry.actorName} ·{" "}
-                    {new Date(entry.createdAt).toLocaleString(intlLocale(locale))}
-                  </p>
-                  {entry.detail ? (
-                    <p className="admin-ops__queue-meta">{entry.detail}</p>
-                  ) : null}
+                  <span className="text-xs text-muted">
+                    {new Date(entry.createdAt).toLocaleString(
+                      intlLocale(locale),
+                    )}
+                  </span>
                 </div>
+                <div className="admin-desk-mobile-card__meta">
+                  <span>
+                    {entry.targetType}/{entry.targetId}
+                  </span>
+                  <span>{entry.actorName}</span>
+                </div>
+                {entry.detail ? (
+                  <p className="text-xs text-muted">{entry.detail}</p>
+                ) : null}
               </li>
-            ))}
-          </ul>
-        </Card>
-      )}
+            ))
+          )}
+        </ul>
+      </Card>
     </div>
   );
 }

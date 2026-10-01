@@ -87,52 +87,132 @@ export function AdminQuoteRequestsPanel() {
         </p>
       </div>
 
-      {items.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">لا توجد طلبات عروض أسعار.</p>
-        </Card>
-      ) : (
-        <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
-          <ul className="admin-ops__queue p-3">
-            {items.map((item) => {
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الخدمة</th>
+                <th>الطالب</th>
+                <th>الموقع / الموعد</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={5}>
+                    لا توجد طلبات عروض أسعار.
+                  </td>
+                </tr>
+              ) : (
+                items.map((item) => {
+                  const actions = ADMIN_ACTIONS[item.status] ?? [];
+                  return (
+                    <tr key={item.id}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">
+                          {item.listingTitle}
+                        </p>
+                        <p className="text-xs text-muted">
+                          {item.serviceRequired}
+                        </p>
+                      </td>
+                      <td className="text-xs">
+                        {item.requesterName} · {item.phone}
+                      </td>
+                      <td className="text-xs">
+                        {item.emirate} / {item.area} · {item.preferredDate}{" "}
+                        {item.preferredTime}
+                      </td>
+                      <td>
+                        <span
+                          className={`admin-ops__status-chip${statusChipClass(item.status)}`}
+                        >
+                          {quoteStatusLabel(item.status)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          {actions.map((action) => (
+                            <Button
+                              key={action.value}
+                              loading={busyId === item.id}
+                              onClick={() => patchStatus(item.id, action.value)}
+                              size="sm"
+                              type="button"
+                              variant={
+                                action.value === "rejected" ? "ghost" : "secondary"
+                              }
+                            >
+                              {action.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {items.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا توجد طلبات عروض أسعار.</p>
+            </li>
+          ) : (
+            items.map((item) => {
               const actions = ADMIN_ACTIONS[item.status] ?? [];
               return (
-                <li key={item.id} className="admin-ops__queue-item">
-                  <div>
-                    <p className="admin-ops__queue-label">{item.listingTitle}</p>
-                    <p className="admin-ops__queue-meta">
-                      {item.requesterName} · {item.phone} · {item.serviceRequired}
+                <li key={item.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {item.listingTitle}
                     </p>
-                    <p className="admin-ops__queue-meta">
-                      {item.emirate} / {item.area} · {item.preferredDate}{" "}
-                      {item.preferredTime}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
                     <span
                       className={`admin-ops__status-chip${statusChipClass(item.status)}`}
                     >
                       {quoteStatusLabel(item.status)}
                     </span>
-                    {actions.map((action) => (
-                      <Button
-                        key={action.value}
-                        loading={busyId === item.id}
-                        onClick={() => patchStatus(item.id, action.value)}
-                        size="sm"
-                        type="button"
-                        variant={action.value === "rejected" ? "ghost" : "secondary"}
-                      >
-                        {action.label}
-                      </Button>
-                    ))}
                   </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>
+                      {item.requesterName} · {item.phone}
+                    </span>
+                    <span>{item.serviceRequired}</span>
+                    <span>
+                      {item.emirate} / {item.area} · {item.preferredDate}{" "}
+                      {item.preferredTime}
+                    </span>
+                  </div>
+                  {actions.length > 0 ? (
+                    <div className="admin-desk-mobile-card__actions">
+                      {actions.map((action) => (
+                        <Button
+                          key={action.value}
+                          loading={busyId === item.id}
+                          onClick={() => patchStatus(item.id, action.value)}
+                          size="sm"
+                          type="button"
+                          variant={
+                            action.value === "rejected" ? "ghost" : "secondary"
+                          }
+                        >
+                          {action.label}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : null}
                 </li>
               );
-            })}
-          </ul>
-        </Card>
-      )}
+            })
+          )}
+        </ul>
+      </Card>
     </div>
   );
 }

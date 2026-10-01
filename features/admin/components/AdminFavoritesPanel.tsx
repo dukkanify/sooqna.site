@@ -68,7 +68,7 @@ export function AdminFavoritesPanel() {
           style={{ marginTop: "0.75rem" }}
         >
           {data.topListings.length === 0 ? (
-            <p className="admin-ops__queue-meta">لا بيانات بعد.</p>
+            <p className="text-sm text-muted">لا بيانات بعد.</p>
           ) : (
             data.topListings.map((row) => (
               <div key={row.listingId} className="admin-ops__detail-row">
@@ -81,20 +81,63 @@ export function AdminFavoritesPanel() {
       </section>
 
       <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
-        <ul className="admin-ops__queue p-3">
-          {data.favorites.map((item) => (
-            <li key={item.id} className="admin-ops__queue-item">
-              <div>
-                <p className="admin-ops__queue-label">
-                  {item.title || item.listingId}
-                </p>
-                <p className="admin-ops__queue-meta">
-                  {item.userId} ·{" "}
-                  {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
-                </p>
-              </div>
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الإعلان</th>
+                <th>المستخدم</th>
+                <th>تاريخ الحفظ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.favorites.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={3}>
+                    لا توجد عناصر مفضلة بعد.
+                  </td>
+                </tr>
+              ) : (
+                data.favorites.map((item) => (
+                  <tr key={item.id}>
+                    <td className="admin-desk-cell-wrap">
+                      <p className="admin-desk-cell-title">
+                        {item.title || item.listingId}
+                      </p>
+                    </td>
+                    <td className="font-mono text-xs">{item.userId}</td>
+                    <td className="text-xs text-muted">
+                      {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {data.favorites.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا توجد عناصر مفضلة بعد.</p>
             </li>
-          ))}
+          ) : (
+            data.favorites.map((item) => (
+              <li key={item.id} className="admin-desk-mobile-card">
+                <div className="admin-desk-mobile-card__head">
+                  <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                    {item.title || item.listingId}
+                  </p>
+                </div>
+                <div className="admin-desk-mobile-card__meta">
+                  <span>{item.userId}</span>
+                  <span>
+                    {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
+                  </span>
+                </div>
+              </li>
+            ))
+          )}
         </ul>
       </Card>
     </div>

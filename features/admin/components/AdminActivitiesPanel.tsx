@@ -111,30 +111,99 @@ export function AdminActivitiesPanel() {
         <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">جاري التحميل...</p>
         </Card>
-      ) : items.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">لا توجد أنشطة مطابقة.</p>
-        </Card>
       ) : (
         <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
-          <ul className="admin-ops__queue p-3">
-            {items.map((item) => (
-              <li key={`${item.kind}-${item.id}`} className="admin-ops__queue-item">
-                <div>
-                  <p className="admin-ops__queue-label">{item.title}</p>
-                  <p className="admin-ops__queue-meta">
-                    {activityKindLabel(item.kind)} · {item.statusLabel} ·{" "}
-                    {new Date(item.updatedAt).toLocaleString(intlLocale(locale))}
-                  </p>
-                  {item.subtitle ? (
-                    <p className="admin-ops__queue-meta">{item.subtitle}</p>
-                  ) : null}
-                </div>
-                <Link className="text-xs font-semibold text-primary hover:underline" href={item.href}>
-                  فتح
-                </Link>
+          <div className="admin-desk-table-scroll">
+            <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+              <thead>
+                <tr>
+                  <th>العنوان</th>
+                  <th>النوع</th>
+                  <th>الحالة</th>
+                  <th>التحديث</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.length === 0 ? (
+                  <tr>
+                    <td className="text-muted" colSpan={5}>
+                      لا توجد أنشطة مطابقة.
+                    </td>
+                  </tr>
+                ) : (
+                  items.map((item) => (
+                    <tr key={`${item.kind}-${item.id}`}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">{item.title}</p>
+                        {item.subtitle ? (
+                          <p className="text-xs text-muted">{item.subtitle}</p>
+                        ) : null}
+                      </td>
+                      <td>{activityKindLabel(item.kind)}</td>
+                      <td>
+                        <span className="admin-ops__status-chip">
+                          {item.statusLabel}
+                        </span>
+                      </td>
+                      <td className="text-xs text-muted">
+                        {new Date(item.updatedAt).toLocaleString(
+                          intlLocale(locale),
+                        )}
+                      </td>
+                      <td>
+                        <Link
+                          className="text-xs font-semibold text-primary hover:underline"
+                          href={item.href}
+                        >
+                          فتح
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <ul className="admin-desk-mobile-list">
+            {items.length === 0 ? (
+              <li className="admin-desk-mobile-card">
+                <p className="text-sm text-muted">لا توجد أنشطة مطابقة.</p>
               </li>
-            ))}
+            ) : (
+              items.map((item) => (
+                <li
+                  key={`${item.kind}-${item.id}`}
+                  className="admin-desk-mobile-card"
+                >
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {item.title}
+                    </p>
+                    <span className="admin-ops__status-chip">
+                      {item.statusLabel}
+                    </span>
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>{activityKindLabel(item.kind)}</span>
+                    <span>
+                      {new Date(item.updatedAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </span>
+                  </div>
+                  {item.subtitle ? (
+                    <p className="text-xs text-muted">{item.subtitle}</p>
+                  ) : null}
+                  <div className="admin-desk-mobile-card__actions">
+                    <Button href={item.href} size="sm" variant="secondary">
+                      فتح
+                    </Button>
+                  </div>
+                </li>
+              ))
+            )}
           </ul>
         </Card>
       )}

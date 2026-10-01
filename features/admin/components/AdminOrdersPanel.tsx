@@ -320,65 +320,169 @@ export function AdminOrdersPanel() {
         <FormMessage variant={message.variant}>{message.text}</FormMessage>
       ) : null}
 
-      {filtered.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">
-            {orders.length === 0
-              ? "لا توجد طلبات بعد."
-              : "لا نتائج لهذه التصفية."}
-          </p>
-        </Card>
-      ) : (
-        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
-        <ul className="admin-boxes__grid">
-          {filtered.map((order) => {
-            const held = isHeld(order);
-            const evidenceMissing = needsEvidence(order);
-            const proofUrls = order.sellerProofUrls ?? [];
-            return (
-              <li key={order.id} className="admin-boxes__card admin-boxes__card--wide">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="admin-ops__queue-label">{order.listingTitle}</p>
-                    <p className="admin-ops__queue-meta font-mono">{order.id}</p>
-                    <p className="admin-ops__queue-meta">
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الإعلان / الطلب</th>
+                <th>الأطراف</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    {orders.length === 0
+                      ? "لا توجد طلبات بعد."
+                      : "لا نتائج لهذه التصفية."}
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((order) => {
+                  const held = isHeld(order);
+                  const evidenceMissing = needsEvidence(order);
+                  const proofUrls = order.sellerProofUrls ?? [];
+                  return (
+                    <tr key={order.id}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">
+                          {order.listingTitle}
+                        </p>
+                        <p className="font-mono text-xs text-muted">{order.id}</p>
+                        {order.productVerificationStatus ? (
+                          <p className="text-xs text-muted">
+                            التوثيق:{" "}
+                            {productVerificationStatusLabel(
+                              order.productVerificationStatus,
+                            )}
+                          </p>
+                        ) : evidenceMissing ? (
+                          <p className="text-xs text-muted">توثيق المنتج: ناقص</p>
+                        ) : null}
+                        {proofUrls.length > 0 ? (
+                          <p className="text-xs text-muted">
+                            أدلة البائع: {proofUrls.length} ملف
+                          </p>
+                        ) : null}
+                        {order.auditLog.slice(0, 2).map((event) => (
+                          <p key={event.id} className="text-xs text-muted">
+                            {event.message}
+                          </p>
+                        ))}
+                      </td>
+                      <td className="admin-desk-cell-wrap text-xs">
+                        {order.buyerName} → {order.sellerName}
+                        {order.customerType
+                          ? ` · ${customerTypeLabels[order.customerType]}`
+                          : ""}
+                      </td>
+                      <td>
+                        <CurrencyAmount amount={order.fees.total} size="sm" />
+                      </td>
+                      <td>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant={orderBadgeVariant(order)}>
+                            {orderStatusLabel(order.status)}
+                          </Badge>
+                          <span className="admin-ops__status-chip">
+                            ضمان: {escrowStatusLabel(order.escrowStatus)} · دفع:{" "}
+                            {paymentStatusLabel(order.paymentStatus)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-xs text-muted">
+                        {new Date(order.createdAt).toLocaleString(
+                          intlLocale(locale),
+                        )}
+                        {order.repurchasedFromOrderId
+                          ? ` · إعادة شراء من ${order.repurchasedFromOrderId}`
+                          : ""}
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            onClick={() => setDeskId(order.id)}
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            عرض
+                          </Button>
+                          {held ? (
+                            <Button
+                              loading={busyId === order.id}
+                              onClick={() => handleRelease(order.id)}
+                              size="sm"
+                              type="button"
+                            >
+                              تحرير ضمان
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {filtered.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">
+                {orders.length === 0
+                  ? "لا توجد طلبات بعد."
+                  : "لا نتائج لهذه التصفية."}
+              </p>
+            </li>
+          ) : (
+            filtered.map((order) => {
+              const held = isHeld(order);
+              const evidenceMissing = needsEvidence(order);
+              const proofUrls = order.sellerProofUrls ?? [];
+              return (
+                <li key={order.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {order.listingTitle}
+                    </p>
+                    <CurrencyAmount amount={order.fees.total} size="sm" />
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span className="font-mono">{order.id}</span>
+                    <span>
                       {order.buyerName} → {order.sellerName}
                       {order.customerType
                         ? ` · ${customerTypeLabels[order.customerType]}`
                         : ""}
-                    </p>
-                    <p className="admin-ops__queue-meta">
-                      {new Date(order.createdAt).toLocaleString(intlLocale(locale))}
-                      {order.repurchasedFromOrderId
-                        ? ` · إعادة شراء من ${order.repurchasedFromOrderId}`
-                        : ""}
-                    </p>
+                    </span>
+                    <span>
+                      {new Date(order.createdAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </span>
                     {order.productVerificationStatus ? (
-                      <p className="admin-ops__queue-meta">
+                      <span>
                         التوثيق:{" "}
                         {productVerificationStatusLabel(
                           order.productVerificationStatus,
                         )}
-                      </p>
+                      </span>
                     ) : evidenceMissing ? (
-                      <p className="admin-ops__queue-meta">توثيق المنتج: ناقص</p>
+                      <span>توثيق المنتج: ناقص</span>
                     ) : null}
                     {proofUrls.length > 0 ? (
-                      <p className="admin-ops__queue-meta">
-                        أدلة البائع: {proofUrls.length} ملف
-                        {order.sellerProofAt
-                          ? ` · ${new Date(order.sellerProofAt).toLocaleString(intlLocale(locale))}`
-                          : ""}
-                      </p>
-                    ) : null}
-                    {order.sellerProofNote ? (
-                      <p className="admin-ops__queue-meta">
-                        ملاحظة البائع: {order.sellerProofNote}
-                      </p>
+                      <span>أدلة البائع: {proofUrls.length} ملف</span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <CurrencyAmount amount={order.fees.total} size="sm" />
+                  <div className="flex flex-wrap gap-2">
                     <Badge variant={orderBadgeVariant(order)}>
                       {orderStatusLabel(order.status)}
                     </Badge>
@@ -387,44 +491,37 @@ export function AdminOrdersPanel() {
                       {paymentStatusLabel(order.paymentStatus)}
                     </span>
                   </div>
-                </div>
-
-                <div className="admin-boxes__card-actions">
-                  <Button
-                    onClick={() => setDeskId(order.id)}
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    عرض
-                  </Button>
-                  {held ? (
+                  {order.auditLog.slice(0, 2).map((event) => (
+                    <p key={event.id} className="text-xs text-muted">
+                      {event.message}
+                    </p>
+                  ))}
+                  <div className="admin-desk-mobile-card__actions">
                     <Button
-                      loading={busyId === order.id}
-                      onClick={() => handleRelease(order.id)}
+                      onClick={() => setDeskId(order.id)}
                       size="sm"
                       type="button"
+                      variant="secondary"
                     >
-                      تحرير ضمان
+                      عرض
                     </Button>
-                  ) : null}
-                </div>
-
-                {order.auditLog.slice(0, 2).length > 0 ? (
-                  <ul className="mt-2 grid gap-1">
-                    {order.auditLog.slice(0, 2).map((event) => (
-                      <li key={event.id} className="admin-ops__queue-meta">
-                        {event.message}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            );
-          })}
+                    {held ? (
+                      <Button
+                        loading={busyId === order.id}
+                        onClick={() => handleRelease(order.id)}
+                        size="sm"
+                        type="button"
+                      >
+                        تحرير ضمان
+                      </Button>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })
+          )}
         </ul>
-        </Card>
-      )}
+      </Card>
 
       <Modal
         description="معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع."

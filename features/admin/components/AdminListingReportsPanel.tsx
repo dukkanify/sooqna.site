@@ -228,169 +228,337 @@ export function AdminListingReportsPanel() {
         </div>
       </Card>
 
-      {filtered.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">
-            {items.length === 0
-              ? "لا توجد بلاغات على الإعلانات بعد."
-              : "لا بلاغات لهذه التصفية."}
-          </p>
-        </Card>
-      ) : (
-        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
-        <ul className="admin-boxes__grid">
-          {filtered.map((item) => {
-            const listingHref = item.listingSlug
-              ? `/listings/${item.listingSlug}`
-              : `/listings/${item.listingId}`;
-            const expanded = expandedId === item.id;
-            const isOpen = item.status === "open";
-            return (
-              <li
-                key={item.id}
-                className="admin-boxes__card admin-boxes__card--wide"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="admin-ops__queue-label">{item.listingTitle}</p>
-                    <p className="admin-ops__queue-meta" dir="ltr">
-                      {item.id}
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الإعلان</th>
+                <th>السبب</th>
+                <th>المُبلِغ</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    {items.length === 0
+                      ? "لا توجد بلاغات على الإعلانات بعد."
+                      : "لا بلاغات لهذه التصفية."}
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((item) => {
+                  const listingHref = item.listingSlug
+                    ? `/listings/${item.listingSlug}`
+                    : `/listings/${item.listingId}`;
+                  const expanded = expandedId === item.id;
+                  const isOpen = item.status === "open";
+                  return (
+                    <tr key={item.id}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">
+                          {item.listingTitle}
+                        </p>
+                        <p className="text-xs text-muted">
+                          البائع: {item.sellerName ?? "—"}
+                          {item.sellerId ? ` · ${item.sellerId}` : ""}
+                        </p>
+                        {(item.listingRejected || item.sellerSuspended) && (
+                          <p className="text-xs text-muted">
+                            {item.listingRejected ? "الإعلان مخفي/مرفوض" : null}
+                            {item.listingRejected && item.sellerSuspended
+                              ? " · "
+                              : null}
+                            {item.sellerSuspended ? "البائع موقوف" : null}
+                          </p>
+                        )}
+                        {item.resolutionNote ? (
+                          <p className="text-xs text-muted">
+                            قرار المشغّل: {item.resolutionNote}
+                            {item.resolvedByName
+                              ? ` — ${item.resolvedByName}`
+                              : ""}
+                          </p>
+                        ) : null}
+                        {isOpen && expanded ? (
+                          <div className="mt-2 grid gap-2">
+                            <Textarea
+                              label="ملاحظة القرار (تظهر في السجل)"
+                              onChange={(e) =>
+                                setNoteDrafts((prev) => ({
+                                  ...prev,
+                                  [item.id]: e.target.value,
+                                }))
+                              }
+                              placeholder="مثال: تم التحقق — إعلان سليم / محتوى ممنوع…"
+                              rows={2}
+                              value={noteDrafts[item.id] ?? ""}
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                disabled={busyId === item.id}
+                                loading={busyId === item.id}
+                                onClick={() =>
+                                  void resolveReport(item.id, {
+                                    status: "dismissed",
+                                    confirmText:
+                                      "تأكيد إغلاق البلاغ بدون إجراء على الإعلان؟",
+                                    successText: "تم إغلاق البلاغ بدون إجراء.",
+                                  })
+                                }
+                                size="sm"
+                                type="button"
+                                variant="secondary"
+                              >
+                                إغلاق بدون إجراء
+                              </Button>
+                              <Button
+                                disabled={busyId === item.id}
+                                loading={busyId === item.id}
+                                onClick={() =>
+                                  void resolveReport(item.id, {
+                                    status: "resolved",
+                                    rejectListing: true,
+                                    confirmText:
+                                      "إخفاء/رفض الإعلان المبلّغ عنه وإغلاق البلاغ؟",
+                                    successText:
+                                      "تم رفض الإعلان وإغلاق البلاغ.",
+                                  })
+                                }
+                                size="sm"
+                                type="button"
+                              >
+                                إخفاء الإعلان
+                              </Button>
+                              {item.sellerId ? (
+                                <Button
+                                  disabled={busyId === item.id}
+                                  loading={busyId === item.id}
+                                  onClick={() =>
+                                    void resolveReport(item.id, {
+                                      status: "resolved",
+                                      rejectListing: true,
+                                      suspendSeller: true,
+                                      confirmText:
+                                        "رفض الإعلان وإيقاف حساب البائع؟ هذا إجراء قوي.",
+                                      successText:
+                                        "تم رفض الإعلان وإيقاف البائع.",
+                                    })
+                                  }
+                                  size="sm"
+                                  type="button"
+                                  variant="ghost"
+                                >
+                                  إخفاء + إيقاف البائع
+                                </Button>
+                              ) : null}
+                            </div>
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="admin-desk-cell-wrap text-xs">
+                        {LISTING_REPORT_REASON_LABELS[item.reason]}
+                        {item.details ? ` — ${item.details}` : ""}
+                      </td>
+                      <td className="admin-desk-cell-wrap text-xs">
+                        {item.reporterName}
+                        {item.guest ? " (زائر)" : " (مسجّل)"}
+                        <br />
+                        <a
+                          className="text-primary hover:underline"
+                          href={`mailto:${item.reporterEmail}`}
+                        >
+                          {item.reporterEmail}
+                        </a>
+                        {" · "}
+                        <a
+                          className="text-primary hover:underline"
+                          dir="ltr"
+                          href={toTelHref(item.reporterPhone)}
+                        >
+                          {item.reporterPhone}
+                        </a>
+                      </td>
+                      <td>
+                        <Badge variant={statusBadgeVariant(item.status)}>
+                          {LISTING_REPORT_STATUS_LABELS[item.status] ??
+                            item.status}
+                        </Badge>
+                      </td>
+                      <td className="text-xs text-muted">
+                        {new Date(item.createdAt).toLocaleString(
+                          intlLocale(locale),
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            href={listingHref}
+                            size="sm"
+                            variant="secondary"
+                          >
+                            فتح الإعلان
+                          </Button>
+                          {item.sellerId ? (
+                            <Button
+                              href={`/admin/users?q=${encodeURIComponent(item.sellerId)}`}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              صفحة البائع
+                            </Button>
+                          ) : null}
+                          {isOpen ? (
+                            <Button
+                              onClick={() =>
+                                setExpandedId(expanded ? null : item.id)
+                              }
+                              size="sm"
+                              type="button"
+                            >
+                              {expanded ? "إخفاء الإجراءات" : "معالجة"}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {filtered.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">
+                {items.length === 0
+                  ? "لا توجد بلاغات على الإعلانات بعد."
+                  : "لا بلاغات لهذه التصفية."}
+              </p>
+            </li>
+          ) : (
+            filtered.map((item) => {
+              const listingHref = item.listingSlug
+                ? `/listings/${item.listingSlug}`
+                : `/listings/${item.listingId}`;
+              const expanded = expandedId === item.id;
+              const isOpen = item.status === "open";
+              return (
+                <li key={item.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {item.listingTitle}
                     </p>
-                    <p className="admin-ops__queue-meta">
+                    <Badge variant={statusBadgeVariant(item.status)}>
+                      {LISTING_REPORT_STATUS_LABELS[item.status] ??
+                        item.status}
+                    </Badge>
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>
                       السبب: {LISTING_REPORT_REASON_LABELS[item.reason]}
                       {item.details ? ` — ${item.details}` : ""}
-                    </p>
-                    <p className="admin-ops__queue-meta">
+                    </span>
+                    <span>
                       المُبلِغ: {item.reporterName}
                       {item.guest ? " (زائر)" : " (مسجّل)"}
-                    </p>
-                    <p className="admin-ops__queue-meta">
-                      <a
-                        className="admin-ops__text-link"
-                        href={`mailto:${item.reporterEmail}`}
-                      >
+                    </span>
+                    <span>
+                      <a href={`mailto:${item.reporterEmail}`}>
                         {item.reporterEmail}
                       </a>
                       {" · "}
-                      <a
-                        className="admin-ops__text-link"
-                        dir="ltr"
-                        href={toTelHref(item.reporterPhone)}
-                      >
+                      <a dir="ltr" href={toTelHref(item.reporterPhone)}>
                         {item.reporterPhone}
                       </a>
                       {" · "}
                       <a
-                        className="admin-ops__text-link"
                         href={toWhatsAppHref(item.reporterPhone)}
                         rel="noopener noreferrer"
                         target="_blank"
                       >
                         واتساب
                       </a>
-                    </p>
-                    <p className="admin-ops__queue-meta">
+                    </span>
+                    <span>
                       البائع: {item.sellerName ?? "—"}
-                      {item.sellerId ? ` · ${item.sellerId}` : ""} ·{" "}
-                      {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
-                    </p>
-                    {item.resolutionNote ? (
-                      <p className="admin-ops__queue-meta">
-                        قرار المشغّل: {item.resolutionNote}
-                        {item.resolvedByName ? ` — ${item.resolvedByName}` : ""}
-                      </p>
-                    ) : null}
-                    {(item.listingRejected || item.sellerSuspended) && (
-                      <p className="admin-ops__queue-meta">
-                        {item.listingRejected ? "الإعلان مخفي/مرفوض" : null}
-                        {item.listingRejected && item.sellerSuspended
-                          ? " · "
-                          : null}
-                        {item.sellerSuspended ? "البائع موقوف" : null}
-                      </p>
-                    )}
+                      {item.sellerId ? ` · ${item.sellerId}` : ""}
+                    </span>
+                    <span>
+                      {new Date(item.createdAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </span>
                   </div>
-                  <Badge variant={statusBadgeVariant(item.status)}>
-                    {LISTING_REPORT_STATUS_LABELS[item.status] ?? item.status}
-                  </Badge>
-                </div>
-
-                <div className="admin-boxes__card-actions">
-                  <Button href={listingHref} size="sm" variant="secondary">
-                    فتح الإعلان
-                  </Button>
-                  {item.sellerId ? (
-                    <Button
-                      href={`/admin/users?q=${encodeURIComponent(item.sellerId)}`}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      صفحة البائع
-                    </Button>
+                  {item.resolutionNote ? (
+                    <p className="text-xs text-muted">
+                      قرار المشغّل: {item.resolutionNote}
+                      {item.resolvedByName ? ` — ${item.resolvedByName}` : ""}
+                    </p>
                   ) : null}
-                  {isOpen ? (
-                    <Button
-                      onClick={() =>
-                        setExpandedId(expanded ? null : item.id)
-                      }
-                      size="sm"
-                      type="button"
-                    >
-                      {expanded ? "إخفاء الإجراءات" : "معالجة"}
+                  <div className="admin-desk-mobile-card__actions">
+                    <Button href={listingHref} size="sm" variant="secondary">
+                      فتح الإعلان
                     </Button>
-                  ) : null}
-                </div>
-
-                {isOpen && expanded ? (
-                  <div className="mt-3 grid gap-2">
-                    <Textarea
-                      label="ملاحظة القرار (تظهر في السجل)"
-                      onChange={(e) =>
-                        setNoteDrafts((prev) => ({
-                          ...prev,
-                          [item.id]: e.target.value,
-                        }))
-                      }
-                      placeholder="مثال: تم التحقق — إعلان سليم / محتوى ممنوع…"
-                      rows={2}
-                      value={noteDrafts[item.id] ?? ""}
-                    />
-                    <div className="flex flex-wrap gap-2">
+                    {item.sellerId ? (
                       <Button
-                        disabled={busyId === item.id}
-                        loading={busyId === item.id}
-                        onClick={() =>
-                          void resolveReport(item.id, {
-                            status: "dismissed",
-                            confirmText:
-                              "تأكيد إغلاق البلاغ بدون إجراء على الإعلان؟",
-                            successText: "تم إغلاق البلاغ بدون إجراء.",
-                          })
-                        }
+                        href={`/admin/users?q=${encodeURIComponent(item.sellerId)}`}
                         size="sm"
-                        type="button"
-                        variant="secondary"
+                        variant="ghost"
                       >
-                        إغلاق بدون إجراء
+                        صفحة البائع
                       </Button>
+                    ) : null}
+                    {isOpen ? (
                       <Button
-                        disabled={busyId === item.id}
-                        loading={busyId === item.id}
                         onClick={() =>
-                          void resolveReport(item.id, {
-                            status: "resolved",
-                            rejectListing: true,
-                            confirmText:
-                              "إخفاء/رفض الإعلان المبلّغ عنه وإغلاق البلاغ؟",
-                            successText: "تم رفض الإعلان وإغلاق البلاغ.",
-                          })
+                          setExpandedId(expanded ? null : item.id)
                         }
                         size="sm"
                         type="button"
                       >
-                        إخفاء الإعلان
+                        {expanded ? "إخفاء الإجراءات" : "معالجة"}
                       </Button>
-                      {item.sellerId ? (
+                    ) : null}
+                  </div>
+                  {isOpen && expanded ? (
+                    <div className="mt-3 grid gap-2">
+                      <Textarea
+                        label="ملاحظة القرار (تظهر في السجل)"
+                        onChange={(e) =>
+                          setNoteDrafts((prev) => ({
+                            ...prev,
+                            [item.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="مثال: تم التحقق — إعلان سليم / محتوى ممنوع…"
+                        rows={2}
+                        value={noteDrafts[item.id] ?? ""}
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          disabled={busyId === item.id}
+                          loading={busyId === item.id}
+                          onClick={() =>
+                            void resolveReport(item.id, {
+                              status: "dismissed",
+                              confirmText:
+                                "تأكيد إغلاق البلاغ بدون إجراء على الإعلان؟",
+                              successText: "تم إغلاق البلاغ بدون إجراء.",
+                            })
+                          }
+                          size="sm"
+                          type="button"
+                          variant="secondary"
+                        >
+                          إغلاق بدون إجراء
+                        </Button>
                         <Button
                           disabled={busyId === item.id}
                           loading={busyId === item.id}
@@ -398,28 +566,46 @@ export function AdminListingReportsPanel() {
                             void resolveReport(item.id, {
                               status: "resolved",
                               rejectListing: true,
-                              suspendSeller: true,
                               confirmText:
-                                "رفض الإعلان وإيقاف حساب البائع؟ هذا إجراء قوي.",
-                              successText: "تم رفض الإعلان وإيقاف البائع.",
+                                "إخفاء/رفض الإعلان المبلّغ عنه وإغلاق البلاغ؟",
+                              successText: "تم رفض الإعلان وإغلاق البلاغ.",
                             })
                           }
                           size="sm"
                           type="button"
-                          variant="ghost"
                         >
-                          إخفاء + إيقاف البائع
+                          إخفاء الإعلان
                         </Button>
-                      ) : null}
+                        {item.sellerId ? (
+                          <Button
+                            disabled={busyId === item.id}
+                            loading={busyId === item.id}
+                            onClick={() =>
+                              void resolveReport(item.id, {
+                                status: "resolved",
+                                rejectListing: true,
+                                suspendSeller: true,
+                                confirmText:
+                                  "رفض الإعلان وإيقاف حساب البائع؟ هذا إجراء قوي.",
+                                successText: "تم رفض الإعلان وإيقاف البائع.",
+                              })
+                            }
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            إخفاء + إيقاف البائع
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                ) : null}
-              </li>
-            );
-          })}
+                  ) : null}
+                </li>
+              );
+            })
+          )}
         </ul>
-        </Card>
-      )}
+      </Card>
 
       <div className="admin-ops__quick-links">
         <Link className="admin-ops__chip-link" href="/admin/listings">

@@ -169,152 +169,298 @@ export function AdminSupportMessagesPanel() {
         </div>
       </Card>
 
-      {filtered.length === 0 ? (
-        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-          <p className="text-sm text-muted">
-            {items.length === 0
-              ? "لا رسائل من نموذج تواصل معنا بعد."
-              : "لا رسائل لهذه التصفية."}
-          </p>
-        </Card>
-      ) : (
-        <Card className="admin-desk-table-card overflow-hidden p-3" variant="flat">
-        <ul className="admin-boxes__grid">
-          {filtered.map((item) => {
-            const expanded = expandedId === item.id;
-            const isOpen = item.status === "open";
-            return (
-              <li
-                key={item.id}
-                className="admin-boxes__card admin-boxes__card--wide"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="admin-ops__queue-label">{item.name}</p>
-                    <p className="admin-ops__queue-meta" dir="ltr">
-                      {item.id}
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>المرسل</th>
+                <th>الموضوع</th>
+                <th>الرسالة</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={6}>
+                    {items.length === 0
+                      ? "لا رسائل من نموذج تواصل معنا بعد."
+                      : "لا رسائل لهذه التصفية."}
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((item) => {
+                  const expanded = expandedId === item.id;
+                  const isOpen = item.status === "open";
+                  return (
+                    <tr key={item.id}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">{item.name}</p>
+                        <a
+                          className="text-xs text-primary hover:underline"
+                          href={`mailto:${item.email}`}
+                        >
+                          {item.email}
+                        </a>
+                      </td>
+                      <td className="text-xs">
+                        {SUPPORT_TOPIC_LABELS[item.topic]}
+                      </td>
+                      <td className="admin-desk-cell-wrap text-xs whitespace-pre-wrap">
+                        {item.message}
+                        {item.resolutionNote ? (
+                          <p className="mt-1 text-muted">
+                            قرار المشغّل: {item.resolutionNote}
+                            {item.resolvedByName
+                              ? ` — ${item.resolvedByName}`
+                              : ""}
+                          </p>
+                        ) : null}
+                        {isOpen && expanded ? (
+                          <div className="mt-2 grid gap-2">
+                            <Textarea
+                              label="ملاحظة القرار"
+                              onChange={(e) =>
+                                setNoteDrafts((prev) => ({
+                                  ...prev,
+                                  [item.id]: e.target.value,
+                                }))
+                              }
+                              placeholder="مثال: تم الرد عبر البريد…"
+                              rows={2}
+                              value={noteDrafts[item.id] ?? ""}
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                disabled={busyId === item.id}
+                                loading={busyId === item.id}
+                                onClick={() =>
+                                  void updateStatus(
+                                    item.id,
+                                    "resolved",
+                                    "تأكيد تعليم الرسالة كمُجاب عليها؟",
+                                    "تم تعليم الرسالة كمجاب عليها.",
+                                  )
+                                }
+                                size="sm"
+                                type="button"
+                              >
+                                تم الرد
+                              </Button>
+                              <Button
+                                disabled={busyId === item.id}
+                                onClick={() =>
+                                  void updateStatus(
+                                    item.id,
+                                    "reviewed",
+                                    "تأكيد تعليم الرسالة كمراجعة؟",
+                                    "تمت مراجعة الرسالة.",
+                                  )
+                                }
+                                size="sm"
+                                type="button"
+                                variant="secondary"
+                              >
+                                تمت المراجعة
+                              </Button>
+                              <Button
+                                disabled={busyId === item.id}
+                                onClick={() =>
+                                  void updateStatus(
+                                    item.id,
+                                    "dismissed",
+                                    "تأكيد إغلاق الرسالة بدون إجراء؟",
+                                    "أُغلقت الرسالة.",
+                                  )
+                                }
+                                size="sm"
+                                type="button"
+                                variant="ghost"
+                              >
+                                إغلاق
+                              </Button>
+                            </div>
+                          </div>
+                        ) : null}
+                      </td>
+                      <td>
+                        <Badge variant={statusBadgeVariant(item.status)}>
+                          {SUPPORT_MESSAGE_STATUS_LABELS[item.status] ??
+                            item.status}
+                        </Badge>
+                      </td>
+                      <td className="text-xs text-muted">
+                        {new Date(item.createdAt).toLocaleString(
+                          intlLocale(locale),
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            href={`mailto:${item.email}`}
+                            size="sm"
+                            variant="secondary"
+                          >
+                            رد بالبريد
+                          </Button>
+                          {isOpen ? (
+                            <Button
+                              onClick={() =>
+                                setExpandedId(expanded ? null : item.id)
+                              }
+                              size="sm"
+                              type="button"
+                            >
+                              {expanded ? "إخفاء الإجراءات" : "معالجة"}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <ul className="admin-desk-mobile-list">
+          {filtered.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">
+                {items.length === 0
+                  ? "لا رسائل من نموذج تواصل معنا بعد."
+                  : "لا رسائل لهذه التصفية."}
+              </p>
+            </li>
+          ) : (
+            filtered.map((item) => {
+              const expanded = expandedId === item.id;
+              const isOpen = item.status === "open";
+              return (
+                <li key={item.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {item.name}
                     </p>
-                    <p className="admin-ops__queue-meta">
-                      الموضوع: {SUPPORT_TOPIC_LABELS[item.topic]}
-                    </p>
-                    <p className="admin-ops__queue-meta whitespace-pre-wrap">
-                      {item.message}
-                    </p>
-                    <p className="admin-ops__queue-meta">
-                      <a
-                        className="admin-ops__text-link"
-                        href={`mailto:${item.email}`}
-                      >
-                        {item.email}
-                      </a>
-                      {" · "}
+                    <Badge variant={statusBadgeVariant(item.status)}>
+                      {SUPPORT_MESSAGE_STATUS_LABELS[item.status] ??
+                        item.status}
+                    </Badge>
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>{SUPPORT_TOPIC_LABELS[item.topic]}</span>
+                    <span dir="ltr">{item.email}</span>
+                    <span>
                       {new Date(item.createdAt).toLocaleString(
                         intlLocale(locale),
                       )}
+                    </span>
+                  </div>
+                  <p className="whitespace-pre-wrap text-xs text-muted">
+                    {item.message}
+                  </p>
+                  {item.resolutionNote ? (
+                    <p className="text-xs text-muted">
+                      قرار المشغّل: {item.resolutionNote}
+                      {item.resolvedByName ? ` — ${item.resolvedByName}` : ""}
                     </p>
-                    {item.resolutionNote ? (
-                      <p className="admin-ops__queue-meta">
-                        قرار المشغّل: {item.resolutionNote}
-                        {item.resolvedByName
-                          ? ` — ${item.resolvedByName}`
-                          : ""}
-                      </p>
+                  ) : null}
+                  <div className="admin-desk-mobile-card__actions">
+                    <Button
+                      href={`mailto:${item.email}`}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      رد بالبريد
+                    </Button>
+                    {isOpen ? (
+                      <Button
+                        onClick={() =>
+                          setExpandedId(expanded ? null : item.id)
+                        }
+                        size="sm"
+                        type="button"
+                      >
+                        {expanded ? "إخفاء الإجراءات" : "معالجة"}
+                      </Button>
                     ) : null}
                   </div>
-                  <Badge variant={statusBadgeVariant(item.status)}>
-                    {SUPPORT_MESSAGE_STATUS_LABELS[item.status] ?? item.status}
-                  </Badge>
-                </div>
-
-                <div className="admin-boxes__card-actions">
-                  <Button href={`mailto:${item.email}`} size="sm" variant="secondary">
-                    رد بالبريد
-                  </Button>
-                  {isOpen ? (
-                    <Button
-                      onClick={() =>
-                        setExpandedId(expanded ? null : item.id)
-                      }
-                      size="sm"
-                      type="button"
-                    >
-                      {expanded ? "إخفاء الإجراءات" : "معالجة"}
-                    </Button>
-                  ) : null}
-                </div>
-
-                {isOpen && expanded ? (
-                  <div className="mt-3 grid gap-2">
-                    <Textarea
-                      label="ملاحظة القرار"
-                      onChange={(e) =>
-                        setNoteDrafts((prev) => ({
-                          ...prev,
-                          [item.id]: e.target.value,
-                        }))
-                      }
-                      placeholder="مثال: تم الرد عبر البريد…"
-                      rows={2}
-                      value={noteDrafts[item.id] ?? ""}
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        disabled={busyId === item.id}
-                        loading={busyId === item.id}
-                        onClick={() =>
-                          void updateStatus(
-                            item.id,
-                            "resolved",
-                            "تأكيد تعليم الرسالة كمُجاب عليها؟",
-                            "تم تعليم الرسالة كمجاب عليها.",
-                          )
+                  {isOpen && expanded ? (
+                    <div className="mt-3 grid gap-2">
+                      <Textarea
+                        label="ملاحظة القرار"
+                        onChange={(e) =>
+                          setNoteDrafts((prev) => ({
+                            ...prev,
+                            [item.id]: e.target.value,
+                          }))
                         }
-                        size="sm"
-                        type="button"
-                      >
-                        تم الرد
-                      </Button>
-                      <Button
-                        disabled={busyId === item.id}
-                        onClick={() =>
-                          void updateStatus(
-                            item.id,
-                            "reviewed",
-                            "تأكيد تعليم الرسالة كمراجعة؟",
-                            "تمت مراجعة الرسالة.",
-                          )
-                        }
-                        size="sm"
-                        type="button"
-                        variant="secondary"
-                      >
-                        تمت المراجعة
-                      </Button>
-                      <Button
-                        disabled={busyId === item.id}
-                        onClick={() =>
-                          void updateStatus(
-                            item.id,
-                            "dismissed",
-                            "تأكيد إغلاق الرسالة بدون إجراء؟",
-                            "أُغلقت الرسالة.",
-                          )
-                        }
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        إغلاق
-                      </Button>
+                        placeholder="مثال: تم الرد عبر البريد…"
+                        rows={2}
+                        value={noteDrafts[item.id] ?? ""}
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          disabled={busyId === item.id}
+                          loading={busyId === item.id}
+                          onClick={() =>
+                            void updateStatus(
+                              item.id,
+                              "resolved",
+                              "تأكيد تعليم الرسالة كمُجاب عليها؟",
+                              "تم تعليم الرسالة كمجاب عليها.",
+                            )
+                          }
+                          size="sm"
+                          type="button"
+                        >
+                          تم الرد
+                        </Button>
+                        <Button
+                          disabled={busyId === item.id}
+                          onClick={() =>
+                            void updateStatus(
+                              item.id,
+                              "reviewed",
+                              "تأكيد تعليم الرسالة كمراجعة؟",
+                              "تمت مراجعة الرسالة.",
+                            )
+                          }
+                          size="sm"
+                          type="button"
+                          variant="secondary"
+                        >
+                          تمت المراجعة
+                        </Button>
+                        <Button
+                          disabled={busyId === item.id}
+                          onClick={() =>
+                            void updateStatus(
+                              item.id,
+                              "dismissed",
+                              "تأكيد إغلاق الرسالة بدون إجراء؟",
+                              "أُغلقت الرسالة.",
+                            )
+                          }
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          إغلاق
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ) : null}
-              </li>
-            );
-          })}
+                  ) : null}
+                </li>
+              );
+            })
+          )}
         </ul>
-        </Card>
-      )}
+      </Card>
     </div>
   );
 }
