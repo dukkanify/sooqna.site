@@ -1417,12 +1417,12 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--admin-line);
-  border-radius: 999px;
+  border-radius: 0.85rem;
   background: var(--admin-surface);
   padding: 0.28rem 0.7rem;
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--admin-muted);
+  color: var(--admin-ink);
 }
 
 .admin-dash__chip--ok {
@@ -1484,8 +1484,9 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
 
 .admin-dash__section {
   border: 1px solid var(--admin-line);
-  border-radius: 1rem;
+  border-radius: 0.85rem;
   background: var(--admin-surface);
+  color: var(--admin-ink);
   padding: 1rem 1.1rem 1.15rem;
 }
 
@@ -1540,10 +1541,10 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   min-height: 6.5rem;
   border: 1px solid var(--admin-line);
   border-radius: 0.85rem;
-  background: var(--admin-elevated);
+  background: var(--admin-surface);
   padding: 0.85rem 0.9rem;
   text-decoration: none;
-  color: inherit;
+  color: var(--admin-ink);
   transition: border-color 0.15s var(--admin-ease), transform 0.15s var(--admin-ease);
 }
 
@@ -2505,11 +2506,62 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   color: var(--admin-muted) !important;
 }
 
-/* Home cockpit KPIs align with desk tokens */
-.admin-dash__kpi {
+/* Home cockpit surfaces align with desk tokens */
+.admin-dash__kpi,
+.admin-dash__section,
+.admin-dash__chip {
   border-radius: 0.85rem;
   border: 1px solid var(--admin-line);
   background: var(--admin-surface);
+  color: var(--admin-ink);
+}
+
+.admin-dash__section--action {
+  border-color: var(--admin-action-section-border);
+  background: linear-gradient(
+    180deg,
+    var(--admin-action-section-top) 0%,
+    var(--admin-action-section-bottom) 55%
+  );
+  color: var(--admin-ink);
+}
+
+.admin-dash__section--risk {
+  border-color: var(--admin-risk-section-border);
+}
+
+.admin-dash__chip--ok {
+  border-color: transparent;
+  background: var(--admin-ok-bg);
+  color: var(--admin-ok);
+}
+
+.admin-dash__chip--warn {
+  border-color: transparent;
+  background: var(--admin-warn-bg);
+  color: var(--admin-warn);
+}
+
+.admin-dash__stat {
+  border-radius: 0.85rem;
+  border: 1px solid var(--admin-line);
+  background: var(--admin-elevated);
+  color: var(--admin-ink);
+}
+
+.admin-dash__action-item {
+  border-radius: 0.85rem;
+  border: 1px solid var(--admin-line);
+  background: var(--admin-surface);
+  color: var(--admin-ink);
+}
+
+.admin-dash__bar-track {
+  background: var(--admin-kpi-icon-bg);
+}
+
+.admin-dash__shortcut {
+  border-radius: 0.85rem;
 }
 
 html[data-theme="dark"] .admin-ops__queue-item,
