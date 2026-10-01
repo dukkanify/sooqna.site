@@ -226,7 +226,7 @@ export function AdminCategoryFormsPanel() {
     : null;
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
       <Card className="admin-desk-help grid gap-3 p-5" variant="flat">
         <h3 className="text-base font-bold text-ink">منشئ النماذج الديناميكية</h3>
         <p className="text-sm text-muted">

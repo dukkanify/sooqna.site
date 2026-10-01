@@ -238,7 +238,7 @@ export function AdminVehicleCatalogPanel() {
   });
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
       <Card className="admin-desk-help p-5" variant="flat">
         <h2 className="text-lg font-black text-ink">كتالوج السيارات</h2>
         <p className="mt-2 text-sm text-muted">

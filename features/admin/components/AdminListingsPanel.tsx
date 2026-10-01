@@ -873,7 +873,7 @@ export function AdminListingsPanel() {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="admin-desk grid gap-4">
       <div className="admin-listings-toolbar">
         <p className="text-sm text-muted">
           راجع الإعلانات واعتمد أو عدّل أو ميّز مباشرة — النصوص واضحة على الجوال

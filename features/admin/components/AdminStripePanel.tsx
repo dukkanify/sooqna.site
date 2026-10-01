@@ -122,9 +122,9 @@ export function AdminStripePanel() {
         platformConfigured={status.configured}
       />
 
-      <section className="admin-ops__panel">
-        <h2 className="admin-ops__panel-title">إعداد المنصة (خوادم)</h2>
-        <p className="admin-ops__panel-sub">
+      <Card className="admin-desk-help p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">إعداد المنصة (خوادم)</h2>
+        <p className="mt-2 text-xs text-muted">
           مفاتيح Stripe الرئيسية تُضبط مرة واحدة عبر Vercel Production. لا تُدخل Secret
           Key أو Webhook Secret في المتصفح.
         </p>
@@ -187,10 +187,10 @@ export function AdminStripePanel() {
           Webhook endpoint:{" "}
           <code className="text-[0.7rem]">{status.webhookEndpoint}</code>
         </p>
-      </section>
+      </Card>
 
-      <section className="admin-ops__panel">
-        <h2 className="admin-ops__panel-title">روابط لوحة Stripe</h2>
+      <Card className="admin-desk-help p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">روابط لوحة Stripe</h2>
         <div
           className="admin-ops__quick-links"
           style={{ marginTop: "0.85rem" }}
@@ -214,7 +214,7 @@ export function AdminStripePanel() {
             </a>
           ))}
         </div>
-      </section>
+      </Card>
 
       <div className="admin-ops__kpi-grid">
         <div className="admin-ops__kpi">
@@ -235,54 +235,152 @@ export function AdminStripePanel() {
         </div>
       </div>
 
-      <section className="admin-ops__panel">
-        <div className="admin-ops__panel-head">
-          <h2 className="admin-ops__panel-title">طلبات مرتبطة بـ Stripe</h2>
-          <Link className="admin-ops__text-link" href="/admin/orders">
-            كل الطلبات
-          </Link>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-ink">طلبات مرتبطة بـ Stripe</h2>
+        <Link className="admin-ops__text-link" href="/admin/orders">
+          كل الطلبات
+        </Link>
+      </div>
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الطلب</th>
+                <th>المعرّف</th>
+                <th>المبلغ</th>
+                <th>الدفع</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentStripeOrders.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={5}>
+                    لا توجد طلبات مرتبطة بعد.
+                  </td>
+                </tr>
+              ) : (
+                recentStripeOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="admin-desk-cell-wrap">
+                      <p className="admin-desk-cell-title">{order.title}</p>
+                    </td>
+                    <td className="font-mono text-xs">
+                      {order.stripePaymentIntentId ?? order.id}
+                    </td>
+                    <td>
+                      <CurrencyAmount amount={order.amount} size="sm" />
+                    </td>
+                    <td>
+                      <Badge variant="muted">{order.paymentStatus}</Badge>
+                    </td>
+                    <td className="text-xs text-muted">
+                      {new Date(order.createdAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-        <ul className="admin-ops__queue" style={{ marginTop: "0.85rem" }}>
+        <ul className="admin-desk-mobile-list">
           {recentStripeOrders.length === 0 ? (
-            <li className="admin-ops__queue-item">
-              <p className="admin-ops__queue-meta">لا توجد طلبات مرتبطة بعد.</p>
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا توجد طلبات مرتبطة بعد.</p>
             </li>
           ) : (
             recentStripeOrders.map((order) => (
-              <li key={order.id} className="admin-ops__queue-item">
-                <div>
-                  <p className="admin-ops__queue-label">{order.title}</p>
-                  <p className="admin-ops__queue-meta">
-                    {order.stripePaymentIntentId ?? order.id} ·{" "}
-                    {new Date(order.createdAt).toLocaleString(intlLocale(locale))}
+              <li key={order.id} className="admin-desk-mobile-card">
+                <div className="admin-desk-mobile-card__head">
+                  <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                    {order.title}
                   </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CurrencyAmount amount={order.amount} size="sm" />
                   <Badge variant="muted">{order.paymentStatus}</Badge>
+                </div>
+                <div className="admin-desk-mobile-card__meta">
+                  <CurrencyAmount amount={order.amount} size="sm" />
+                  <span className="font-mono text-xs">
+                    {order.stripePaymentIntentId ?? order.id}
+                  </span>
+                  <span>
+                    {new Date(order.createdAt).toLocaleString(
+                      intlLocale(locale),
+                    )}
+                  </span>
                 </div>
               </li>
             ))
           )}
         </ul>
-      </section>
+      </Card>
 
-      <section className="admin-ops__panel">
-        <h2 className="admin-ops__panel-title">سجل أحداث الدفع</h2>
-        <ul className="admin-ops__queue" style={{ marginTop: "0.85rem" }}>
-          {recentEvents.map((event) => (
-            <li key={event.id} className="admin-ops__queue-item">
-              <div>
-                <p className="admin-ops__queue-label">{event.type}</p>
-                <p className="admin-ops__queue-meta">
-                  {new Date(event.createdAt).toLocaleString(intlLocale(locale))}
-                  {event.orderId ? ` · ${event.orderId}` : ""}
-                </p>
-              </div>
+      <h2 className="text-sm font-semibold text-ink">سجل أحداث الدفع</h2>
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>النوع</th>
+                <th>الطلب</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentEvents.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={3}>
+                    لا أحداث بعد.
+                  </td>
+                </tr>
+              ) : (
+                recentEvents.map((event) => (
+                  <tr key={event.id}>
+                    <td className="admin-desk-cell-wrap">
+                      <p className="admin-desk-cell-title">{event.type}</p>
+                    </td>
+                    <td className="font-mono text-xs">
+                      {event.orderId ?? "—"}
+                    </td>
+                    <td className="text-xs text-muted">
+                      {new Date(event.createdAt).toLocaleString(
+                        intlLocale(locale),
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <ul className="admin-desk-mobile-list">
+          {recentEvents.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">لا أحداث بعد.</p>
             </li>
-          ))}
+          ) : (
+            recentEvents.map((event) => (
+              <li key={event.id} className="admin-desk-mobile-card">
+                <div className="admin-desk-mobile-card__head">
+                  <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                    {event.type}
+                  </p>
+                </div>
+                <div className="admin-desk-mobile-card__meta">
+                  {event.orderId ? <span>{event.orderId}</span> : null}
+                  <span>
+                    {new Date(event.createdAt).toLocaleString(
+                      intlLocale(locale),
+                    )}
+                  </span>
+                </div>
+              </li>
+            ))
+          )}
         </ul>
-      </section>
+      </Card>
     </div>
   );
 }

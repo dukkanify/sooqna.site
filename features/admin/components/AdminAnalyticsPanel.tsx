@@ -32,6 +32,74 @@ type AnalyticsPayload = {
   topCategories: { count: number; key: string; label: string }[];
 };
 
+function StatusDeskTable({
+  title,
+  rows,
+  emptyLabel,
+  valueHeader = "العدد",
+}: {
+  title: string;
+  rows: { count: number; key: string; label: string }[];
+  emptyLabel: string;
+  valueHeader?: string;
+}) {
+  return (
+    <div className="grid gap-2">
+      <h2 className="text-sm font-semibold text-ink">{title}</h2>
+      <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+        <div className="admin-desk-table-scroll">
+          <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+            <thead>
+              <tr>
+                <th>الحالة</th>
+                <th>{valueHeader}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td className="text-muted" colSpan={2}>
+                    {emptyLabel}
+                  </td>
+                </tr>
+              ) : (
+                rows.map((slice) => (
+                  <tr key={slice.key}>
+                    <td className="admin-desk-cell-wrap">
+                      <p className="admin-desk-cell-title">{slice.label}</p>
+                    </td>
+                    <td className="font-bold text-ink">{slice.count}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <ul className="admin-desk-mobile-list">
+          {rows.length === 0 ? (
+            <li className="admin-desk-mobile-card">
+              <p className="text-sm text-muted">{emptyLabel}</p>
+            </li>
+          ) : (
+            rows.map((slice) => (
+              <li key={slice.key} className="admin-desk-mobile-card">
+                <div className="admin-desk-mobile-card__head">
+                  <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                    {slice.label}
+                  </p>
+                  <span className="text-sm font-bold text-ink">
+                    {slice.count}
+                  </span>
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
 export function AdminAnalyticsPanel() {
   const [data, setData] = useState<AnalyticsPayload | null>(null);
 
@@ -48,9 +116,11 @@ export function AdminAnalyticsPanel() {
 
   if (!data) {
     return (
-      <Card className="admin-desk-table-card p-8 text-center" variant="flat">
-        <p className="text-sm text-muted">جاري تحميل التحليلات...</p>
-      </Card>
+      <div className="admin-desk grid gap-4">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
+          <p className="text-sm text-muted">جاري تحميل التحليلات...</p>
+        </Card>
+      </div>
     );
   }
 
@@ -91,8 +161,8 @@ export function AdminAnalyticsPanel() {
         </div>
       </div>
 
-      <section className="admin-ops__panel">
-        <h2 className="admin-ops__panel-title">اتجاه 14 يوماً</h2>
+      <Card className="admin-desk-help p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">اتجاه 14 يوماً</h2>
         <div className="admin-ops__bars" style={{ marginTop: "1rem" }}>
           {data.daily.map((point) => (
             <div key={point.date} className="admin-ops__bar-col">
@@ -109,53 +179,27 @@ export function AdminAnalyticsPanel() {
             </div>
           ))}
         </div>
-      </section>
+      </Card>
 
-      <div className="admin-ops__panels">
-        <section className="admin-ops__panel">
-          <h2 className="admin-ops__panel-title">حالات الطلبات</h2>
-          <div
-            className="admin-ops__detail-grid"
-            style={{ marginTop: "0.85rem" }}
-          >
-            {data.orderStatuses.map((slice) => (
-              <div key={slice.key} className="admin-ops__detail-row">
-                <span>{slice.label}</span>
-                <strong>{slice.count}</strong>
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="admin-ops__panel">
-          <h2 className="admin-ops__panel-title">حالات الدفع</h2>
-          <div
-            className="admin-ops__detail-grid"
-            style={{ marginTop: "0.85rem" }}
-          >
-            {data.paymentStatuses.map((slice) => (
-              <div key={slice.key} className="admin-ops__detail-row">
-                <span>{slice.label}</span>
-                <strong>{slice.count}</strong>
-              </div>
-            ))}
-          </div>
-        </section>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <StatusDeskTable
+          emptyLabel="لا حالات طلبات."
+          rows={data.orderStatuses}
+          title="حالات الطلبات"
+        />
+        <StatusDeskTable
+          emptyLabel="لا حالات دفع."
+          rows={data.paymentStatuses}
+          title="حالات الدفع"
+        />
       </div>
 
-      <section className="admin-ops__panel">
-        <h2 className="admin-ops__panel-title">أعلى التصنيفات بالإعلانات</h2>
-        <div
-          className="admin-ops__detail-grid"
-          style={{ marginTop: "0.85rem" }}
-        >
-          {data.topCategories.map((slice) => (
-            <div key={slice.key} className="admin-ops__detail-row">
-              <span>{slice.label}</span>
-              <strong>{slice.count}</strong>
-            </div>
-          ))}
-        </div>
-      </section>
+      <StatusDeskTable
+        emptyLabel="لا تصنيفات بعد."
+        rows={data.topCategories}
+        title="أعلى التصنيفات بالإعلانات"
+        valueHeader="الإعلانات"
+      />
 
       <div className="flex flex-wrap gap-3">
         <Link className="admin-ops__chip-link" href="/admin/reports">
