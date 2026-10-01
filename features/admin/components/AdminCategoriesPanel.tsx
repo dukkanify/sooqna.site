@@ -341,7 +341,7 @@ export function AdminCategoriesPanel() {
               <div className="flex items-center gap-3">
                 <span
                   aria-hidden
-                  className="admin-category-mark relative size-12 shrink-0"
+                  className="admin-category-mark relative size-14 shrink-0"
                 >
                   <CategoryMark
                     category={{
@@ -440,7 +440,7 @@ export function AdminCategoriesPanel() {
                           <div className="flex items-center gap-3">
                             <span
                               aria-hidden
-                              className="admin-category-mark relative size-12 shrink-0"
+                              className="admin-category-mark relative size-14 shrink-0"
                             >
                               <CategoryMark
                                 category={category}
@@ -576,7 +576,7 @@ export function AdminCategoriesPanel() {
                     <div className="flex min-w-0 flex-1 items-center gap-3">
                       <span
                         aria-hidden
-                        className="admin-category-mark relative size-12 shrink-0"
+                        className="admin-category-mark relative size-14 shrink-0"
                       >
                         <CategoryMark
                           category={category}
@@ -731,7 +731,7 @@ function CategoryEditPanel({
           <div className="flex items-center gap-3">
             <span
               aria-hidden
-              className="admin-category-mark relative size-12 shrink-0"
+              className="admin-category-mark relative size-14 shrink-0"
             >
               <CategoryMark
                 category={{

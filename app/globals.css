@@ -335,14 +335,21 @@ textarea {
 }
 
 .category-mark--compact .category-mark__image {
-  object-fit: contain;
-  object-position: center;
-  padding: 12%;
+  object-fit: contain !important;
+  object-position: center center;
+  padding: 18% !important;
+  box-sizing: border-box;
 }
 
 .category-mark--compact .category-mark__glyph {
-  width: 62% !important;
-  height: 62% !important;
+  width: 58% !important;
+  height: 58% !important;
+}
+
+/* Keep desk marks still — no homepage hover lift */
+.admin-category-mark .category-mark,
+.admin-category-mark:hover .category-mark {
+  transform: none !important;
 }
 
 .category-mark__glyph {
