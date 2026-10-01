@@ -10,7 +10,7 @@ type FeaturedBadgeProps = {
 };
 
 /**
- * Brand Featured marker — gold ribbon with star, clearer than the old tiny pill.
+ * Brand Featured marker — espresso seal, gold accent bar, luminous star.
  */
 export function FeaturedBadge({
   className = "",
@@ -29,6 +29,7 @@ export function FeaturedBadge({
       } ${className}`.trim()}
       title="إعلان مميّز — باقة التمييز"
     >
+      <span aria-hidden className="listing-featured-badge__sheen" />
       <Icon
         className="listing-featured-badge__star shrink-0"
         name="star"
