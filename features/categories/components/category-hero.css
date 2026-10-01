@@ -1,0 +1,57 @@
+/*
+ * Category section heroes — keep a wide frame that is tall enough for
+ * architecture / product photos so cover cropping does not cut the subject.
+ */
+.category-hero__media {
+  aspect-ratio: 16 / 9;
+  min-height: 12rem;
+  overflow: hidden;
+  background: #0b1628;
+}
+
+.category-hero__media--compact {
+  aspect-ratio: 2 / 1;
+  min-height: 9.5rem;
+}
+
+@media (min-width: 768px) {
+  .category-hero__media {
+    aspect-ratio: 2.2 / 1;
+    min-height: 14rem;
+  }
+
+  .category-hero__media--compact {
+    aspect-ratio: 2.35 / 1;
+    min-height: 11rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .category-hero__media {
+    aspect-ratio: 2.4 / 1;
+    min-height: 15.5rem;
+  }
+
+  .category-hero__media--compact {
+    aspect-ratio: 2.5 / 1;
+    min-height: 12rem;
+  }
+}
+
+.category-hero__image {
+  object-fit: cover !important;
+  object-position: center 42% !important;
+}
+
+.category-hero__shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 72%) 0%,
+    rgb(0 0 0 / 28%) 42%,
+    rgb(0 0 0 / 8%) 72%,
+    transparent 100%
+  );
+}
