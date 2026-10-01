@@ -41,6 +41,6 @@
 - Stripe Checkout بعملة AED وواجهة عربية
 - حجز داخلي (escrow ledger) بعد الدفع
 - استرداد إداري عبر Stripe Refunds
-- لا يوجد Stripe Connect لصرف تلقائي للبائعين بعد
+- Stripe Connect onboarding + تحويل للبائع عند التحرير (يتطلب حساب Connect ACTIVE وكرون `escrow-maintenance`)
 
 تفاصيل الـ webhook: [STRIPE_WEBHOOK_SETUP.md](./STRIPE_WEBHOOK_SETUP.md)
