@@ -16,6 +16,8 @@ import { Select } from "@/shared/ui/Select";
 type WalletRow = {
   availableBalance: number;
   currency: string;
+  email?: string;
+  fullName?: string;
   heldInEscrow: number;
   lastTransaction: { date: string; description: string; type: string } | null;
   pendingBalance: number;
@@ -33,6 +35,20 @@ type WalletsPayload = {
   };
   wallets: WalletRow[];
 };
+
+const TXN_LABELS: Record<string, string> = {
+  deposit: "إيداع",
+  withdrawal: "سحب",
+  escrow_hold: "حجز ضمان",
+  escrow_release: "تحرير ضمان",
+  refund: "استرداد",
+  platform_fee: "رسوم منصة",
+  stripe_payment: "دفع Stripe",
+};
+
+function walletLabel(wallet: WalletRow): string {
+  return wallet.fullName?.trim() || wallet.email?.trim() || wallet.userId;
+}
 
 export function AdminWalletsPanel() {
   const locale = useLocale();
@@ -64,10 +80,30 @@ export function AdminWalletsPanel() {
     if (!data) return [];
     const q = query.trim().toLowerCase();
     if (!q) return data.wallets;
-    return data.wallets.filter((wallet) =>
-      wallet.userId.toLowerCase().includes(q),
-    );
+    return data.wallets.filter((wallet) => {
+      const haystack = [
+        wallet.userId,
+        wallet.fullName,
+        wallet.email,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
   }, [data, query]);
+
+  const visibleSummary = useMemo(() => {
+    if (!data) return null;
+    if (filtered.length === data.wallets.length) return data.summary;
+    return {
+      accounts: filtered.length,
+      available: filtered.reduce((sum, w) => sum + w.availableBalance, 0),
+      pending: filtered.reduce((sum, w) => sum + w.pendingBalance, 0),
+      held: filtered.reduce((sum, w) => sum + w.heldInEscrow, 0),
+      currency: data.summary.currency,
+    };
+  }, [data, filtered]);
 
   async function handleAdjust() {
     const session = getSessionUser();
@@ -105,7 +141,7 @@ export function AdminWalletsPanel() {
     }
   }
 
-  if (!data) {
+  if (!data || !visibleSummary) {
     return (
       <Card className="admin-desk-table-card p-8 text-center" variant="flat">
         <p className="text-sm text-muted">جاري تحميل المحافظ...</p>
@@ -117,8 +153,8 @@ export function AdminWalletsPanel() {
     <div className="admin-desk grid gap-4">
       <div className="admin-desk-toolbar">
         <p className="text-sm text-muted">
-          أرصدة المستخدمين المتاحة والمعلّقة والمحجوزة — عدّل إدارياً أو راجع
-          الحركات مباشرة.
+          أرصدة حقيقية من دفتر المحفظة — بدون حسابات تجريبية أو دفعات وهمية.
+          اربط التعديل الإداري بمستخدم فعّال أو راجع الضمان والطلبات.
         </p>
         <div className="admin-desk-toolbar__actions">
           <Button href="/admin/escrow" size="sm" variant="secondary">
@@ -133,24 +169,24 @@ export function AdminWalletsPanel() {
       <div className="admin-ops__kpi-grid">
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">عدد المحافظ</p>
-          <p className="admin-ops__kpi-value">{data.summary.accounts}</p>
+          <p className="admin-ops__kpi-value">{visibleSummary.accounts}</p>
         </div>
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">متاح</p>
           <div className="admin-ops__kpi-value">
-            <CurrencyAmount amount={data.summary.available} size="md" />
+            <CurrencyAmount amount={visibleSummary.available} size="md" />
           </div>
         </div>
         <div className="admin-ops__kpi">
-          <p className="admin-ops__kpi-label">معلّق</p>
+          <p className="admin-ops__kpi-label">معلّق ضمان</p>
           <div className="admin-ops__kpi-value">
-            <CurrencyAmount amount={data.summary.pending} size="md" />
+            <CurrencyAmount amount={visibleSummary.pending} size="md" />
           </div>
         </div>
         <div className="admin-ops__kpi">
           <p className="admin-ops__kpi-label">محجوز ضمان</p>
           <div className="admin-ops__kpi-value">
-            <CurrencyAmount amount={data.summary.held} size="md" />
+            <CurrencyAmount amount={visibleSummary.held} size="md" />
           </div>
         </div>
       </div>
@@ -158,8 +194,8 @@ export function AdminWalletsPanel() {
       <Card className="admin-desk-help p-4" variant="flat">
         <h2 className="text-sm font-semibold text-ink">تعديل رصيد إداري</h2>
         <p className="mt-1 text-xs leading-6 text-muted">
-          الإيداع يزيد الرصيد المتاح، والسحب يخصمه. اضغط معرّف محفظة من الجدول
-          لتعبئة الحقل تلقائياً.
+          يحدّث دفتر المحفظة فقط (ليس تحويل Stripe). الإيداع يزيد المتاح، والسحب
+          يخصمه. اختر مستخدماً من الجدول لتعبئة المعرّف.
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Input
@@ -212,12 +248,12 @@ export function AdminWalletsPanel() {
             <Input
               label="بحث"
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="معرّف المستخدم..."
+              placeholder="اسم، بريد، أو معرّف..."
               value={query}
             />
           </div>
           <p className="pb-2 text-xs font-semibold text-muted">
-            {filtered.length} محفظة
+            {filtered.length} محفظة حقيقية
           </p>
         </div>
       </Card>
@@ -239,7 +275,7 @@ export function AdminWalletsPanel() {
               {filtered.length === 0 ? (
                 <tr>
                   <td className="text-muted" colSpan={6}>
-                    لا توجد محافظ مطابقة.
+                    لا توجد محافظ حقيقية مطابقة.
                   </td>
                 </tr>
               ) : (
@@ -251,8 +287,14 @@ export function AdminWalletsPanel() {
                         onClick={() => setUserId(wallet.userId)}
                         type="button"
                       >
-                        {wallet.userId}
+                        {walletLabel(wallet)}
                       </button>
+                      <p className="mt-0.5 font-mono text-[11px] text-muted">
+                        {wallet.userId}
+                      </p>
+                      {wallet.email ? (
+                        <p className="text-[11px] text-muted">{wallet.email}</p>
+                      ) : null}
                     </td>
                     <td>
                       <CurrencyAmount
@@ -269,7 +311,7 @@ export function AdminWalletsPanel() {
                     <td>{wallet.transactionsCount}</td>
                     <td className="admin-desk-cell-wrap text-xs text-muted">
                       {wallet.lastTransaction
-                        ? `${wallet.lastTransaction.type} — ${new Date(
+                        ? `${TXN_LABELS[wallet.lastTransaction.type] ?? wallet.lastTransaction.type} — ${new Date(
                             wallet.lastTransaction.date,
                           ).toLocaleString(intlLocale(locale))}`
                         : "—"}
@@ -284,7 +326,7 @@ export function AdminWalletsPanel() {
         <ul className="admin-desk-mobile-list">
           {filtered.length === 0 ? (
             <li className="admin-desk-mobile-card">
-              <p className="text-sm text-muted">لا توجد محافظ مطابقة.</p>
+              <p className="text-sm text-muted">لا توجد محافظ حقيقية مطابقة.</p>
             </li>
           ) : (
             filtered.map((wallet) => (
@@ -295,10 +337,11 @@ export function AdminWalletsPanel() {
                     onClick={() => setUserId(wallet.userId)}
                     type="button"
                   >
-                    {wallet.userId}
+                    {walletLabel(wallet)}
                   </button>
                   <CurrencyAmount amount={wallet.availableBalance} size="sm" />
                 </div>
+                <p className="font-mono text-[11px] text-muted">{wallet.userId}</p>
                 <div className="admin-desk-mobile-card__meta">
                   <span>معلّق {wallet.pendingBalance.toLocaleString(intlLocale(locale))}</span>
                   <span>محجوز {wallet.heldInEscrow.toLocaleString(intlLocale(locale))}</span>
@@ -306,7 +349,9 @@ export function AdminWalletsPanel() {
                 </div>
                 {wallet.lastTransaction ? (
                   <p className="text-xs text-muted">
-                    {wallet.lastTransaction.type} —{" "}
+                    {TXN_LABELS[wallet.lastTransaction.type] ??
+                      wallet.lastTransaction.type}{" "}
+                    —{" "}
                     {new Date(wallet.lastTransaction.date).toLocaleString(
                       intlLocale(locale),
                     )}
@@ -328,9 +373,17 @@ export function AdminWalletsPanel() {
         </ul>
       </Card>
 
-      <Link className="admin-ops__text-link" href="/admin/escrow">
-        عرض الضمان ←
-      </Link>
+      <div className="admin-ops__quick-links">
+        <Link className="admin-ops__chip-link" href="/admin/escrow">
+          الضمان
+        </Link>
+        <Link className="admin-ops__chip-link" href="/admin/orders">
+          الطلبات
+        </Link>
+        <Link className="admin-ops__text-link" href="/admin/reports">
+          التقارير
+        </Link>
+      </div>
     </div>
   );
 }

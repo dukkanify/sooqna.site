@@ -5,7 +5,7 @@ export default function AdminWalletsPage() {
   return (
     <AdminShell
       activePath="/admin/wallets"
-      description="أرصدة المستخدمين المتاحة والمعلّقة والمحجوزة في الضمان."
+      description="دفتر المحافظ الحقيقي — أرصدة متاحة ومحجوزة بدون حسابات أو دفعات تجريبية."
       title="المحافظ"
     >
       <AdminWalletsPanel />
