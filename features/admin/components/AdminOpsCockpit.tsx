@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { getSessionUser } from "@/services/storage";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -239,7 +240,7 @@ export function AdminOpsCockpit() {
     return (
       <LocalizedTree>
         <div className="admin-dash admin-dash--loading">
-          <Card className="p-6" variant="flat">
+          <Card className="admin-desk-table-card p-6" variant="flat">
             <div className="admin-dash__skeleton-grid">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="admin-dash__skeleton-card" />
@@ -255,7 +256,7 @@ export function AdminOpsCockpit() {
   if (error && !data) {
     return (
       <LocalizedTree>
-        <Card className="p-8 text-center" variant="flat">
+        <Card className="admin-desk-table-card p-8 text-center" variant="flat">
           <p className="text-sm text-muted">{error}</p>
           <button
             className="mt-4 text-sm font-semibold text-primary"
@@ -273,7 +274,7 @@ export function AdminOpsCockpit() {
 
   const trendHasData = data.trends.daily.some((d) => d.orders > 0 || d.volume > 0);
   const maxVolume = Math.max(...data.trends.daily.map((d) => d.volume), 1);
-  const maxCat = Math.max(...data.categoryPerformance.map((c) => c.listings), 1);
+  const categoryRows = data.categoryPerformance.slice(0, 8);
 
   return (
     <LocalizedTree>
@@ -332,7 +333,7 @@ export function AdminOpsCockpit() {
         </div>
 
         {/* Executive KPIs */}
-        <section className="admin-dash__section">
+        <Card className="admin-desk-table-card p-4" variant="flat">
           <div className="admin-dash__section-head">
             <h2 className="admin-dash__section-title">ملخص سريع</h2>
             <p className="admin-dash__section-sub">أرقام اليوم بلمحة واحدة</p>
@@ -365,7 +366,7 @@ export function AdminOpsCockpit() {
               </Link>
             ))}
           </div>
-        </section>
+        </Card>
 
         {/* Action Center — prioritize on small screens via CSS order */}
         <section className="admin-dash__section admin-dash__section--action">
@@ -532,7 +533,7 @@ export function AdminOpsCockpit() {
         </div>
 
         {/* Trends */}
-        <section className="admin-dash__section">
+        <Card className="admin-desk-help p-4" variant="flat">
           <div className="admin-dash__section-head">
             <h2 className="admin-dash__section-title">الاتجاهات</h2>
             <p className="admin-dash__section-sub">
@@ -540,11 +541,9 @@ export function AdminOpsCockpit() {
             </p>
           </div>
           {!trendHasData ? (
-            <Card className="p-5" variant="flat">
-              <p className="text-sm text-muted">
-                لا تتوفر بيانات مالية كافية لهذا النطاق الزمني.
-              </p>
-            </Card>
+            <p className="text-sm text-muted">
+              لا تتوفر بيانات مالية كافية لهذا النطاق الزمني.
+            </p>
           ) : (
             <div className="admin-dash__bars" role="img" aria-label="مخطط حجم المدفوعات">
               {data.trends.daily.map((point) => (
@@ -564,7 +563,7 @@ export function AdminOpsCockpit() {
               ))}
             </div>
           )}
-        </section>
+        </Card>
 
         {/* Operations */}
         <section className="admin-dash__section">
@@ -572,31 +571,91 @@ export function AdminOpsCockpit() {
             <h2 className="admin-dash__section-title">التشغيل والإشراف</h2>
             <p className="admin-dash__section-sub">طوابير العمل التي تحتاج متابعة</p>
           </div>
-          <div className="admin-dash__queue-grid">
-            {data.operations.queues.map((queue) => (
-              <article key={queue.id} className="admin-dash__queue-card">
-                <div className="admin-dash__queue-top">
-                  <h3>{queue.label}</h3>
-                  <span className={severityClass(queue.severity)}>
-                    {severityLabel[queue.severity]}
-                  </span>
-                </div>
-                <p className="admin-dash__queue-count">
-                  {queue.count.toLocaleString(intlLocale(locale))}
-                </p>
-                {queue.oldestAgeLabel ? (
-                  <p className="admin-dash__queue-age">أقدم طلب: {queue.oldestAgeLabel}</p>
-                ) : (
-                  <p className="admin-dash__queue-age">
-                    {queue.count === 0 ? "لا عناصر معلّقة" : "—"}
-                  </p>
-                )}
-                <Link className="admin-dash__queue-btn" href={queue.href}>
-                  {queue.actionLabel}
-                </Link>
-              </article>
-            ))}
-          </div>
+          <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+            <div className="admin-desk-table-scroll">
+              <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+                <thead>
+                  <tr>
+                    <th>الطابور</th>
+                    <th>العدد</th>
+                    <th>الأقدم</th>
+                    <th>الأولوية</th>
+                    <th>إجراء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.operations.queues.length === 0 ? (
+                    <tr>
+                      <td className="text-muted" colSpan={5}>
+                        لا توجد طوابير حالياً.
+                      </td>
+                    </tr>
+                  ) : (
+                    data.operations.queues.map((queue) => (
+                      <tr key={queue.id}>
+                        <td className="admin-desk-cell-wrap">
+                          <p className="admin-desk-cell-title font-bold text-ink">
+                            {queue.label}
+                          </p>
+                        </td>
+                        <td className="font-bold text-ink">
+                          {queue.count.toLocaleString(intlLocale(locale))}
+                        </td>
+                        <td className="text-sm text-muted">
+                          {queue.oldestAgeLabel ||
+                            (queue.count === 0 ? "لا عناصر معلّقة" : "—")}
+                        </td>
+                        <td>
+                          <span className={severityClass(queue.severity)}>
+                            {severityLabel[queue.severity]}
+                          </span>
+                        </td>
+                        <td>
+                          <Button href={queue.href} size="sm" variant="secondary">
+                            {queue.actionLabel}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <ul className="admin-desk-mobile-list">
+              {data.operations.queues.length === 0 ? (
+                <li className="admin-desk-mobile-card">
+                  <p className="text-sm text-muted">لا توجد طوابير حالياً.</p>
+                </li>
+              ) : (
+                data.operations.queues.map((queue) => (
+                  <li key={queue.id} className="admin-desk-mobile-card">
+                    <div className="admin-desk-mobile-card__head">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-ink">{queue.label}</p>
+                        <p className="text-xs text-muted">
+                          {queue.oldestAgeLabel ||
+                            (queue.count === 0 ? "لا عناصر معلّقة" : "—")}
+                        </p>
+                      </div>
+                      <span className={severityClass(queue.severity)}>
+                        {severityLabel[queue.severity]}
+                      </span>
+                    </div>
+                    <div className="admin-desk-mobile-card__meta">
+                      <span>
+                        العدد {queue.count.toLocaleString(intlLocale(locale))}
+                      </span>
+                    </div>
+                    <div className="admin-desk-mobile-card__actions">
+                      <Button href={queue.href} size="sm" variant="secondary">
+                        {queue.actionLabel}
+                      </Button>
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          </Card>
         </section>
 
         {/* Disputes & Risk */}
@@ -605,19 +664,84 @@ export function AdminOpsCockpit() {
             <h2 className="admin-dash__section-title">النزاعات والمخاطر</h2>
             <p className="admin-dash__section-sub">أولوية تشغيلية للمخاطر الحية</p>
           </div>
-          <div className="admin-dash__risk-grid">
-            {data.risk.items.map((item) => (
-              <Link key={item.label} className="admin-dash__risk-card" href={item.href}>
-                <div className="admin-dash__risk-top">
-                  <span>{item.label}</span>
-                  <span className={severityClass(item.severity)}>
-                    {severityLabel[item.severity]}
-                  </span>
-                </div>
-                <strong>{item.count.toLocaleString(intlLocale(locale))}</strong>
-              </Link>
-            ))}
-          </div>
+          <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+            <div className="admin-desk-table-scroll">
+              <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+                <thead>
+                  <tr>
+                    <th>الطابور</th>
+                    <th>العدد</th>
+                    <th>الأقدم</th>
+                    <th>الأولوية</th>
+                    <th>إجراء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.risk.items.length === 0 ? (
+                    <tr>
+                      <td className="text-muted" colSpan={5}>
+                        لا توجد مخاطر معلّقة.
+                      </td>
+                    </tr>
+                  ) : (
+                    data.risk.items.map((item) => (
+                      <tr key={item.label}>
+                        <td className="admin-desk-cell-wrap">
+                          <p className="admin-desk-cell-title font-bold text-ink">
+                            {item.label}
+                          </p>
+                        </td>
+                        <td className="font-bold text-ink">
+                          {item.count.toLocaleString(intlLocale(locale))}
+                        </td>
+                        <td className="text-sm text-muted">—</td>
+                        <td>
+                          <span className={severityClass(item.severity)}>
+                            {severityLabel[item.severity]}
+                          </span>
+                        </td>
+                        <td>
+                          <Button href={item.href} size="sm" variant="secondary">
+                            فتح
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <ul className="admin-desk-mobile-list">
+              {data.risk.items.length === 0 ? (
+                <li className="admin-desk-mobile-card">
+                  <p className="text-sm text-muted">لا توجد مخاطر معلّقة.</p>
+                </li>
+              ) : (
+                data.risk.items.map((item) => (
+                  <li key={item.label} className="admin-desk-mobile-card">
+                    <div className="admin-desk-mobile-card__head">
+                      <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                        {item.label}
+                      </p>
+                      <span className={severityClass(item.severity)}>
+                        {severityLabel[item.severity]}
+                      </span>
+                    </div>
+                    <div className="admin-desk-mobile-card__meta">
+                      <span>
+                        العدد {item.count.toLocaleString(intlLocale(locale))}
+                      </span>
+                    </div>
+                    <div className="admin-desk-mobile-card__actions">
+                      <Button href={item.href} size="sm" variant="secondary">
+                        فتح
+                      </Button>
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          </Card>
         </section>
 
         <div className="admin-dash__split">
@@ -626,32 +750,62 @@ export function AdminOpsCockpit() {
             <div className="admin-dash__section-head">
               <h2 className="admin-dash__section-title">أداء الأقسام</h2>
             </div>
-            {data.categoryPerformance.length === 0 ? (
+            {categoryRows.length === 0 ? (
               <p className="text-sm text-muted">لا تتوفر بيانات أقسام حالياً.</p>
             ) : (
-              <ul className="admin-dash__rank-list">
-                {data.categoryPerformance.slice(0, 8).map((cat) => (
-                  <li key={cat.key}>
-                    <Link className="admin-dash__rank-row" href={cat.href}>
-                      <div className="admin-dash__rank-copy">
-                        <p>{cat.label}</p>
-                        <p className="admin-dash__rank-meta">
-                          {cat.listings.toLocaleString(intlLocale(locale))} إعلان · {cat.viewSharePercent}% من
-                          المشاهدات
-                        </p>
-                        <div className="admin-dash__rank-bar">
-                          <span
-                            style={{
-                              width: `${Math.max(4, (cat.listings / maxCat) * 100)}%`,
-                            }}
-                          />
-                        </div>
+              <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+                <div className="admin-desk-table-scroll">
+                  <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+                    <thead>
+                      <tr>
+                        <th>القسم</th>
+                        <th>إعلانات</th>
+                        <th>مشاهدات</th>
+                        <th>حصة</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categoryRows.map((cat) => (
+                        <tr key={cat.key}>
+                          <td className="admin-desk-cell-wrap">
+                            <Link className="admin-desk-cell-title font-bold text-ink" href={cat.href}>
+                              {cat.label}
+                            </Link>
+                          </td>
+                          <td>{cat.listings.toLocaleString(intlLocale(locale))}</td>
+                          <td>{cat.views.toLocaleString(intlLocale(locale))}</td>
+                          <td>{cat.viewSharePercent}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <ul className="admin-desk-mobile-list">
+                  {categoryRows.map((cat) => (
+                    <li key={cat.key} className="admin-desk-mobile-card">
+                      <div className="admin-desk-mobile-card__head">
+                        <Link
+                          className="min-w-0 flex-1 text-sm font-bold text-ink"
+                          href={cat.href}
+                        >
+                          {cat.label}
+                        </Link>
+                        <span className="text-sm font-bold text-ink">
+                          {cat.viewSharePercent}%
+                        </span>
                       </div>
-                      <strong>{cat.views.toLocaleString(intlLocale(locale))}</strong>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+                      <div className="admin-desk-mobile-card__meta">
+                        <span>
+                          {cat.listings.toLocaleString(intlLocale(locale))} إعلان
+                        </span>
+                        <span>
+                          {cat.views.toLocaleString(intlLocale(locale))} مشاهدة
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             )}
           </section>
 
@@ -663,32 +817,65 @@ export function AdminOpsCockpit() {
             {data.topListings.length === 0 ? (
               <p className="text-sm text-muted">لا تتوفر إعلانات مرتبة حالياً.</p>
             ) : (
-              <div className="admin-dash__table-wrap">
-                <table className="admin-dash__table">
-                  <thead>
-                    <tr>
-                      <th>العنوان</th>
-                      <th>القسم</th>
-                      <th>البائع</th>
-                      <th>المشاهدات</th>
-                      <th>الحالة</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.topListings.map((row) => (
-                      <tr key={row.id}>
-                        <td>
-                          <Link href={row.href}>{row.title}</Link>
-                        </td>
-                        <td>{row.categoryLabel}</td>
-                        <td>{row.sellerName}</td>
-                        <td>{row.views.toLocaleString(intlLocale(locale))}</td>
-                        <td>{row.status}</td>
+              <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+                <div className="admin-desk-table-scroll">
+                  <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+                    <thead>
+                      <tr>
+                        <th>العنوان</th>
+                        <th>القسم</th>
+                        <th>البائع</th>
+                        <th>المشاهدات</th>
+                        <th>الحالة</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {data.topListings.map((row) => (
+                        <tr key={row.id}>
+                          <td className="admin-desk-cell-wrap">
+                            <Link
+                              className="admin-desk-cell-title font-bold text-ink"
+                              href={row.href}
+                            >
+                              {row.title}
+                            </Link>
+                          </td>
+                          <td className="admin-desk-cell-wrap text-sm text-muted">
+                            {row.categoryLabel}
+                          </td>
+                          <td className="admin-desk-cell-wrap text-sm text-muted">
+                            {row.sellerName}
+                          </td>
+                          <td>{row.views.toLocaleString(intlLocale(locale))}</td>
+                          <td>{row.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <ul className="admin-desk-mobile-list">
+                  {data.topListings.map((row) => (
+                    <li key={row.id} className="admin-desk-mobile-card">
+                      <div className="admin-desk-mobile-card__head">
+                        <Link
+                          className="min-w-0 flex-1 text-sm font-bold text-ink"
+                          href={row.href}
+                        >
+                          {row.title}
+                        </Link>
+                        <span className="text-xs font-bold text-muted">{row.status}</span>
+                      </div>
+                      <div className="admin-desk-mobile-card__meta">
+                        <span>{row.categoryLabel}</span>
+                        <span>{row.sellerName}</span>
+                        <span>
+                          {row.views.toLocaleString(intlLocale(locale))} مشاهدة
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             )}
           </section>
         </div>
@@ -702,39 +889,84 @@ export function AdminOpsCockpit() {
             {data.recentActivity.length === 0 ? (
               <p className="text-sm text-muted">لا نشاطات حديثة.</p>
             ) : (
-              <ul className="admin-dash__activity">
-                {data.recentActivity.map((item) => (
-                  <li key={item.id}>
-                    <Link href={item.href}>
-                      <p className="admin-dash__activity-event">{item.event}</p>
-                      <p className="admin-dash__activity-meta">
-                        {item.actor} ·{" "}
-                        {item.timestamp
-                          ? new Date(item.timestamp).toLocaleString(intlLocale(locale))
-                          : "—"}
-                      </p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <Card className="admin-desk-table-card overflow-hidden p-0" variant="flat">
+                <div className="admin-desk-table-scroll">
+                  <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
+                    <thead>
+                      <tr>
+                        <th>الحدث</th>
+                        <th>الفاعل</th>
+                        <th>الوقت</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.recentActivity.map((item) => (
+                        <tr key={item.id}>
+                          <td className="admin-desk-cell-wrap">
+                            <Link
+                              className="admin-desk-cell-title font-bold text-ink"
+                              href={item.href}
+                            >
+                              {item.event}
+                            </Link>
+                          </td>
+                          <td className="text-sm text-muted">{item.actor}</td>
+                          <td className="text-sm text-muted">
+                            {item.timestamp
+                              ? new Date(item.timestamp).toLocaleString(intlLocale(locale))
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <ul className="admin-desk-mobile-list">
+                  {data.recentActivity.map((item) => (
+                    <li key={item.id} className="admin-desk-mobile-card">
+                      <div className="admin-desk-mobile-card__head">
+                        <Link
+                          className="min-w-0 flex-1 text-sm font-bold text-ink"
+                          href={item.href}
+                        >
+                          {item.event}
+                        </Link>
+                      </div>
+                      <div className="admin-desk-mobile-card__meta">
+                        <span>{item.actor}</span>
+                        <span>
+                          {item.timestamp
+                            ? new Date(item.timestamp).toLocaleString(intlLocale(locale))
+                            : "—"}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             )}
           </section>
 
-          <section className="admin-dash__section">
+          <Card className="admin-desk-help p-4" variant="flat">
             <div className="admin-dash__section-head">
               <h2 className="admin-dash__section-title">اختصارات سريعة</h2>
             </div>
-            <div className="admin-dash__shortcuts">
+            <div className="admin-dash__shortcuts flex flex-wrap gap-2">
               {data.shortcuts.map((item) => (
-                <Link key={item.href + item.label} className="admin-dash__shortcut" href={item.href}>
+                <Button
+                  key={item.href + item.label}
+                  href={item.href}
+                  size="sm"
+                  variant="secondary"
+                >
                   {item.label}
-                </Link>
+                </Button>
               ))}
-              <Link className="admin-dash__shortcut" href="/admin/reports">
+              <Button href="/admin/reports" size="sm" variant="ghost">
                 التقارير / التصدير
-              </Link>
+              </Button>
             </div>
-          </section>
+          </Card>
         </div>
           </>
         ) : null}

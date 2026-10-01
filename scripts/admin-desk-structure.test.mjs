@@ -1,5 +1,5 @@
 /**
- * Admin desk structure: every data desk uses table + mobile cards (listings pattern).
+ * Admin desk structure: listings pattern is required on every data desk.
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -15,6 +15,7 @@ function read(name) {
 }
 
 const dataDesks = [
+  "AdminListingsPanel.tsx",
   "AdminUsersPanel.tsx",
   "AdminWalletsPanel.tsx",
   "AdminOrdersPanel.tsx",
@@ -32,24 +33,43 @@ const dataDesks = [
   "AdminListingReportsPanel.tsx",
   "AdminCategoriesPanel.tsx",
   "AdminLocationsPanel.tsx",
+  "AdminStripePanel.tsx",
+  "AdminAnalyticsPanel.tsx",
+  "AdminReportsPanel.tsx",
+  "AdminOpsCockpit.tsx",
+];
+
+const formDesks = [
+  "AdminSettingsPanel.tsx",
+  "AdminCategoryFormsPanel.tsx",
+  "AdminVehicleCatalogPanel.tsx",
 ];
 
 describe("admin desk structure parity with listings", () => {
   for (const file of dataDesks) {
-    it(`${file} uses desk table + mobile list (not queue/boxes grid)`, () => {
+    it(`${file} uses desk table + mobile list (not legacy grids)`, () => {
       const src = read(file);
-      assert.match(src, /admin-desk-table/, `${file} missing table`);
-      assert.match(src, /admin-desk-mobile-list/, `${file} missing mobile list`);
-      assert.match(src, /admin-desk-mobile-card/, `${file} missing mobile card`);
-      assert.doesNotMatch(src, /admin-ops__queue/, `${file} still has queue`);
-      assert.doesNotMatch(src, /admin-boxes__grid/, `${file} still has boxes grid`);
-      assert.doesNotMatch(src, /admin-users__list/, `${file} still has users card list`);
+      assert.match(src, /admin-desk|admin-listings-/);
+      assert.match(src, /admin-desk-table|admin-listings-table/);
+      assert.match(src, /admin-desk-mobile-list|admin-listings-mobile-list/);
+      assert.doesNotMatch(src, /admin-ops__queue/);
+      assert.doesNotMatch(src, /admin-boxes__grid/);
+      assert.doesNotMatch(src, /admin-users__list/);
+      assert.doesNotMatch(src, /admin-categories__list/);
+      assert.doesNotMatch(src, /admin-dash__queue-grid/);
+      assert.doesNotMatch(src, /admin-dash__risk-grid/);
+      assert.doesNotMatch(src, /admin-dash__activity/);
     });
   }
 
-  it("listings still owns the canonical table pattern", () => {
-    const src = read("AdminListingsPanel.tsx");
-    assert.match(src, /admin-listings-table|admin-desk-table/);
-    assert.match(src, /admin-listings-mobile-list|admin-desk-mobile-list/);
-  });
+  for (const file of formDesks) {
+    it(`${file} uses desk shell + help cards (no legacy queues)`, () => {
+      const src = read(file);
+      assert.match(src, /admin-desk/);
+      assert.match(src, /admin-desk-help/);
+      assert.doesNotMatch(src, /admin-ops__queue/);
+      assert.doesNotMatch(src, /admin-boxes__grid/);
+      assert.doesNotMatch(src, /admin-ops__panel/);
+    });
+  }
 });
