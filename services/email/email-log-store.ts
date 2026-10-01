@@ -5,6 +5,7 @@ export type EmailEventType =
   | "listing_approved"
   | "listing_rejected"
   | "order_paid"
+  | "order_invoice"
   | "order_seller_new"
   | "order_confirmed"
   | "order_released"

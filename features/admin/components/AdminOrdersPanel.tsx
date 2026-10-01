@@ -123,6 +123,7 @@ export function AdminOrdersPanel() {
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notifyBusyId, setNotifyBusyId] = useState<string | null>(null);
+  const [invoiceBusyId, setInvoiceBusyId] = useState<string | null>(null);
   const [deskId, setDeskId] = useState<string | null>(null);
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{
@@ -276,11 +277,54 @@ export function AdminOrdersPanel() {
     }
   }
 
+  async function handleSendInvoice(orderId: string) {
+    const user = getSessionUser();
+    if (!user) return;
+    setInvoiceBusyId(orderId);
+    setMessage(null);
+    try {
+      const res = await adminFetch(
+        `/api/admin/orders/${orderId}/send-invoice`,
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.order) {
+        setOrders((prev) =>
+          prev.map((order) => (order.id === orderId ? data.order : order)),
+        );
+        const status = String(data.status ?? "sent");
+        setMessage({
+          variant: "success",
+          text:
+            status === "skipped"
+              ? "الفاتورة مُرسلة مسبقًا — سجّلنا إعادة المحاولة في سجل الطلب."
+              : "تم إرسال الفاتورة إلى بريد المشتري.",
+        });
+      } else {
+        const map: Record<string, string> = {
+          NO_BUYER_EMAIL: "لا يوجد بريد مشتري لإرسال الفاتورة.",
+          NOT_PAID: "لا يمكن إرسال الفاتورة قبل تأكيد الدفع.",
+          ORDER_NOT_FOUND: "الطلب غير موجود.",
+        };
+        setMessage({
+          variant: "error",
+          text: map[String(data.error)] ?? "تعذّر إرسال الفاتورة.",
+        });
+      }
+    } finally {
+      setInvoiceBusyId(null);
+    }
+  }
+
   return (
     <div className="admin-desk grid gap-4">
       <div className="admin-desk-toolbar">
         <p className="text-sm text-muted">
-          مكتب الطلبات — صفّح، افتح التفاصيل، وأدر الحالة والدليل من بطاقة واحدة.
+          راجع الطلبات، افتح المكتب للتفاصيل، وأرسل الفاتورة أو حرّر الضمان من
+          مكان واحد.
         </p>
         <div className="admin-desk-toolbar__actions">
           <Button href="/admin/escrow" size="sm" variant="secondary">
@@ -524,7 +568,7 @@ export function AdminOrdersPanel() {
       </Card>
 
       <Modal
-        description="معاينة الطلب والإعلان داخل لوحة التحكم — دون رحلة المشتري أو الدفع."
+        description="تفاصيل الطلب والفاتورة والإجراءات — داخل اللوحة فقط."
         onClose={() => setDeskId(null)}
         open={Boolean(deskOrder)}
         size="lg"
@@ -533,6 +577,7 @@ export function AdminOrdersPanel() {
         {deskOrder ? (
           <AdminOrderInlineDesk
             busy={busyId === deskOrder.id}
+            invoiceBusy={invoiceBusyId === deskOrder.id}
             locale={locale}
             notifyBusy={notifyBusyId === deskOrder.id}
             onNotifyPayment={() => handleNotifyPayment(deskOrder.id)}
@@ -544,6 +589,7 @@ export function AdminOrdersPanel() {
             }
             onRefund={() => handleRefund(deskOrder.id)}
             onRelease={() => handleRelease(deskOrder.id)}
+            onSendInvoice={() => handleSendInvoice(deskOrder.id)}
             order={deskOrder}
             reasonDraft={reasonDrafts[deskOrder.id] ?? ""}
             showRefund={deskOrder.status !== "refunded"}

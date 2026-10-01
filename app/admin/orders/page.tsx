@@ -6,7 +6,7 @@ export default function AdminOrdersPage() {
   return (
     <AdminShell
       activePath="/admin/orders"
-      description="تفاصيل الطلب والإجراءات الإدارية داخل اللوحة — دون التحويل لرحلة المشتري أو الدفع في الموقع."
+      description="إدارة الطلبات والفواتير وتحرير الضمان من اللوحة — دون التحويل لرحلة المشتري."
       title="الطلبات والمدفوعات"
     >
       <Suspense fallback={<p className="text-sm text-muted">جاري التحميل...</p>}>

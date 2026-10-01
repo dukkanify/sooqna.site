@@ -88,6 +88,10 @@ export async function queueOrderConfirmationEmail(input: {
     }
 
     const titleHtml = escapeEmailHtml(input.order.listingTitle);
+    const { invoiceBlockForPaidEmail } = await import(
+      "@/services/email/send-order-invoice"
+    );
+    const invoice = invoiceBlockForPaidEmail(input.order, locale);
     const buyerStatus = await sendTransactionalEmail({
       type: "order_paid",
       to: input.order.buyerEmail,
@@ -95,22 +99,24 @@ export async function queueOrderConfirmationEmail(input: {
       entityId: input.order.id,
       locale,
       subject: english
-        ? `We received your order — ${input.order.listingTitle}`
-        : `تم استلام طلبك — ${input.order.listingTitle}`,
-      title: english ? "Your order has been received" : "تم استلام طلبك بنجاح",
+        ? `We received your order — invoice for ${input.order.listingTitle}`
+        : `تم استلام طلبك — فاتورة ${input.order.listingTitle}`,
+      title: english ? "Order received + invoice" : "تم استلام الطلب والفاتورة",
       bodyHtml: english
-        ? `${greet(input.order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">Payment for “${titleHtml}” succeeded. The amount is held in escrow until receipt is confirmed.</p><p style="font-size:16px;line-height:1.8;margin:12px 0 0;">Order number: <strong>${escapeEmailHtml(input.order.id)}</strong></p>${extraHtml}`
-        : `${greet(input.order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">تم دفع طلب «${titleHtml}» بنجاح. المبلغ محجوز في الضمان حتى تأكيد الاستلام.</p><p style="font-size:16px;line-height:1.8;margin:12px 0 0;">رقم الطلب: <strong>${escapeEmailHtml(input.order.id)}</strong></p>${extraHtml}`,
+        ? `${greet(input.order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">Payment for “${titleHtml}” succeeded. The amount is held in escrow until receipt is confirmed.</p><p style="font-size:16px;line-height:1.8;margin:12px 0 0;">Order number: <strong>${escapeEmailHtml(input.order.id)}</strong></p>${extraHtml}${invoice.html}`
+        : `${greet(input.order.buyerName, locale)}<p style="font-size:16px;line-height:1.8;margin:0;">تم دفع طلب «${titleHtml}» بنجاح. المبلغ محجوز في الضمان حتى تأكيد الاستلام.</p><p style="font-size:16px;line-height:1.8;margin:12px 0 0;">رقم الطلب: <strong>${escapeEmailHtml(input.order.id)}</strong></p>${extraHtml}${invoice.html}`,
       bodyLines: english
         ? [
             `Payment for “${input.order.listingTitle}” was received.`,
             `Order number: ${input.order.id}`,
             ...extraLines,
+            ...invoice.lines,
           ]
         : [
             `تم دفع طلب «${input.order.listingTitle}».`,
             `رقم الطلب: ${input.order.id}`,
             ...extraLines,
+            ...invoice.lines,
           ],
       ctaHref: orderTrackingLink,
       ctaLabel: english ? "Track order" : "متابعة الطلب",

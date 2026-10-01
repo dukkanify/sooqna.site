@@ -13,27 +13,52 @@ import {
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Button } from "@/shared/ui/Button";
 import { Textarea } from "@/shared/ui/Textarea";
+import { OrderInvoicePreview } from "@/features/admin/components/OrderInvoicePreview";
 
 type AdminOrderInlineDeskProps = {
   busy: boolean;
+  invoiceBusy?: boolean;
   locale: AppLocale;
   notifyBusy?: boolean;
   onNotifyPayment?: () => void;
   onReasonChange: (value: string) => void;
   onRefund?: () => void;
   onRelease?: () => void;
+  onSendInvoice?: () => void;
   order: Order;
   reasonDraft: string;
   showRefund: boolean;
   showRelease: boolean;
 };
 
+function Section({
+  children,
+  title,
+  hint,
+}: {
+  children: ReactNode;
+  hint?: string;
+  title: string;
+}) {
+  return (
+    <section className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface-muted/35 px-3 py-3">
+      <div>
+        <h3 className="text-sm font-bold text-ink">{title}</h3>
+        {hint ? <p className="mt-0.5 text-xs text-muted">{hint}</p> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 function MetaRow({ label, value }: { label: string; value: ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
-      <dt className="font-medium text-muted">{label}</dt>
-      <dd className="text-end font-semibold text-ink">{value}</dd>
+    <div className="grid grid-cols-[minmax(0,7.5rem)_minmax(0,1fr)] items-start gap-x-3 gap-y-1 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="min-w-0 break-words text-start font-semibold text-ink sm:text-end">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -51,12 +76,14 @@ function isAwaitingBuyerPayment(order: Order): boolean {
 
 export function AdminOrderInlineDesk({
   busy,
+  invoiceBusy = false,
   locale,
   notifyBusy = false,
   onNotifyPayment,
   onReasonChange,
   onRefund,
   onRelease,
+  onSendInvoice,
   order,
   reasonDraft,
   showRefund,
@@ -66,6 +93,7 @@ export function AdminOrderInlineDesk({
   const proofUrls = order.sellerProofUrls ?? [];
   const fees = order.fees;
   const awaitingPayment = isAwaitingBuyerPayment(order);
+  const invoiceLocale = locale === "en" ? "en" : "ar";
   const listingHref = order.listingSlug
     ? `/listings/${order.listingSlug}`
     : order.listingId
@@ -74,22 +102,20 @@ export function AdminOrderInlineDesk({
 
   return (
     <div className="grid gap-4">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">
-          مكتب الطلب
-        </p>
-        <p className="mt-1 text-xs text-muted">
-          التفاصيل والإجراءات الإدارية هنا — دون التحويل لرحلة المشتري أو الدفع في
-          الموقع.
+      <div className="rounded-[var(--radius-xl)] border border-border bg-surface px-3 py-3">
+        <p className="text-sm font-bold text-ink">ملخص إداري للطلب</p>
+        <p className="mt-1 text-xs leading-6 text-muted">
+          كل التفاصيل والإجراءات هنا داخل اللوحة. لن يتم تحويلك لصفحة الدفع أو
+          رحلة المشتري.
         </p>
       </div>
 
       {awaitingPayment ? (
         <div className="rounded-[var(--radius-xl)] border border-amber-300/70 bg-amber-50 px-3 py-3 text-sm text-ink">
-          <p className="font-semibold">الدفع مطلوب من المشتري</p>
-          <p className="mt-1 text-xs text-muted">
-            لا يُطلب من الأدمن إكمال الدفع. أرسل إشعاراً للمشتري أو طالب الخدمة
-            ليكمل الدفع من حسابه.
+          <p className="font-semibold">بانتظار دفع المشتري</p>
+          <p className="mt-1 text-xs leading-6 text-muted">
+            الأدمن لا يكمل الدفع نيابة عن المشتري. أرسل تنبيهًا ليُكمل الدفع من
+            حسابه.
           </p>
           {onNotifyPayment && order.buyerId ? (
             <div className="mt-3">
@@ -100,22 +126,22 @@ export function AdminOrderInlineDesk({
                 type="button"
                 variant="secondary"
               >
-                إشعار المشتري بإكمال الدفع
+                تنبيه المشتري لإكمال الدفع
               </Button>
             </div>
           ) : (
             <p className="mt-2 text-xs text-muted">
-              لا يوجد مشتري مسجّل لإرسال إشعار داخل التطبيق (طلب ضيف).
+              لا يوجد مشتري مسجّل لإشعار داخل التطبيق (طلب ضيف).
             </p>
           )}
         </div>
       ) : null}
 
       {listingHref ? (
-        <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface-muted/40 px-3 py-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            معاينة الإعلان
-          </p>
+        <Section
+          hint="مرجع سريع للإعلان المرتبط بهذا الطلب."
+          title="الإعلان"
+        >
           <p className="text-sm font-semibold text-ink">{order.listingTitle}</p>
           <p className="font-mono text-xs text-muted">{order.listingId}</p>
           <a
@@ -124,115 +150,130 @@ export function AdminOrderInlineDesk({
             rel="noreferrer"
             target="_blank"
           >
-            رابط معاينة مختصر للإعلان
+            فتح صفحة الإعلان
           </a>
-          <p className="text-[11px] text-muted">
-            يفتح صفحة الإعلان للمرجع فقط — ليس مسار دفع الأدمن.
-          </p>
-        </div>
+        </Section>
       ) : null}
 
-      <dl className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface-muted/40 px-3 py-3 sm:grid-cols-2">
-        <MetaRow label="حالة الطلب" value={orderStatusLabel(order.status)} />
-        <MetaRow
-          label="الضمان"
-          value={escrowStatusLabel(order.escrowStatus)}
-        />
-        <MetaRow
-          label="الدفع"
-          value={paymentStatusLabel(order.paymentStatus)}
-        />
-        <MetaRow
-          label="التوثيق"
-          value={
-            order.productVerificationStatus
-              ? productVerificationStatusLabel(order.productVerificationStatus)
-              : null
-          }
-        />
-        <MetaRow label="المشتري" value={order.buyerName} />
-        <MetaRow label="بريد المشتري" value={order.buyerEmail} />
-        <MetaRow label="البائع" value={order.sellerName} />
-        <MetaRow label="معرّف الإعلان" value={order.listingId} />
-        <MetaRow
-          label="سعر المنتج"
-          value={<CurrencyAmount amount={fees.productPrice} size="sm" />}
-        />
-        <MetaRow
-          label="الشحن"
-          value={<CurrencyAmount amount={fees.shippingFee} size="sm" />}
-        />
-        <MetaRow
-          label="رسوم المنصة"
-          value={<CurrencyAmount amount={fees.platformFee} size="sm" />}
-        />
-        <MetaRow
-          label="رسوم البوابة"
-          value={<CurrencyAmount amount={fees.gatewayFee} size="sm" />}
-        />
-        <MetaRow
-          label="الإجمالي"
-          value={<CurrencyAmount amount={fees.total} size="sm" />}
-        />
-        <MetaRow
-          label="Stripe PaymentIntent"
-          value={
-            order.stripePaymentIntentId ? (
-              <span className="font-mono text-xs">
-                {order.stripePaymentIntentId}
-              </span>
-            ) : null
-          }
-        />
-        <MetaRow
-          label="Stripe Checkout"
-          value={
-            order.stripeCheckoutSessionId ? (
-              <span className="font-mono text-xs">
-                {order.stripeCheckoutSessionId}
-              </span>
-            ) : null
-          }
-        />
-        <MetaRow
-          label="Stripe Refund"
-          value={
-            order.stripeRefundId ? (
-              <span className="font-mono text-xs">{order.stripeRefundId}</span>
-            ) : null
-          }
-        />
-        <MetaRow
-          label="Stripe Transfer"
-          value={
-            order.stripeTransferId ? (
-              <span className="font-mono text-xs">{order.stripeTransferId}</span>
-            ) : null
-          }
-        />
-        <MetaRow
-          label="تتبع الشحن"
-          value={order.shippingTrackingRef ?? null}
-        />
-        <MetaRow label="أُنشئ" value={formatWhen(locale, order.createdAt)} />
-        <MetaRow label="دُفع" value={formatWhen(locale, order.paidAt)} />
-        <MetaRow label="أُكّد" value={formatWhen(locale, order.confirmedAt)} />
-        <MetaRow label="حُرّر" value={formatWhen(locale, order.releasedAt)} />
-        <MetaRow
-          label="استُرد"
-          value={formatWhen(locale, order.refundedAt)}
-        />
-      </dl>
+      <Section title="الحالة">
+        <dl className="grid gap-2 sm:grid-cols-2">
+          <MetaRow label="الطلب" value={orderStatusLabel(order.status)} />
+          <MetaRow label="الضمان" value={escrowStatusLabel(order.escrowStatus)} />
+          <MetaRow label="الدفع" value={paymentStatusLabel(order.paymentStatus)} />
+          <MetaRow
+            label="التوثيق"
+            value={
+              order.productVerificationStatus
+                ? productVerificationStatusLabel(order.productVerificationStatus)
+                : null
+            }
+          />
+        </dl>
+      </Section>
+
+      <Section title="الأطراف">
+        <dl className="grid gap-2 sm:grid-cols-2">
+          <MetaRow label="المشتري" value={order.buyerName} />
+          <MetaRow label="بريد المشتري" value={order.buyerEmail} />
+          <MetaRow label="البائع" value={order.sellerName} />
+          <MetaRow label="معرّف الإعلان" value={order.listingId} />
+        </dl>
+      </Section>
+
+      <Section hint="تفصيل المبالغ كما في الفاتورة." title="المبالغ">
+        <dl className="grid gap-2 sm:grid-cols-2">
+          <MetaRow
+            label="سعر المنتج"
+            value={<CurrencyAmount amount={fees.productPrice} size="sm" />}
+          />
+          <MetaRow
+            label="الشحن"
+            value={<CurrencyAmount amount={fees.shippingFee} size="sm" />}
+          />
+          <MetaRow
+            label="رسوم المنصة"
+            value={<CurrencyAmount amount={fees.platformFee} size="sm" />}
+          />
+          <MetaRow
+            label="رسوم البوابة"
+            value={<CurrencyAmount amount={fees.gatewayFee} size="sm" />}
+          />
+          <MetaRow
+            label="الإجمالي"
+            value={<CurrencyAmount amount={fees.total} size="sm" />}
+          />
+        </dl>
+      </Section>
+
+      <OrderInvoicePreview
+        canSend={Boolean(onSendInvoice && order.buyerEmail)}
+        locale={invoiceLocale}
+        onSend={onSendInvoice}
+        order={order}
+        sendBusy={invoiceBusy}
+      />
+
+      <Section title="مراجع الدفع">
+        <dl className="grid gap-2">
+          <MetaRow
+            label="PaymentIntent"
+            value={
+              order.stripePaymentIntentId ? (
+                <span className="font-mono text-xs">
+                  {order.stripePaymentIntentId}
+                </span>
+              ) : null
+            }
+          />
+          <MetaRow
+            label="Checkout"
+            value={
+              order.stripeCheckoutSessionId ? (
+                <span className="font-mono text-xs">
+                  {order.stripeCheckoutSessionId}
+                </span>
+              ) : null
+            }
+          />
+          <MetaRow
+            label="Refund"
+            value={
+              order.stripeRefundId ? (
+                <span className="font-mono text-xs">{order.stripeRefundId}</span>
+              ) : null
+            }
+          />
+          <MetaRow
+            label="Transfer"
+            value={
+              order.stripeTransferId ? (
+                <span className="font-mono text-xs">{order.stripeTransferId}</span>
+              ) : null
+            }
+          />
+          <MetaRow
+            label="تتبع الشحن"
+            value={order.shippingTrackingRef ?? null}
+          />
+        </dl>
+      </Section>
+
+      <Section title="الجدول الزمني">
+        <dl className="grid gap-2 sm:grid-cols-2">
+          <MetaRow label="أُنشئ" value={formatWhen(locale, order.createdAt)} />
+          <MetaRow label="دُفع" value={formatWhen(locale, order.paidAt)} />
+          <MetaRow label="أُكّد" value={formatWhen(locale, order.confirmedAt)} />
+          <MetaRow label="حُرّر" value={formatWhen(locale, order.releasedAt)} />
+          <MetaRow label="استُرد" value={formatWhen(locale, order.refundedAt)} />
+        </dl>
+      </Section>
 
       {address ? (
-        <div className="grid gap-1 rounded-[var(--radius-xl)] border border-border px-3 py-3 text-sm">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            عنوان التسليم
-          </p>
-          <p className="font-semibold text-ink">
+        <Section title="عنوان التسليم">
+          <p className="text-sm font-semibold text-ink">
             {address.fullName} · {address.phone}
           </p>
-          <p className="text-muted">
+          <p className="text-sm text-muted">
             {[
               address.emirate,
               address.city,
@@ -245,21 +286,18 @@ export function AdminOrderInlineDesk({
               .join(" · ")}
           </p>
           {address.notes ? (
-            <p className="text-muted">ملاحظات: {address.notes}</p>
+            <p className="text-sm text-muted">ملاحظات: {address.notes}</p>
           ) : null}
-        </div>
+        </Section>
       ) : null}
 
       {proofUrls.length > 0 ? (
-        <div className="grid gap-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            أدلة البائع
-          </p>
+        <Section title="أدلة البائع">
           <ul className="grid gap-1">
             {proofUrls.map((url) => (
               <li key={url}>
                 <a
-                  className="admin-ops__text-link break-all"
+                  className="admin-ops__text-link break-all text-xs"
                   href={url}
                   rel="noreferrer"
                   target="_blank"
@@ -274,14 +312,11 @@ export function AdminOrderInlineDesk({
               ملاحظة البائع: {order.sellerProofNote}
             </p>
           ) : null}
-        </div>
+        </Section>
       ) : null}
 
       {order.auditLog.length > 0 ? (
-        <div className="grid gap-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            سجل الأحداث
-          </p>
+        <Section title="سجل الأحداث">
           <ul className="grid max-h-48 gap-1 overflow-y-auto">
             {order.auditLog.map((event) => (
               <li key={event.id} className="admin-ops__queue-meta">
@@ -291,18 +326,13 @@ export function AdminOrderInlineDesk({
               </li>
             ))}
           </ul>
-        </div>
+        </Section>
       ) : null}
 
       <div className="flex flex-wrap gap-2">
         {showRelease && onRelease ? (
-          <Button
-            loading={busy}
-            onClick={onRelease}
-            size="sm"
-            type="button"
-          >
-            تحرير ضمان
+          <Button loading={busy} onClick={onRelease} size="sm" type="button">
+            تحرير الضمان
           </Button>
         ) : null}
         {order.status === "disputed" ? (
@@ -313,12 +343,12 @@ export function AdminOrderInlineDesk({
       </div>
 
       {showRefund && onRefund ? (
-        <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border px-3 py-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            استرداد إداري
-          </p>
+        <Section
+          hint="يُسجَّل السبب في سجل الطلب عند التأكيد."
+          title="استرداد إداري"
+        >
           <Textarea
-            label="سبب الاسترداد (اختياري — يظهر في السجل)"
+            label="سبب الاسترداد (اختياري)"
             onChange={(e) => onReasonChange(e.target.value)}
             rows={2}
             value={reasonDraft}
@@ -332,7 +362,7 @@ export function AdminOrderInlineDesk({
           >
             تأكيد الاسترداد
           </Button>
-        </div>
+        </Section>
       ) : null}
     </div>
   );
