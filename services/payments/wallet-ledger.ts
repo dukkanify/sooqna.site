@@ -106,3 +106,18 @@ export async function getAllWalletAccounts(): Promise<WalletAccount[]> {
   const wallets = await store.listAll();
   return wallets.map(toAccount);
 }
+
+/** Replace the full wallet collection (admin purge / migrations). */
+export async function replaceAllWalletAccounts(
+  accounts: WalletAccount[],
+): Promise<void> {
+  const records: WalletRecord[] = accounts.map((account) => ({
+    ...account,
+    id: account.userId,
+  }));
+  await store.replaceAll(records);
+}
+
+export async function removeWalletAccount(userId: string): Promise<boolean> {
+  return store.removeById(userId);
+}

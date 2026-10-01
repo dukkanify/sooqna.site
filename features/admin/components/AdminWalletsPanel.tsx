@@ -60,6 +60,7 @@ export function AdminWalletsPanel() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
+  const [purging, setPurging] = useState(false);
 
   function load() {
     const user = getSessionUser();
@@ -168,6 +169,42 @@ export function AdminWalletsPanel() {
           </Button>
           <Button href="/admin/orders" size="sm" variant="ghost">
             الطلبات
+          </Button>
+          <Button
+            loading={purging}
+            onClick={async () => {
+              if (
+                !window.confirm(
+                  "حذف طلبات/محافظ/مستخدمي التجربة من قاعدة البيانات؟ لا يمكن التراجع.",
+                )
+              ) {
+                return;
+              }
+              setPurging(true);
+              setMessage("");
+              try {
+                const res = await adminFetch("/api/admin/ops/purge-demo", {
+                  method: "POST",
+                });
+                const payload = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                  setMessage("تعذّر تنظيف بيانات التجربة.");
+                  return;
+                }
+                setMessage(
+                  `تم التنظيف: طلبات ${payload.removedOrders ?? 0} · محافظ ${payload.removedWallets ?? 0} · مستخدمون ${payload.removedUsers ?? 0}`,
+                );
+                load();
+              } catch {
+                setMessage("تعذّر تنظيف بيانات التجربة.");
+              } finally {
+                setPurging(false);
+              }
+            }}
+            size="sm"
+            variant="ghost"
+          >
+            تنظيف التجربة
           </Button>
         </div>
       </div>

@@ -9,7 +9,7 @@ POST /api/webhooks/stripe
 Production URL example:
 
 ```
-https://sooqna.site/api/webhooks/stripe
+https://sooqnauae.com/api/webhooks/stripe
 ```
 
 ## Environment
@@ -83,7 +83,7 @@ Or complete a real test checkout with card `4242 4242 4242 4242`.
 
 1. Go to **Developers → Webhooks**
 2. Click **Add endpoint**
-3. URL: `https://sooqna.site/api/webhooks/stripe`
+3. URL: `https://sooqnauae.com/api/webhooks/stripe`
 4. Select events:
    - `checkout.session.completed`
    - `payment_intent.succeeded`
@@ -100,7 +100,7 @@ STRIPE_SECRET_KEY=sk_live_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_CURRENCY=aed
-NEXT_PUBLIC_APP_URL=https://sooqna.site
+NEXT_PUBLIC_APP_URL=https://sooqnauae.com
 ```
 
 ### 3. Verify

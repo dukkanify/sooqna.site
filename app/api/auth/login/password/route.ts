@@ -83,8 +83,16 @@ export async function POST(request: Request) {
     const email = parsed.data.email.trim().toLowerCase();
     const password = parsed.data.password.trim();
 
-    // Keep demo operator accounts (admin@sooqna.demo, …) usable after DB resets.
-    if (email.endsWith("@sooqna.demo") || email.endsWith("@uaesales.demo")) {
+    const { isDemoAccountEmail, isDemoAccountsAllowed, shouldSeedDemoAccounts } =
+      await import("@/services/auth/demo-accounts-policy");
+
+    // Demo emails are blocked on live Vercel — never reseed into Neon.
+    if (isDemoAccountEmail(email) && !isDemoAccountsAllowed()) {
+      return NextResponse.json({ error: "INVALID_CREDENTIALS" }, { status: 401 });
+    }
+
+    // Local/dev only: keep demo operator accounts usable after DB resets.
+    if (isDemoAccountEmail(email) && shouldSeedDemoAccounts()) {
       try {
         await ensureDemoAccounts();
       } catch {

@@ -1,4 +1,5 @@
 import { getAppUrl, resolveEmailFromAddress } from "@/shared/constants/site";
+import { isDemoAccountsAllowed } from "@/services/auth/demo-accounts-policy";
 import {
   ensureStripeConfigLoaded,
   getStripePublishableKey,
@@ -7,6 +8,10 @@ import {
   isStripeConfigured,
   isStripeWebhookConfigured,
 } from "@/services/payments/payment-config";
+import { readS3EnvConfig } from "@/services/storage/s3-provider";
+
+const DEFAULT_OTP_PEPPER = "sooqna-dev-pepper";
+const DEFAULT_PASSWORD_PEPPER = "sooqna-password-pepper";
 
 type DatabaseSource =
   | "DATABASE_URL"
@@ -44,7 +49,17 @@ export type ProductionConfigSnapshot = {
   sessionSecretConfigured: boolean;
   /** True when CRON_SECRET is set (boolean only; never the value). */
   cronSecretConfigured: boolean;
+  /** True when OTP_PEPPER is set to a non-default value. */
+  otpPepperConfigured: boolean;
+  /** True when PASSWORD_PEPPER is set (any value — rotating breaks existing hashes). */
+  passwordPepperConfigured: boolean;
+  /** True when S3/R2 object storage env is complete. */
+  objectStorageConfigured: boolean;
+  /** True when demo @sooqna.demo accounts may seed/login. */
+  demoAccountsAllowed: boolean;
   missing: string[];
+  /** Non-blocking launch recommendations. */
+  warnings: string[];
 };
 
 /** Vercel Resend integration stores the key as RESEND_API_KEY. Aliases are read-only fallbacks. */
@@ -116,8 +131,18 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
     process.env.SESSION_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim(),
   );
   const cronSecretConfigured = Boolean(process.env.CRON_SECRET?.trim());
+  const otpPepperRaw = process.env.OTP_PEPPER?.trim() || "";
+  const otpPepperConfigured = Boolean(
+    otpPepperRaw && otpPepperRaw !== DEFAULT_OTP_PEPPER,
+  );
+  const passwordPepperConfigured = Boolean(
+    process.env.PASSWORD_PEPPER?.trim(),
+  );
+  const objectStorageConfigured = Boolean(readS3EnvConfig());
+  const demoAccountsAllowed = isDemoAccountsAllowed();
 
   const missing: string[] = [];
+  const warnings: string[] = [];
   if (!database.configured) {
     missing.push("DATABASE_URL");
   }
@@ -154,6 +179,21 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
   if (process.env.NODE_ENV === "production" && !stripeWebhookConfigured) {
     missing.push("STRIPE_WEBHOOK_SECRET");
   }
+  if (process.env.NODE_ENV === "production" && !otpPepperConfigured) {
+    missing.push("OTP_PEPPER");
+  }
+  if (process.env.NODE_ENV === "production" && demoAccountsAllowed) {
+    missing.push("ALLOW_DEMO_ACCOUNTS=false");
+  }
+  if (process.env.NODE_ENV === "production" && !objectStorageConfigured) {
+    warnings.push("S3_BUCKET");
+  }
+  if (
+    process.env.NODE_ENV === "production" &&
+    !passwordPepperConfigured
+  ) {
+    warnings.push("PASSWORD_PEPPER");
+  }
 
   return {
     nodeEnv: process.env.NODE_ENV ?? "development",
@@ -177,7 +217,12 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
     featuredCheckoutAvailable,
     sessionSecretConfigured,
     cronSecretConfigured,
+    otpPepperConfigured,
+    passwordPepperConfigured,
+    objectStorageConfigured,
+    demoAccountsAllowed,
     missing,
+    warnings,
   };
 }
 
