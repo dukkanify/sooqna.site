@@ -2625,3 +2625,296 @@ html[data-theme="dark"] .admin-locations__card--editing {
   background: var(--admin-featured-row, #2a2418);
   border-color: rgb(212 184 122 / 45%);
 }
+
+/* —— AI Learning Assistant —— */
+.admin-assistant {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-assistant__chat {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.admin-assistant__thread {
+  display: grid;
+  gap: 0.75rem;
+  max-height: min(52vh, 28rem);
+  overflow: auto;
+  padding: 0.15rem 0.1rem 0.35rem;
+}
+
+.admin-assistant--compact .admin-assistant__thread {
+  max-height: min(42vh, 20rem);
+}
+
+.admin-assistant__bubble {
+  border: 1px solid var(--admin-line);
+  border-radius: 0.95rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--admin-elevated);
+}
+
+.admin-assistant__bubble--user {
+  background: color-mix(in srgb, var(--admin-gold) 12%, var(--admin-surface));
+  border-color: color-mix(in srgb, var(--admin-gold) 35%, var(--admin-line));
+  margin-inline-start: 1.5rem;
+}
+
+.admin-assistant__bubble--assistant {
+  margin-inline-end: 1.5rem;
+}
+
+.admin-assistant__bubble-role {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--admin-gold-deep);
+  letter-spacing: 0.02em;
+}
+
+.admin-assistant__bubble-text {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--admin-ink);
+}
+
+.admin-assistant__bubble-text p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.admin-assistant__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.admin-assistant__chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--admin-line);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  background: var(--admin-surface);
+  color: var(--admin-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 160ms var(--admin-ease), background 160ms var(--admin-ease);
+}
+
+.admin-assistant__chip:hover {
+  border-color: color-mix(in srgb, var(--admin-gold) 55%, var(--admin-line));
+  background: color-mix(in srgb, var(--admin-gold) 10%, var(--admin-surface));
+}
+
+.admin-assistant__related {
+  margin-top: 0.55rem;
+}
+
+.admin-assistant__related-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--admin-muted);
+}
+
+.admin-assistant__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.admin-assistant__suggest {
+  border: 1px dashed color-mix(in srgb, var(--admin-gold) 45%, var(--admin-line));
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  color: var(--admin-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-assistant__suggest:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--admin-gold) 12%, transparent);
+}
+
+.admin-assistant__suggest:disabled,
+.admin-assistant__chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-assistant__composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.admin-assistant__input-wrap input {
+  width: 100%;
+  border: 1px solid var(--admin-line);
+  border-radius: 0.85rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--admin-surface);
+  color: var(--admin-ink);
+  font: inherit;
+}
+
+.admin-assistant__input-wrap input:focus {
+  outline: 2px solid color-mix(in srgb, var(--admin-gold) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.admin-assistant__typing,
+.admin-assistant__error {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.admin-assistant__typing {
+  color: var(--admin-muted);
+}
+
+.admin-assistant__error {
+  color: var(--admin-warn);
+}
+
+.admin-assistant-fab {
+  position: fixed;
+  inset-inline-end: 1.1rem;
+  inset-block-end: 1.1rem;
+  z-index: 60;
+  display: grid;
+  justify-items: end;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.admin-assistant-fab__button,
+.admin-assistant-fab__panel {
+  pointer-events: auto;
+}
+
+.admin-assistant-fab__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--admin-gold) 50%, #1b2436);
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  background: linear-gradient(135deg, #1b2436 0%, #0f1726 100%);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  box-shadow: 0 12px 28px rgb(11 22 40 / 28%);
+  cursor: pointer;
+}
+
+.admin-assistant-fab__button:hover {
+  border-color: var(--admin-gold);
+}
+
+.admin-assistant-fab__panel {
+  width: min(26rem, calc(100vw - 1.5rem));
+  max-height: min(78vh, 40rem);
+  overflow: auto;
+  border: 1px solid var(--admin-line);
+  border-radius: 1.1rem;
+  background: var(--admin-surface);
+  box-shadow: 0 18px 48px rgb(11 22 40 / 22%);
+  padding: 0.85rem;
+}
+
+.admin-assistant-fab__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.admin-assistant-fab__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--admin-gold-deep);
+}
+
+.admin-assistant-fab__title {
+  margin: 0.15rem 0 0;
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--admin-ink);
+}
+
+.admin-assistant-fab__head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-assistant-fab__expand {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--admin-gold-deep);
+  text-decoration: none;
+}
+
+.admin-assistant-fab__close {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--admin-line);
+  border-radius: 999px;
+  background: var(--admin-elevated);
+  color: var(--admin-ink);
+  cursor: pointer;
+}
+
+.admin-assistant--compact .admin-assistant__chat {
+  border: none;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .admin-assistant__bubble,
+html[data-theme="dark"] .admin-assistant-fab__panel,
+html[data-theme="dark"] .admin-assistant__chip,
+html[data-theme="dark"] .admin-assistant__input-wrap input {
+  background: var(--admin-surface);
+  border-color: var(--admin-line);
+  color: var(--admin-ink);
+}
+
+html[data-theme="dark"] .admin-assistant__bubble--user {
+  background: color-mix(in srgb, var(--admin-gold) 16%, var(--admin-surface));
+}
+
+@media (max-width: 720px) {
+  .admin-assistant-fab {
+    inset-inline-end: 0.75rem;
+    inset-block-end: 0.75rem;
+  }
+
+  .admin-assistant__composer {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-assistant__bubble--user,
+  .admin-assistant__bubble--assistant {
+    margin-inline: 0;
+  }
+}
