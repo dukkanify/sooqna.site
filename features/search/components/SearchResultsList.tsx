@@ -23,6 +23,8 @@ import {
 } from "@/services/storage";
 
 const PAGE_SIZE = 12;
+/** Keep in sync with SEARCH_RESULT_LIMIT in listings.service (client-safe). */
+const SERVER_RESULT_CAP = 260;
 
 type SearchResultsListProps = {
   basePath?: string;
@@ -77,10 +79,14 @@ export function SearchResultsList({
     );
   }, [categoryId, listings, localListings, selectedFilters]);
 
+  const localExtra = visibleListings.filter((listing) =>
+    listing.id.startsWith("local-"),
+  ).length;
+  // Short server pages are complete — never trust an inflated SQL COUNT
+  // (e.g. “8 إعلان” above four rendered cards).
   const resultCount =
-    typeof serverTotal === "number"
-      ? serverTotal +
-        visibleListings.filter((listing) => listing.id.startsWith("local-")).length
+    typeof serverTotal === "number" && listings.length >= SERVER_RESULT_CAP
+      ? serverTotal + localExtra
       : visibleListings.length;
 
   useEffect(() => {

@@ -12,11 +12,22 @@ type CategoryHeroProps = {
   category: Category;
   /** Compact banner for dense browse pages (e.g. cars) — less vertical chrome. */
   compact?: boolean;
+  /**
+   * Prefer the same total as the results grid/toolbar when provided so the
+   * hero cannot drift (e.g. cached category badge vs live search count).
+   */
+  activeCount?: number;
 };
 
-export async function CategoryHero({ category, compact = false }: CategoryHeroProps) {
+export async function CategoryHero({
+  category,
+  compact = false,
+  activeCount,
+}: CategoryHeroProps) {
   const locale = await getRequestLocale();
   const categoryName = tx(locale, category.name);
+  const listingCount =
+    typeof activeCount === "number" ? activeCount : category.listingCount;
   const featuredListing =
     !compact && category.featuredListingSlug
       ? await getListingBySlug(category.featuredListingSlug)
@@ -41,7 +52,7 @@ export async function CategoryHero({ category, compact = false }: CategoryHeroPr
               {category.id === "cars" ? "سيارات للبيع" : categoryName}
             </h1>
             <p className="mt-0.5 text-sm text-white/85">
-              {activeListingCountLabel(category.listingCount, locale)}
+              {activeListingCountLabel(listingCount, locale)}
             </p>
           </div>
         </div>
@@ -69,7 +80,7 @@ export async function CategoryHero({ category, compact = false }: CategoryHeroPr
               {categoryName}
             </h1>
             <p className="mt-1 text-sm text-white/80">
-              {activeListingCountLabel(category.listingCount, locale)}
+              {activeListingCountLabel(listingCount, locale)}
             </p>
           </div>
         </div>
