@@ -16,22 +16,35 @@ export function MaintenanceGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/site-settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (cancelled) return;
-        const settings = data?.settings;
-        setMaintenance(Boolean(settings?.maintenanceMode));
-        if (typeof settings?.allowGuestCheckout === "boolean") {
-          setGuestCheckoutOverride(settings.allowGuestCheckout);
-        }
-        setReady(true);
-      })
-      .catch(() => {
-        if (!cancelled) setReady(true);
-      });
+    const load = () => {
+      fetch("/api/site-settings")
+        .then((res) => res.json())
+        .then((data) => {
+          if (cancelled) return;
+          const settings = data?.settings;
+          setMaintenance(Boolean(settings?.maintenanceMode));
+          if (typeof settings?.allowGuestCheckout === "boolean") {
+            setGuestCheckoutOverride(settings.allowGuestCheckout);
+          }
+          setReady(true);
+        })
+        .catch(() => {
+          if (!cancelled) setReady(true);
+        });
+    };
+    // Defer settings fetch so it never races hero/LCP on first paint.
+    const ric = window.requestIdleCallback?.bind(window);
+    let cancelSchedule: () => void;
+    if (ric) {
+      const id = ric(load, { timeout: 2500 });
+      cancelSchedule = () => window.cancelIdleCallback?.(id);
+    } else {
+      const id = globalThis.setTimeout(load, 800);
+      cancelSchedule = () => globalThis.clearTimeout(id);
+    }
     return () => {
       cancelled = true;
+      cancelSchedule();
     };
   }, []);
 

@@ -65,10 +65,12 @@ function AppImageInner({
     width,
   });
   const allowStockFallback = fallback !== "none";
+  // Listing media (fallback=none) + priority: paint immediately — opacity gating delays LCP.
+  const paintImmediately =
+    priority || !allowStockFallback || isInlineImageSrc(src);
   const initialSrc = (src?.trim() || fallbackUrl).trim();
   const [activeSrc, setActiveSrc] = useState(initialSrc);
-  // Priority images must paint immediately — opacity gating delays LCP.
-  const [isLoaded, setIsLoaded] = useState(priority || isInlineImageSrc(src));
+  const [isLoaded, setIsLoaded] = useState(paintImmediately);
   const [usedErrorFallback, setUsedErrorFallback] = useState(false);
   const [failed, setFailed] = useState(!initialSrc);
   const useNativeImage = isInlineImageSrc(activeSrc);
@@ -77,7 +79,7 @@ function AppImageInner({
     if (allowStockFallback && fallbackUrl && activeSrc !== fallbackUrl) {
       setActiveSrc(fallbackUrl);
       setUsedErrorFallback(true);
-      if (!priority) setIsLoaded(false);
+      if (!paintImmediately) setIsLoaded(false);
       return;
     }
     // Seller media / no-stock mode: never invent a landmark photo.
@@ -96,11 +98,11 @@ function AppImageInner({
 
   const imageClassName = `object-cover ${className}`.trim();
   const wrapperClassName = `overflow-hidden ${fill ? "absolute inset-0" : "relative block"}`;
-  const visibleClass = priority || isLoaded ? "opacity-100" : "opacity-0";
+  const visibleClass = paintImmediately || isLoaded ? "opacity-100" : "opacity-0";
 
   return (
     <span className={wrapperClassName}>
-      {!isLoaded && !priority ? (
+      {!isLoaded && !paintImmediately ? (
         <span
           aria-hidden
           className={`absolute inset-0 skeleton ${fill ? "" : "min-h-[inherit]"}`}
@@ -110,7 +112,7 @@ function AppImageInner({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           alt={alt}
-          className={`${imageClassName} ${priority ? "" : "transition-opacity duration-300"} ${visibleClass} ${fill ? "absolute inset-0 h-full w-full" : ""}`}
+          className={`${imageClassName} ${paintImmediately ? "" : "transition-opacity duration-300"} ${visibleClass} ${fill ? "absolute inset-0 h-full w-full" : ""}`}
           height={fill ? undefined : height}
           loading={priority ? "eager" : loading ?? "lazy"}
           onError={handleError}
@@ -121,7 +123,7 @@ function AppImageInner({
       ) : (
         <Image
           alt={alt}
-          className={`${imageClassName} ${priority ? "" : "transition-opacity duration-300"} ${visibleClass}`}
+          className={`${imageClassName} ${paintImmediately ? "" : "transition-opacity duration-300"} ${visibleClass}`}
           fill={fill}
           height={fill ? undefined : height}
           loading={priority ? undefined : loading ?? "lazy"}
