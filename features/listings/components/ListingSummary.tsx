@@ -132,7 +132,7 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
 
       <div className="mt-2 grid gap-2 sm:grid-cols-2">
         <FavoriteButton className="w-full" listing={listing} />
-        <ShareButton className="w-full" listing={listing} />
+        <ShareButton listing={listing} variant="panel" />
       </div>
     </Card>
     </LocalizedTree>

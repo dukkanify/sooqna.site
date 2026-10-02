@@ -12,25 +12,39 @@ type ShareButtonProps = {
   className?: string;
   iconOnly?: boolean;
   listing: Listing;
-  /** `ghost` = listing meta action (familiar toolbar). Default keeps the solid chip. */
-  variant?: "chip" | "ghost";
+  /**
+   * - `ghost` (default): soft meta action for toolbars
+   * - `panel`: full-width side-panel / sticky action
+   * - `chip`: legacy bordered pill (avoid for new UI)
+   */
+  variant?: "ghost" | "panel" | "chip";
 };
+
+/** Soft meta action — default across the app. */
+const ghostClass =
+  "focus-ring inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[var(--radius-xl)] px-3 text-xs font-semibold text-muted transition hover:bg-secondary-soft/60 hover:text-primary";
+
+/** Full-width panel action next to favorite / CTA rows. */
+const panelClass =
+  "focus-ring inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-border/70 bg-surface px-4 text-sm font-semibold text-ink transition hover:border-secondary/40 hover:bg-secondary-soft/50";
 
 const chipClass =
   "focus-ring interactive-lift inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-border bg-surface px-4 text-sm font-semibold text-ink transition";
 
-/** Soft meta action — matches listing report / print style on detail pages. */
-const ghostClass =
-  "focus-ring inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[var(--radius-xl)] px-3 text-xs font-semibold text-muted transition hover:bg-secondary-soft/60 hover:text-primary";
-
 const iconOnlyClass =
   "focus-ring interactive-lift inline-flex items-center justify-center rounded-full border transition";
+
+function labeledClass(variant: NonNullable<ShareButtonProps["variant"]>): string {
+  if (variant === "panel") return panelClass;
+  if (variant === "chip") return chipClass;
+  return ghostClass;
+}
 
 export function ShareButton({
   className = "",
   iconOnly = false,
   listing,
-  variant = "chip",
+  variant = "ghost",
 }: ShareButtonProps) {
   const { showToast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
@@ -80,7 +94,7 @@ export function ShareButton({
 
   const shellClass = iconOnly
     ? `${iconOnlyClass} ${className}`
-    : `${variant === "ghost" ? ghostClass : chipClass} ${className}`;
+    : `${labeledClass(variant)} ${className}`;
 
   return (
     <LocalizedTree>
@@ -92,7 +106,7 @@ export function ShareButton({
         title="مشاركة"
         type="button"
       >
-        <Icon name={iconOnly ? "share-2" : "share"} size={iconOnly ? 15 : 16} />
+        <Icon name="share" size={iconOnly ? 15 : 16} />
         {!iconOnly ? "مشاركة" : null}
       </button>
 
