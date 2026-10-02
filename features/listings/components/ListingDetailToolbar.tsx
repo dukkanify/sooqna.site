@@ -31,13 +31,25 @@ export function ListingDetailToolbar({ listing }: ListingDetailToolbarProps) {
 
   return (
     <LocalizedTree>
-    <div className="mt-3 flex flex-wrap items-center gap-1.5 text-muted lg:mt-4 lg:gap-2">
+    <div className="listing-detail-toolbar mt-3 flex flex-wrap items-center gap-1 text-muted lg:mt-4 lg:gap-1.5">
       <span className="lg:hidden">
-        <FavoriteButton className="!min-h-8 !px-2.5 !text-xs" listing={listing} />
+        <FavoriteButton
+          className="!min-h-8 !border-0 !bg-transparent !px-2.5 !text-xs !text-muted !shadow-none hover:!bg-secondary-soft/60 hover:!text-primary"
+          listing={listing}
+        />
       </span>
-      <ShareButton className="!min-h-8 !px-2.5 !text-xs lg:!min-h-9" listing={listing} />
+      <ShareButton
+        className="!min-h-8 !px-2.5 lg:!min-h-9"
+        listing={listing}
+        variant="ghost"
+      />
       <span className="hidden lg:inline-flex">
-        <Button onClick={handlePrint} size="sm" variant="secondary">
+        <Button
+          className="!min-h-9 !text-xs"
+          onClick={handlePrint}
+          size="sm"
+          variant="ghost"
+        >
           <Icon name="photo" size={14} />
           طباعة
         </Button>
@@ -49,7 +61,7 @@ export function ListingDetailToolbar({ listing }: ListingDetailToolbarProps) {
         variant="ghost"
       >
         <Icon name="shield" size={14} />
-        إبلاغ عن الإعلان
+        إبلاغ
       </Button>
       {receipt ? (
         <div className="w-full">

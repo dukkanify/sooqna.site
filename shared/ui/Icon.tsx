@@ -228,7 +228,8 @@ export function Icon({ className = "", filled = false, name, size = 20 }: IconPr
     body = <BellGlyph />;
   } else if (name === "message") {
     body = <MessageGlyph />;
-  } else if (name === "share" || name === "share-2") {
+  } else if (name === "share-2") {
+    // Android / Material “share” (nodes) — used on compact media overlays.
     body = <ShareNodes />;
   } else if (linePaths) {
     body = linePaths.map((d) => <path key={d} d={d} />);
