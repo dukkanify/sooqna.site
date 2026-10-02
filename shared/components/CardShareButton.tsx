@@ -60,7 +60,7 @@ export function CardShareButton({
       title={label}
       type="button"
     >
-      <Icon name="share-2" size={15} />
+      <Icon name="share" size={15} />
       <span className="sr-only">{shared ? t("تمت المشاركة") : label}</span>
     </button>
   );

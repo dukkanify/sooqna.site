@@ -179,7 +179,7 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <FavoriteButton className="w-full" listing={listing} />
-        <ShareButton className="w-full" listing={listing} />
+        <ShareButton listing={listing} variant="panel" />
       </div>
     </Card>
     </LocalizedTree>
