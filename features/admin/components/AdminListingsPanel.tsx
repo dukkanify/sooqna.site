@@ -960,6 +960,37 @@ export function AdminListingsPanel() {
     }
   }
 
+  async function handlePublishEmptyCategories() {
+    setLiveCatalogBusy(true);
+    setLiveCatalogMessage("");
+    try {
+      const response = await adminFetch("/api/admin/listings/live-catalog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "publish-empty" }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setLiveCatalogMessage("تعذر ملء الأقسام الفارغة.");
+        return;
+      }
+      if (Array.isArray(data.listings)) setListings(data.listings);
+      const cats = Array.isArray(data.categories)
+        ? (data.categories as string[]).join("، ")
+        : "";
+      const count = typeof data.affected === "number" ? data.affected : 0;
+      setLiveCatalogMessage(
+        cats
+          ? `تم نشر ${count} إعلان بذور للأقسام الفارغة: ${cats}.`
+          : "لا توجد أقسام فارغة تحتاج ملء.",
+      );
+    } catch {
+      setLiveCatalogMessage("تعذر الاتصال بالخادم.");
+    } finally {
+      setLiveCatalogBusy(false);
+    }
+  }
+
   async function handleRemoveLiveCatalog() {
     const confirmed = window.confirm(
       "حذف كل إعلانات كتالوج live-mkt التجريبية من قاعدة البيانات؟ إعلانات المستخدمين لن تُمس.",
@@ -1089,11 +1120,21 @@ export function AdminListingsPanel() {
       <Card className="p-5" variant="flat">
         <h2 className="text-sm font-semibold text-ink">كتالوج البذور live-mkt</h2>
         <p className="mt-2 text-xs leading-6 text-muted">
-          مخزون تجريبي قديم في قاعدة البيانات. الموقع العام يخفيه تلقائياً؛ استخدم
-          الحذف لتنظيف Neon. إعادة النشر تتطلب{" "}
+          الموقع العام يخفي بذور live-mkt إلا في الأقسام التي بلا إعلانات حقيقية
+          (مثل الإلكترونيات والحيوانات). ملء الأقسام الفارغة لا يعيد تفعيل الكتالوج
+          الكامل. الحذف ينظّف Neon؛ إعادة النشر الكاملة تتطلب{" "}
           <code className="text-[11px]">SOOQNA_LIVE_CATALOG=true</code>.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            loading={liveCatalogBusy}
+            onClick={() => void handlePublishEmptyCategories()}
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            ملء الأقسام الفارغة
+          </Button>
           <Button
             loading={liveCatalogBusy}
             onClick={() => void handleRemoveLiveCatalog()}

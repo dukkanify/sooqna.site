@@ -73,4 +73,12 @@ describe("preview live catalog off (shared Neon)", () => {
     assert.match(panel, /handleRemoveLiveCatalog/);
     assert.match(panel, /\/api\/admin\/listings\/live-catalog/);
   });
+
+  it("admin can publish-empty without enabling full live catalog", () => {
+    const route = read("app/api/admin/listings/live-catalog/route.ts");
+    assert.match(route, /publish-empty/);
+    assert.match(route, /publishEmptyCategoryStarters/);
+    const panel = read("features/admin/components/AdminListingsPanel.tsx");
+    assert.match(panel, /handlePublishEmptyCategories/);
+  });
 });
