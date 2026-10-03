@@ -42,6 +42,7 @@ import {
 } from "@/services/listings/listing-stats";
 import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
+import { dedupeListingsById } from "@/services/listings/public-catalog";
 import {
   applyListingViewCounts,
   getListingViewScores,
@@ -176,6 +177,20 @@ function isHiddenFromPublicCatalog(listing: Listing): boolean {
   return false;
 }
 
+/** Same visibility + structured filters as the in-memory catalog, then unique ids. */
+function finalizePublicCatalogRows(
+  listings: Listing[],
+  query: ListingQuery,
+): Listing[] {
+  const matched = listings.filter((listing) => {
+    if (shouldExcludeFixtures(query) && isHiddenFromPublicCatalog(listing)) {
+      return false;
+    }
+    return matchesStructured(listing, query);
+  });
+  return dedupeListingsById(sortListings(matched, query.sort));
+}
+
 async function ensureCatalogsForPublicRead(): Promise<void> {
   await Promise.all([
     ensureShowcaseCatalogPublished(),
@@ -185,18 +200,12 @@ async function ensureCatalogsForPublicRead(): Promise<void> {
 
 async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
   const stored = syncLiveCatalogMedia(await loadPersistedListings());
-  const matched = stored.filter((listing) => {
-    if (shouldExcludeFixtures(query) && isHiddenFromPublicCatalog(listing)) {
-      return false;
-    }
-    return matchesStructured(listing, query);
-  });
-  const sorted = sortListings(matched, query.sort);
+  const matched = finalizePublicCatalogRows(stored, query);
   const offset = query.offset ?? 0;
   const limited =
     typeof query.limit === "number"
-      ? sorted.slice(offset, offset + query.limit)
-      : sorted.slice(offset);
+      ? matched.slice(offset, offset + query.limit)
+      : matched.slice(offset);
   const withViews = await applyListingViewCounts(limited);
   return withViews.map((listing) => applySlim(listing, query.slim));
 }
@@ -209,7 +218,15 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
     where.push(sql.replace("?", `$${values.length}`));
   };
 
-  if (query.status) add("status = ?", query.status);
+  if (query.status) {
+    if (query.status === "active") {
+      where.push(
+        `COALESCE(NULLIF(payload->>'status', ''), status) IN ('active', 'reserved')`,
+      );
+    } else {
+      add("COALESCE(NULLIF(payload->>'status', ''), status) = ?", query.status);
+    }
+  }
   if (query.categoryId) add("category_id = ?", query.categoryId);
   if (query.sellerId) add("seller_id = ?", query.sellerId);
   if (query.excludeId) add("id <> ?", query.excludeId);
@@ -354,25 +371,29 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
     let sql = `SELECT payload FROM ${TABLE}`;
     if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
     sql += ` ORDER BY ${order}`;
-    if (typeof query.limit === "number") {
-      values.push(query.limit);
+    const want =
+      typeof query.limit === "number"
+        ? Math.max(0, query.limit) + Math.max(0, query.offset ?? 0)
+        : undefined;
+    // Over-fetch so payload visibility / unique-id filters can drop seed rows
+    // without emptying home while category pages still have ads.
+    if (typeof want === "number") {
+      const overFetch = Math.min(Math.max(want * 5 + 40, want), 800);
+      values.push(overFetch);
       sql += ` LIMIT $${values.length}`;
-    }
-    if (typeof query.offset === "number" && query.offset > 0) {
-      values.push(query.offset);
-      sql += ` OFFSET $${values.length}`;
     }
 
     const result = await pool.query(sql, values);
     const rows = syncLiveCatalogMedia(
-      result.rows
-        .map((row) => row.payload as Listing)
-        .filter(
-          (listing) =>
-            !shouldExcludeFixtures(query) || !isHiddenFromPublicCatalog(listing),
-        ),
+      result.rows.map((row) => row.payload as Listing),
     );
-    const withViews = await applyListingViewCounts(rows);
+    const finalized = finalizePublicCatalogRows(rows, query);
+    const offset = query.offset ?? 0;
+    const limited =
+      typeof query.limit === "number"
+        ? finalized.slice(offset, offset + query.limit)
+        : finalized.slice(offset);
+    const withViews = await applyListingViewCounts(limited);
     return withViews.map((listing) => applySlim(listing, query.slim));
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {
@@ -392,12 +413,7 @@ export async function countMatchingListings(query: ListingQuery = {}): Promise<n
 
   const fromStored = async () => {
     const stored = syncLiveCatalogMedia(await loadPersistedListings());
-    return stored.filter((listing) => {
-      if (shouldExcludeFixtures(countable) && isHiddenFromPublicCatalog(listing)) {
-        return false;
-      }
-      return matchesStructured(listing, countable);
-    }).length;
+    return finalizePublicCatalogRows(stored, countable).length;
   };
 
   if (!(await ensureListingsTable())) {
@@ -408,22 +424,14 @@ export async function countMatchingListings(query: ListingQuery = {}): Promise<n
 
   try {
     const { where, values } = listingSqlFilter(countable);
-    // Count after the same payload visibility rules as queryListings.
-    // Bare COUNT(*) can drift when table id/slug columns disagree with
-    // payload.id / payload.source (e.g. live-mkt rows remapped on write).
-    if (shouldExcludeFixtures(countable)) {
-      let sql = `SELECT payload FROM ${TABLE}`;
-      if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
-      const result = await pool.query(sql, values);
-      return result.rows
-        .map((row) => row.payload as Listing)
-        .filter((listing) => !isHiddenFromPublicCatalog(listing)).length;
-    }
-
-    let sql = `SELECT COUNT(*)::int AS c FROM ${TABLE}`;
+    // Same payload visibility, structured filters, and unique-id rules as queryListings.
+    let sql = `SELECT payload FROM ${TABLE}`;
     if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
     const result = await pool.query(sql, values);
-    return Number(result.rows[0]?.c) || 0;
+    const rows = syncLiveCatalogMedia(
+      result.rows.map((row) => row.payload as Listing),
+    );
+    return finalizePublicCatalogRows(rows, countable).length;
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {
       markPostgresUnavailable(error);
@@ -441,15 +449,16 @@ function countWhere(
   const values: unknown[] = [];
   if (status) {
     const statuses = Array.isArray(status) ? status : [status];
+    const column = `COALESCE(NULLIF(payload->>'status', ''), status)`;
     if (statuses.length === 1) {
       values.push(statuses[0]);
-      where.push(`status = $${values.length}`);
+      where.push(`${column} = $${values.length}`);
     } else {
       const placeholders = statuses.map((entry) => {
         values.push(entry);
         return `$${values.length}`;
       });
-      where.push(`status IN (${placeholders.join(", ")})`);
+      where.push(`${column} IN (${placeholders.join(", ")})`);
     }
   }
   if (includeFixtures !== true) {
@@ -548,7 +557,7 @@ export async function countActiveListingsByEmirate(): Promise<Map<string, number
         const result = await pool.query(
           `SELECT COALESCE(payload->>'emirate', payload->>'city') AS emirate
          FROM ${TABLE}
-         WHERE status IN ('active', 'reserved') AND ${marketplaceCountExclusionSql()}`,
+         WHERE COALESCE(NULLIF(payload->>'status', ''), status) IN ('active', 'reserved') AND ${marketplaceCountExclusionSql()}`,
         );
         for (const row of result.rows) {
           if (typeof row.emirate === "string") add(row.emirate);
@@ -582,7 +591,7 @@ export async function countActivePublicListings(): Promise<number> {
       if (pool) {
         const result = await pool.query(
           `SELECT COUNT(*)::int AS c FROM ${TABLE}
-         WHERE status IN ('active', 'reserved') AND ${marketplaceCountExclusionSql()}`,
+         WHERE COALESCE(NULLIF(payload->>'status', ''), status) IN ('active', 'reserved') AND ${marketplaceCountExclusionSql()}`,
         );
         return Number(result.rows[0]?.c) || 0;
       }

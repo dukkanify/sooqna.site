@@ -46,13 +46,10 @@ describe("search results count parity", () => {
     const queries = read("services/listings/listing-queries.ts");
     const start = queries.indexOf("export async function countMatchingListings");
     assert.ok(start >= 0, "countMatchingListings exists");
-    const countFn = queries.slice(start, start + 1800);
-    assert.match(countFn, /isHiddenFromPublicCatalog/);
+    const countFn = queries.slice(start, start + 2200);
+    assert.match(countFn, /finalizePublicCatalogRows/);
     assert.match(countFn, /SELECT payload FROM \$\{TABLE\}/);
-    assert.match(
-      countFn,
-      /Bare COUNT\(\*\) can drift|same payload visibility rules as queryListings/,
-    );
+    assert.doesNotMatch(countFn, /SELECT COUNT\(\*\)::int AS c FROM \$\{TABLE\}/);
   });
 
   it("live/showcase SQL also match payload.id (not only table id)", () => {
@@ -63,7 +60,9 @@ describe("search results count parity", () => {
     const showcase = read("shared/listings/showcase-listing.ts");
     assert.match(showcase, /payload->>'id'/);
     assert.match(showcase, /showcase-%/);
-    assert.match(showcase, /payload->'seller'->>'id'/);
+    const fixture = read("services/listings/mock-catalog-policy.ts");
+    assert.match(fixture, /payload->>'id'/);
+    assert.match(fixture, /user-listing-/);
   });
 
   it("category and search pages resolve totals before passing serverTotal", () => {
