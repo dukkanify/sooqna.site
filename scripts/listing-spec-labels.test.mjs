@@ -53,6 +53,7 @@ describe("spec labels are Arabic, not API keys", () => {
     assert.equal(translateSpecValueToken("used"), "مستعمل");
     assert.equal(translateSpecValueToken("vacancy"), "توظيف");
     assert.equal(translateSpecValueToken("wholesale"), "بالجملة");
+    assert.equal(translateSpecValueToken("football"), "كرة القدم");
     assert.equal(translateSpecValueToken("محمد بن زايد"), "محمد بن زايد");
   });
 
