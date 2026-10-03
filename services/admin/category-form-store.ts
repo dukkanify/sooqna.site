@@ -4,10 +4,12 @@ import type {
   CategoryFieldShowWhen,
   CategoryFieldType,
 } from "@/types/domain/category-fields";
+import { getCategoryFields } from "@/shared/constants/category-fields";
 import {
-  getCategoryFields,
-  isDynamicCategory,
-} from "@/shared/constants/category-fields";
+  getFormTemplateFields,
+  resolveCategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
+import { withImplicitOtherShowWhen } from "@/shared/listings/category-field-visibility";
 
 export type StoredCategoryFormField = {
   id: string;
@@ -62,16 +64,25 @@ export async function listCategoryFormFields(categoryId: string) {
     .sort((a, b) => a.sortOrder - b.sortOrder || a.fieldKey.localeCompare(b.fieldKey));
 }
 
+function defaultsForCategory(categoryId: string): CategoryFieldDefinition[] {
+  const dynamic = getCategoryFields(categoryId);
+  if (dynamic.length > 0) return dynamic;
+  return getFormTemplateFields(
+    resolveCategoryFeatureProfile(categoryId),
+    categoryId,
+  );
+}
+
 /** Resolved fields for Add/Edit Listing: DB config when present, else code defaults. */
 export async function resolveCategoryFields(
   categoryId: string,
 ): Promise<CategoryFieldDefinition[]> {
-  const defaults = getCategoryFields(categoryId);
+  const defaults = defaultsForCategory(categoryId);
   const stored = await listCategoryFormFields(categoryId);
   const enabled = stored.filter((row) => row.enabled);
   if (enabled.length === 0) {
-    if (!isDynamicCategory(categoryId)) return [];
-    return defaults;
+    if (defaults.length === 0) return [];
+    return withImplicitOtherShowWhen(defaults);
   }
   const fromStore = enabled.map(toDefinition);
   // Append any newer code-default keys missing from durable admin config
@@ -88,8 +99,9 @@ export async function resolveCategoryFields(
       hideWhen: field.hideWhen ?? fallback.hideWhen,
     };
   });
-  if (missing.length === 0) return withVisibility;
-  return [...withVisibility, ...missing];
+  const merged =
+    missing.length === 0 ? withVisibility : [...withVisibility, ...missing];
+  return withImplicitOtherShowWhen(merged);
 }
 
 export async function replaceCategoryFormFields(
@@ -133,7 +145,7 @@ export async function replaceCategoryFormFields(
 }
 
 export async function seedCategoryFormFromDefaults(categoryId: string) {
-  const defaults = getCategoryFields(categoryId);
+  const defaults = defaultsForCategory(categoryId);
   if (defaults.length === 0) return [];
   return replaceCategoryFormFields(
     categoryId,

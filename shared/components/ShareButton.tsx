@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { Listing } from "@/types";
-import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { ListingPrice } from "@/shared/components/ListingPrice";
 import { useToast } from "@/shared/components/ToastProvider";
 import { getListingCanonicalUrl } from "@/shared/listings/listing-url";
 import { Icon } from "@/shared/ui/Icon";
@@ -141,7 +141,7 @@ export function ShareButton({
             </p>
             <p className="mt-1 text-xs text-muted">{locationLabel}</p>
             <p className="mt-1.5">
-              <CurrencyAmount amount={listing.price} size="sm" />
+              <ListingPrice listing={listing} size="sm" />
             </p>
             <div className="mt-4 grid gap-2">
               <a

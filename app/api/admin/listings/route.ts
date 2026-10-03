@@ -7,6 +7,7 @@ import {
   createListingFromAdmin,
   getAdminListingRecords,
 } from "@/services/listings/listing-store";
+import { quotePricingFromSpecs } from "@/shared/listings/quote-pricing";
 import type { AdminListingCreateInput, Listing } from "@/types";
 
 export async function GET() {
@@ -38,7 +39,10 @@ export async function POST(request: Request) {
     if (!create.title?.trim() || !create.categoryId || !create.city) {
       return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 });
     }
-    if (!Number.isFinite(create.price) || create.price <= 0) {
+    if (
+      !quotePricingFromSpecs(create.categorySpecs) &&
+      (!Number.isFinite(create.price) || create.price <= 0)
+    ) {
       return NextResponse.json({ error: "INVALID_PRICE" }, { status: 400 });
     }
 

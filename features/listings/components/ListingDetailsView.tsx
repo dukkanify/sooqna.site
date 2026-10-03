@@ -17,7 +17,7 @@ import {
 } from "@/features/listings/components/ListingStickyPanel";
 import { ListingCard } from "@/features/listings/components/ListingCard";
 import { SellerPanel } from "@/features/listings/components/SellerPanel";
-import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { ListingPrice } from "@/shared/components/ListingPrice";
 import { listingDescription } from "@/shared/i18n/listing-copy";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -113,7 +113,7 @@ export function ListingDetailsView({
                 <ListingTitle listing={listing} />
               </h1>
               <div className="mt-2 min-w-0 overflow-x-auto">
-                <CurrencyAmount amount={listing.price} size="lg" />
+                <ListingPrice listing={listing} size="lg" />
               </div>
               <div className="mt-3 flex min-w-0 flex-wrap gap-3 text-sm text-muted">
                 <span className="inline-flex min-w-0 max-w-full items-center gap-1">

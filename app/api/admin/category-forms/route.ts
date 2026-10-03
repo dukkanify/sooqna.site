@@ -8,7 +8,15 @@ import {
   replaceCategoryFormFields,
   seedCategoryFormFromDefaults,
 } from "@/services/admin/category-form-store";
-import { isDynamicCategory } from "@/shared/constants/category-fields";
+
+const showWhenRuleSchema = z.object({
+  key: z.string(),
+  values: z.array(z.string()),
+});
+const showWhenSchema = z.union([
+  showWhenRuleSchema,
+  z.array(showWhenRuleSchema),
+]);
 
 const fieldSchema = z.object({
   fieldKey: z.string().trim().min(1).max(64),
@@ -31,12 +39,8 @@ const fieldSchema = z.object({
     .optional(),
   validation: z.string().max(200).optional(),
   visibility: z.string().max(200).optional(),
-  showWhen: z
-    .object({
-      key: z.string(),
-      values: z.array(z.string()),
-    })
-    .optional(),
+  showWhen: showWhenSchema.optional(),
+  hideWhen: showWhenSchema.optional(),
   titlePart: z.boolean().optional(),
   searchable: z.boolean().optional(),
 });
@@ -51,7 +55,7 @@ export async function GET(request: Request) {
   }
 
   let fields = await listCategoryFormFields(categoryId);
-  if (fields.length === 0 && isDynamicCategory(categoryId)) {
+  if (fields.length === 0) {
     fields = await seedCategoryFormFromDefaults(categoryId);
   }
   return NextResponse.json({ categoryId, fields });

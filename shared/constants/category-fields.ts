@@ -616,6 +616,21 @@ const serviceFields: CategoryFieldDefinition[] = [
     { label: "حسب الموعد", value: "حسب الموعد" },
   ]},
   { key: "experience", label: "سنوات الخبرة", type: "text", required: true },
+  {
+    key: "pricingBasis",
+    label: "طريقة احتساب السعر",
+    type: "select",
+    required: false,
+    searchable: true,
+    options: [
+      { label: "للساعة", value: "hourly" },
+      { label: "للزيارة", value: "visit" },
+      { label: "للمهمة أو المشروع", value: "project" },
+      { label: "اشتراك شهري", value: "monthly" },
+      { label: "حسب عرض سعر", value: "quote" },
+    ],
+    note: "عند اختيار «حسب عرض سعر» لا يُطلب مبلغ بالدرهم — يظهر للمشترين طلب عرض سعر.",
+  },
 ];
 
 const foodFields: CategoryFieldDefinition[] = [
@@ -725,7 +740,7 @@ const furnitureFields: CategoryFieldDefinition[] = [
     titlePart: true,
     searchable: true,
     placeholder: "اكتب نوع الأثاث",
-    showWhen: { key: "furnitureType", values: ["other"] },
+    showWhen: { key: "furnitureType", values: ["other", "أخرى"] },
     note: "تُحفظ كاقتراح للمراجعة الإدارية قبل إضافتها للقائمة العامة.",
   },
   {
@@ -779,7 +794,7 @@ const petFields: CategoryFieldDefinition[] = [
     titlePart: true,
     searchable: true,
     placeholder: "مثال: أرانب، سلاحف…",
-    showWhen: { key: "animalType", values: ["other"] },
+    showWhen: { key: "animalType", values: ["other", "أخرى"] },
   },
   {
     key: "breed",
@@ -789,7 +804,7 @@ const petFields: CategoryFieldDefinition[] = [
     titlePart: true,
     searchable: true,
     placeholder: "مثال: شيرازي، جيرمن…",
-    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other", "أخرى"] },
   },
   {
     key: "age",
@@ -798,7 +813,7 @@ const petFields: CategoryFieldDefinition[] = [
     required: true,
     searchable: true,
     placeholder: "مثال: 3 أشهر",
-    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other", "أخرى"] },
   },
   {
     key: "gender",
@@ -810,7 +825,7 @@ const petFields: CategoryFieldDefinition[] = [
       { label: "أنثى", value: "أنثى" },
       { label: "غير محدد", value: "غير محدد" },
     ],
-    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other", "أخرى"] },
   },
   {
     key: "vaccinated",
@@ -818,7 +833,7 @@ const petFields: CategoryFieldDefinition[] = [
     type: "select",
     required: false,
     options: yesNoOptions,
-    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other"] },
+    showWhen: { key: "animalType", values: ["قطط", "كلاب", "طيور", "other", "أخرى"] },
   },
   {
     key: "condition",
@@ -886,8 +901,12 @@ export function getCategoryFieldLabel(categoryId: string, key: string): string {
 export function mergeFieldVisibilityFromDefaults(
   categoryId: string,
   fields: CategoryFieldDefinition[],
+  extraDefaults: CategoryFieldDefinition[] = [],
 ): CategoryFieldDefinition[] {
-  const defaults = getCategoryFields(categoryId);
+  const defaults =
+    getCategoryFields(categoryId).length > 0
+      ? getCategoryFields(categoryId)
+      : extraDefaults;
   if (defaults.length === 0) return fields;
   const byKey = new Map(defaults.map((field) => [field.key, field]));
   return fields.map((field) => {

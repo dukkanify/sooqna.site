@@ -19,8 +19,8 @@ export type ListingPreview = {
   description: string;
   price: string;
   title: string;
-  /** Jobs: show salary text instead of AED amount. */
-  priceMode?: "aed" | "salary";
+  /** Jobs: salary. Quote services: حسب عرض سعر. Else AED. */
+  priceMode?: "aed" | "salary" | "quote";
   hideCondition?: boolean;
   /** Price is open to offers — shown in preview when checked. */
   negotiable?: boolean;

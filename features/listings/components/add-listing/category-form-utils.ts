@@ -3,8 +3,10 @@ import {
   getCategoryFields,
 } from "@/shared/constants/category-fields";
 import {
+  fieldRequiredForSpecs,
   fieldVisibleForSpecs,
   matchesFieldPattern,
+  withImplicitOtherShowWhen,
 } from "@/shared/listings/category-field-visibility";
 import {
   isCanonicalJobSubcategory,
@@ -12,6 +14,7 @@ import {
   subcategoryFromListingType,
 } from "@/shared/listings/jobs-taxonomy";
 import { regulatorEmirateError } from "@/shared/listings/real-estate-license";
+import { quotePricingFromFormData } from "@/shared/listings/quote-pricing";
 
 export type CategoryFormResult = {
   categorySpecs: CategorySpecs;
@@ -22,7 +25,7 @@ export type CategoryFormResult = {
   condition: ListingCondition;
   city: string;
   emirate?: string;
-  /** Jobs (and similar) skip AED price — use salary in specs instead. */
+  /** Jobs skip AED price (salary in specs). Quote-priced services skip it too. */
   skipPrice?: boolean;
   /** Canonical jobs subcategory derived from listingType / subcategory select. */
   jobSubcategory?: string;
@@ -107,10 +110,11 @@ export function parseCategoryForm(
   const isJobs = categoryId === "jobs";
   const isFood = categoryId === "food";
 
-  const fields =
+  const fields = withImplicitOtherShowWhen(
     fieldsOverride && fieldsOverride.length > 0
       ? fieldsOverride
-      : getCategoryFields(categoryId);
+      : getCategoryFields(categoryId),
+  );
 
   if (fields.length === 0) {
     const title = String(formData.get("title") ?? "").trim();
@@ -120,7 +124,10 @@ export function parseCategoryForm(
 
     if (title.length < 8) errors.title = "عنوان الإعلان يجب أن يكون 8 أحرف على الأقل.";
     if (description.length < 20) errors.description = "اكتب وصفاً لا يقل عن 20 حرفاً.";
-    if (!Number.isFinite(price) || price <= 0) errors.price = "اكتب سعراً صحيحاً.";
+    const skipPrice = quotePricingFromFormData(formData);
+    if (!skipPrice && (!Number.isFinite(price) || price <= 0)) {
+      errors.price = "اكتب سعراً صحيحاً.";
+    }
     const rawCondition = String(formData.get("condition") ?? "").trim();
     const parsedCondition = normalizeCondition(rawCondition);
     if (!parsedCondition) {
@@ -142,6 +149,7 @@ export function parseCategoryForm(
       condition: parsedCondition ?? ("used" as ListingCondition),
       city: cityId,
       emirate: undefined,
+      skipPrice,
     };
   }
   const visibilitySpecs: Record<string, string> = {};
@@ -188,7 +196,7 @@ export function parseCategoryForm(
       value = visibilitySpecs.animalType;
     }
     if (!hasFieldValue(value)) {
-      if (field.required) {
+      if (fieldRequiredForSpecs(field, visibilitySpecs)) {
         errors[field.key] = `${field.label} مطلوب.`;
       }
       continue;
@@ -260,7 +268,8 @@ export function parseCategoryForm(
     errors.description = "اكتب وصفاً لا يقل عن 20 حرفاً.";
   }
 
-  if (!isJobs) {
+  const skipPrice = isJobs || quotePricingFromFormData(formData);
+  if (!skipPrice) {
     const price = Number(formData.get("price") ?? 0);
     if (!Number.isFinite(price) || price <= 0) {
       errors.price = "اكتب سعراً صحيحاً أكبر من صفر.";
@@ -321,6 +330,6 @@ export function parseCategoryForm(
     condition: condition ?? "used",
     city,
     emirate,
-    skipPrice: isJobs,
+    skipPrice,
   };
 }
