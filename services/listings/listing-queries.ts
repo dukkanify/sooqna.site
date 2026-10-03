@@ -27,6 +27,11 @@ import {
 import { ensureLiveMarketplaceCatalogPublished } from "@/services/listings/live-marketplace-catalog.service";
 import { ensureShowcaseCatalogPublished } from "@/services/listings/showcase-catalog.service";
 import {
+  ensureEmptyCategoryStartersPublished,
+  getEmptyMarketplaceCategoryIds,
+  isLiveCatalogVisibleForEmptyCategories,
+} from "@/services/listings/empty-category-starters";
+import {
   SHOWCASE_LISTING_SQL,
   SHOWCASE_SOURCE,
   isShowcaseListing,
@@ -50,15 +55,33 @@ import {
 
 const TABLE = "marketplace_listings";
 
+/** Populated by {@link ensureCatalogsForPublicRead} for sync SQL/filter helpers. */
+let cachedEmptyCategoryIds: string[] = [];
+
 /**
- * Browse/search exclusion: fixtures + showcase always; live-mkt when catalog OFF.
+ * Browse/search exclusion: fixtures + showcase always; live-mkt when catalog OFF
+ * — except for empty marketplace categories when the query targets one of them
+ * (so electronics/pets are not blank while cars stay real-only).
  * Prefer {@link marketplaceCountExclusionSql} for every COUNT / badge total.
  */
-function publicCatalogExclusionSql(): string[] {
+function publicCatalogExclusionSql(
+  query: Pick<ListingQuery, "categoryId">,
+  values: unknown[],
+): string[] {
   const parts = [`NOT ${FIXTURE_LISTING_SQL}`, `NOT ${SHOWCASE_LISTING_SQL}`];
-  if (!isLiveCatalogEnabled()) {
-    parts.push(`NOT ${LIVE_MARKETPLACE_LISTING_SQL}`);
+  if (isLiveCatalogEnabled()) return parts;
+
+  const categoryId = query.categoryId?.trim();
+  if (categoryId && cachedEmptyCategoryIds.includes(categoryId)) {
+    // Allow live-mkt starters for this empty category only.
+    values.push(categoryId);
+    parts.push(
+      `(NOT ${LIVE_MARKETPLACE_LISTING_SQL} OR category_id = $${values.length})`,
+    );
+    return parts;
   }
+
+  parts.push(`NOT ${LIVE_MARKETPLACE_LISTING_SQL}`);
   return parts;
 }
 
@@ -165,13 +188,25 @@ function shouldExcludeFixtures(query: ListingQuery): boolean {
   return query.includeFixtures !== true;
 }
 
-function isHiddenFromPublicCatalog(listing: Listing): boolean {
+function isHiddenFromPublicCatalog(
+  listing: Listing,
+  query: Pick<ListingQuery, "categoryId">,
+): boolean {
   if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
     return true;
   }
   // When live catalog is disabled (production default), hide seed inventory
-  // that may already exist in the shared Neon DB.
+  // that may already exist in the shared Neon DB — unless this query targets
+  // an empty category that is allowed to show starters.
   if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
+    const categoryId = query.categoryId?.trim();
+    if (
+      categoryId &&
+      listing.categoryId === categoryId &&
+      isLiveCatalogVisibleForEmptyCategories(listing, cachedEmptyCategoryIds)
+    ) {
+      return false;
+    }
     return true;
   }
   return false;
@@ -183,7 +218,7 @@ function finalizePublicCatalogRows(
   query: ListingQuery,
 ): Listing[] {
   const matched = listings.filter((listing) => {
-    if (shouldExcludeFixtures(query) && isHiddenFromPublicCatalog(listing)) {
+    if (shouldExcludeFixtures(query) && isHiddenFromPublicCatalog(listing, query)) {
       return false;
     }
     return matchesStructured(listing, query);
@@ -195,7 +230,12 @@ async function ensureCatalogsForPublicRead(): Promise<void> {
   await Promise.all([
     ensureShowcaseCatalogPublished(),
     ensureLiveMarketplaceCatalogPublished().catch(() => 0),
+    ensureEmptyCategoryStartersPublished().catch(() => ({
+      categories: [] as string[],
+      affected: 0,
+    })),
   ]);
+  cachedEmptyCategoryIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
 }
 
 async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
@@ -307,7 +347,7 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
     );
   }
   if (shouldExcludeFixtures(query)) {
-    where.push(...publicCatalogExclusionSql());
+    where.push(...publicCatalogExclusionSql(query, values));
   }
 
   if (query.query?.trim()) {

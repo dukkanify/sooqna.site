@@ -304,9 +304,13 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
     const { ensureLiveMarketplaceCatalogPublished } = await import(
       "@/services/listings/live-marketplace-catalog.service"
     );
+    const { ensureEmptyCategoryStartersPublished } = await import(
+      "@/services/listings/empty-category-starters"
+    );
     await Promise.all([
       ensureShowcaseCatalogPublished().catch(() => undefined),
       ensureLiveMarketplaceCatalogPublished().catch(() => 0),
+      ensureEmptyCategoryStartersPublished().catch(() => undefined),
     ]);
   } catch {
     // Catalog ensure is best-effort for public reads.

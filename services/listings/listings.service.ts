@@ -8,6 +8,11 @@ import {
   isLiveCatalogListing,
 } from "@/shared/listings/live-catalog-listing";
 import {
+  ensureEmptyCategoryStartersPublished,
+  getEmptyMarketplaceCategoryIds,
+  isLiveCatalogVisibleForEmptyCategories,
+} from "@/services/listings/empty-category-starters";
+import {
   getAllListings,
   getListingBySlug as getStoredListingBySlug,
 } from "@/services/listings/listing-store";
@@ -63,13 +68,17 @@ export async function getListingBySlug(
 ): Promise<Listing | undefined> {
   const listing = await getStoredListingBySlug(slug);
   if (!listing) return undefined;
-  if (
-    options?.includeFixtures !== true &&
-    (isConfirmedFixtureListing(listing) ||
-      isShowcaseListing(listing) ||
-      (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)))
-  ) {
-    return undefined;
+  if (options?.includeFixtures !== true) {
+    if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
+      return undefined;
+    }
+    if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
+      await ensureEmptyCategoryStartersPublished().catch(() => undefined);
+      const emptyIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
+      if (!isLiveCatalogVisibleForEmptyCategories(listing, emptyIds)) {
+        return undefined;
+      }
+    }
   }
   const copy = { ...listing };
   delete copy.isUrgent;

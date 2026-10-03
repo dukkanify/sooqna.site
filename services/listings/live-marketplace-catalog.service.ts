@@ -76,3 +76,19 @@ export async function removeLiveMarketplaceCatalog(): Promise<{
   bumpListingsCache();
   return { action: "remove", affected };
 }
+
+/**
+ * Publish live-mkt starters only into categories that have zero real
+ * marketplace ads. Does not require SOOQNA_LIVE_CATALOG=true.
+ */
+export async function publishEmptyCategoryStarters(): Promise<{
+  action: "publish-empty";
+  categories: string[];
+  affected: number;
+}> {
+  const { ensureEmptyCategoryStartersPublished } = await import(
+    "@/services/listings/empty-category-starters"
+  );
+  const result = await ensureEmptyCategoryStartersPublished({ force: true });
+  return { action: "publish-empty", ...result };
+}

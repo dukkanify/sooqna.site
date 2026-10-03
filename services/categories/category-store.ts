@@ -12,6 +12,11 @@ import {
   countActiveListingsByCategory,
 } from "@/services/listings/listing-queries";
 import {
+  countLiveCatalogStartersByCategory,
+  ensureEmptyCategoryStartersPublished,
+  getEmptyMarketplaceCategoryIds,
+} from "@/services/listings/empty-category-starters";
+import {
   LISTINGS_CACHE_TAG,
   CATEGORY_COUNTS_REVALIDATE_SECONDS,
   bumpCategoriesCache,
@@ -174,10 +179,22 @@ export const getAllCategoryRecords = cache(
 
 const getActiveListingCountsCached = unstable_cache(
   async () => {
+    // Real marketplace counts first; empty categories get live-mkt starter
+    // totals so public badges match the browsable category pages.
+    await ensureEmptyCategoryStartersPublished().catch(() => undefined);
     const counts = await countActiveListingsByCategory();
+    const emptyIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
+    if (emptyIds.length > 0) {
+      const starters = await countLiveCatalogStartersByCategory(emptyIds);
+      for (const id of emptyIds) {
+        if ((counts.get(id) ?? 0) === 0) {
+          counts.set(id, starters.get(id) ?? 0);
+        }
+      }
+    }
     return Object.fromEntries(counts.entries());
   },
-  ["sooqna-category-counts-v4"],
+  ["sooqna-category-counts-v5-empty-fill"],
   { revalidate: CATEGORY_COUNTS_REVALIDATE_SECONDS, tags: [LISTINGS_CACHE_TAG] },
 );
 
