@@ -127,22 +127,30 @@ async function writeJsonFile(listings: Listing[]): Promise<void> {
   await rename(tempPath, target);
 }
 
-export async function upsertListingRow(listing: Listing): Promise<void> {
-  try {
-    if (await ensureListingsTable()) {
-      const pool = await getOptionalPostgresPool();
-      if (!pool) {
-        // Fall through to file/memory path.
-      } else {
-        await pool.query(
-          `INSERT INTO ${TABLE} (
-          id, slug, seller_id, category_id, status, is_featured,
-          posted_at, expires_at, updated_at, payload
-        ) VALUES (
-          $1,$2,$3,$4,$5,$6,
-          $7::timestamptz,$8::timestamptz,NOW(),$9::jsonb
-        )
-        ON CONFLICT (id) DO UPDATE SET
+function durableListingsStoreRequired(): boolean {
+  return Boolean(process.env.VERCEL);
+}
+
+/**
+ * Bulk catalog writes must not clobber a newer moderation decision.
+ * A stale in-memory snapshot used to rewrite `active` back to `pending_review`.
+ */
+const BULK_UPSERT_STATUS_GUARD = `
+WHERE NOT (
+  ${TABLE}.status IN ('active', 'rejected', 'sold', 'reserved')
+  AND EXCLUDED.status IN ('pending_review', 'draft')
+)`;
+
+async function postgresUpsertListing(
+  listing: Listing,
+  mode: "authoritative" | "bulk",
+): Promise<boolean> {
+  if (!(await ensureListingsTable())) return false;
+  const pool = await getOptionalPostgresPool();
+  if (!pool) return false;
+  const conflict =
+    mode === "authoritative"
+      ? `ON CONFLICT (id) DO UPDATE SET
           slug = EXCLUDED.slug,
           seller_id = EXCLUDED.seller_id,
           category_id = EXCLUDED.category_id,
@@ -151,28 +159,45 @@ export async function upsertListingRow(listing: Listing): Promise<void> {
           posted_at = EXCLUDED.posted_at,
           expires_at = EXCLUDED.expires_at,
           updated_at = NOW(),
-          payload = EXCLUDED.payload`,
-          [
-            listing.id,
-            listing.slug,
-            listing.seller.id,
-            listing.categoryId,
-            listing.status,
-            Boolean(listing.isFeatured),
-            listing.postedAt ?? null,
-            listing.expiresAt ?? null,
-            JSON.stringify(listing),
-          ],
-        );
-        return;
-      }
-    }
+          payload = EXCLUDED.payload`
+      : `ON CONFLICT (id) DO UPDATE SET
+          slug = EXCLUDED.slug,
+          seller_id = EXCLUDED.seller_id,
+          category_id = EXCLUDED.category_id,
+          status = EXCLUDED.status,
+          is_featured = EXCLUDED.is_featured,
+          posted_at = EXCLUDED.posted_at,
+          expires_at = EXCLUDED.expires_at,
+          updated_at = NOW(),
+          payload = EXCLUDED.payload
+        ${BULK_UPSERT_STATUS_GUARD}`;
+  await pool.query(
+    `INSERT INTO ${TABLE} (
+      id, slug, seller_id, category_id, status, is_featured,
+      posted_at, expires_at, updated_at, payload
+    ) VALUES (
+      $1,$2,$3,$4,$5,$6,
+      $7::timestamptz,$8::timestamptz,NOW(),$9::jsonb
+    )
+    ${conflict}`,
+    listingRowValues(listing),
+  );
+  return true;
+}
+
+export async function upsertListingRow(listing: Listing): Promise<void> {
+  try {
+    if (await postgresUpsertListing(listing, "authoritative")) return;
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {
       markPostgresUnavailable(error);
     } else {
       throw error;
     }
+  }
+
+  if (durableListingsStoreRequired()) {
+    throw new Error("LISTINGS_STORE_UNAVAILABLE");
   }
 
   const stored = (await readJsonFile()) ?? [];
@@ -182,11 +207,7 @@ export async function upsertListingRow(listing: Listing): Promise<void> {
   } else {
     stored.unshift(listing);
   }
-  try {
-    await writeJsonFile(stored);
-  } catch {
-    // Serverless may not allow durable writes — skip rather than crash reads.
-  }
+  await writeJsonFile(stored);
 }
 
 export async function persistAllListings(listings: Listing[]): Promise<void> {
@@ -196,37 +217,9 @@ export async function persistAllListings(listings: Listing[]): Promise<void> {
       if (pool) {
         // Upsert each row. Removals go through deleteListingRow so a stale
         // snapshot cannot wipe listings created by another instance.
+        // Status guard: never rewrite an approved/rejected ad back to review.
         for (const listing of listings) {
-          await pool.query(
-            `INSERT INTO ${TABLE} (
-          id, slug, seller_id, category_id, status, is_featured,
-          posted_at, expires_at, updated_at, payload
-        ) VALUES (
-          $1,$2,$3,$4,$5,$6,
-          $7::timestamptz,$8::timestamptz,NOW(),$9::jsonb
-        )
-        ON CONFLICT (id) DO UPDATE SET
-          slug = EXCLUDED.slug,
-          seller_id = EXCLUDED.seller_id,
-          category_id = EXCLUDED.category_id,
-          status = EXCLUDED.status,
-          is_featured = EXCLUDED.is_featured,
-          posted_at = EXCLUDED.posted_at,
-          expires_at = EXCLUDED.expires_at,
-          updated_at = NOW(),
-          payload = EXCLUDED.payload`,
-            [
-              listing.id,
-              listing.slug,
-              listing.seller.id,
-              listing.categoryId,
-              listing.status,
-              Boolean(listing.isFeatured),
-              listing.postedAt ?? null,
-              listing.expiresAt ?? null,
-              JSON.stringify(listing),
-            ],
-          );
+          await postgresUpsertListing(listing, "bulk");
         }
         return;
       }
@@ -239,10 +232,14 @@ export async function persistAllListings(listings: Listing[]): Promise<void> {
     }
   }
 
+  if (durableListingsStoreRequired()) {
+    throw new Error("LISTINGS_STORE_UNAVAILABLE");
+  }
+
   try {
     await writeJsonFile(listings);
   } catch {
-    // Serverless may not allow durable writes.
+    // Local durable write may fail — skip rather than crash reads.
   }
 }
 

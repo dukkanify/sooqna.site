@@ -117,7 +117,11 @@ async function remapRetiredSubcategoriesOnCatalog(
     return { ...listing, subcategory: remapped };
   });
   if (dirty) {
-    await persistAllListings(next).catch(() => undefined);
+    await Promise.all(
+      next
+        .filter((listing, index) => listing !== listings[index])
+        .map((listing) => upsertListingRow(listing).catch(() => undefined)),
+    );
   }
   return next;
 }
@@ -138,10 +142,16 @@ async function applyListingExpiry(listings: Listing[]): Promise<Listing[]> {
   expiryApplied = true;
   try {
     const settings = await getAdminSettings();
+    const previousStatus = listings.map((listing) => listing.status);
     const restored = restorePrematurelyExpiredListings(listings);
     const expired = expireStaleListings(listings, settings.listingActiveDays);
     if (restored + expired > 0) {
-      await persistAllListings(listings).catch(() => undefined);
+      const changed = listings.filter(
+        (listing, index) => listing.status !== previousStatus[index],
+      );
+      await Promise.all(
+        changed.map((listing) => upsertListingRow(listing).catch(() => undefined)),
+      );
     }
   } catch {
     // Never block public catalog reads on settings/persistence failures.
@@ -443,10 +453,12 @@ export async function patchListingRecord(
   id: string,
   patch: AdminListingPatch,
 ): Promise<Listing | undefined> {
-  const listings = await loadListingsUncached();
-  const index = listings.findIndex((item) => item.id === id);
-  if (index < 0) return undefined;
-  const previous = listings[index];
+  const persisted = await loadListingById(id).catch(() => null);
+  const listings = persisted ? null : await loadListingsUncached();
+  const previous = persisted
+    ? sanitizeListingMediaFields(withEscrowDefault(persisted))
+    : listings?.find((item) => item.id === id || item.slug === id);
+  if (!previous) return undefined;
   const history = [...(previous.statusHistory ?? [])];
   if (patch.status && patch.status !== previous.status) {
     history.push({
@@ -481,7 +493,25 @@ export async function patchListingRecord(
     }
   }
 
-  listings[index] = {
+  let liveWindow: Partial<Listing> = {};
+  if (patch.status === "active") {
+    const fromReview =
+      previous.status === "pending_review" ||
+      previous.status === "draft" ||
+      previous.status === "rejected" ||
+      !previous.postedAt;
+    const postedAt = fromReview
+      ? new Date().toISOString()
+      : (previous.postedAt ?? new Date().toISOString());
+    const settings = await getAdminSettings();
+    liveWindow = {
+      rejectionReason: undefined,
+      postedAt,
+      expiresAt: computeExpiresAt(postedAt, settings.listingActiveDays),
+    };
+  }
+
+  const next: Listing = {
     ...previous,
     ...(patch.title !== undefined ? { title: patch.title.trim() } : {}),
     ...(patch.description !== undefined
@@ -537,25 +567,24 @@ export async function patchListingRecord(
       : {}),
     ...(patch.status ? { status: patch.status } : {}),
     ...featuredPatch,
+    ...liveWindow,
     ...(patch.status === "rejected"
       ? {
           rejectionReason:
             patch.rejectReason?.trim() || previous.rejectionReason,
         }
       : {}),
-    ...(patch.status === "active"
-      ? {
-          rejectionReason: undefined,
-          postedAt: previous.postedAt ?? new Date().toISOString(),
-        }
-      : {}),
     statusHistory: history,
   };
-  listings[index] = sanitizeListingMediaFields(listings[index]);
-  await upsertListingRow(listings[index]);
+  const saved = sanitizeListingMediaFields(next);
+  await upsertListingRow(saved);
   cacheRows = null;
   bumpListingsCache();
-  return { ...listings[index] };
+  const verified = await loadListingById(saved.id).catch(() => null);
+  if (patch.status && verified && verified.status !== patch.status) {
+    throw new Error("LISTING_STATUS_PERSIST_FAILED");
+  }
+  return { ...(verified ?? saved) };
 }
 
 export async function setListingFeatured(
