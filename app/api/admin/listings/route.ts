@@ -8,6 +8,7 @@ import {
   getAdminListingRecords,
 } from "@/services/listings/listing-store";
 import { quotePricingFromSpecs } from "@/shared/listings/quote-pricing";
+import type { AdminListingCreateInput, Listing } from "@/types";
 
 export async function GET() {
   const admin = await requireAdminPermission("listings", "view");
