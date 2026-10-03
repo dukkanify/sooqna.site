@@ -14,6 +14,7 @@ import { getValidSessionUser } from "@/services/auth/require-session";
 import { resolveListingPageAccess } from "@/shared/listings/listing-page-access";
 import { normalizeListingSlugParam } from "@/shared/listings/listing-slug";
 import { listingDescription, listingTitle } from "@/shared/i18n/listing-copy";
+import { categoryBranchHref } from "@/shared/listings/category-branch";
 import { getRequestLocale } from "@/shared/i18n/locale";
 import { tx } from "@/shared/i18n/tx";
 
@@ -118,7 +119,23 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
             { href: "/", label: tx(locale, "الرئيسية") },
             { href: "/search", label: tx(locale, "الإعلانات") },
             ...(category
-              ? [{ href: `/categories/${category.slug}`, label: tx(locale, category.name) }]
+              ? [
+                  {
+                    href: `/categories/${category.slug}`,
+                    label: tx(locale, category.name),
+                  },
+                  ...(visible.subcategory
+                    ? [
+                        {
+                          href: categoryBranchHref(
+                            category.slug,
+                            visible.subcategory,
+                          ),
+                          label: tx(locale, visible.subcategory),
+                        },
+                      ]
+                    : []),
+                ]
               : []),
             { label: listingTitle(visible, locale) },
           ]}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Category } from "@/types";
 import { AppImage } from "@/shared/components/AppImage";
+import { categoryBranchHref } from "@/shared/listings/category-branch";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
@@ -53,7 +54,7 @@ export function CategoryDirectory({ categories }: CategoryDirectoryProps) {
                     <Link
                       key={subcategory}
                       className="rounded-[var(--radius-xl)] border border-border bg-surface-muted px-3 py-1.5 text-xs font-medium text-muted transition hover:border-secondary/40 hover:text-ink"
-                      href={`/categories/${category.slug}?q=${encodeURIComponent(subcategory)}`}
+                      href={categoryBranchHref(category.slug, subcategory)}
                     >
                       <span data-ugc>{t(subcategory)}</span>
                     </Link>

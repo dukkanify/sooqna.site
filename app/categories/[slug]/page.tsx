@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { BRAND } from "@/shared/constants/brand";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { countries } from "@/shared/constants/locations";
 import { getLocations } from "@/services/locations/location-store";
 import { CategoryHero } from "@/features/categories/components/CategoryHero";
@@ -8,7 +8,15 @@ import { MobileBottomNav } from "@/features/home/components/mobile/MobileBottomN
 import { RecordRecentSearch } from "@/features/search/components/RecordRecentSearch";
 import { SearchFilters } from "@/features/search/components/SearchFilters";
 import { SearchResultsList } from "@/features/search/components/SearchResultsList";
-import { parseSearchFilterState } from "@/features/search/components/search-url";
+import {
+  branchNavigationRedirectHref,
+  parseSearchFilterState,
+} from "@/features/search/components/search-url";
+import {
+  categoryBranchHref,
+  matchKnownSubcategory,
+  resolveCategoryBranchState,
+} from "@/shared/listings/category-branch";
 import { toListingSearchFilters } from "@/features/search/lib/to-listing-filters";
 import { buildSearchSuggestions } from "@/features/search/components/search-suggestions";
 import { Badge } from "@/shared/ui/Badge";
@@ -91,10 +99,21 @@ export default async function CategoryPage({
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
-  const selectedFilters = {
+  const parsedFilters = {
     ...parseSearchFilterState(queryParams),
     category: category.id,
   };
+  const selectedFilters = resolveCategoryBranchState(
+    parsedFilters,
+    category.subcategories,
+  );
+  const branchRedirect = branchNavigationRedirectHref(
+    parsedFilters,
+    selectedFilters,
+    { categorySlug: category.slug },
+  );
+  if (branchRedirect) redirect(branchRedirect);
+
   const listingFilters = toListingSearchFilters(selectedFilters);
 
   const [categories, listings, total, suggestionTitles, locale, locationRows] =
@@ -127,7 +146,15 @@ export default async function CategoryPage({
             items={[
               { href: "/", label: "الرئيسية" },
               { href: "/categories", label: "التصنيفات" },
-              { label: category.name },
+              {
+                href: selectedFilters.subcategory
+                  ? `/categories/${category.slug}`
+                  : undefined,
+                label: category.name,
+              },
+              ...(selectedFilters.subcategory
+                ? [{ label: selectedFilters.subcategory }]
+                : []),
             ]}
           />
 
@@ -142,7 +169,13 @@ export default async function CategoryPage({
               {category.subcategories.map((subcategory) => (
                 <ChipLink
                   key={subcategory}
-                  href={`/categories/${category.slug}?subcategory=${encodeURIComponent(subcategory)}`}
+                  active={Boolean(
+                    matchKnownSubcategory(
+                      selectedFilters.subcategory,
+                      [subcategory],
+                    ),
+                  )}
+                  href={categoryBranchHref(category.slug, subcategory)}
                   label={subcategory}
                 />
               ))}

@@ -245,7 +245,17 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
   if (typeof query.maxPrice === "number") {
     add("(payload->>'price')::numeric <= ?", query.maxPrice);
   }
-  if (query.subcategory) add("payload->>'subcategory' = ?", query.subcategory);
+  if (query.subcategory) {
+    const candidates = specMatchCandidates(query.subcategory);
+    if (candidates.length > 0) {
+      values.push(candidates);
+      const idx = values.length;
+      where.push(`(
+        regexp_replace(lower(coalesce(payload->>'subcategory', '')), '\\s+', '', 'g') = ANY($${idx}::text[])
+        OR regexp_replace(lower(coalesce(payload->'categorySpecs'->>'subcategory', '')), '\\s+', '', 'g') = ANY($${idx}::text[])
+      )`);
+    }
+  }
   if (query.area?.trim()) {
     const pattern = likePattern(query.area);
     values.push(pattern);

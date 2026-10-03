@@ -164,6 +164,34 @@ export function parseSearchFilterState(
   };
 }
 
+/** Category page URL — slug lives in the path, so `category=` is omitted. */
+export function categoryPageHref(
+  slug: string,
+  filters: SearchFilterState,
+): string {
+  return buildSearchUrl(
+    { ...filters, category: "" },
+    undefined,
+    `/categories/${slug}`,
+  );
+}
+
+export function branchNavigationRedirectHref(
+  incoming: SearchFilterState,
+  resolved: SearchFilterState,
+  options?: { categorySlug?: string },
+): string | undefined {
+  const slug = options?.categorySlug?.trim();
+  const incomingHref = slug
+    ? categoryPageHref(slug, incoming)
+    : buildSearchUrl(incoming);
+  const resolvedHref = slug
+    ? categoryPageHref(slug, resolved)
+    : buildSearchUrl(resolved);
+  if (incomingHref === resolvedHref) return undefined;
+  return resolvedHref;
+}
+
 export function activeFilterCount(filters: SearchFilterState): number {
   const core = [
     filters.query,
