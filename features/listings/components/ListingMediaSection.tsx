@@ -3,7 +3,7 @@ import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 import { UaePhoneInput } from "@/shared/ui/UaePhoneInput";
 import type { AddListingErrors } from "./add-listing/types";
-import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
+import { LISTING_IMAGE_ACCEPT, MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 
 type ListingMediaSectionProps = {
   errors: AddListingErrors;
@@ -56,7 +56,7 @@ export function ListingMediaSection({
 
           <label className="grid min-h-32 cursor-pointer place-items-center rounded-[var(--radius-2xl)] border border-dashed border-secondary bg-secondary-soft p-6 text-center text-sm font-semibold text-primary transition hover:bg-secondary/20">
             <input
-              accept="image/*"
+              accept={LISTING_IMAGE_ACCEPT}
               aria-label="رفع صور إضافية"
               className="sr-only"
               multiple
@@ -69,7 +69,7 @@ export function ListingMediaSection({
             <span>
               {existingImages.length > 0 ? "إضافة صور جديدة" : "رفع صور الإعلان"}
               <span className="mt-2 block text-xs font-medium text-muted">
-                {totalImages}/{MAX_LISTING_IMAGES} صور
+                {totalImages}/{MAX_LISTING_IMAGES} صور — JPEG و PNG و WebP
               </span>
             </span>
           </label>

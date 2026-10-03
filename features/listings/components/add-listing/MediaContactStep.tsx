@@ -14,7 +14,10 @@ import {
   addListingStepTitleClass,
 } from "./utils";
 
-import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
+import {
+  LISTING_IMAGE_ACCEPT,
+  MAX_LISTING_IMAGES,
+} from "@/shared/constants/listing-media";
 
 type MediaContactStepProps = {
   defaultContact?: string;
@@ -91,7 +94,7 @@ export function MediaContactStep({
                 {imagePreviews.length < MAX_LISTING_IMAGES ? (
                   <label className="grid aspect-[3/2] cursor-pointer place-items-center rounded-[var(--radius-xl)] border border-dashed border-secondary bg-surface p-3 text-center text-xs font-semibold text-primary transition hover:bg-secondary/10">
                     <input
-                      accept="image/*"
+                      accept={LISTING_IMAGE_ACCEPT}
                       aria-label="إضافة صور أخرى"
                       className="sr-only"
                       multiple
@@ -108,7 +111,7 @@ export function MediaContactStep({
             ) : (
               <label className="grid min-h-32 cursor-pointer place-items-center p-2 text-center text-sm font-semibold text-primary transition hover:opacity-90">
                 <input
-                  accept="image/*"
+                  accept={LISTING_IMAGE_ACCEPT}
                   aria-label="رفع صور الإعلان"
                   className="sr-only"
                   multiple
@@ -123,8 +126,8 @@ export function MediaContactStep({
                   {imagesRequired ? "رفع صور الإعلان *" : "رفع صور الإعلان (اختياري)"}
                   <span className="mt-2 block text-xs font-medium text-muted">
                     {imagesRequired
-                      ? `صورة واحدة على الأقل مطلوبة — حتى ${MAX_LISTING_IMAGES} صور`
-                      : `يمكنك إضافة حتى ${MAX_LISTING_IMAGES} صورة`}
+                      ? `صورة واحدة على الأقل مطلوبة — حتى ${MAX_LISTING_IMAGES} صور (JPEG و PNG و WebP)`
+                      : `يمكنك إضافة حتى ${MAX_LISTING_IMAGES} صورة (JPEG و PNG و WebP)`}
                   </span>
                 </span>
               </label>

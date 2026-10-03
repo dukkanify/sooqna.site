@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { withNormalizedImageFile } from "@/shared/media/image-bytes";
 
 type ImageChangeMode = "append" | "replace";
 
@@ -41,7 +42,7 @@ export function useImagePreviews(defaultMax = 12) {
       return;
     }
 
-    const incoming = Array.from(fileList);
+    const incoming = Array.from(fileList).map(withNormalizedImageFile);
 
     if (mode === "replace") {
       revokePreviewUrls();

@@ -19,6 +19,7 @@ import { Textarea } from "@/shared/ui/Textarea";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
+import { isLikelyListingImageFile } from "@/shared/media/image-bytes";
 
 type OrderDetailContentProps = {
   orderId: string;
@@ -203,7 +204,11 @@ export function OrderDetailContent({
     const fileItems: Array<{ storageUrl: string; kind: "photo" | "video" }> = [];
     if (proofFiles && proofFiles.length > 0) {
       for (const file of Array.from(proofFiles).slice(0, 12)) {
-        if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+        const isVideo =
+          file.type.startsWith("video/") || /\.(mp4|webm)$/i.test(file.name);
+        const isImage =
+          isLikelyListingImageFile(file) || file.type.startsWith("image/");
+        if (!isImage && !isVideo) {
           setError("يُسمح بصور JPEG/PNG/WebP أو فيديو MP4/WebM فقط.");
           return;
         }
