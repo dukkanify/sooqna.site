@@ -56,6 +56,7 @@ export default async function Home() {
     return (
       <MobileHomePage
         appPreviewListings={appPreviewListings}
+        catalogCount={feed.catalogCount}
         categories={categories}
         categoryById={categoryById}
         featuredListings={feed.featured}
@@ -65,10 +66,7 @@ export default async function Home() {
     );
   }
 
-  const hasPublicListings =
-    feed.featured.length > 0 ||
-    feed.nearbySource.length > 0 ||
-    feed.sections.some((section) => section.items.length > 0);
+  const hasPublicListings = feed.catalogCount > 0;
   // Cars / real-estate / electronics (etc.) most-viewed rails above the fold.
   const aboveFoldSections = sectionListings.slice(0, 3);
   const belowFoldSections = sectionListings.slice(3);
