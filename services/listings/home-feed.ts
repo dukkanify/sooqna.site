@@ -17,6 +17,7 @@ export { slimListingForCard };
 export { sortByMostViewed } from "@/services/listings/home-feed-rank";
 
 export type HomeFeed = {
+  catalogCount: number;
   featured: Listing[];
   nearbySource: Listing[];
   /**
@@ -109,7 +110,7 @@ export function takeDiverse(
 ): Listing[] {
   const out: Listing[] = [];
 
-  const tryTake = (listing: Listing, allowRemap: boolean) => {
+  const tryTake = (listing: Listing, allowRemap: boolean, allowReuse: boolean) => {
     if (out.length >= limit || usedIds.has(listing.id)) return;
     const candidates = coverCandidates(listing);
     const preferred = allowRemap
@@ -117,18 +118,29 @@ export function takeDiverse(
       : candidates[0] && !usedCovers.has(coverKey(candidates[0]))
         ? candidates[0]
         : undefined;
-    if (!preferred) return;
+    const cover = preferred ?? (allowReuse ? candidates[0] : undefined);
+    if (!cover && !allowReuse) return;
     usedIds.add(listing.id);
-    usedCovers.add(coverKey(preferred));
-    out.push(withCover(listing, preferred));
+    if (cover) {
+      usedCovers.add(coverKey(cover));
+      out.push(withCover(listing, cover));
+      return;
+    }
+    out.push(listing);
   };
 
   for (const listing of listings) {
-    tryTake(listing, false);
+    tryTake(listing, false, false);
     if (out.length >= limit) return out;
   }
   for (const listing of listings) {
-    tryTake(listing, true);
+    tryTake(listing, true, false);
+    if (out.length >= limit) return out;
+  }
+  // Last resort: keep real ads even when every cover collides — never empty
+  // the homepage while /search and /categories still have cards.
+  for (const listing of listings) {
+    tryTake(listing, true, true);
     if (out.length >= limit) return out;
   }
 
@@ -212,12 +224,18 @@ async function buildHomeFeed(): Promise<HomeFeed> {
     usedCovers,
   );
 
-  return { featured, nearbySource, preview: [], sections };
+  return {
+    catalogCount: catalogRows.length,
+    featured,
+    nearbySource,
+    preview: [],
+    sections,
+  };
 }
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v21-featured-priority-diverse"],
+  ["sooqna-home-feed-v22-public-catalog-parity"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

@@ -24,6 +24,7 @@ type HomeSection = {
 
 type MobileHomePageProps = {
   appPreviewListings: Listing[];
+  catalogCount: number;
   categories: Category[];
   categoryById: (id: string) => string;
   featuredListings: Listing[];
@@ -34,6 +35,7 @@ type MobileHomePageProps = {
 /** Isolated mobile homepage — Featured → most-viewed categories → nearby. */
 export function MobileHomePage({
   appPreviewListings,
+  catalogCount,
   categories,
   categoryById,
   featuredListings,
@@ -50,9 +52,7 @@ export function MobileHomePage({
             <MobileCategoryGrid categories={categories} />
             <MobilePromoBanner />
             <MobileEmiratesSection />
-            {featuredListings.length === 0 &&
-            nearbyListings.length === 0 &&
-            sectionListings.every((section) => section.items.length === 0) ? (
+            {catalogCount === 0 ? (
               <MarketCatalogEmpty />
             ) : (
               <>

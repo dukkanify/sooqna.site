@@ -12,6 +12,7 @@ import {
   getListingBySlug as getStoredListingBySlug,
 } from "@/services/listings/listing-store";
 import { applyListingViewCount } from "@/services/listings/listing-views-store";
+import { dedupeListingsById } from "@/services/listings/public-catalog";
 import {
   isEligibleFeaturedPageListing,
   sortFeaturedPageListings,
@@ -181,7 +182,7 @@ export async function searchListings(
     filters.premium ? listing.isPremium === true : true,
   );
 
-  return results.slice(0, SEARCH_RESULT_LIMIT);
+  return dedupeListingsById(results).slice(0, SEARCH_RESULT_LIMIT);
 }
 
 export async function countSearchListings(

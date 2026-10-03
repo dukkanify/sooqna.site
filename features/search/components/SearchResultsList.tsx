@@ -74,9 +74,16 @@ export function SearchResultsList({
       selectedFilters.sort === "price_asc" || selectedFilters.sort === "price_desc"
         ? selectedFilters.sort
         : "newest";
-    return [...matchingLocalListings, ...listings].sort((a, b) =>
+    const merged = [...matchingLocalListings, ...listings].sort((a, b) =>
       compareListingsWithFeaturedPriority(a, b, sort),
     );
+    const seen = new Set<string>();
+    return merged.filter((listing) => {
+      const key = listing.id || listing.slug;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }, [categoryId, listings, localListings, selectedFilters]);
 
   const localExtra = visibleListings.filter((listing) =>
