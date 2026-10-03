@@ -38,6 +38,37 @@ const CAR_SPEC_GROUPS: { title: string; keys: string[] }[] = [
   },
 ];
 
+const GOODS_SPEC_GROUPS: { title: string; keys: string[] }[] = [
+  {
+    title: "المنتج",
+    keys: [
+      "brand",
+      "model",
+      "condition",
+      "color",
+      "size",
+      "clothingSize",
+      "shoeSize",
+      "material",
+      "gender",
+      "ageGroup",
+      "bookTitle",
+      "author",
+      "publisher",
+      "isbn",
+      "pages",
+      "language",
+      "edition",
+      "genre",
+      "sportType",
+    ],
+  },
+  {
+    title: "السعر والتوفر",
+    keys: ["priceBasis", "saleType", "unitPrice", "quantity", "advertiserRole", "advertiserType"],
+  },
+];
+
 const RE_SPEC_GROUPS: { title: string; keys: string[] }[] = [
   {
     title: "تفاصيل المبنى",
@@ -59,6 +90,17 @@ const RE_SPEC_GROUPS: { title: string; keys: string[] }[] = [
       "parking",
       "furnished",
       "completionStatus",
+    ],
+  },
+  {
+    title: "المعلن",
+    keys: [
+      "advertiserType",
+      "advertiserRole",
+      "regulatoryAuthority",
+      "licenseNumber",
+      "brn",
+      "bln",
     ],
   },
   {
@@ -103,11 +145,22 @@ export function ListingSpecifications({ listing }: ListingSpecificationsProps) {
 
   const isCars = listing.categoryId === "cars";
   const isRealEstate = listing.categoryId === "real-estate";
+  const isGoods = [
+    "fashion",
+    "kids",
+    "books",
+    "sports",
+    "furniture",
+    "electronics",
+    "mobiles",
+  ].includes(listing.categoryId);
   const groupDefs = isCars
     ? CAR_SPEC_GROUPS
     : isRealEstate
       ? RE_SPEC_GROUPS
-      : null;
+      : isGoods
+        ? GOODS_SPEC_GROUPS
+        : null;
   const usedKeys = new Set<string>();
   const groups = groupDefs
     ? groupDefs

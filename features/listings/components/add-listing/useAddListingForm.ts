@@ -16,6 +16,11 @@ import {
   isMarketplaceAccountReady,
 } from "@/services/auth/account-access";
 import { getSessionUser, saveLocalListing, deleteLocalListing } from "@/services/storage";
+import {
+  formatUaeMobileNational,
+  isValidUaeMobile,
+  UAE_MOBILE_ERROR,
+} from "@/shared/utils/phone";
 import { uploadListingImages } from "@/services/upload";
 import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { AddListingErrors, ListingPreview } from "./types";
@@ -258,7 +263,10 @@ export function useAddListingForm(categories: Category[]) {
         "review";
       const isDraft = intent === "draft";
       const categoryId = String(formData.get("categoryId") ?? selectedCategoryId);
-      const contact = String(formData.get("contact") ?? "").trim();
+      const contactRaw = String(formData.get("contact") ?? "").trim();
+      const contact = isValidUaeMobile(contactRaw)
+        ? formatUaeMobileNational(contactRaw)
+        : contactRaw;
       const subcategoryPick = String(formData.get("subcategory") ?? "").trim();
       const subcategoryOther = String(
         formData.get("subcategoryOther") ?? "",
@@ -304,16 +312,16 @@ export function useAddListingForm(categories: Category[]) {
         if (draftTitle.length < 8) {
           nextErrors.title = "اكتب عنواناً واضحاً للإعلان (8 أحرف على الأقل).";
         }
-        if (contact && !/^(\+971|971|0)?5\d{8}$/.test(contact)) {
-          nextErrors.contact = "اكتب رقم تواصل إماراتي صحيح.";
+        if (contact && !isValidUaeMobile(contact)) {
+          nextErrors.contact = UAE_MOBILE_ERROR;
         }
       } else {
         Object.assign(nextErrors, parsed.errors);
         if (!categoryId) {
           nextErrors.category = "اختر القسم المناسب للإعلان.";
         }
-        if (!/^(\+971|971|0)?5\d{8}$/.test(contact)) {
-          nextErrors.contact = "اكتب رقم تواصل إماراتي صحيح.";
+        if (!isValidUaeMobile(contact)) {
+          nextErrors.contact = UAE_MOBILE_ERROR;
         }
         if (profileMeta.imagesRequired && imageFiles.length === 0) {
           nextErrors.images = "أضف صورة حقيقية واحدة على الأقل للمنتج.";

@@ -10,6 +10,11 @@ import { updateSellerListingDisplayName } from "@/services/listings/listing-stor
 import { SOCIAL_LINK_PLATFORMS } from "@/shared/constants/social-links";
 import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 import { sanitizeSocialLinks } from "@/shared/validation/social-links";
+import {
+  formatUaeMobileNational,
+  isValidUaeMobile,
+  UAE_MOBILE_ERROR,
+} from "@/shared/utils/phone";
 
 const accountTypes = [
   "buyer",
@@ -84,9 +89,22 @@ export async function PATCH(request: Request) {
     "businessName",
   );
 
+  const phoneRaw = parsed.data.phone?.trim() ?? "";
+  const phone = phoneRaw
+    ? isValidUaeMobile(phoneRaw)
+      ? formatUaeMobileNational(phoneRaw)
+      : phoneRaw
+    : "";
+  if (phone && !isValidUaeMobile(phone)) {
+    return NextResponse.json(
+      { error: "INVALID_PHONE", message: UAE_MOBILE_ERROR },
+      { status: 400 },
+    );
+  }
+
   const updated = await updateUserProfile(user.id, {
     fullName: parsed.data.fullName,
-    phone: parsed.data.phone,
+    phone,
     city: parsed.data.city,
     accountType: parsed.data.accountType,
     ...(hasSocialLinks ? { socialLinks } : {}),

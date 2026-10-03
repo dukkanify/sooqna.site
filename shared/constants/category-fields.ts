@@ -1,4 +1,5 @@
 import type { CategoryFieldDefinition } from "@/types";
+import { humanizeSpecKey } from "@/shared/listings/spec-labels";
 import { colorOptions } from "@/shared/constants/colors";
 import {
   carBrandOptions,
@@ -878,7 +879,7 @@ export function getCategoryFields(categoryId: string): CategoryFieldDefinition[]
 
 export function getCategoryFieldLabel(categoryId: string, key: string): string {
   const field = getCategoryFields(categoryId).find((item) => item.key === key);
-  return field?.label ?? key;
+  return field?.label ?? humanizeSpecKey(key);
 }
 
 /** Copy showWhen/hideWhen from code defaults onto admin/remote field snapshots. */

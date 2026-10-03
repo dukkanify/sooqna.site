@@ -1,7 +1,7 @@
 import { AppImage } from "@/shared/components/AppImage";
 import { Card } from "@/shared/ui/Card";
-import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
+import { UaePhoneInput } from "@/shared/ui/UaePhoneInput";
 import type { AddListingErrors } from "./add-listing/types";
 import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 
@@ -113,16 +113,12 @@ export function ListingMediaSection({
         {showContact ? (
           <div className="grid gap-4">
             <div>
-              <Input
+              <UaePhoneInput
                 defaultValue={defaultContact}
+                error={errors.contact}
                 label="رقم التواصل"
                 name="contact"
-                placeholder="05xxxxxxxx"
-                type="tel"
               />
-              {errors.contact ? (
-                <FormMessage variant="error">{errors.contact}</FormMessage>
-              ) : null}
             </div>
             <Input
               defaultValue={videoUrl}
