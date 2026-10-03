@@ -7,7 +7,10 @@ import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
-import { getCategoryFieldLabel } from "@/shared/constants/category-fields";
+import {
+  formatSpecLabel,
+  formatSpecValue,
+} from "@/shared/listings/spec-display";
 import {
   buildSearchUrl,
   omitSearchFilter,
@@ -19,15 +22,6 @@ type SearchFilterChipsProps = {
   basePath?: string;
   categories: Category[];
   selectedFilters: SearchFilterState;
-};
-
-const conditionLabels: Record<string, string> = {
-  excellent: "ممتاز",
-  new: "جديد",
-  used: "مستعمل",
-  refurbished: "مجدّد",
-  for_parts: "للقطع",
-  not_working: "لا يعمل",
 };
 
 const rangeLabels: Record<string, { max: string; min: string }> = {
@@ -84,7 +78,7 @@ export function SearchFilterChips({
   if (selectedFilters.condition) {
     chips.push({
       key: "condition",
-      label: conditionLabels[selectedFilters.condition] ?? selectedFilters.condition,
+      label: formatSpecValue("furniture", "condition", selectedFilters.condition),
       href: hrefFor(omitSearchFilter(selectedFilters, { kind: "core", key: "condition" })),
     });
   }
@@ -136,15 +130,15 @@ export function SearchFilterChips({
     if (!value) continue;
     chips.push({
       key: `spec_${key}`,
-      label: `${getCategoryFieldLabel(categoryId, key)}: ${value}`,
+      label: `${formatSpecLabel(categoryId, key)}: ${formatSpecValue(categoryId, key, value)}`,
       href: hrefFor(omitSearchFilter(selectedFilters, { kind: "spec", key })),
     });
   }
 
   for (const [key, range] of Object.entries(selectedFilters.ranges ?? {})) {
     const labels = rangeLabels[key] ?? {
-      min: `من ${getCategoryFieldLabel(categoryId, key)}`,
-      max: `إلى ${getCategoryFieldLabel(categoryId, key)}`,
+      min: `من ${formatSpecLabel(categoryId, key)}`,
+      max: `إلى ${formatSpecLabel(categoryId, key)}`,
     };
     if (range.min) {
       chips.push({

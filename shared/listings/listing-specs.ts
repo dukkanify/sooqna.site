@@ -1,10 +1,16 @@
 import type { Listing } from "@/types";
-import { getCategoryFieldLabel, getCategoryFields } from "@/shared/constants/category-fields";
+import { getCategoryFields } from "@/shared/constants/category-fields";
+import {
+  getFormTemplateFields,
+  resolveCategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
 import {
   fieldVisibleForSpecs,
   specsRecordFromCategorySpecs,
   withVisibilityContext,
 } from "@/shared/listings/category-field-visibility";
+import { formatSpecEntry } from "@/shared/listings/spec-display";
+import { SPEC_VALUE_LABELS } from "@/shared/listings/spec-labels";
 import {
   CATEGORY_SEARCH_KEYWORDS,
   searchTextMatches,
@@ -36,30 +42,12 @@ function hasValue(value: unknown): boolean {
   return false;
 }
 
-function formatValue(key: string, value: string | number | boolean): string {
-  if (typeof value === "boolean") {
-    return value ? "نعم" : "لا";
-  }
-  if (key === "area" || key === "areaSqft") {
-    return `${Number(value).toLocaleString("en-AE")} قدم مربع`;
-  }
-  if (key === "mileage") {
-    return `${value} كم`;
-  }
-  if (
-    (key === "availabilityDate" || key === "expectedHandoverDate") &&
-    typeof value === "string"
-  ) {
-    const parsed = Date.parse(value);
-    if (Number.isFinite(parsed)) {
-      return new Date(parsed).toLocaleDateString("ar-AE", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    }
-  }
-  return String(value);
+function toSpecEntry(
+  categoryId: string,
+  key: string,
+  value: unknown,
+): SpecEntry {
+  return formatSpecEntry(categoryId, key, value);
 }
 
 function isUserCreatedListing(listing: Listing): boolean {
@@ -77,11 +65,7 @@ function getMockSpecEntries(listing: Listing): SpecEntry[] {
   if (listing.carSpecs) {
     for (const [key, value] of Object.entries(listing.carSpecs)) {
       if (!hasValue(value)) continue;
-      entries.push({
-        key,
-        label: getCategoryFieldLabel("cars", key),
-        value: formatValue(key, value),
-      });
+      entries.push(toSpecEntry("cars", key, value));
     }
   }
 
@@ -89,11 +73,7 @@ function getMockSpecEntries(listing: Listing): SpecEntry[] {
     const { amenities, ...rest } = listing.realEstateSpecs;
     for (const [key, value] of Object.entries(rest)) {
       if (!hasValue(value)) continue;
-      entries.push({
-        key,
-        label: getCategoryFieldLabel("real-estate", key),
-        value: formatValue(key, value as string | number),
-      });
+      entries.push(toSpecEntry("real-estate", key, value));
     }
     if (hasValue(amenities) && amenities.length > 0) {
       entries.push({
@@ -105,16 +85,11 @@ function getMockSpecEntries(listing: Listing): SpecEntry[] {
   }
 
   if (listing.electronicsSpecs) {
+    const electronicsCategory =
+      listing.categoryId === "mobiles" ? "mobiles" : "electronics";
     for (const [key, value] of Object.entries(listing.electronicsSpecs)) {
       if (!hasValue(value)) continue;
-      entries.push({
-        key,
-        label: getCategoryFieldLabel(
-          listing.categoryId === "mobiles" ? "mobiles" : "electronics",
-          key,
-        ),
-        value: String(value),
-      });
+      entries.push(toSpecEntry(electronicsCategory, key, value));
     }
   }
 
@@ -127,7 +102,14 @@ function getUserSpecEntries(listing: Listing): SpecEntry[] {
     return [];
   }
 
-  const fieldDefs = getCategoryFields(listing.categoryId);
+  const definedFields = getCategoryFields(listing.categoryId);
+  const fieldDefs =
+    definedFields.length > 0
+      ? definedFields
+      : getFormTemplateFields(
+          resolveCategoryFeatureProfile(listing.categoryId),
+          listing.categoryId,
+        );
   const fieldOrder = fieldDefs.map((field) => field.key);
   const visibility = withVisibilityContext(
     specsRecordFromCategorySpecs(listing.categorySpecs),
@@ -150,21 +132,13 @@ function getUserSpecEntries(listing: Listing): SpecEntry[] {
     if (field && !fieldVisibleForSpecs(field, visibility)) continue;
     const value = listing.categorySpecs[key];
     if (!hasValue(value)) continue;
-    entries.push({
-      key,
-      label: getCategoryFieldLabel(listing.categoryId, key),
-      value: formatValue(key, value as string | number | boolean),
-    });
+    entries.push(toSpecEntry(listing.categoryId, key, value));
   }
 
   for (const [key, value] of Object.entries(listing.categorySpecs)) {
     if (fieldOrder.includes(key) || key === "features") continue;
     if (!hasValue(value)) continue;
-    entries.push({
-      key,
-      label: getCategoryFieldLabel(listing.categoryId, key),
-      value: formatValue(key, value as string | number | boolean),
-    });
+    entries.push(toSpecEntry(listing.categoryId, key, value));
   }
 
   return entries;
@@ -198,12 +172,12 @@ export function getCarCardMetaLine(listing: Listing): string {
 }
 
 const CONDITION_LABELS: Record<string, string> = {
-  excellent: "ممتاز",
-  new: "جديد",
-  used: "مستعمل",
-  refurbished: "مجدّد",
-  for_parts: "للقطع",
-  not_working: "لا يعمل",
+  excellent: SPEC_VALUE_LABELS.excellent,
+  new: SPEC_VALUE_LABELS.new,
+  used: SPEC_VALUE_LABELS.used,
+  refurbished: SPEC_VALUE_LABELS.refurbished,
+  for_parts: SPEC_VALUE_LABELS.for_parts,
+  not_working: SPEC_VALUE_LABELS.not_working,
 };
 
 /** Prefer stored categorySpecs; fall back to title/features when specs were stripped. */
