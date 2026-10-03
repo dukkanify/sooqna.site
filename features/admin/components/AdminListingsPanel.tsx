@@ -2,6 +2,11 @@
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import {
+  ADMIN_LISTINGS_DEFAULT_STATUS,
+  listingMatchesAdminStatusFilter,
+  parseAdminListingsStatusFilter,
+} from "@/features/admin/lib/listings-desk-filters";
+import {
   useEffect,
   useMemo,
   useRef,
@@ -212,20 +217,15 @@ export function AdminListingsPanel() {
   const searchParams = useSearchParams();
   const [listings, setListings] = useState<AdminListingRecord[]>([]);
   const [categories, setCategories] = useState<AdminCategoryRecord[]>([]);
-  const [statusFilter, setStatusFilter] = useState(
-    () => searchParams.get("status") ?? "marketplace",
-  );
+  const statusFilter = parseAdminListingsStatusFilter(searchParams.get("status"));
+  const categoryFilter = searchParams.get("category")?.trim() || "all";
+  const emirateFilter =
+    searchParams.get("emirate")?.trim() ||
+    searchParams.get("city")?.trim() ||
+    "all";
+  const areaFilter = searchParams.get("area")?.trim() || "all";
   const [searchQuery, setSearchQuery] = useState(
     () => searchParams.get("q") ?? "",
-  );
-  const [categoryFilter, setCategoryFilter] = useState(
-    () => searchParams.get("category") ?? "all",
-  );
-  const [emirateFilter, setEmirateFilter] = useState(
-    () => searchParams.get("emirate") ?? searchParams.get("city") ?? "all",
-  );
-  const [areaFilter, setAreaFilter] = useState(
-    () => searchParams.get("area") ?? "all",
   );
   const [deskMessage, setDeskMessage] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -305,14 +305,13 @@ export function AdminListingsPanel() {
       .filter((listing) => {
         const demo = isDemoAdminListing(listing);
         const marketplace = isMarketplaceAdminListing(listing);
-        if (statusFilter === "demo") return demo;
-        if (statusFilter === "marketplace") return marketplace;
-        if (statusFilter === "all") return true;
-        if (statusFilter === "featured") {
-          return marketplace && isFeaturedWindowLive(listing);
-        }
-        // Status filters show real marketplace ads only (not showcase/fixtures).
-        return listing.status === statusFilter && marketplace;
+        return listingMatchesAdminStatusFilter({
+          featuredLive: isFeaturedWindowLive(listing),
+          isDemo: demo,
+          isMarketplace: marketplace,
+          status: listing.status,
+          statusFilter,
+        });
       })
       .filter((listing) =>
         categoryFilter === "all" ? true : listing.categoryId === categoryFilter,
@@ -396,49 +395,76 @@ export function AdminListingsPanel() {
     [listings],
   );
 
-  const defaultStatusFilter = "marketplace";
-
   const categoryNameById = useMemo(
     () => new Map(categories.map((category) => [category.id, category.name])),
     [categories],
   );
 
-  useEffect(() => {
+  function writeDeskQuery(patch: {
+    area?: string;
+    category?: string;
+    emirate?: string;
+    q?: string;
+    status?: string;
+  }) {
+    const nextStatus = parseAdminListingsStatusFilter(
+      patch.status ?? statusFilter,
+    );
+    const nextQuery = patch.q !== undefined ? patch.q : searchQuery;
+    const nextCategory = patch.category ?? categoryFilter;
+    const nextEmirate = patch.emirate ?? emirateFilter;
+    const nextArea = patch.area ?? areaFilter;
     const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set("q", searchQuery.trim());
-    if (statusFilter !== defaultStatusFilter) params.set("status", statusFilter);
-    if (categoryFilter !== "all") params.set("category", categoryFilter);
-    if (emirateFilter !== "all") params.set("emirate", emirateFilter);
-    if (areaFilter !== "all") params.set("area", areaFilter);
+    if (nextQuery.trim()) params.set("q", nextQuery.trim());
+    if (nextStatus !== ADMIN_LISTINGS_DEFAULT_STATUS) {
+      params.set("status", nextStatus);
+    }
+    if (nextCategory !== "all") params.set("category", nextCategory);
+    if (nextEmirate !== "all") params.set("emirate", nextEmirate);
+    if (nextArea !== "all") params.set("area", nextArea);
     const qs = params.toString();
     const next = qs ? `${pathname}?${qs}` : pathname;
     const current = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
     if (next !== current) router.replace(next);
-    // Sync URL from filter state only — searchParams identity omitted on purpose.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- URL mirror
-  }, [
-    searchQuery,
-    statusFilter,
-    categoryFilter,
-    emirateFilter,
-    areaFilter,
-    pathname,
-    router,
-  ]);
+  }
+
+  function setStatusFilter(next: string) {
+    writeDeskQuery({ status: next });
+  }
+
+  function setCategoryFilter(next: string) {
+    writeDeskQuery({ category: next });
+  }
+
+  function setEmirateFilter(next: string) {
+    writeDeskQuery({ emirate: next, area: "all" });
+  }
+
+  function setAreaFilter(next: string) {
+    writeDeskQuery({ area: next });
+  }
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("q") ?? "";
+    setSearchQuery((current) => (current === fromUrl ? current : fromUrl));
+  }, [searchParams]);
 
   const hasActiveFilters =
-    statusFilter !== defaultStatusFilter ||
+    statusFilter !== ADMIN_LISTINGS_DEFAULT_STATUS ||
     categoryFilter !== "all" ||
     emirateFilter !== "all" ||
     areaFilter !== "all" ||
     searchQuery.trim().length > 0;
 
   function clearFilters() {
-    setStatusFilter(defaultStatusFilter);
-    setCategoryFilter("all");
-    setEmirateFilter("all");
-    setAreaFilter("all");
     setSearchQuery("");
+    writeDeskQuery({
+      area: "all",
+      category: "all",
+      emirate: "all",
+      q: "",
+      status: ADMIN_LISTINGS_DEFAULT_STATUS,
+    });
   }
 
   const categoryOptions = useMemo(
@@ -1255,7 +1281,11 @@ export function AdminListingsPanel() {
           <div className="min-w-[220px] flex-1">
             <Input
               label="بحث"
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setSearchQuery(value);
+                writeDeskQuery({ q: value });
+              }}
               placeholder="العنوان، رقم الإعلان، الرابط، المعلن، الهاتف..."
               value={searchQuery}
             />
@@ -1279,10 +1309,7 @@ export function AdminListingsPanel() {
           <div className="min-w-[150px]">
             <Select
               label="الإمارة"
-              onChange={(event) => {
-                setEmirateFilter(event.target.value);
-                setAreaFilter("all");
-              }}
+              onChange={(event) => setEmirateFilter(event.target.value)}
               options={emirateFilterOptions}
               value={emirateFilter}
             />
