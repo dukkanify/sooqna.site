@@ -5,7 +5,8 @@ import { uploadListingImages } from "@/services/upload";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
 
-import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
+import { LISTING_IMAGE_ACCEPT, MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
+import { collectListingImageFiles } from "@/shared/media/image-bytes";
 
 type AdminListingImageGalleryProps = {
   images: string[];
@@ -30,9 +31,7 @@ export function AdminListingImageGallery({
   }
 
   async function uploadFiles(fileList: FileList | File[] | null) {
-    const files = Array.from(fileList ?? []).filter((file) =>
-      file.type.startsWith("image/"),
-    );
+    const files = await collectListingImageFiles(fileList);
     if (!files.length) return;
     const room = MAX_LISTING_IMAGES - images.length;
     if (room <= 0) {
@@ -57,8 +56,12 @@ export function AdminListingImageGallery({
       if (next.length < files.slice(0, room).length) {
         setError("رُفعت بعض الصور فقط — أعد محاولة الباقي.");
       }
-    } catch {
-      setError("تعذر رفع الصور. حاول مرة أخرى.");
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "تعذر رفع الصور. حاول مرة أخرى.";
+      setError(message);
     } finally {
       onUploadingChange?.(false);
     }
@@ -185,7 +188,7 @@ export function AdminListingImageGallery({
             {canAdd ? (
               <label className="grid aspect-[4/3] cursor-pointer place-items-center rounded-[var(--radius-lg)] border border-dashed border-border bg-surface p-2 text-center text-xs font-semibold text-primary transition hover:bg-surface-muted/50">
                 <input
-                  accept="image/*"
+                  accept={LISTING_IMAGE_ACCEPT}
                   aria-label="إضافة صور"
                   className="sr-only"
                   disabled={uploading}
@@ -203,7 +206,7 @@ export function AdminListingImageGallery({
         ) : (
           <label className="grid min-h-36 cursor-pointer place-items-center gap-2 p-4 text-center">
             <input
-              accept="image/*"
+              accept={LISTING_IMAGE_ACCEPT}
               aria-label="رفع صور الإعلان"
               className="sr-only"
               disabled={uploading}

@@ -9,22 +9,7 @@ import {
   UPLOAD_ALLOWED_TYPES,
   UPLOAD_MAX_BYTES,
 } from "@/services/storage/object-storage";
-
-function normalizeContentType(file: File): string {
-  const raw = (file.type || "").trim().toLowerCase();
-  if (raw === "image/jpg") return "image/jpeg";
-  if (UPLOAD_ALLOWED_TYPES.has(raw)) return raw;
-
-  const name = file.name.toLowerCase();
-  if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
-  if (name.endsWith(".png")) return "image/png";
-  if (name.endsWith(".webp")) return "image/webp";
-  if (name.endsWith(".gif")) return "image/gif";
-  if (name.endsWith(".mp4")) return "video/mp4";
-  if (name.endsWith(".webm")) return "video/webm";
-  if (name.endsWith(".pdf")) return "application/pdf";
-  return raw || "application/octet-stream";
-}
+import { resolveUploadContentType } from "@/shared/media/image-bytes";
 
 /**
  * Authenticated multipart upload → durable object URL (local media API or S3).
@@ -52,7 +37,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "FILE_TOO_LARGE" }, { status: 413 });
     }
 
-    const contentType = normalizeContentType(file);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const contentType = resolveUploadContentType({
+      declaredType: file.type,
+      filename: file.name,
+      bytes: buffer,
+    });
     if (!UPLOAD_ALLOWED_TYPES.has(contentType)) {
       return NextResponse.json(
         { error: "UNSUPPORTED_MEDIA_TYPE" },
@@ -60,7 +50,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
     const stored = await storeUploadedObject({
       buffer,
       contentType,

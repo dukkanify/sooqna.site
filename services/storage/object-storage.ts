@@ -15,6 +15,11 @@ import {
   type StorageVisibility,
   type UploadInput,
 } from "@/services/storage/types";
+import {
+  isRasterImageKind,
+  mimeForRasterKind,
+  sniffRasterImageKind,
+} from "@/shared/media/image-bytes";
 
 export type { StoredObject, MediaClass, StorageVisibility, UploadInput };
 export {
@@ -52,7 +57,14 @@ export async function storeUploadedObject(input: {
   visibility?: StorageVisibility;
   ownerScope?: string;
 }): Promise<StoredObject> {
-  if (!UPLOAD_ALLOWED_TYPES.has(input.contentType)) {
+  const sniffed = sniffRasterImageKind(input.buffer);
+  if (sniffed === "heic") {
+    throw new Error("UNSUPPORTED_MEDIA_TYPE");
+  }
+  const contentType = isRasterImageKind(sniffed)
+    ? mimeForRasterKind(sniffed)
+    : input.contentType;
+  if (!UPLOAD_ALLOWED_TYPES.has(contentType)) {
     throw new Error("UNSUPPORTED_MEDIA_TYPE");
   }
   if (
@@ -66,7 +78,7 @@ export async function storeUploadedObject(input: {
   const visibility = input.visibility ?? defaultVisibilityFor(mediaClass);
   const upload: UploadInput = {
     buffer: input.buffer,
-    contentType: input.contentType,
+    contentType,
     folder: input.folder ?? mediaClass,
     mediaClass,
     visibility,

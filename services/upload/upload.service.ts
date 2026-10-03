@@ -2,6 +2,7 @@ import {
   normalizeListingImageFiles,
   persistImageFiles,
 } from "@/shared/utils/persist-images";
+import { IMAGE_READ_ERROR } from "@/shared/media/image-bytes";
 
 type UploadApiResponse = {
   url?: string;
@@ -74,9 +75,9 @@ export async function uploadListingImages(files: File[]): Promise<string[]> {
               resolve(reader.result);
               return;
             }
-            reject(new Error("تعذر قراءة الصورة"));
+            reject(new Error(IMAGE_READ_ERROR));
           };
-          reader.onerror = () => reject(new Error("تعذر قراءة الصورة"));
+          reader.onerror = () => reject(new Error(IMAGE_READ_ERROR));
           reader.readAsDataURL(file);
         }),
     ),
