@@ -13,7 +13,7 @@ import {
   addListingStepTitleClass,
 } from "./utils";
 
-const MAX_IMAGES = 12;
+import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 
 type MediaContactStepProps = {
   defaultContact?: string;
@@ -85,7 +85,7 @@ export function MediaContactStep({
                   </div>
                 ))}
 
-                {imagePreviews.length < MAX_IMAGES ? (
+                {imagePreviews.length < MAX_LISTING_IMAGES ? (
                   <label className="grid aspect-[3/2] cursor-pointer place-items-center rounded-[var(--radius-xl)] border border-dashed border-secondary bg-surface p-3 text-center text-xs font-semibold text-primary transition hover:bg-secondary/10">
                     <input
                       accept="image/*"
@@ -120,8 +120,8 @@ export function MediaContactStep({
                   {imagesRequired ? "رفع صور الإعلان *" : "رفع صور الإعلان (اختياري)"}
                   <span className="mt-2 block text-xs font-medium text-muted">
                     {imagesRequired
-                      ? `صورة واحدة على الأقل مطلوبة — حتى ${MAX_IMAGES} صور`
-                      : `يمكنك إضافة حتى ${MAX_IMAGES} صورة`}
+                      ? `صورة واحدة على الأقل مطلوبة — حتى ${MAX_LISTING_IMAGES} صور`
+                      : `يمكنك إضافة حتى ${MAX_LISTING_IMAGES} صورة`}
                   </span>
                 </span>
               </label>

@@ -18,6 +18,8 @@ import {
   buildCategoryFieldsDefaults,
   getListingImages,
 } from "./listing-edit.utils";
+import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
+import { mergeCategorySpecs } from "@/shared/listings/listing-form-hydrate";
 
 export type EditListingMode = "local" | "server";
 
@@ -91,11 +93,21 @@ export function useEditListingForm(
       const existingImages = getListingImages(currentListing);
       const newImages =
         imageFiles.length > 0 ? await uploadListingImages(imageFiles) : [];
-      const mergedImages = [...existingImages, ...newImages].slice(0, 6);
+      const mergedImages = [...existingImages, ...newImages].slice(
+        0,
+        MAX_LISTING_IMAGES,
+      );
 
       const cityName = isDynamicCategory(categoryId)
         ? parsed.city
         : cities.find((city) => city.id === parsed.city)?.name ?? currentListing.city;
+      const nextSpecs = isDynamicCategory(categoryId)
+        ? mergeCategorySpecs(currentListing.categorySpecs, {
+            ...parsed.categorySpecs,
+            ...(parsed.emirate ? { emirate: parsed.emirate } : {}),
+            ...(cityName ? { city: cityName } : {}),
+          })
+        : undefined;
 
       const title = isDynamicCategory(categoryId)
         ? parsed.title
@@ -124,10 +136,11 @@ export function useEditListingForm(
             contactPhone: contact,
             imageUrl: mergedImages[0],
             images: mergedImages.length > 0 ? mergedImages : undefined,
-            categorySpecs: isDynamicCategory(categoryId)
-              ? parsed.categorySpecs
-              : undefined,
-            features: parsed.features.length > 0 ? parsed.features : [],
+            categorySpecs: nextSpecs,
+            features:
+              parsed.features.length > 0
+                ? parsed.features
+                : currentListing.features ?? [],
             negotiable: parsed.negotiable,
             videoUrl: videoUrl || "",
           }),
@@ -152,10 +165,11 @@ export function useEditListingForm(
           country: countries[0].name,
           imageUrl: mergedImages[0],
           images: mergedImages.length > 0 ? mergedImages : undefined,
-          categorySpecs: isDynamicCategory(categoryId)
-            ? parsed.categorySpecs
-            : undefined,
-          features: parsed.features.length > 0 ? parsed.features : undefined,
+          categorySpecs: nextSpecs,
+          features:
+            parsed.features.length > 0
+              ? parsed.features
+              : currentListing.features,
           negotiable: parsed.negotiable,
           emirate: parsed.emirate,
           contactPhone: contact,
@@ -182,8 +196,11 @@ export function useEditListingForm(
         country: countries[0].name,
         imageUrl: mergedImages[0],
         images: mergedImages.length > 0 ? mergedImages : undefined,
-        categorySpecs: isDynamicCategory(categoryId) ? parsed.categorySpecs : undefined,
-        features: parsed.features.length > 0 ? parsed.features : undefined,
+        categorySpecs: nextSpecs,
+        features:
+          parsed.features.length > 0
+            ? parsed.features
+            : currentListing.features,
         negotiable: parsed.negotiable,
         emirate: parsed.emirate,
         contactPhone: contact,
@@ -210,7 +227,7 @@ export function useEditListingForm(
       const current =
         mode === "server" ? serverListing : readLocalListing(listingId);
       const existingCount = current ? getListingImages(current).length : 0;
-      const maxNew = Math.max(0, 6 - existingCount);
+      const maxNew = Math.max(0, MAX_LISTING_IMAGES - existingCount);
       setImagePreviewsFromFiles(fileList, maxNew, modeAppend);
     },
     [listingId, mode, serverListing, setImagePreviewsFromFiles],

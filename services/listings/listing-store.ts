@@ -38,6 +38,7 @@ import type {
 } from "@/types/domain/admin";
 import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
 import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
+import { hydrateCategorySpecsForEdit } from "@/shared/listings/listing-form-hydrate";
 import { migrateJobsListingFields } from "@/shared/listings/jobs-taxonomy";
 
 let cacheRows: Listing[] | null = null;
@@ -764,6 +765,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     postedAt: media.postedAt ?? "",
     city: media.city,
     emirate: media.emirate,
+    area: media.area,
     condition: media.condition,
     contactPhone: media.contactPhone,
     imageUrl: media.imageUrl ?? media.images?.[0],
@@ -772,7 +774,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
       : media.imageUrl
         ? [media.imageUrl]
         : undefined,
-    categorySpecs: media.categorySpecs,
+    categorySpecs: hydrateCategorySpecsForEdit(media),
     features: media.features,
     negotiable: media.negotiable,
     views: typeof media.views === "number" ? media.views : 0,

@@ -3,6 +3,7 @@ import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import type { AddListingErrors } from "./add-listing/types";
+import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 
 type ListingMediaSectionProps = {
   errors: AddListingErrors;
@@ -68,9 +69,7 @@ export function ListingMediaSection({
             <span>
               {existingImages.length > 0 ? "إضافة صور جديدة" : "رفع صور الإعلان"}
               <span className="mt-2 block text-xs font-medium text-muted">
-                {totalImages > 0
-                  ? `${totalImages} صورة`
-                  : "اختر حتى 6 صور"}
+                {totalImages}/{MAX_LISTING_IMAGES} صور
               </span>
             </span>
           </label>

@@ -10,6 +10,7 @@ import {
   patchListingRecord,
 } from "@/services/listings/listing-store";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
+import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 import { SELLER_MARKETPLACE_STATUSES } from "@/shared/constants/listingStatuses";
 import type { AdminListingPatch } from "@/types";
 
@@ -45,7 +46,7 @@ const sellerPatchSchema = z
     condition: z.enum(listingConditions).optional(),
     contactPhone: optionalTrimmedString(40),
     imageUrl: z.string().max(2_000_000).optional(),
-    images: z.array(z.string().max(2_000_000)).max(6).optional(),
+    images: z.array(z.string().max(2_000_000)).max(MAX_LISTING_IMAGES).optional(),
     categorySpecs: z
       .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
       .optional(),
