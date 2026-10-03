@@ -757,6 +757,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     sellerName: media.seller.name,
     sellerId: media.seller.id,
     categoryId: media.categoryId,
+    subcategory: media.subcategory,
     price: media.price,
     currency: media.currency,
     status: media.status,

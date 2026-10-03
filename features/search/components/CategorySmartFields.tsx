@@ -14,6 +14,7 @@ import {
   optionsForSearchField,
   subcategoryFilterLabel,
 } from "@/features/search/lib/category-filter-fields";
+import { withVisibilityContext } from "@/shared/listings/category-field-visibility";
 import { setVehicleCatalogOverrides } from "@/shared/vehicles";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 import {
@@ -59,6 +60,9 @@ function setSpec(
   categoryId: string,
 ): SearchFilterState {
   const specs = { ...draft.specs, [key]: value };
+  const visibility = withVisibilityContext(specs, {
+    subcategory: draft.subcategory,
+  });
   const child = cascadeChildKey(key);
   if (child) {
     const childValue = specs[child] ?? "";
@@ -71,7 +75,7 @@ function setSpec(
   }
   const ranges = { ...draft.ranges };
   for (const field of getCategorySearchFields(categoryId)) {
-    if (!fieldVisibleForSpecs(field, specs)) {
+    if (!fieldVisibleForSpecs(field, visibility)) {
       specs[field.key] = "";
       delete ranges[field.key];
     }
@@ -166,7 +170,10 @@ export function CategorySmartFields({
     if (variant === "essential") return CARS_ESSENTIAL_KEYS.has(field.key);
     return CARS_ADVANCED_KEYS.has(field.key);
   });
-  const specs = draft.specs ?? {};
+  const specValues = draft.specs ?? {};
+  const specs = withVisibilityContext(specValues, {
+    subcategory: draft.subcategory,
+  });
   const subcategories = category?.subcategories ?? [];
   const emirate = draft.city ?? "";
   const areaOptions = areasForEmirate(emirate);
@@ -192,8 +199,8 @@ export function CategorySmartFields({
               subcategory: event.target.value,
               specs:
                 categoryId === "services"
-                  ? { ...specs, serviceCategory: "" }
-                  : specs,
+                  ? { ...specValues, serviceCategory: "" }
+                  : specValues,
             })
           }
           options={[

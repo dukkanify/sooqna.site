@@ -71,6 +71,7 @@ export function ListingEditForm({
           errors={errors}
           heading="تعديل تفاصيل الإعلان"
           showContact
+          subcategory={listing.subcategory}
         />
       ) : (
         <GenericListingFields errors={errors} listing={listing} />

@@ -1,4 +1,4 @@
-import type { CategorySpecs, Listing } from "@/types";
+import type { CategoryFieldDefinition, CategorySpecs, Listing } from "@/types";
 import {
   canonicalizeEmirate,
   extractAreaLabel,
@@ -6,6 +6,21 @@ import {
   listingArea,
   listingEmirate,
 } from "@/shared/listings/uae-emirate";
+import { fieldVisibleForSpecs } from "@/shared/listings/category-field-visibility";
+
+export function omitHiddenCategorySpecs(
+  fields: Pick<CategoryFieldDefinition, "key" | "showWhen" | "hideWhen">[],
+  specs: CategorySpecs | undefined,
+  visibility: Record<string, string>,
+): CategorySpecs {
+  const next: CategorySpecs = { ...(specs ?? {}) };
+  for (const field of fields) {
+    if (!fieldVisibleForSpecs(field, visibility)) {
+      delete next[field.key];
+    }
+  }
+  return next;
+}
 
 function text(value: unknown): string {
   if (value === undefined || value === null || typeof value === "boolean") {

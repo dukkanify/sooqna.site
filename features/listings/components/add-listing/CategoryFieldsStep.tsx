@@ -36,13 +36,14 @@ export function CategoryFieldsStep({
 
   return (
     <CategoryFieldsForm
-      key={`${categoryId}:${petsAnimalType || "none"}`}
+      key={`${categoryId}:${subcategory || petsAnimalType || "none"}`}
       categoryId={categoryId}
       defaults={defaults}
       errors={errors}
       heading="2. تفاصيل الإعلان"
       onPreviewChange={onPreviewChange}
       stepLabel="الخطوة 2"
+      subcategory={subcategory}
     />
   );
 }

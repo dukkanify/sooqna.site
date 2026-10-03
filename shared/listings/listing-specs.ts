@@ -1,6 +1,11 @@
 import type { Listing } from "@/types";
 import { getCategoryFieldLabel, getCategoryFields } from "@/shared/constants/category-fields";
 import {
+  fieldVisibleForSpecs,
+  specsRecordFromCategorySpecs,
+  withVisibilityContext,
+} from "@/shared/listings/category-field-visibility";
+import {
   CATEGORY_SEARCH_KEYWORDS,
   searchTextMatches,
 } from "@/shared/listings/search-text";
@@ -122,11 +127,27 @@ function getUserSpecEntries(listing: Listing): SpecEntry[] {
     return [];
   }
 
-  const fieldOrder = getCategoryFields(listing.categoryId).map((field) => field.key);
+  const fieldDefs = getCategoryFields(listing.categoryId);
+  const fieldOrder = fieldDefs.map((field) => field.key);
+  const visibility = withVisibilityContext(
+    specsRecordFromCategorySpecs(listing.categorySpecs),
+    { subcategory: listing.subcategory },
+  );
+  if (!visibility.fuelType && listing.carSpecs?.fuel) {
+    visibility.fuelType = listing.carSpecs.fuel;
+  }
+  if (
+    !visibility.fuelType &&
+    /كهرب|electric|\bev\b/i.test(listing.subcategory ?? "")
+  ) {
+    visibility.fuelType = "كهربائي";
+  }
   const entries: SpecEntry[] = [];
 
   for (const key of fieldOrder) {
     if (key === "features") continue;
+    const field = fieldDefs.find((item) => item.key === key);
+    if (field && !fieldVisibleForSpecs(field, visibility)) continue;
     const value = listing.categorySpecs[key];
     if (!hasValue(value)) continue;
     entries.push({

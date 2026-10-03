@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { CategoryFieldDefinition, CategorySpecs, Listing, ListingCondition } from "@/types";
-import { getCategoryFields, isDynamicCategory } from "@/shared/constants/category-fields";
+import { getCategoryFields, isDynamicCategory, mergeFieldVisibilityFromDefaults } from "@/shared/constants/category-fields";
 import { getModelsForBrand } from "@/shared/constants/product-brand-models";
 import { getBrandOptionsForCategory } from "@/shared/constants/product-brands";
 import { BrandCombobox } from "@/shared/ui/BrandCombobox";
@@ -13,7 +13,10 @@ import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import type { CategoryFieldOption } from "@/types";
-import { fieldVisibleForSpecs } from "@/shared/listings/category-field-visibility";
+import {
+  fieldVisibleForSpecs,
+  withVisibilityContext,
+} from "@/shared/listings/category-field-visibility";
 import {
   addListingCheckboxGridClass,
   addListingCheckboxGroupClass,
@@ -56,6 +59,8 @@ type CategoryFieldsFormProps = {
   }) => void;
   showContact?: boolean;
   stepLabel?: string;
+  /** Step-1 / listing subcategory — drives hideWhen (EV, accessories). */
+  subcategory?: string;
 };
 
 function getSpecValue(
@@ -230,6 +235,7 @@ export function CategoryFieldsForm({
   onPreviewChange,
   showContact = false,
   stepLabel,
+  subcategory = "",
 }: CategoryFieldsFormProps) {
   const isJobs = categoryId === "jobs";
   const isFood = categoryId === "food";
@@ -300,10 +306,12 @@ export function CategoryFieldsForm({
     };
   }, [categoryId]);
 
-  const allFields =
+  const allFields = mergeFieldVisibilityFromDefaults(
+    categoryId,
     remoteFields?.categoryId === categoryId
       ? remoteFields.fields
-      : fallbackFields;
+      : fallbackFields,
+  );
 
   const [specs, setSpecs] = useState<Record<string, string>>(() =>
     specsFromDefaults(defaults),
@@ -338,9 +346,11 @@ export function CategoryFieldsForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fingerprint of stored specs
   }, [defaultsFingerprint]);
 
+  const visibilitySpecs = withVisibilityContext(specs, { subcategory });
   const fields = allFields.filter(
     (field) =>
-      field.type !== "checkbox-group" && fieldVisibleForSpecs(field, specs),
+      field.type !== "checkbox-group" &&
+      fieldVisibleForSpecs(field, visibilitySpecs),
   );
   const featureField = allFields.find((field) => field.type === "checkbox-group");
   const selectedFeatures = buildSelectedFeatures(defaults);
@@ -456,6 +466,9 @@ export function CategoryFieldsForm({
         <p className={addListingStepDescClass}>
           الحقول تتغير تلقائياً حسب القسم — ابحث عن الماركة بكتابة أول حروفها.
         </p>
+        {subcategory ? (
+          <input name="subcategory" type="hidden" value={subcategory} />
+        ) : null}
 
         <div className={addListingDynamicFieldsGridClass}>
           {fields.map((field) => {
@@ -603,7 +616,7 @@ export function CategoryFieldsForm({
             );
           })}
 
-          {featureField && fieldVisibleForSpecs(featureField, specs) ? (
+          {featureField && fieldVisibleForSpecs(featureField, visibilitySpecs) ? (
             <div className="col-span-2 min-w-0">
               {renderField(featureField, defaults, selectedFeatures, onSpecChange)}
             </div>
