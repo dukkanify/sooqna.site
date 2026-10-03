@@ -8,6 +8,7 @@ import {
   markNotificationsRead,
   countUnreadNotifications,
 } from "@/services/payments/notification-store";
+import { humanDisplayLabel } from "@/shared/display/technical-id";
 
 export async function GET(request: Request) {
   const user = await requireSessionUser();
@@ -28,7 +29,15 @@ export async function GET(request: Request) {
   const unread = await countUnreadNotifications(user.id);
   return NextResponse.json({
     unread,
-    notifications: notifications.slice(0, capped),
+    notifications: notifications.slice(0, capped).map((item) => ({
+      ...item,
+      title: humanDisplayLabel(item.title, "إشعار"),
+      body: humanDisplayLabel(item.body, ""),
+      titleEn: item.titleEn
+        ? humanDisplayLabel(item.titleEn, "Notification")
+        : item.titleEn,
+      bodyEn: item.bodyEn ? humanDisplayLabel(item.bodyEn, "") : item.bodyEn,
+    })),
   });
 }
 

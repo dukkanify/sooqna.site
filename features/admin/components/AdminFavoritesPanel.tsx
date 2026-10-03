@@ -4,16 +4,58 @@ import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
+import { humanDisplayLabel } from "@/shared/display/technical-id";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { ServerFavorite } from "@/types/domain/server-favorite";
 import { getSessionUser } from "@/services/storage";
 import { Card } from "@/shared/ui/Card";
 
-type FavoritesPayload = {
-  favorites: ServerFavorite[];
-  summary: { total: number; uniqueListings: number; uniqueUsers: number };
-  topListings: { count: number; listingId: string }[];
+type FavoriteRow = ServerFavorite & {
+  listingHref?: string;
+  listingTitle?: string;
+  userEmail?: string;
+  userHref?: string;
+  userName?: string;
 };
+
+type FavoritesPayload = {
+  favorites: FavoriteRow[];
+  summary: { total: number; uniqueListings: number; uniqueUsers: number };
+  topListings: { count: number; href?: string; listingId: string; title?: string }[];
+};
+
+function ListingLabel({
+  href,
+  title,
+}: {
+  href?: string;
+  title?: string;
+}) {
+  const label = humanDisplayLabel(title, "إعلان");
+  if (!href) return <>{label}</>;
+  return (
+    <Link className="admin-ops__text-link font-semibold hover:underline" href={href}>
+      {label}
+    </Link>
+  );
+}
+
+function UserLabel({
+  href,
+  name,
+}: {
+  href?: string;
+  name?: string;
+}) {
+  const label = humanDisplayLabel(name, "مستخدم");
+  if (!href) return <>{label}</>;
+  return (
+    <Link className="admin-ops__text-link hover:underline" href={href}>
+      {label}
+    </Link>
+  );
+}
 
 export function AdminFavoritesPanel() {
   const locale = useLocale();
@@ -72,7 +114,9 @@ export function AdminFavoritesPanel() {
           ) : (
             data.topListings.map((row) => (
               <div key={row.listingId} className="admin-ops__detail-row">
-                <span>{row.listingId}</span>
+                <span>
+                  <ListingLabel href={row.href} title={row.title} />
+                </span>
                 <strong>{row.count}</strong>
               </div>
             ))
@@ -102,10 +146,18 @@ export function AdminFavoritesPanel() {
                   <tr key={item.id}>
                     <td className="admin-desk-cell-wrap">
                       <p className="admin-desk-cell-title">
-                        {item.title || item.listingId}
+                        <ListingLabel
+                          href={item.listingHref}
+                          title={item.listingTitle || item.title}
+                        />
                       </p>
                     </td>
-                    <td className="font-mono text-xs">{item.userId}</td>
+                    <td className="text-sm">
+                      <UserLabel href={item.userHref} name={item.userName} />
+                      {item.userEmail ? (
+                        <p className="text-xs text-muted">{item.userEmail}</p>
+                      ) : null}
+                    </td>
                     <td className="text-xs text-muted">
                       {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
                     </td>
@@ -126,11 +178,16 @@ export function AdminFavoritesPanel() {
               <li key={item.id} className="admin-desk-mobile-card">
                 <div className="admin-desk-mobile-card__head">
                   <p className="min-w-0 flex-1 text-sm font-bold text-ink">
-                    {item.title || item.listingId}
+                    <ListingLabel
+                      href={item.listingHref}
+                      title={item.listingTitle || item.title}
+                    />
                   </p>
                 </div>
                 <div className="admin-desk-mobile-card__meta">
-                  <span>{item.userId}</span>
+                  <span>
+                    <UserLabel href={item.userHref} name={item.userName} />
+                  </span>
                   <span>
                     {new Date(item.savedAt).toLocaleString(intlLocale(locale))}
                   </span>

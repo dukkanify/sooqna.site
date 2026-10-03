@@ -47,13 +47,14 @@ const TXN_LABELS: Record<string, string> = {
 };
 
 function walletLabel(wallet: WalletRow): string {
-  return wallet.fullName?.trim() || wallet.email?.trim() || wallet.userId;
+  return wallet.fullName?.trim() || wallet.email?.trim() || "مستخدم";
 }
 
 export function AdminWalletsPanel() {
   const locale = useLocale();
   const [data, setData] = useState<WalletsPayload | null>(null);
   const [userId, setUserId] = useState("");
+  const [selectedUserLabel, setSelectedUserLabel] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"deposit" | "withdrawal">("deposit");
   const [description, setDescription] = useState("");
@@ -106,12 +107,25 @@ export function AdminWalletsPanel() {
     };
   }, [data, filtered]);
 
+  function resolveSelectedUserId(): string | null {
+    if (userId.trim()) return userId.trim();
+    const q = selectedUserLabel.trim().toLowerCase();
+    if (!q || !data) return null;
+    const match = data.wallets.find((wallet) => {
+      const email = wallet.email?.trim().toLowerCase();
+      const name = wallet.fullName?.trim().toLowerCase();
+      return email === q || name === q;
+    });
+    return match?.userId ?? null;
+  }
+
   async function handleAdjust() {
     const session = getSessionUser();
     if (!session) return;
     const parsedAmount = Number(amount);
-    if (!userId.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setMessage("أدخل معرّف مستخدم ومبلغاً صالحاً.");
+    const targetUserId = resolveSelectedUserId();
+    if (!targetUserId || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setMessage("اختر مستخدماً وأدخل مبلغاً صالحاً.");
       return;
     }
     setBusy(true);
@@ -120,7 +134,7 @@ export function AdminWalletsPanel() {
       const res = await adminFetch("/api/admin/wallets", {
         method: "POST",
         body: JSON.stringify({
-          userId: userId.trim(),
+          userId: targetUserId,
           amount: parsedAmount,
           type,
           description: description.trim() || undefined,
@@ -238,14 +252,17 @@ export function AdminWalletsPanel() {
         <h2 className="text-sm font-semibold text-ink">تعديل رصيد إداري</h2>
         <p className="mt-1 text-xs leading-6 text-muted">
           يحدّث دفتر المحفظة فقط (ليس تحويل Stripe). الإيداع يزيد المتاح، والسحب
-          يخصمه. اختر مستخدماً من الجدول لتعبئة المعرّف.
+          يخصمه. اختر مستخدماً من الجدول أو اكتب الاسم أو البريد.
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Input
-            label="معرّف المستخدم"
-            onChange={(e) => setUserId(e.target.value)}
-            placeholder="user-..."
-            value={userId}
+            label="المستخدم"
+            onChange={(e) => {
+              setSelectedUserLabel(e.target.value);
+              setUserId("");
+            }}
+            placeholder="اختر من الجدول أو اكتب الاسم / البريد"
+            value={selectedUserLabel}
           />
           <Input
             label="المبلغ (د.إ)"
@@ -291,7 +308,7 @@ export function AdminWalletsPanel() {
             <Input
               label="بحث"
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="اسم، بريد، أو معرّف..."
+              placeholder="اسم أو بريد..."
               value={query}
             />
           </div>
@@ -329,14 +346,14 @@ export function AdminWalletsPanel() {
                     <td className="admin-desk-cell-wrap">
                       <button
                         className="admin-desk-cell-title text-start font-bold text-ink underline-offset-2 hover:underline"
-                        onClick={() => setUserId(wallet.userId)}
+                        onClick={() => {
+                          setUserId(wallet.userId);
+                          setSelectedUserLabel(walletLabel(wallet));
+                        }}
                         type="button"
                       >
                         {walletLabel(wallet)}
                       </button>
-                      <p className="mt-0.5 font-mono text-[11px] text-muted">
-                        {wallet.userId}
-                      </p>
                       {wallet.email ? (
                         <p className="text-[11px] text-muted">{wallet.email}</p>
                       ) : null}
@@ -379,14 +396,19 @@ export function AdminWalletsPanel() {
                 <div className="admin-desk-mobile-card__head">
                   <button
                     className="min-w-0 flex-1 text-start text-sm font-bold text-ink"
-                    onClick={() => setUserId(wallet.userId)}
+                    onClick={() => {
+                      setUserId(wallet.userId);
+                      setSelectedUserLabel(walletLabel(wallet));
+                    }}
                     type="button"
                   >
                     {walletLabel(wallet)}
                   </button>
                   <CurrencyAmount amount={wallet.availableBalance} size="sm" />
                 </div>
-                <p className="font-mono text-[11px] text-muted">{wallet.userId}</p>
+                {wallet.email ? (
+                  <p className="text-[11px] text-muted">{wallet.email}</p>
+                ) : null}
                 <div className="admin-desk-mobile-card__meta">
                   <span>معلّق {wallet.pendingBalance.toLocaleString(intlLocale(locale))}</span>
                   <span>محجوز {wallet.heldInEscrow.toLocaleString(intlLocale(locale))}</span>
@@ -404,7 +426,10 @@ export function AdminWalletsPanel() {
                 ) : null}
                 <div className="admin-desk-mobile-card__actions">
                   <Button
-                    onClick={() => setUserId(wallet.userId)}
+                    onClick={() => {
+                      setUserId(wallet.userId);
+                      setSelectedUserLabel(walletLabel(wallet));
+                    }}
                     size="sm"
                     type="button"
                     variant="secondary"
