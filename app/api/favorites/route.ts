@@ -9,6 +9,8 @@ import {
   getFavoritesForUser,
   syncFavoritesForUser,
 } from "@/services/favorites/favorite-store";
+import { resolveDisplayMaps } from "@/services/display/resolve-display-labels";
+import { humanDisplayLabel } from "@/shared/display/technical-id";
 
 const favoriteSchema = z.object({
   listingId: z.string().min(1),
@@ -35,7 +37,19 @@ export async function GET() {
   if (!isSessionUser(user)) return user;
 
   const favorites = await getFavoritesForUser(user.id);
-  return NextResponse.json({ favorites });
+  const { listings } = await resolveDisplayMaps({
+    listingIds: favorites.map((item) => item.listingId),
+  });
+  return NextResponse.json({
+    favorites: favorites.map((item) => {
+      const listing = listings.get(item.listingId);
+      return {
+        ...item,
+        title: listing?.title ?? humanDisplayLabel(item.title, "إعلان"),
+        slug: listing?.slug || item.slug,
+      };
+    }),
+  });
 }
 
 export async function POST(request: Request) {

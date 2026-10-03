@@ -1,13 +1,21 @@
 "use client";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
+import { humanDisplayLabel } from "@/shared/display/technical-id";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { DeliveryAddress } from "@/types/domain/address";
 import { getSessionUser } from "@/services/storage";
 import { Card } from "@/shared/ui/Card";
 
+type AddressRow = DeliveryAddress & {
+  userEmail?: string;
+  userHref?: string;
+  userName?: string;
+};
+
 export function AdminAddressesPanel() {
-  const [items, setItems] = useState<DeliveryAddress[]>([]);
+  const [items, setItems] = useState<AddressRow[]>([]);
   const [summary, setSummary] = useState({ total: 0, users: 0 });
 
   useEffect(() => {
@@ -72,7 +80,21 @@ export function AdminAddressesPanel() {
                     <td className="text-xs">
                       {item.emirate} / {item.city} / {item.area}
                     </td>
-                    <td className="font-mono text-xs">{item.userId}</td>
+                    <td className="text-sm">
+                      {item.userHref ? (
+                        <Link
+                          className="admin-ops__text-link hover:underline"
+                          href={item.userHref}
+                        >
+                          {humanDisplayLabel(item.userName, "مستخدم")}
+                        </Link>
+                      ) : (
+                        humanDisplayLabel(item.userName, "مستخدم")
+                      )}
+                      {item.userEmail ? (
+                        <p className="text-xs text-muted">{item.userEmail}</p>
+                      ) : null}
+                    </td>
                     <td dir="ltr">{item.phone}</td>
                     <td>{item.isDefault ? "نعم" : "—"}</td>
                   </tr>
@@ -107,7 +129,18 @@ export function AdminAddressesPanel() {
                     {item.emirate} / {item.city} / {item.area}
                   </span>
                   <span>{item.street}</span>
-                  <span>{item.userId}</span>
+                  <span>
+                    {item.userHref ? (
+                      <Link
+                        className="admin-ops__text-link hover:underline"
+                        href={item.userHref}
+                      >
+                        {humanDisplayLabel(item.userName, "مستخدم")}
+                      </Link>
+                    ) : (
+                      humanDisplayLabel(item.userName, "مستخدم")
+                    )}
+                  </span>
                   <span dir="ltr">{item.phone}</span>
                 </div>
               </li>

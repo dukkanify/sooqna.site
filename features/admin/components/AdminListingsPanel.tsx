@@ -57,7 +57,8 @@ import {
   listingMatchesAreaFilter,
   listingMatchesEmirateFilter,
 } from "@/shared/listings/uae-emirate";
-import { useLocale } from "@/shared/i18n/useLocale";
+import { compactListingNumber, isTechnicalRecordId } from "@/shared/display/technical-id";
+import { listingDetailsHref } from "@/shared/listings/listing-url";
 
 const statusFilterOptions: { label: string; value: string }[] = [
   { label: "إعلانات السوق", value: "marketplace" },
@@ -149,10 +150,7 @@ function AdminListingThumb({
 
 /** Compact listing number for the desk table (prefer trailing digits). */
 function listingNumberLabel(id: string): string {
-  const digits = id.replace(/\D/g, "");
-  if (digits.length >= 4) return digits.slice(-6);
-  const cleaned = id.replace(/^(local-|admin-|showcase-)/, "");
-  return cleaned.length > 12 ? cleaned.slice(-10) : cleaned;
+  return compactListingNumber(id);
 }
 
 const conditionOptions = [
@@ -1431,10 +1429,7 @@ export function AdminListingsPanel() {
                       key={listing.id}
                     >
                       <td>
-                        <span
-                          className="font-mono text-xs font-semibold text-ink"
-                          title={listing.id}
-                        >
+                        <span className="text-xs font-semibold tabular-nums text-muted">
                           {listingNumberLabel(listing.id)}
                         </span>
                       </td>
@@ -1446,14 +1441,27 @@ export function AdminListingsPanel() {
                               className="font-semibold leading-snug text-ink"
                               title={listing.title}
                             >
-                              {listing.title}
+                              {listingDetailsHref(listing) ? (
+                                <Link
+                                  className="hover:underline"
+                                  href={listingDetailsHref(listing) ?? "#"}
+                                >
+                                  {listing.title}
+                                </Link>
+                              ) : (
+                                listing.title
+                              )}
                             </p>
+                            {listing.slug &&
+                            !isTechnicalRecordId(listing.slug) &&
+                            listing.slug !== listing.id ? (
                             <p
                               className="mt-0.5 break-all text-[11px] leading-snug text-muted"
                               title={listing.slug}
                             >
                               {listing.slug}
                             </p>
+                            ) : null}
                           </div>
                         </div>
                       </td>
@@ -1664,11 +1672,20 @@ export function AdminListingsPanel() {
                   <div className="admin-listings-mobile-card__head">
                     <AdminListingThumb size="md" src={listing.imageUrl} />
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-[11px] font-semibold text-muted">
-                        #{listingNumberLabel(listing.id)}
+                      <p className="text-[11px] font-semibold tabular-nums text-muted">
+                        {listingNumberLabel(listing.id)}
                       </p>
                       <p className="mt-0.5 font-semibold leading-snug text-ink">
-                        {listing.title}
+                        {listingDetailsHref(listing) ? (
+                          <Link
+                            className="hover:underline"
+                            href={listingDetailsHref(listing) ?? "#"}
+                          >
+                            {listing.title}
+                          </Link>
+                        ) : (
+                          listing.title
+                        )}
                       </p>
                       <p className="mt-1 text-xs font-medium text-muted">
                         {listing.sellerName || "—"} · {categoryLabel}

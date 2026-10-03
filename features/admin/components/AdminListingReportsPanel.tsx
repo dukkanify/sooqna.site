@@ -15,6 +15,8 @@ import {
   LISTING_REPORT_REASON_LABELS,
   LISTING_REPORT_STATUS_LABELS,
 } from "@/types/domain/listing-report";
+import { humanDisplayLabel } from "@/shared/display/technical-id";
+import { listingDetailsHref } from "@/shared/listings/listing-url";
 import { getSessionUser } from "@/services/storage";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
@@ -22,6 +24,23 @@ import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
+
+type ReportRow = ListingReport & {
+  listingHref?: string;
+  sellerHref?: string;
+};
+
+function reportListingHref(item: ReportRow): string {
+  return (
+    item.listingHref ||
+    listingDetailsHref({ id: item.listingId, slug: item.listingSlug }) ||
+    "/search"
+  );
+}
+
+function reportSellerHref(item: ReportRow): string | undefined {
+  return item.sellerHref;
+}
 
 function toTelHref(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -71,7 +90,7 @@ export function AdminListingReportsPanel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const statusFilter = parseFilter(searchParams.get("status"));
-  const [items, setItems] = useState<ListingReport[]>([]);
+  const [items, setItems] = useState<ReportRow[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
@@ -252,20 +271,29 @@ export function AdminListingReportsPanel() {
                 </tr>
               ) : (
                 filtered.map((item) => {
-                  const listingHref = item.listingSlug
-                    ? `/listings/${item.listingSlug}`
-                    : `/listings/${item.listingId}`;
+                  const listingHref = reportListingHref(item);
                   const expanded = expandedId === item.id;
                   const isOpen = item.status === "open";
                   return (
                     <tr key={item.id}>
                       <td className="admin-desk-cell-wrap">
                         <p className="admin-desk-cell-title">
-                          {item.listingTitle}
+                          <Link className="hover:underline" href={listingHref}>
+                            {humanDisplayLabel(item.listingTitle, "إعلان")}
+                          </Link>
                         </p>
                         <p className="text-xs text-muted">
-                          البائع: {item.sellerName ?? "—"}
-                          {item.sellerId ? ` · ${item.sellerId}` : ""}
+                          البائع:{" "}
+                          {reportSellerHref(item) ? (
+                            <Link
+                              className="admin-ops__text-link hover:underline"
+                              href={reportSellerHref(item) ?? "/admin/users"}
+                            >
+                              {humanDisplayLabel(item.sellerName, "—")}
+                            </Link>
+                          ) : (
+                            humanDisplayLabel(item.sellerName, "—")
+                          )}
                         </p>
                         {(item.listingRejected || item.sellerSuspended) && (
                           <p className="text-xs text-muted">
@@ -403,9 +431,9 @@ export function AdminListingReportsPanel() {
                           >
                             فتح الإعلان
                           </Button>
-                          {item.sellerId ? (
+                          {reportSellerHref(item) ? (
                             <Button
-                              href={`/admin/users?q=${encodeURIComponent(item.sellerId)}`}
+                              href={reportSellerHref(item)}
                               size="sm"
                               variant="ghost"
                             >
@@ -444,16 +472,16 @@ export function AdminListingReportsPanel() {
             </li>
           ) : (
             filtered.map((item) => {
-              const listingHref = item.listingSlug
-                ? `/listings/${item.listingSlug}`
-                : `/listings/${item.listingId}`;
+              const listingHref = reportListingHref(item);
               const expanded = expandedId === item.id;
               const isOpen = item.status === "open";
               return (
                 <li key={item.id} className="admin-desk-mobile-card">
                   <div className="admin-desk-mobile-card__head">
                     <p className="min-w-0 flex-1 text-sm font-bold text-ink">
-                      {item.listingTitle}
+                      <Link className="hover:underline" href={listingHref}>
+                        {humanDisplayLabel(item.listingTitle, "إعلان")}
+                      </Link>
                     </p>
                     <Badge variant={statusBadgeVariant(item.status)}>
                       {LISTING_REPORT_STATUS_LABELS[item.status] ??
@@ -487,8 +515,17 @@ export function AdminListingReportsPanel() {
                       </a>
                     </span>
                     <span>
-                      البائع: {item.sellerName ?? "—"}
-                      {item.sellerId ? ` · ${item.sellerId}` : ""}
+                      البائع:{" "}
+                      {reportSellerHref(item) ? (
+                        <Link
+                          className="admin-ops__text-link hover:underline"
+                          href={reportSellerHref(item) ?? "/admin/users"}
+                        >
+                          {humanDisplayLabel(item.sellerName, "—")}
+                        </Link>
+                      ) : (
+                        humanDisplayLabel(item.sellerName, "—")
+                      )}
                     </span>
                     <span>
                       {new Date(item.createdAt).toLocaleString(
@@ -506,9 +543,9 @@ export function AdminListingReportsPanel() {
                     <Button href={listingHref} size="sm" variant="secondary">
                       فتح الإعلان
                     </Button>
-                    {item.sellerId ? (
+                    {reportSellerHref(item) ? (
                       <Button
-                        href={`/admin/users?q=${encodeURIComponent(item.sellerId)}`}
+                        href={reportSellerHref(item)}
                         size="sm"
                         variant="ghost"
                       >

@@ -4,6 +4,9 @@ import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
+import { emailEventTypeLabel, notificationTypeLabel } from "@/shared/display/event-type-labels";
+import { humanDisplayLabel } from "@/shared/display/technical-id";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AppNotification } from "@/types/domain/notification";
 import type { EmailLogRecord } from "@/services/email/email-log-store";
@@ -17,10 +20,27 @@ const emailStatusLabel: Record<EmailLogRecord["status"], string> = {
   skipped: "مكرر",
 };
 
+type NotificationRow = AppNotification & {
+  listingHref?: string;
+  listingTitle?: string;
+  typeLabel?: string;
+  userEmail?: string;
+  userHref?: string;
+  userName?: string;
+};
+
+type EmailRow = EmailLogRecord & {
+  entityHref?: string;
+  entityLabel?: string;
+  typeLabel?: string;
+  userHref?: string;
+  userName?: string;
+};
+
 export function AdminNotificationsPanel() {
   const locale = useLocale();
-  const [items, setItems] = useState<AppNotification[]>([]);
-  const [emailLogs, setEmailLogs] = useState<EmailLogRecord[]>([]);
+  const [items, setItems] = useState<NotificationRow[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailRow[]>([]);
   const [summary, setSummary] = useState({
     total: 0,
     unread: 0,
@@ -103,28 +123,58 @@ export function AdminNotificationsPanel() {
                   </td>
                 </tr>
               ) : (
-                items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="admin-desk-cell-wrap">
-                      <p className="admin-desk-cell-title">{item.title}</p>
-                      <p className="text-xs text-muted">{item.body}</p>
-                    </td>
-                    <td className="font-mono text-xs">{item.userId}</td>
-                    <td>{item.type}</td>
-                    <td className="text-xs text-muted">
-                      {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
-                    </td>
-                    <td>
-                      <span
-                        className={`admin-ops__status-chip${
-                          item.read ? "" : " admin-ops__status-chip--warn"
-                        }`}
-                      >
-                        {item.read ? "مقروء" : "جديد"}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                items.map((item) => {
+                  const href = item.listingHref || item.href;
+                  const title = humanDisplayLabel(item.title, "إشعار");
+                  return (
+                    <tr key={item.id}>
+                      <td className="admin-desk-cell-wrap">
+                        <p className="admin-desk-cell-title">
+                          {href ? (
+                            <Link
+                              className="admin-ops__text-link hover:underline"
+                              href={href}
+                            >
+                              {title}
+                            </Link>
+                          ) : (
+                            title
+                          )}
+                        </p>
+                        {item.body ? (
+                          <p className="text-xs text-muted">
+                            {humanDisplayLabel(item.body, "")}
+                          </p>
+                        ) : null}
+                      </td>
+                      <td className="text-sm">
+                        {item.userHref ? (
+                          <Link
+                            className="admin-ops__text-link hover:underline"
+                            href={item.userHref}
+                          >
+                            {humanDisplayLabel(item.userName, "مستخدم")}
+                          </Link>
+                        ) : (
+                          humanDisplayLabel(item.userName, "مستخدم")
+                        )}
+                      </td>
+                      <td>{item.typeLabel || notificationTypeLabel(item.type)}</td>
+                      <td className="text-xs text-muted">
+                        {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
+                      </td>
+                      <td>
+                        <span
+                          className={`admin-ops__status-chip${
+                            item.read ? "" : " admin-ops__status-chip--warn"
+                          }`}
+                        >
+                          {item.read ? "مقروء" : "جديد"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -136,30 +186,44 @@ export function AdminNotificationsPanel() {
               <p className="text-sm text-muted">لا توجد إشعارات في النظام بعد.</p>
             </li>
           ) : (
-            items.map((item) => (
-              <li key={item.id} className="admin-desk-mobile-card">
-                <div className="admin-desk-mobile-card__head">
-                  <p className="min-w-0 flex-1 text-sm font-bold text-ink">
-                    {item.title}
-                  </p>
-                  <span
-                    className={`admin-ops__status-chip${
-                      item.read ? "" : " admin-ops__status-chip--warn"
-                    }`}
-                  >
-                    {item.read ? "مقروء" : "جديد"}
-                  </span>
-                </div>
-                <div className="admin-desk-mobile-card__meta">
-                  <span>{item.userId}</span>
-                  <span>{item.type}</span>
-                  <span>
-                    {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
-                  </span>
-                </div>
-                <p className="text-xs text-muted">{item.body}</p>
-              </li>
-            ))
+            items.map((item) => {
+              const href = item.listingHref || item.href;
+              const title = humanDisplayLabel(item.title, "إشعار");
+              return (
+                <li key={item.id} className="admin-desk-mobile-card">
+                  <div className="admin-desk-mobile-card__head">
+                    <p className="min-w-0 flex-1 text-sm font-bold text-ink">
+                      {href ? (
+                        <Link className="admin-ops__text-link hover:underline" href={href}>
+                          {title}
+                        </Link>
+                      ) : (
+                        title
+                      )}
+                    </p>
+                    <span
+                      className={`admin-ops__status-chip${
+                        item.read ? "" : " admin-ops__status-chip--warn"
+                      }`}
+                    >
+                      {item.read ? "مقروء" : "جديد"}
+                    </span>
+                  </div>
+                  <div className="admin-desk-mobile-card__meta">
+                    <span>{humanDisplayLabel(item.userName, "مستخدم")}</span>
+                    <span>{item.typeLabel || notificationTypeLabel(item.type)}</span>
+                    <span>
+                      {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
+                    </span>
+                  </div>
+                  {item.body ? (
+                    <p className="text-xs text-muted">
+                      {humanDisplayLabel(item.body, "")}
+                    </p>
+                  ) : null}
+                </li>
+              );
+            })
           )}
         </ul>
       </Card>
@@ -188,7 +252,9 @@ export function AdminNotificationsPanel() {
                 emailLogs.map((item) => (
                   <tr key={item.id}>
                     <td className="admin-desk-cell-wrap">
-                      <p className="admin-desk-cell-title">{item.subject}</p>
+                      <p className="admin-desk-cell-title">
+                        {humanDisplayLabel(item.subject, "رسالة")}
+                      </p>
                       {item.error ? (
                         <p className="text-xs text-muted">{item.error}</p>
                       ) : null}
@@ -197,7 +263,19 @@ export function AdminNotificationsPanel() {
                       {item.to}
                     </td>
                     <td className="text-xs">
-                      {item.type} · {item.entityId}
+                      {item.entityHref && item.entityLabel ? (
+                        <>
+                          {item.typeLabel || emailEventTypeLabel(item.type)} ·{" "}
+                          <Link
+                            className="admin-ops__text-link hover:underline"
+                            href={item.entityHref}
+                          >
+                            {item.entityLabel}
+                          </Link>
+                        </>
+                      ) : (
+                        item.typeLabel || emailEventTypeLabel(item.type)
+                      )}
                     </td>
                     <td className="text-xs text-muted">
                       {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
@@ -230,7 +308,7 @@ export function AdminNotificationsPanel() {
               <li key={item.id} className="admin-desk-mobile-card">
                 <div className="admin-desk-mobile-card__head">
                   <p className="min-w-0 flex-1 text-sm font-bold text-ink">
-                    {item.subject}
+                    {humanDisplayLabel(item.subject, "رسالة")}
                   </p>
                   <span
                     className={`admin-ops__status-chip${
@@ -244,9 +322,17 @@ export function AdminNotificationsPanel() {
                 </div>
                 <div className="admin-desk-mobile-card__meta">
                   <span dir="ltr">{item.to}</span>
-                  <span>
-                    {item.type} · {item.entityId}
-                  </span>
+                  <span>{item.typeLabel || emailEventTypeLabel(item.type)}</span>
+                  {item.entityHref && item.entityLabel ? (
+                    <span>
+                      <Link
+                        className="admin-ops__text-link hover:underline"
+                        href={item.entityHref}
+                      >
+                        {item.entityLabel}
+                      </Link>
+                    </span>
+                  ) : null}
                   <span>
                     {new Date(item.createdAt).toLocaleString(intlLocale(locale))}
                   </span>

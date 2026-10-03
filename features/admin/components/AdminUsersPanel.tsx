@@ -10,6 +10,7 @@ import {
   type SetStateAction,
 } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type {
   AdminAction,
   AdminActionMatrix,
@@ -89,8 +90,9 @@ function primaryAction(user: AdminUserRecord): {
 }
 
 export function AdminUsersPanel() {
+  const searchParams = useSearchParams();
   const [users, setUsers] = useState<AdminUserRecord[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending">("all");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -141,7 +143,8 @@ export function AdminUsersPanel() {
           user.fullName.toLowerCase().includes(q) ||
           user.email.toLowerCase().includes(q) ||
           user.phone.includes(q) ||
-          user.city.includes(q)
+          user.city.includes(q) ||
+          user.id.toLowerCase() === q
         );
       })
       .sort((a, b) => {

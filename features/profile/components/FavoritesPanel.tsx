@@ -9,14 +9,14 @@ import type { Listing } from "@/types";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { intlLocale } from "@/shared/i18n/locale";
+import { humanDisplayLabel } from "@/shared/display/technical-id";
+import { listingDetailsHref } from "@/shared/listings/listing-url";
 
 function getFavoriteHref(item: { listingId: string; slug: string }) {
-  if (item.slug?.trim()) {
-    return `/listings/${item.slug}`;
-  }
-  return item.listingId.startsWith("local-")
-    ? `/listings/local/${item.listingId}`
-    : `/listings/${item.listingId}`;
+  return (
+    listingDetailsHref({ id: item.listingId, slug: item.slug }) ??
+    "/search"
+  );
 }
 
 export function FavoritesPanel() {
@@ -43,7 +43,7 @@ export function FavoritesPanel() {
           <Card className="flex items-center justify-between gap-3 p-4" variant="flat">
             <Link className="min-w-0 flex-1" href={getFavoriteHref(item)}>
               <p className="truncate font-semibold text-ink" data-ugc>
-                {item.title}
+                {humanDisplayLabel(item.title, "إعلان")}
               </p>
               <p className="mt-0.5 text-xs text-muted">
                 {new Date(item.savedAt).toLocaleDateString(intlLocale(locale))}

@@ -5,6 +5,7 @@ import { logAdminAction } from "@/services/admin/admin-audit-store";
 import { loadAdminWalletsPayload } from "@/services/admin/admin-wallet-metrics";
 import { addWalletTransaction } from "@/services/payments/wallet-ledger";
 import type { WalletTransactionType } from "@/types/domain/wallet";
+import { findUserByEmail } from "@/services/auth/user-store";
 
 export async function GET() {
   const admin = await requireAdminPermission("payments", "view");
@@ -29,7 +30,12 @@ export async function POST(request: Request) {
     description?: string;
   };
 
-  const userId = body.userId?.trim();
+  const rawTarget = body.userId?.trim();
+  let userId = rawTarget;
+  if (rawTarget?.includes("@")) {
+    const account = await findUserByEmail(rawTarget);
+    userId = account?.id;
+  }
   const amount = Number(body.amount);
   const type = body.type;
 

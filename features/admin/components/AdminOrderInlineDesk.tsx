@@ -11,6 +11,7 @@ import {
   productVerificationStatusLabel,
 } from "@/services/activity/activity-labels";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { listingDetailsHref } from "@/shared/listings/listing-url";
 import { Button } from "@/shared/ui/Button";
 import { Textarea } from "@/shared/ui/Textarea";
 import { OrderInvoicePreview } from "@/features/admin/components/OrderInvoicePreview";
@@ -94,11 +95,10 @@ export function AdminOrderInlineDesk({
   const fees = order.fees;
   const awaitingPayment = isAwaitingBuyerPayment(order);
   const invoiceLocale = locale === "en" ? "en" : "ar";
-  const listingHref = order.listingSlug
-    ? `/listings/${order.listingSlug}`
-    : order.listingId
-      ? `/listings/${order.listingId}`
-      : null;
+  const listingHref = listingDetailsHref({
+    id: order.listingId,
+    slug: order.listingSlug,
+  });
 
   return (
     <div className="grid gap-4">
@@ -142,8 +142,11 @@ export function AdminOrderInlineDesk({
           hint="مرجع سريع للإعلان المرتبط بهذا الطلب."
           title="الإعلان"
         >
-          <p className="text-sm font-semibold text-ink">{order.listingTitle}</p>
-          <p className="font-mono text-xs text-muted">{order.listingId}</p>
+          <p className="text-sm font-semibold text-ink">
+            <a className="hover:underline" href={listingHref} rel="noreferrer" target="_blank">
+              {order.listingTitle}
+            </a>
+          </p>
           <a
             className="admin-ops__text-link text-xs"
             href={listingHref}
@@ -176,7 +179,6 @@ export function AdminOrderInlineDesk({
           <MetaRow label="المشتري" value={order.buyerName} />
           <MetaRow label="بريد المشتري" value={order.buyerEmail} />
           <MetaRow label="البائع" value={order.sellerName} />
-          <MetaRow label="معرّف الإعلان" value={order.listingId} />
         </dl>
       </Section>
 
