@@ -16,6 +16,7 @@ import { getCategories } from "@/services/categories";
 import { getHomeFeed } from "@/services/listings/home-feed";
 import { headers } from "next/headers";
 import { userAgent } from "next/server";
+import { Suspense } from "react";
 
 export default async function Home() {
   const ua = userAgent({ headers: await headers() });
@@ -97,10 +98,12 @@ export default async function Home() {
                 />
               ))}
               <MarketNearbySection listings={feed.nearbySource} />
-              <DeferredHomeBelowFold
-                appPreviewListings={appPreviewListings}
-                sections={belowFoldSections}
-              />
+              <Suspense fallback={null}>
+                <DeferredHomeBelowFold
+                  appPreviewListings={appPreviewListings}
+                  sections={belowFoldSections}
+                />
+              </Suspense>
             </>
           ) : (
             <MarketCatalogEmpty />

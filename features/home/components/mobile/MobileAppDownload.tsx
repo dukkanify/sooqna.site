@@ -1,7 +1,7 @@
 import type { Listing } from "@/types";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { BRAND } from "@/shared/constants/brand";
-import { MobileAppDevicePreview } from "./MobileAppDevicePreview";
+import { DeferredAppDevicePreview } from "./DeferredAppDevicePreview";
 import { resolveAppPreviewListings } from "./mobile-app-preview.config";
 import { MOBILE_APP_LINKS } from "./mobile-home.config";
 import { AppStoreBadgeLink, GooglePlayBadgeLink } from "./MobileStoreBadges";
@@ -47,7 +47,7 @@ export function MobileAppDownload({
             <div className="mobile-home-app__device">
               <div className="mobile-home-app__device-island" />
               <div className="mobile-home-app__device-screen">
-                <MobileAppDevicePreview listings={previews} />
+                <DeferredAppDevicePreview listings={previews} />
               </div>
             </div>
           </div>

@@ -45,7 +45,7 @@ export function MarketPromoBanner() {
                 className="object-cover"
                 fallbackCategory="cars"
                 fill
-                priority
+                loading="lazy"
                 sizes="(max-width: 768px) 90vw, 420px"
                 src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=900&q=80"
               />

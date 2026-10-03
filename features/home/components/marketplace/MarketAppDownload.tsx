@@ -2,7 +2,7 @@ import type { Listing } from "@/types";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { BRAND } from "@/shared/constants/brand";
 import { Icon } from "@/shared/ui/Icon";
-import { MobileAppDevicePreview } from "@/features/home/components/mobile/MobileAppDevicePreview";
+import { DeferredAppDevicePreview } from "@/features/home/components/mobile/DeferredAppDevicePreview";
 import { resolveAppPreviewListings } from "@/features/home/components/mobile/mobile-app-preview.config";
 import { MOBILE_APP_LINKS } from "@/features/home/components/mobile/mobile-home.config";
 import {
@@ -80,7 +80,7 @@ export function MarketAppDownload({ previewListings = [] }: MarketAppDownloadPro
             <div className="market-app-download__device">
               <div className="market-app-download__device-island" />
               <div className="market-app-download__device-screen">
-                <MobileAppDevicePreview listings={preview} />
+                <DeferredAppDevicePreview listings={preview} />
               </div>
             </div>
           </div>
