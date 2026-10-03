@@ -9,6 +9,7 @@ import { BrandCombobox } from "@/shared/ui/BrandCombobox";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
+import { UaePhoneInput } from "@/shared/ui/UaePhoneInput";
 import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -707,20 +708,16 @@ export function CategoryFieldsForm({
 
           {showContact ? (
             <div>
-              <Input
+              <UaePhoneInput
                 compact
                 defaultValue={defaults?.contactPhone}
+                error={errors.contact}
                 label="رقم التواصل (اختياري — يظهر للمهتمين فقط إذا أضفته)"
                 name="contact"
-                placeholder="05xxxxxxxx"
-                type="tel"
               />
               <p className="mt-1 text-xs text-muted">
                 يُستخدم للاتصال وواتساب. اتركه فارغاً لإخفاء الرقم.
               </p>
-              {errors.contact ? (
-                <FormMessage variant="error">{errors.contact}</FormMessage>
-              ) : null}
             </div>
           ) : null}
         </div>

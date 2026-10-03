@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
+import { UaePhoneInput } from "@/shared/ui/UaePhoneInput";
 import { Select } from "@/shared/ui/Select";
 import {
   getSessionUser,
@@ -22,6 +23,11 @@ import {
   SOCIAL_LINK_INVALID_AR,
   sanitizeSocialLinks,
 } from "@/shared/validation/social-links";
+import {
+  formatUaeMobileNational,
+  isValidUaeMobile,
+  UAE_MOBILE_ERROR,
+} from "@/shared/utils/phone";
 import { ChangeEmailSection } from "./ChangeEmailSection";
 import { ProfileSocialLinksFields } from "./ProfileSocialLinksFields";
 
@@ -97,7 +103,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
             const fullName = String(
               formData.get("fullName") ?? displayUser.fullName,
             ).trim();
-            const phone = String(formData.get("phone") ?? displayUser.phone).trim();
+            const phoneRaw = String(formData.get("phone") ?? displayUser.phone).trim();
+            const phone = phoneRaw
+              ? isValidUaeMobile(phoneRaw)
+                ? formatUaeMobileNational(phoneRaw)
+                : phoneRaw
+              : "";
             const socialRaw = readSocialLinksFromForm(formData);
             const socialSanitized = sanitizeSocialLinks(socialRaw);
             const socialLinksPublic = formData.get("socialLinksPublic") === "on";
@@ -112,6 +123,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
               return;
             }
             setSocialErrors({});
+
+            if (phone && !isValidUaeMobile(phone)) {
+              setSaveError(true);
+              setSaveMessage(UAE_MOBILE_ERROR);
+              return;
+            }
 
             setIsSaving(true);
             setSaveMessage("");
@@ -204,11 +221,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Input
+            <UaePhoneInput
               defaultValue={displayUser.phone}
               label="رقم الهاتف"
               name="phone"
-              type="tel"
             />
             <Select
               defaultValue={cities.find((city) => city.name === displayUser.city)?.id}

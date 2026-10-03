@@ -6,6 +6,7 @@ import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
+import { UaePhoneInput } from "@/shared/ui/UaePhoneInput";
 import type { AddListingErrors } from "./types";
 import {
   addListingStepBodyClass,
@@ -17,6 +18,7 @@ import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 
 type MediaContactStepProps = {
   defaultContact?: string;
+  filledFromProfile?: boolean;
   errors: AddListingErrors;
   featuredCheckoutAvailable?: boolean | null;
   imagePreviews: string[];
@@ -32,6 +34,7 @@ type MediaContactStepProps = {
 
 export function MediaContactStep({
   defaultContact = "",
+  filledFromProfile = false,
   errors,
   featuredCheckoutAvailable = null,
   imagePreviews,
@@ -141,21 +144,14 @@ export function MediaContactStep({
         </div>
         <div className="grid gap-4">
           <div>
-            <Input
+            <UaePhoneInput
               defaultValue={defaultContact}
+              error={errors.contact}
+              filledFromProfile={filledFromProfile}
               label="رقم التواصل"
               name="contact"
-              placeholder="05xxxxxxxx"
-              type="tel"
+              required
             />
-            {errors.contact ? (
-              <FormMessage variant="error">{errors.contact}</FormMessage>
-            ) : null}
-            {defaultContact ? (
-              <p className="mt-1 text-xs text-muted">
-                تم تعبئة الرقم من ملفك الشخصي — يمكنك تعديله لهذا الإعلان.
-              </p>
-            ) : null}
           </div>
           <Input
             label="رابط فيديو (اختياري)"
