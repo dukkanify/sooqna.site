@@ -24,6 +24,7 @@ export type StoredCategoryFormField = {
   validation?: string;
   visibility?: string;
   showWhen?: CategoryFieldShowWhen;
+  hideWhen?: CategoryFieldShowWhen;
   pattern?: string;
   patternMessage?: string;
   titlePart?: boolean;
@@ -46,6 +47,7 @@ function toDefinition(row: StoredCategoryFormField): CategoryFieldDefinition {
     note: row.note,
     options: row.options,
     showWhen: row.showWhen,
+    hideWhen: row.hideWhen,
     pattern: row.pattern,
     patternMessage: row.patternMessage,
     titlePart: row.titlePart,
@@ -74,10 +76,20 @@ export async function resolveCategoryFields(
   const fromStore = enabled.map(toDefinition);
   // Append any newer code-default keys missing from durable admin config
   // (e.g. real-estate license fields) without overriding admin edits.
+  // Also keep newer visibility rules (hideWhen/showWhen) on existing keys.
   const known = new Set(fromStore.map((field) => field.key));
   const missing = defaults.filter((field) => !known.has(field.key));
-  if (missing.length === 0) return fromStore;
-  return [...fromStore, ...missing];
+  const withVisibility = fromStore.map((field) => {
+    const fallback = defaults.find((item) => item.key === field.key);
+    if (!fallback) return field;
+    return {
+      ...field,
+      showWhen: field.showWhen ?? fallback.showWhen,
+      hideWhen: field.hideWhen ?? fallback.hideWhen,
+    };
+  });
+  if (missing.length === 0) return withVisibility;
+  return [...withVisibility, ...missing];
 }
 
 export async function replaceCategoryFormFields(
@@ -107,6 +119,7 @@ export async function replaceCategoryFormFields(
       validation: field.validation,
       visibility: field.visibility,
       showWhen: field.showWhen,
+      hideWhen: field.hideWhen,
       pattern: field.pattern,
       patternMessage: field.patternMessage,
       titlePart: field.titlePart,
@@ -135,6 +148,7 @@ export async function seedCategoryFormFromDefaults(categoryId: string) {
       note: field.note,
       options: field.options,
       showWhen: field.showWhen,
+      hideWhen: field.hideWhen,
       pattern: field.pattern,
       patternMessage: field.patternMessage,
       titlePart: field.titlePart,

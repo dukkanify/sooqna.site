@@ -45,6 +45,11 @@ export type CategoryFieldDefinition = {
   searchable?: boolean;
   /** Show field only when another spec matches one of the values */
   showWhen?: CategoryFieldShowWhen;
+  /**
+   * Hide field when any rule matches (OR). Use for inapplicable specs
+   * such as engine size on electric cars.
+   */
+  hideWhen?: CategoryFieldShowWhen;
   /** Optional RegExp source tested against non-empty values */
   pattern?: string;
   /** Arabic message when pattern fails */

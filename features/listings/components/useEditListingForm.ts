@@ -5,7 +5,12 @@ import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useImagePreviews } from "./add-listing/useImagePreviews";
 import { cities, countries } from "@/shared/constants/locations";
-import { isDynamicCategory } from "@/shared/constants/category-fields";
+import { getCategoryFields, isDynamicCategory } from "@/shared/constants/category-fields";
+import { mergeCategorySpecs, omitHiddenCategorySpecs } from "@/shared/listings/listing-form-hydrate";
+import {
+  specsRecordFromCategorySpecs,
+  withVisibilityContext,
+} from "@/shared/listings/category-field-visibility";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import type { Listing } from "@/types";
 import { getLocalListingById, saveLocalListing } from "@/services/storage";
@@ -19,7 +24,6 @@ import {
   getListingImages,
 } from "./listing-edit.utils";
 import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
-import { mergeCategorySpecs } from "@/shared/listings/listing-form-hydrate";
 
 export type EditListingMode = "local" | "server";
 
@@ -101,12 +105,21 @@ export function useEditListingForm(
       const cityName = isDynamicCategory(categoryId)
         ? parsed.city
         : cities.find((city) => city.id === parsed.city)?.name ?? currentListing.city;
-      const nextSpecs = isDynamicCategory(categoryId)
+      const mergedSpecs = isDynamicCategory(categoryId)
         ? mergeCategorySpecs(currentListing.categorySpecs, {
             ...parsed.categorySpecs,
             ...(parsed.emirate ? { emirate: parsed.emirate } : {}),
             ...(cityName ? { city: cityName } : {}),
           })
+        : undefined;
+      const nextSpecs = mergedSpecs
+        ? omitHiddenCategorySpecs(
+            getCategoryFields(categoryId),
+            mergedSpecs,
+            withVisibilityContext(specsRecordFromCategorySpecs(mergedSpecs), {
+              subcategory: currentListing.subcategory,
+            }),
+          )
         : undefined;
 
       const title = isDynamicCategory(categoryId)

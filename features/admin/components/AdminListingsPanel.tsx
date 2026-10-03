@@ -15,7 +15,7 @@ import type {
   AdminListingRecord,
   ListingStatus,
 } from "@/types";
-import { isDynamicCategory } from "@/shared/constants/category-fields";
+import { getCategoryFields, isDynamicCategory } from "@/shared/constants/category-fields";
 import { listingStatusLabels } from "@/shared/constants/listingStatuses";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import {
@@ -23,6 +23,11 @@ import {
   type CategoryFieldErrors,
 } from "@/features/listings/components/add-listing/CategoryFieldsForm";
 import { parseCategoryForm } from "@/features/listings/components/add-listing/category-form-utils";
+import { omitHiddenCategorySpecs } from "@/shared/listings/listing-form-hydrate";
+import {
+  specsRecordFromCategorySpecs,
+  withVisibilityContext,
+} from "@/shared/listings/category-field-visibility";
 import { AdminListingImageGallery } from "@/features/admin/components/AdminListingImageGallery";
 import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
 import { hydrateCategorySpecsForEdit } from "@/shared/listings/listing-form-hydrate";
@@ -668,12 +673,22 @@ export function AdminListingsPanel() {
         area;
       city = area ? `${emirate} — ${area}` : parsed.city || emirate;
       condition = parsed.condition || condition;
-      categorySpecs = {
-        ...(listing.categorySpecs ?? {}),
-        ...parsed.categorySpecs,
-        ...(parsed.emirate ? { emirate: parsed.emirate } : {}),
-        ...(parsed.city ? { city: parsed.city } : {}),
-      };
+      categorySpecs = omitHiddenCategorySpecs(
+        getCategoryFields(listing.categoryId),
+        {
+          ...(listing.categorySpecs ?? {}),
+          ...parsed.categorySpecs,
+          ...(parsed.emirate ? { emirate: parsed.emirate } : {}),
+          ...(parsed.city ? { city: parsed.city } : {}),
+        },
+        withVisibilityContext(
+          specsRecordFromCategorySpecs({
+            ...(listing.categorySpecs ?? {}),
+            ...parsed.categorySpecs,
+          }),
+          { subcategory: listing.subcategory },
+        ),
+      );
       features = parsed.features.length ? parsed.features : listing.features;
       negotiable = parsed.negotiable ?? listing.negotiable;
       contactPhone =
@@ -1803,6 +1818,7 @@ export function AdminListingsPanel() {
                       errors={editFieldErrors}
                       heading="تفاصيل القسم"
                       showContact
+                      subcategory={listing.subcategory}
                     />
                   ) : (
                     <div className="grid gap-3 sm:grid-cols-2">

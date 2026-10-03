@@ -136,7 +136,21 @@ const carFields: CategoryFieldDefinition[] = [
     searchable: true,
     options: VEHICLE_DRIVETRAIN_OPTIONS,
   },
-  { key: "engineSize", label: "سعة المحرك", type: "text", required: true },
+  {
+    key: "engineSize",
+    label: "سعة المحرك",
+    type: "text",
+    required: true,
+    placeholder: "مثال: 2.0 أو 2000 سي سي",
+    note: "لا يُطلب للسيارات الكهربائية.",
+    hideWhen: [
+      { key: "fuelType", values: ["كهربائي"] },
+      {
+        key: "subcategory",
+        values: ["سيارات كهربائية", "كهربائية"],
+      },
+    ],
+  },
   {
     key: "regionalSpecs",
     label: "المواصفات الإقليمية",
@@ -396,15 +410,22 @@ const mobileFields: CategoryFieldDefinition[] = [
     searchable: true,
     options: mobileModelOptions,
     placeholder: "ابحث عن الموديل (iPhone… Galaxy…)",
+    hideWhen: { key: "subcategory", values: ["إكسسوارات"] },
   },
-  { key: "storage", label: "التخزين", type: "select", required: true, searchable: true, options: [
+  { key: "storage", label: "التخزين", type: "select", required: true, searchable: true, hideWhen: {
+    key: "subcategory",
+    values: ["إكسسوارات"],
+  }, options: [
     { label: "64 GB", value: "64 GB" },
     { label: "128 GB", value: "128 GB" },
     { label: "256 GB", value: "256 GB" },
     { label: "512 GB", value: "512 GB" },
     { label: "1 TB", value: "1 TB" },
   ]},
-  { key: "ram", label: "الذاكرة (RAM)", type: "select", required: true, options: [
+  { key: "ram", label: "الذاكرة (RAM)", type: "select", required: true, hideWhen: {
+    key: "subcategory",
+    values: ["إكسسوارات"],
+  }, options: [
     { label: "4 GB", value: "4 GB" },
     { label: "6 GB", value: "6 GB" },
     { label: "8 GB", value: "8 GB" },
@@ -418,9 +439,15 @@ const mobileFields: CategoryFieldDefinition[] = [
     required: true,
     options: colorOptions,
   },
-  { key: "batteryHealth", label: "صحة البطارية", type: "text", required: true },
+  { key: "batteryHealth", label: "صحة البطارية", type: "text", required: true, hideWhen: {
+    key: "subcategory",
+    values: ["إكسسوارات"],
+  } },
   { key: "warranty", label: "الضمان", type: "select", required: true, options: yesNoOptions },
-  { key: "purchaseDate", label: "تاريخ الشراء", type: "date", required: true },
+  { key: "purchaseDate", label: "تاريخ الشراء", type: "date", required: true, hideWhen: {
+    key: "subcategory",
+    values: ["إكسسوارات"],
+  } },
   { key: "accessoriesIncluded", label: "الملحقات المرفقة", type: "textarea", required: true },
   { key: "condition", label: "حالة المنتج", type: "select", required: true, options: [
     { label: "جديد", value: "new" },
@@ -852,4 +879,23 @@ export function getCategoryFields(categoryId: string): CategoryFieldDefinition[]
 export function getCategoryFieldLabel(categoryId: string, key: string): string {
   const field = getCategoryFields(categoryId).find((item) => item.key === key);
   return field?.label ?? key;
+}
+
+/** Copy showWhen/hideWhen from code defaults onto admin/remote field snapshots. */
+export function mergeFieldVisibilityFromDefaults(
+  categoryId: string,
+  fields: CategoryFieldDefinition[],
+): CategoryFieldDefinition[] {
+  const defaults = getCategoryFields(categoryId);
+  if (defaults.length === 0) return fields;
+  const byKey = new Map(defaults.map((field) => [field.key, field]));
+  return fields.map((field) => {
+    const fallback = byKey.get(field.key);
+    if (!fallback) return field;
+    return {
+      ...field,
+      showWhen: field.showWhen ?? fallback.showWhen,
+      hideWhen: field.hideWhen ?? fallback.hideWhen,
+    };
+  });
 }

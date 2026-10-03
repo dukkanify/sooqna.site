@@ -149,6 +149,10 @@ export function parseCategoryForm(
     if (field.type === "checkbox-group") continue;
     visibilitySpecs[field.key] = String(formData.get(`spec_${field.key}`) ?? "").trim();
   }
+  const formSubcategory = String(formData.get("subcategory") ?? "").trim();
+  if (formSubcategory) {
+    visibilitySpecs.subcategory = formSubcategory;
+  }
 
   // Pets: step-1 subcategory (قطط/كلاب/…) seeds required animalType so sellers
   // who only pick the subcategory are not blocked by a duplicate empty select.

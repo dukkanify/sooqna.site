@@ -60,6 +60,7 @@ export type AdminListingRecord = {
   sellerName: string;
   sellerId: string;
   categoryId: string;
+  subcategory?: string;
   price: number;
   currency: string;
   status: ListingStatus;
