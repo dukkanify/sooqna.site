@@ -108,7 +108,9 @@ export function useEditListingForm(
       });
 
       if (mode === "server") {
-        const response = await fetch(`/api/listings/${currentListing.id}`, {
+        const response = await fetch(
+          `/api/listings/${encodeURIComponent(currentListing.id)}`,
+          {
           method: "PATCH",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
@@ -164,7 +166,7 @@ export function useEditListingForm(
         saveLocalListing(saved);
         setServerListing(saved);
         setSaveMessage("تم حفظ التعديلات بنجاح.");
-        router.push(`/listings/${saved.slug}`);
+        router.push(`/listings/${saved.slug || saved.id}`);
         router.refresh();
         return;
       }
@@ -217,7 +219,7 @@ export function useEditListingForm(
   return {
     cancelHref:
       mode === "server" && listing
-        ? `/listings/${listing.slug}`
+        ? `/listings/${listing.slug || listing.id}`
         : `/listings/local/${listingId}`,
     defaults: listing ? buildCategoryFieldsDefaults(listing) : undefined,
     errors,

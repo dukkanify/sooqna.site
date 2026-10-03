@@ -5,6 +5,7 @@ import { PageHero } from "@/shared/ui/PageHero";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { SiteHeader } from "@/shared/layouts/SiteHeader";
 import { getListingBySlug } from "@/services/listings";
+import { getListingById } from "@/services/listings/listing-store";
 import { requireCurrentUser } from "@/services/profile";
 import { normalizeListingSlugParam } from "@/shared/listings/listing-slug";
 
@@ -14,11 +15,15 @@ type EditListingPageProps = {
   }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function EditListingPage({ params }: EditListingPageProps) {
   const user = await requireCurrentUser("/dashboard/listings");
   const { slug: rawSlug } = await params;
   const slug = normalizeListingSlugParam(rawSlug);
-  const listing = await getListingBySlug(slug, { includeFixtures: true });
+  const listing =
+    (await getListingBySlug(slug, { includeFixtures: true })) ??
+    (await getListingById(slug).catch(() => undefined));
 
   const canEdit =
     listing &&

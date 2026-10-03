@@ -18,6 +18,7 @@ import {
   saveLocalListing,
 } from "@/services/storage";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { getListingEditPath, getListingPath } from "@/shared/listings/listing-url";
 
 type MyListingsDashboardProps = {
   categories: Category[];
@@ -332,24 +333,16 @@ export function MyListingsDashboard({
                 </div>
                 <div className="flex flex-wrap gap-2">
                 <Button
-                  href={
-                    listing.slug?.trim()
-                      ? `/listings/${listing.slug}`
-                      : listing.id.startsWith("local-")
-                        ? `/listings/local/${listing.id}`
-                        : `/listings/${listing.id}`
-                  }
+                  href={getListingPath(listing)}
                   size="sm"
                   variant="secondary"
                 >
                   عرض
                 </Button>
                 <Button
-                  href={
-                    listing.id.startsWith("local-")
-                      ? `/listings/local/${listing.id}/edit`
-                      : `/listings/${listing.slug}/edit`
-                  }
+                  href={getListingEditPath(listing, {
+                    synced: listings.some((row) => row.id === listing.id),
+                  })}
                   size="sm"
                   variant="ghost"
                 >

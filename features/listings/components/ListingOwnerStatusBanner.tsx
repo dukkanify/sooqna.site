@@ -6,6 +6,7 @@ import {
   listingStatusLabelsEn,
 } from "@/shared/constants/listingStatuses";
 import { listingNeedsOwnerStatusBanner } from "@/shared/listings/listing-page-access";
+import { getListingEditPath } from "@/shared/listings/listing-url";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { tx } from "@/shared/i18n/tx";
@@ -26,9 +27,7 @@ export function ListingOwnerStatusBanner({
       ? listingStatusLabelsEn[listing.status]
       : listingStatusLabels[listing.status];
   const description = listingStatusDescriptions[listing.status];
-  const editHref = listing.id.startsWith("local-")
-    ? `/listings/local/${listing.id}/edit`
-    : `/listings/${listing.slug}/edit`;
+  const editHref = getListingEditPath(listing, { synced: true });
   const dashboardHref = "/dashboard/listings";
 
   const tone =
