@@ -9,7 +9,7 @@ import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
 import { ListingCardBadges } from "@/features/listings/components/ListingCardBadges";
 import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
-import { formatCurrencyDisplay } from "@/shared/utils/currency";
+import { ListingPrice } from "@/shared/components/ListingPrice";
 import { Icon } from "@/shared/ui/Icon";
 import {
   formatPostedTime,
@@ -97,11 +97,8 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
       </div>
 
       <div className="mobile-home-featured-card__body">
-        <p className="mobile-home-featured-card__price" dir="ltr">
-          {formatCurrencyDisplay(
-            listing.price,
-            intlLocale(locale) as "ar-AE" | "en-AE",
-          )}
+        <p className="mobile-home-featured-card__price">
+          <ListingPrice listing={listing} size="sm" />
         </p>
 
         <Link href={href}>

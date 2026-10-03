@@ -7,7 +7,7 @@ import {
   createListingFromAdmin,
   getAdminListingRecords,
 } from "@/services/listings/listing-store";
-import type { AdminListingCreateInput, Listing } from "@/types";
+import { quotePricingFromSpecs } from "@/shared/listings/quote-pricing";
 
 export async function GET() {
   const admin = await requireAdminPermission("listings", "view");
@@ -38,7 +38,10 @@ export async function POST(request: Request) {
     if (!create.title?.trim() || !create.categoryId || !create.city) {
       return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 });
     }
-    if (!Number.isFinite(create.price) || create.price <= 0) {
+    if (
+      !quotePricingFromSpecs(create.categorySpecs) &&
+      (!Number.isFinite(create.price) || create.price <= 0)
+    ) {
       return NextResponse.json({ error: "INVALID_PRICE" }, { status: 400 });
     }
 

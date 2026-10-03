@@ -8,7 +8,8 @@ import { ListingPrimaryAction } from "@/features/listings/components/ListingPrim
 import { SellerContactActions } from "@/features/listings/components/ListingPrimaryAction";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ShareButton } from "@/shared/components/ShareButton";
-import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { ListingPrice } from "@/shared/components/ListingPrice";
+import { listingUsesQuotePricing } from "@/shared/listings/quote-pricing";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { intlLocale } from "@/shared/i18n/locale";
@@ -106,15 +107,10 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
 
         <h1 className="mt-4 text-2xl font-black leading-tight text-ink"><ListingTitle listing={listing} /></h1>
         <div className="mt-4">
-          {listing.categoryId === "jobs" ? (
-            <p className="text-2xl font-black text-ink">
-              {String(listing.categorySpecs?.salary ?? "").trim() ||
-                "الراتب حسب الاتفاق"}
-            </p>
-          ) : (
-            <CurrencyAmount amount={listing.price} size="xl" />
-          )}
-          {listing.negotiable && listing.categoryId !== "jobs" ? (
+          <ListingPrice listing={listing} size="xl" />
+          {listing.negotiable &&
+          listing.categoryId !== "jobs" &&
+          !listingUsesQuotePricing(listing) ? (
             <p className="mt-1 text-sm font-semibold text-secondary">قابل للتفاوض</p>
           ) : null}
         </div>

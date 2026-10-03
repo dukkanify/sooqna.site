@@ -100,7 +100,9 @@ export function useEditListingForm(
         return;
       }
 
-      const price = Number(formData.get("price") ?? 0);
+      const price = parsed.skipPrice
+        ? 0
+        : Number(formData.get("price") ?? 0);
       const description = String(formData.get("description") ?? "").trim();
       const existingImages = getListingImages(currentListing);
       const newImages =

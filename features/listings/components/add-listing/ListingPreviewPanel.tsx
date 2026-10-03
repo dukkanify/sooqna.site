@@ -1,6 +1,7 @@
 import type { Category } from "@/types";
 import { AppImage } from "@/shared/components/AppImage";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { QUOTE_PRICING_LABEL_AR } from "@/shared/listings/quote-pricing";
 import { Card } from "@/shared/ui/Card";
 import { CategoryIcon } from "@/shared/ui/CategoryIcon";
 import { Icon } from "@/shared/ui/Icon";
@@ -19,6 +20,7 @@ export function ListingPreviewPanel({
   selectedCategory,
 }: ListingPreviewPanelProps) {
   const showSalary = preview.priceMode === "salary";
+  const showQuote = preview.priceMode === "quote";
   const showCondition = !preview.hideCondition;
 
   return (
@@ -60,6 +62,10 @@ export function ListingPreviewPanel({
               {showSalary ? (
                 <span className="text-base font-black text-ink">
                   {preview.price?.trim() ? preview.price : "الراتب / المتوقع"}
+                </span>
+              ) : showQuote ? (
+                <span className="text-base font-black text-ink">
+                  {QUOTE_PRICING_LABEL_AR}
                 </span>
               ) : (
                 <div>

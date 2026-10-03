@@ -7,6 +7,7 @@ import {
   type SpecEntry,
 } from "@/shared/listings/listing-specs";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { listingUsesQuotePricing } from "@/shared/listings/quote-pricing";
 
 type ListingSpecificationsProps = {
   listing: Listing;
@@ -131,7 +132,9 @@ export function ListingSpecifications({ listing }: ListingSpecificationsProps) {
   const featureItems = getListingFeatureItems(listing);
   const showNegotiable =
     listing.id.startsWith("local-") &&
-    typeof listing.negotiable === "boolean";
+    typeof listing.negotiable === "boolean" &&
+    listing.categoryId !== "jobs" &&
+    !listingUsesQuotePricing(listing);
   const showReason = Boolean(listing.reasonForSelling?.trim());
 
   if (
