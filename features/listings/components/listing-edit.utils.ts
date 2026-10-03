@@ -1,9 +1,10 @@
 import type { Listing } from "@/types";
 import type { CategoryFieldsDefaults } from "./add-listing/CategoryFieldsForm";
+import { hydrateCategorySpecsForEdit } from "@/shared/listings/listing-form-hydrate";
 
 export function buildCategoryFieldsDefaults(listing: Listing): CategoryFieldsDefaults {
   return {
-    categorySpecs: listing.categorySpecs,
+    categorySpecs: hydrateCategorySpecsForEdit(listing),
     condition: listing.condition,
     contactPhone: listing.contactPhone,
     description: listing.description,

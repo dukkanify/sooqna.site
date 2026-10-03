@@ -206,8 +206,10 @@ export function parseCategoryForm(
       }
     } else if (field.key === "city") {
       city = value;
+      categorySpecs.city = value;
     } else if (field.key === "emirate") {
       emirate = value;
+      categorySpecs.emirate = value;
     } else if (field.key === "location" && isJobs) {
       city = value;
       categorySpecs.location = value;

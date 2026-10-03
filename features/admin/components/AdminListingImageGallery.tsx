@@ -5,7 +5,7 @@ import { uploadListingImages } from "@/services/upload";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
 
-const MAX_IMAGES = 12;
+import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 
 type AdminListingImageGalleryProps = {
   images: string[];
@@ -26,7 +26,7 @@ export function AdminListingImageGallery({
   const [error, setError] = useState<string | null>(null);
 
   function setImages(next: string[]) {
-    onChange(next.filter(Boolean).slice(0, MAX_IMAGES));
+    onChange(next.filter(Boolean).slice(0, MAX_LISTING_IMAGES));
   }
 
   async function uploadFiles(fileList: FileList | File[] | null) {
@@ -34,9 +34,9 @@ export function AdminListingImageGallery({
       file.type.startsWith("image/"),
     );
     if (!files.length) return;
-    const room = MAX_IMAGES - images.length;
+    const room = MAX_LISTING_IMAGES - images.length;
     if (room <= 0) {
-      setError(`الحد الأقصى ${MAX_IMAGES} صور.`);
+      setError(`الحد الأقصى ${MAX_LISTING_IMAGES} صور.`);
       return;
     }
     setError(null);
@@ -99,8 +99,8 @@ export function AdminListingImageGallery({
       setUrlDraft("");
       return;
     }
-    if (images.length >= MAX_IMAGES) {
-      setError(`الحد الأقصى ${MAX_IMAGES} صور.`);
+    if (images.length >= MAX_LISTING_IMAGES) {
+      setError(`الحد الأقصى ${MAX_LISTING_IMAGES} صور.`);
       return;
     }
     setImages([...images, trimmed]);
@@ -108,7 +108,7 @@ export function AdminListingImageGallery({
     setError(null);
   }
 
-  const canAdd = images.length < MAX_IMAGES;
+  const canAdd = images.length < MAX_LISTING_IMAGES;
 
   return (
     <div className="grid gap-3">
@@ -236,7 +236,7 @@ export function AdminListingImageGallery({
           {showUrl ? "إخفاء الرابط" : "إضافة برابط (اختياري)"}
         </Button>
         <p className="text-[11px] text-muted">
-          {images.length}/{MAX_IMAGES} صور
+          {images.length}/{MAX_LISTING_IMAGES} صور
         </p>
       </div>
 

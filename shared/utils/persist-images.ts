@@ -3,9 +3,10 @@ import {
   LISTING_COVER_WIDTH,
   coverCropRect,
 } from "@/shared/utils/listing-image-cover";
+import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 
 const JPEG_QUALITY = 0.78;
-const MAX_IMAGES = 6;
+const MAX_IMAGES = MAX_LISTING_IMAGES;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

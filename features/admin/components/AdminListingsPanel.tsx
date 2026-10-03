@@ -25,6 +25,7 @@ import {
 import { parseCategoryForm } from "@/features/listings/components/add-listing/category-form-utils";
 import { AdminListingImageGallery } from "@/features/admin/components/AdminListingImageGallery";
 import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
+import { hydrateCategorySpecsForEdit } from "@/shared/listings/listing-form-hydrate";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -233,6 +234,8 @@ export function AdminListingsPanel() {
   const [liveCatalogBusy, setLiveCatalogBusy] = useState(false);
   const [liveCatalogMessage, setLiveCatalogMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const editRequestRef = useRef<string | null>(null);
   const [editDraft, setEditDraft] = useState({
     title: "",
     description: "",
@@ -529,18 +532,19 @@ export function AdminListingsPanel() {
   }
 
 
-  function startEdit(listing: AdminListingRecord) {
+  function applyEditRecord(listing: AdminListingRecord) {
     const media = sanitizeListingMediaFields(listing);
+    const fromGallery = (media.images ?? []).filter(Boolean);
     const images =
-      media.images?.filter(Boolean) ??
-      (media.imageUrl ? [media.imageUrl] : []);
+      fromGallery.length > 0
+        ? fromGallery
+        : media.imageUrl
+          ? [media.imageUrl]
+          : [];
     const emirate =
       listingEmirate(listing) ??
       canonicalizeEmirate(listing.city) ??
       "دبي";
-    setEditingId(listing.id);
-    setEditImagesTouched(false);
-    setEditFieldErrors({});
     setEditDraft({
       title: listing.title,
       description: listing.description ?? "",
@@ -553,6 +557,31 @@ export function AdminListingsPanel() {
       images,
       sellerName: listing.sellerName,
     });
+  }
+
+  async function startEdit(listing: AdminListingRecord) {
+    const requestId = listing.id;
+    editRequestRef.current = requestId;
+    setEditingId(requestId);
+    setEditImagesTouched(false);
+    setEditFieldErrors({});
+    applyEditRecord(listing);
+    setEditLoading(true);
+    try {
+      const response = await adminFetch(`/api/admin/listings/${requestId}`);
+      const data = (await response.json().catch(() => null)) as {
+        listing?: AdminListingRecord;
+      } | null;
+      if (editRequestRef.current !== requestId) return;
+      if (!response.ok || !data?.listing) return;
+      const full = data.listing;
+      setListings((prev) =>
+        prev.map((row) => (row.id === full.id ? { ...row, ...full } : row)),
+      );
+      applyEditRecord(full);
+    } finally {
+      if (editRequestRef.current === requestId) setEditLoading(false);
+    }
   }
 
   function setEditImages(next: string[]) {
@@ -642,6 +671,8 @@ export function AdminListingsPanel() {
       categorySpecs = {
         ...(listing.categorySpecs ?? {}),
         ...parsed.categorySpecs,
+        ...(parsed.emirate ? { emirate: parsed.emirate } : {}),
+        ...(parsed.city ? { city: parsed.city } : {}),
       };
       features = parsed.features.length ? parsed.features : listing.features;
       negotiable = parsed.negotiable ?? listing.negotiable;
@@ -1745,18 +1776,29 @@ export function AdminListingsPanel() {
                   <h2 className="text-sm font-bold text-ink">
                     تعديل الإعلان · {listingNumberLabel(listing.id)}
                   </h2>
-                  {isDynamicCategory(listing.categoryId) ? (
+                  {editLoading ? (
+                    <p className="text-sm text-muted">
+                      جاري تحميل المواصفات والصور من الكتالوج…
+                    </p>
+                  ) : isDynamicCategory(listing.categoryId) ? (
                     <CategoryFieldsForm
-                      key={`edit-${listing.id}`}
+                      key={`edit-${listing.id}-ready`}
                       categoryId={listing.categoryId}
                       defaults={{
-                        categorySpecs: listing.categorySpecs,
+                        categorySpecs: hydrateCategorySpecsForEdit({
+                          categorySpecs: listing.categorySpecs,
+                          condition: listing.condition,
+                          emirate: listing.emirate,
+                          city: listing.city,
+                          area: listing.area,
+                        }),
                         condition: listing.condition,
                         contactPhone: listing.contactPhone,
-                        description: listing.description,
+                        description: listing.description || editDraft.description,
                         features: listing.features,
                         negotiable: listing.negotiable,
                         price: listing.price,
+                        title: listing.title,
                       }}
                       errors={editFieldErrors}
                       heading="تفاصيل القسم"
@@ -1858,7 +1900,7 @@ export function AdminListingsPanel() {
                     </div>
                   )}
 
-                  {isDynamicCategory(listing.categoryId) ? (
+                  {editLoading ? null : isDynamicCategory(listing.categoryId) ? (
                     <Input
                       label="اسم البائع"
                       onChange={(event) =>
@@ -1871,6 +1913,7 @@ export function AdminListingsPanel() {
                     />
                   ) : null}
 
+                  {editLoading ? null : (
                   <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
                     <p className="text-sm font-semibold text-ink">
                       معرض الصور
@@ -1882,10 +1925,12 @@ export function AdminListingsPanel() {
                       uploading={uploadingImage}
                     />
                   </div>
+                  )}
 
                   <div className="flex flex-wrap gap-2">
                     <Button
-                      loading={busyId === listing.id}
+                      disabled={editLoading}
+                      loading={busyId === listing.id || editLoading}
                       size="sm"
                       type="submit"
                       variant="primary"

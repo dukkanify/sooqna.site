@@ -69,6 +69,33 @@ function getSpecValue(
   return value;
 }
 
+function specsFromDefaults(
+  defaults: CategoryFieldsDefaults | undefined,
+): Record<string, string> {
+  const initial: Record<string, string> = {};
+  for (const [key, value] of Object.entries(defaults?.categorySpecs ?? {})) {
+    if (value === undefined || value === null || typeof value === "boolean") {
+      continue;
+    }
+    const text = String(value).trim();
+    if (text) initial[key] = text;
+  }
+  if (!initial.condition && defaults?.condition) {
+    initial.condition = String(defaults.condition);
+  }
+  return initial;
+}
+
+function optionsWithStoredValue(
+  options: CategoryFieldOption[],
+  stored: string | undefined,
+): CategoryFieldOption[] {
+  const value = stored?.trim();
+  if (!value) return options;
+  if (options.some((option) => option.value === value)) return options;
+  return [{ label: value, value }, ...options];
+}
+
 function renderField(
   field: CategoryFieldDefinition,
   defaults: CategoryFieldsDefaults | undefined,
@@ -278,19 +305,27 @@ export function CategoryFieldsForm({
       ? remoteFields.fields
       : fallbackFields;
 
-  const [specs, setSpecs] = useState<Record<string, string>>(() => {
-    const initial: Record<string, string> = {};
-    for (const field of fallbackFields) {
-      const value = getSpecValue(defaults, field.key);
-      if (value !== undefined) initial[field.key] = String(value);
-    }
-    // Listing.condition may live outside categorySpecs — seed it so showWhen
-    // fields (e.g. electronics defects for "used") appear on edit.
-    if (!initial.condition && defaults?.condition) {
-      initial.condition = String(defaults.condition);
-    }
-    return initial;
-  });
+  const [specs, setSpecs] = useState<Record<string, string>>(() =>
+    specsFromDefaults(defaults),
+  );
+  const defaultsFingerprint = JSON.stringify(defaults?.categorySpecs ?? {});
+
+  useEffect(() => {
+    const incoming = specsFromDefaults(defaults);
+    setSpecs((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const [key, value] of Object.entries(incoming)) {
+        if (!next[key]) {
+          next[key] = value;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+    // Fill missing keys when a full listing payload arrives — do not reset edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fingerprint of stored specs
+  }, [defaultsFingerprint]);
 
   const fields = allFields.filter(
     (field) =>
@@ -299,9 +334,10 @@ export function CategoryFieldsForm({
   const featureField = allFields.find((field) => field.type === "checkbox-group");
   const selectedFeatures = buildSelectedFeatures(defaults);
   const conditionDefault =
-    defaults?.categorySpecs?.condition !== undefined
+    specs.condition ||
+    (defaults?.categorySpecs?.condition !== undefined
       ? String(defaults.categorySpecs.condition)
-      : defaults?.condition;
+      : defaults?.condition);
 
   useEffect(() => {
     if (!onPreviewChange) return;
@@ -369,9 +405,10 @@ export function CategoryFieldsForm({
   }
 
   function optionsForField(field: CategoryFieldDefinition): CategoryFieldOption[] | undefined {
+    const stored = specs[field.key] ?? String(getSpecValue(defaults, field.key) ?? "");
     if (field.key === "brand") {
       const brands = getBrandOptionsForCategory(categoryId);
-      if (brands.length > 0) return brands;
+      if (brands.length > 0) return optionsWithStoredValue(brands, stored);
     }
     if (
       field.key === "model" &&
@@ -383,7 +420,13 @@ export function CategoryFieldsForm({
       void catalogEpoch;
       if (!specs.brand?.trim()) return [];
       // While overrides hydrate, still show sync catalog models — never Other-only.
-      return getModelsForBrand(categoryId, specs.brand);
+      return optionsWithStoredValue(
+        getModelsForBrand(categoryId, specs.brand),
+        stored,
+      );
+    }
+    if (field.options?.length) {
+      return optionsWithStoredValue(field.options, stored);
     }
     return undefined;
   }
@@ -431,7 +474,12 @@ export function CategoryFieldsForm({
                       label={field.label}
                       name={`spec_${field.key}`}
                       onChange={(event) => onSpecChange(field.key, event.target.value)}
-                      options={field.options ?? []}
+                      options={optionsWithStoredValue(
+                        field.options ?? [],
+                        conditionDefault !== undefined
+                          ? String(conditionDefault)
+                          : undefined,
+                      )}
                       placeholder="اختر..."
                       required={field.required}
                     />
@@ -458,9 +506,10 @@ export function CategoryFieldsForm({
                     field.key === "model"
                       ? `model-${categoryId}-${specs.brand ?? ""}`
                       : undefined,
-                    field.key === "brand" || field.key === "model"
-                      ? (specs[field.key] ?? "")
-                      : undefined,
+                    specs[field.key] ??
+                      (getSpecValue(defaults, field.key) !== undefined
+                        ? String(getSpecValue(defaults, field.key))
+                        : undefined),
                     field.key === "model" &&
                       categoryId === "cars" &&
                       catalogLoading &&

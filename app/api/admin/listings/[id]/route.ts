@@ -18,6 +18,20 @@ import type { AdminListingPatch } from "@/types";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
+export async function GET(_request: Request, context: RouteParams) {
+  const admin = await requireAdminPermission("listings", "view");
+  if (!isSessionUser(admin)) {
+    return admin;
+  }
+
+  const { id } = await context.params;
+  const listing = await getListingById(id);
+  if (!listing) {
+    return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+  }
+  return NextResponse.json({ listing: toAdminListingRecord(listing) });
+}
+
 export async function PATCH(request: Request, context: RouteParams) {
   const admin = await requireAdminPermission("listings", "edit");
   if (!isSessionUser(admin)) {
