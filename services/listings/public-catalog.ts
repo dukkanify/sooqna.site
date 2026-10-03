@@ -1,9 +1,8 @@
-import type { Listing } from "@/types";
-
 /** Stable public identity — table id and payload.id can disagree. */
-export function listingPublicKey(
-  listing: Pick<Listing, "id" | "slug"> & { id?: string; slug?: string },
-): string {
+export function listingPublicKey(listing: {
+  id?: string;
+  slug?: string;
+}): string {
   const id = listing.id?.trim() ?? "";
   if (id) return id;
   return listing.slug?.trim() ?? "";
