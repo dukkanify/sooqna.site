@@ -31,6 +31,10 @@ describe("listing edit hydrates specs and images", () => {
     assert.match(defaults, /hydrateCategorySpecsForEdit\(listing\)/);
     assert.match(hook, /mergeCategorySpecs/);
     assert.match(hook, /MAX_LISTING_IMAGES/);
+    assert.match(hook, /area: isDynamicCategory\(categoryId\) \? parsed\.city/);
+    const api = read("app/api/listings/[id]/route.ts");
+    assert.match(api, /area: optionalTrimmedString\(80\)/);
+    assert.match(api, /data\.area \? \{ area: data\.area \}/);
   });
 
   it("create/edit forms persist emirate and city inside categorySpecs", () => {
@@ -63,6 +67,23 @@ describe("listing edit hydrates specs and images", () => {
     assert.match(gallery, /MAX_LISTING_IMAGES/);
     assert.match(seller, /totalImages\}\/\{MAX_LISTING_IMAGES\}/);
     assert.match(api, /max\(MAX_LISTING_IMAGES\)/);
+  });
+
+  it("hydrate splits area-first city labels into emirate + area", () => {
+    const hydrate = read("shared/listings/listing-form-hydrate.ts");
+    const fields = read(
+      "features/listings/components/add-listing/CategoryFieldsForm.tsx",
+    );
+    const areas = read("shared/constants/emirate-areas.ts");
+    assert.match(hydrate, /extractAreaLabel\(text\(specs\.city\)/);
+    assert.match(hydrate, /specs\.emirate = emirate/);
+    assert.match(hydrate, /specs\.city = area/);
+    assert.match(hydrate, /inferEmirateFromArea/);
+    assert.match(fields, /field\.key === "emirate"/);
+    assert.match(fields, /value=\{emirateValue\}/);
+    assert.match(fields, /field\.key === "city"/);
+    assert.match(fields, /value=\{cityValue\}/);
+    assert.match(areas, /محمد بن زايد/);
   });
 
   it("category fields keep stored select values that are not in the option list", () => {

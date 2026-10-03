@@ -53,9 +53,32 @@ function normalizeKey(value: string): string {
     .replace(/\s+/g, " ");
 }
 
+/** Split "أبوظبي — مدينة خليفة" and "محمد بن زايد – أبوظبي". */
+function splitLocationParts(value: string): string[] {
+  return value
+    .split(/\s*[—–\-|/,،]+\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function lookupEmirateToken(part: string): string | undefined {
+  const trimmed = part.trim();
+  if (!trimmed) return undefined;
+  const direct = EMIRATE_LOOKUP[normalizeKey(trimmed)] ?? EMIRATE_LOOKUP[trimmed];
+  if (direct) return direct;
+  const withoutCity = trimmed.replace(/^مدينة\s+/, "").trim();
+  if (withoutCity !== trimmed) {
+    const nested =
+      EMIRATE_LOOKUP[normalizeKey(withoutCity)] ?? EMIRATE_LOOKUP[withoutCity];
+    if (nested) return nested;
+  }
+  return UAE_EMIRATE_NAMES.find((name) => trimmed === name);
+}
+
 /**
  * Resolve a free-text city/emirate label to a canonical Arabic emirate.
- * Handles English ids, typos, and compounds like "أبوظبي — مدينة خليفة".
+ * Handles English ids, typos, and both compound orders:
+ * "أبوظبي — مدينة خليفة" and "محمد بن زايد – أبوظبي".
  */
 export function canonicalizeEmirate(
   value: string | null | undefined,
@@ -63,22 +86,30 @@ export function canonicalizeEmirate(
   if (!value?.trim()) return undefined;
   const raw = value.trim();
 
-  const direct = EMIRATE_LOOKUP[normalizeKey(raw)] ?? EMIRATE_LOOKUP[raw];
+  const direct = lookupEmirateToken(raw);
   if (direct) return direct;
 
-  const compound = raw.split(/\s*[—–\-|]\s*/)[0]?.trim();
-  if (compound && compound !== raw) {
-    const fromCompound =
-      EMIRATE_LOOKUP[normalizeKey(compound)] ?? EMIRATE_LOOKUP[compound];
-    if (fromCompound) return fromCompound;
+  for (const part of splitLocationParts(raw)) {
+    const fromPart = lookupEmirateToken(part);
+    if (fromPart) return fromPart;
   }
 
-  for (const name of UAE_EMIRATE_NAMES) {
+  // Longest names first so "أم القيوين" wins over a shorter token.
+  const byLength = [...UAE_EMIRATE_NAMES].sort((a, b) => b.length - a.length);
+  for (const name of byLength) {
     if (
       raw === name ||
       raw.startsWith(`${name} `) ||
       raw.startsWith(`${name}—`) ||
-      raw.startsWith(`${name}-`)
+      raw.startsWith(`${name}–`) ||
+      raw.startsWith(`${name}-`) ||
+      raw.endsWith(` ${name}`) ||
+      raw.endsWith(`—${name}`) ||
+      raw.endsWith(`–${name}`) ||
+      raw.endsWith(`-${name}`) ||
+      raw.includes(` ${name} `) ||
+      raw.includes(`، ${name}`) ||
+      raw.includes(`${name}،`)
     ) {
       return name;
     }
@@ -94,13 +125,24 @@ export function extractAreaLabel(
 ): string | undefined {
   if (!value?.trim()) return undefined;
   const raw = value.trim();
-  const parts = raw
-    .split(/\s*[—–\-|]\s*/)
-    .map((part) => part.trim())
-    .filter(Boolean);
+  const resolvedEmirate = emirate || canonicalizeEmirate(raw);
+  const parts = splitLocationParts(raw);
+
   if (parts.length >= 2) {
-    const area = parts.slice(1).join(" — ");
-    if (area && area !== emirate) return area;
+    const emirateIndex = parts.findIndex(
+      (part) => lookupEmirateToken(part) === resolvedEmirate || Boolean(lookupEmirateToken(part)),
+    );
+    if (emirateIndex >= 0) {
+      const area = parts.filter((_, index) => index !== emirateIndex).join(" — ");
+      if (area && area !== resolvedEmirate) return area;
+    }
+    const firstIsEmirate = Boolean(lookupEmirateToken(parts[0]));
+    const area = firstIsEmirate ? parts.slice(1).join(" — ") : parts[0];
+    if (area && area !== resolvedEmirate) return area;
+  }
+
+  if (resolvedEmirate && lookupEmirateToken(raw) === resolvedEmirate) {
+    return undefined;
   }
   if (emirate) {
     const known = areasForEmirate(emirate);
@@ -120,23 +162,53 @@ export type ListingLocationRef = {
   area?: string;
 };
 
+/** When city/area is a known neighborhood, infer its emirate. */
+export function inferEmirateFromArea(
+  value: string | null | undefined,
+): string | undefined {
+  if (!value?.trim()) return undefined;
+  const raw = value.trim();
+  if (lookupEmirateToken(raw)) return undefined;
+  const area = extractAreaLabel(raw) || raw;
+  const matches: string[] = [];
+  for (const [emirateName, areas] of Object.entries(EMIRATE_AREAS)) {
+    if (areas.includes(area) || areas.includes(raw)) {
+      matches.push(emirateName);
+    }
+  }
+  return matches.length === 1 ? matches[0] : undefined;
+}
+
 /** Best-effort emirate for a listing row. */
 export function listingEmirate(listing: ListingLocationRef): string | undefined {
   return (
     canonicalizeEmirate(listing.emirate) ||
     canonicalizeEmirate(listing.city) ||
+    canonicalizeEmirate(listing.area) ||
+    inferEmirateFromArea(listing.area) ||
+    inferEmirateFromArea(listing.city) ||
     undefined
   );
+}
+
+function isEmirateName(value: string, emirate?: string): boolean {
+  const canonical = canonicalizeEmirate(value);
+  if (!canonical) return false;
+  if (emirate) return canonical === emirate && lookupEmirateToken(value) === emirate;
+  return lookupEmirateToken(value) === canonical;
 }
 
 /** Best-effort area for a listing row. */
 export function listingArea(listing: ListingLocationRef): string | undefined {
   const emirate = listingEmirate(listing);
+  const fromCity = extractAreaLabel(listing.city, emirate);
   if (listing.area?.trim()) {
     const area = listing.area.trim();
-    if (area !== emirate) return area;
+    if (area !== emirate && !isEmirateName(area, emirate)) {
+      return extractAreaLabel(area, emirate) || area;
+    }
   }
-  return extractAreaLabel(listing.city, emirate);
+  return fromCity;
 }
 
 export function listingMatchesEmirateFilter(

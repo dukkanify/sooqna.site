@@ -319,6 +319,17 @@ export function CategoryFieldsForm({
         if (!next[key]) {
           next[key] = value;
           changed = true;
+          continue;
+        }
+        // Hydrate splits "محمد بن زايد – أبوظبي" into emirate + area.
+        if (
+          (key === "emirate" || key === "city" || key === "location") &&
+          /[—–\-|/,،]/.test(next[key]) &&
+          value &&
+          next[key] !== value
+        ) {
+          next[key] = value;
+          changed = true;
         }
       }
       return changed ? next : prev;
@@ -456,6 +467,71 @@ export function CategoryFieldsForm({
                 </h3>
               </div>
             ) : null;
+
+            if (field.key === "emirate") {
+              const emirateValue = specs.emirate ?? "";
+              return (
+                <Fragment key={field.key}>
+                  {sectionHeading}
+                  <div
+                    className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                  >
+                    <Select
+                      compact
+                      label={field.label}
+                      name={`spec_${field.key}`}
+                      onChange={(event) =>
+                        onSpecChange(field.key, event.target.value)
+                      }
+                      options={optionsWithStoredValue(
+                        field.options ?? [],
+                        emirateValue,
+                      )}
+                      placeholder="اختر..."
+                      required={field.required}
+                      value={emirateValue}
+                    />
+                    {errors[field.key] ? (
+                      <FormMessage variant="error">
+                        {String(errors[field.key])}
+                      </FormMessage>
+                    ) : null}
+                  </div>
+                </Fragment>
+              );
+            }
+
+            if (field.key === "city") {
+              const cityValue = specs.city ?? "";
+              return (
+                <Fragment key={field.key}>
+                  {sectionHeading}
+                  <div
+                    className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                  >
+                    <Input
+                      compact
+                      label={field.label}
+                      name={`spec_${field.key}`}
+                      onChange={(event) =>
+                        onSpecChange(field.key, event.target.value)
+                      }
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      value={cityValue}
+                    />
+                    {field.note ? (
+                      <p className="mt-1 text-xs text-muted">{field.note}</p>
+                    ) : null}
+                    {errors[field.key] ? (
+                      <FormMessage variant="error">
+                        {String(errors[field.key])}
+                      </FormMessage>
+                    ) : null}
+                  </div>
+                </Fragment>
+              );
+            }
 
             if (field.key === "condition") {
               return (

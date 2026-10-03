@@ -43,6 +43,7 @@ const sellerPatchSchema = z
     price: z.number().finite().nonnegative().max(100_000_000).optional(),
     city: optionalTrimmedString(80),
     emirate: optionalTrimmedString(80),
+    area: optionalTrimmedString(80),
     condition: z.enum(listingConditions).optional(),
     contactPhone: optionalTrimmedString(40),
     imageUrl: z.string().max(2_000_000).optional(),
@@ -100,6 +101,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     ...(typeof data.price === "number" ? { price: data.price } : {}),
     ...(data.city ? { city: data.city } : {}),
     ...(data.emirate ? { emirate: data.emirate } : {}),
+    ...(data.area ? { area: data.area } : {}),
     ...(data.condition !== undefined ? { condition: data.condition } : {}),
     ...(data.contactPhone !== undefined
       ? { contactPhone: data.contactPhone }

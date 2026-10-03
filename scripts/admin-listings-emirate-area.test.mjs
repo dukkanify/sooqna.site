@@ -19,12 +19,77 @@ describe("uae emirate helper contracts", () => {
     assert.match(src, /export const UAE_EMIRATE_NAMES/);
     assert.match(src, /export function canonicalizeEmirate/);
     assert.match(src, /أبوظبي — مدينة خليفة/);
+    assert.match(src, /محمد بن زايد – أبوظبي/);
+    assert.match(src, /splitLocationParts/);
     assert.match(src, /export function listingMatchesEmirateFilter/);
     assert.match(src, /export function listingMatchesAreaFilter/);
     assert.match(src, /export function listingArea/);
+    assert.match(src, /export function inferEmirateFromArea/);
     assert.match(src, /dubai:\s*"دبي"/);
     assert.match(src, /ajman:\s*"عجمان"/);
     assert.match(src, /"ام القيوين":\s*"أم القيوين"/);
+  });
+});
+
+describe("compound city labels", () => {
+  const EMIRATES = [
+    "أبوظبي",
+    "دبي",
+    "الشارقة",
+    "عجمان",
+    "أم القيوين",
+    "رأس الخيمة",
+    "الفجيرة",
+  ];
+
+  function split(value) {
+    return value
+      .split(/\s*[—–\-|/,،]+\s*/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+
+  function emirateFrom(value) {
+    const direct = EMIRATES.find((name) => name === value.trim());
+    if (direct) return direct;
+    for (const part of split(value)) {
+      const hit = EMIRATES.find((name) => name === part);
+      if (hit) return hit;
+    }
+    return undefined;
+  }
+
+  function areaFrom(value) {
+    const emirate = emirateFrom(value);
+    const parts = split(value);
+    if (parts.length >= 2 && emirate) {
+      return parts.filter((part) => part !== emirate).join(" — ");
+    }
+    return undefined;
+  }
+
+  it("splits area-first and emirate-first city strings", () => {
+    assert.deepEqual(split("محمد بن زايد – أبوظبي"), [
+      "محمد بن زايد",
+      "أبوظبي",
+    ]);
+    assert.deepEqual(split("أبوظبي — مدينة خليفة"), [
+      "أبوظبي",
+      "مدينة خليفة",
+    ]);
+    assert.deepEqual(split("مدينة محمد بن زايد - أبوظبي"), [
+      "مدينة محمد بن زايد",
+      "أبوظبي",
+    ]);
+  });
+
+  it("resolves emirate + area for محمد بن زايد – أبوظبي", () => {
+    assert.equal(emirateFrom("محمد بن زايد – أبوظبي"), "أبوظبي");
+    assert.equal(areaFrom("محمد بن زايد – أبوظبي"), "محمد بن زايد");
+    assert.equal(emirateFrom("أبوظبي — مدينة خليفة"), "أبوظبي");
+    assert.equal(areaFrom("أبوظبي — مدينة خليفة"), "مدينة خليفة");
+    assert.equal(emirateFrom("مدينة محمد بن زايد - أبوظبي"), "أبوظبي");
+    assert.equal(areaFrom("مدينة محمد بن زايد - أبوظبي"), "مدينة محمد بن زايد");
   });
 });
 
