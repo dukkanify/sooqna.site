@@ -3,6 +3,10 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { CategoryFieldDefinition, CategorySpecs, Listing, ListingCondition } from "@/types";
 import { getCategoryFields, isDynamicCategory, mergeFieldVisibilityFromDefaults } from "@/shared/constants/category-fields";
+import {
+  getFormTemplateFields,
+  resolveCategoryFeatureProfile,
+} from "@/shared/constants/category-feature-profiles";
 import { getModelsForBrand } from "@/shared/constants/product-brand-models";
 import { getBrandOptionsForCategory } from "@/shared/constants/product-brands";
 import { BrandCombobox } from "@/shared/ui/BrandCombobox";
@@ -16,6 +20,10 @@ import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import type { CategoryFieldOption } from "@/types";
 import {
   fieldVisibleForSpecs,
+  isOtherDetailField,
+  isOtherOptionValue,
+  parentKeyForOtherField,
+  withImplicitOtherShowWhen,
   withVisibilityContext,
 } from "@/shared/listings/category-field-visibility";
 import {
@@ -245,10 +253,13 @@ export function CategoryFieldsForm({
     isFood ||
     categoryId === "real-estate" ||
     categoryId === "services";
-  const fallbackFields = useMemo(
-    () => (isDynamicCategory(categoryId) ? getCategoryFields(categoryId) : []),
-    [categoryId],
-  );
+  const fallbackFields = useMemo(() => {
+    if (isDynamicCategory(categoryId)) return getCategoryFields(categoryId);
+    return getFormTemplateFields(
+      resolveCategoryFeatureProfile(categoryId),
+      categoryId,
+    );
+  }, [categoryId]);
   const [remoteFields, setRemoteFields] = useState<{
     categoryId: string;
     fields: CategoryFieldDefinition[];
@@ -269,7 +280,7 @@ export function CategoryFieldsForm({
             categoryId,
             fields: data.fields as CategoryFieldDefinition[],
           });
-        } else if (!isDynamicCategory(categoryId)) {
+        } else {
           setRemoteFields({ categoryId, fields: [] });
         }
       })
@@ -307,11 +318,12 @@ export function CategoryFieldsForm({
     };
   }, [categoryId]);
 
-  const allFields = mergeFieldVisibilityFromDefaults(
-    categoryId,
-    remoteFields?.categoryId === categoryId
+  const sourceFields =
+    remoteFields?.categoryId === categoryId && remoteFields.fields.length > 0
       ? remoteFields.fields
-      : fallbackFields,
+      : fallbackFields;
+  const allFields = withImplicitOtherShowWhen(
+    mergeFieldVisibilityFromDefaults(categoryId, sourceFields, fallbackFields),
   );
 
   const [specs, setSpecs] = useState<Record<string, string>>(() =>
@@ -392,14 +404,7 @@ export function CategoryFieldsForm({
   if (!categoryId) {
     return null;
   }
-  if (
-    remoteFields?.categoryId === categoryId &&
-    remoteFields.fields.length === 0 &&
-    !isDynamicCategory(categoryId)
-  ) {
-    return null;
-  }
-  if (allFields.length === 0 && !isDynamicCategory(categoryId)) {
+  if (allFields.length === 0) {
     return null;
   }
 
@@ -410,6 +415,13 @@ export function CategoryFieldsForm({
       if (key === "brand") {
         next.model = "";
         next.modelOther = "";
+      }
+      for (const field of allFields) {
+        if (!field.key || !isOtherDetailField(field)) continue;
+        const parent = parentKeyForOtherField(field);
+        if (parent === key && !isOtherOptionValue(value)) {
+          next[field.key] = "";
+        }
       }
       return next;
     });

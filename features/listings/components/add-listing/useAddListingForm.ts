@@ -436,7 +436,7 @@ export function useAddListingForm(categories: Category[]) {
             ).trim();
             if (
               animalType &&
-              animalType !== "other" &&
+              !isOtherOptionValue(animalType) &&
               ["قطط", "كلاب", "طيور", "مستلزمات"].includes(animalType)
             ) {
               return animalType;
@@ -535,7 +535,7 @@ export function useAddListingForm(categories: Category[]) {
       const furnitureOther = String(specs.furnitureTypeOther ?? "").trim();
       if (
         categoryId === "furniture" &&
-        String(specs.furnitureType ?? "") === "other" &&
+        isOtherOptionValue(String(specs.furnitureType ?? "")) &&
         furnitureOther.length >= 2
       ) {
         void fetch("/api/option-suggestions", {

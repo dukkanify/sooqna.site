@@ -3,8 +3,10 @@ import {
   getCategoryFields,
 } from "@/shared/constants/category-fields";
 import {
+  fieldRequiredForSpecs,
   fieldVisibleForSpecs,
   matchesFieldPattern,
+  withImplicitOtherShowWhen,
 } from "@/shared/listings/category-field-visibility";
 import {
   isCanonicalJobSubcategory,
@@ -107,10 +109,11 @@ export function parseCategoryForm(
   const isJobs = categoryId === "jobs";
   const isFood = categoryId === "food";
 
-  const fields =
+  const fields = withImplicitOtherShowWhen(
     fieldsOverride && fieldsOverride.length > 0
       ? fieldsOverride
-      : getCategoryFields(categoryId);
+      : getCategoryFields(categoryId),
+  );
 
   if (fields.length === 0) {
     const title = String(formData.get("title") ?? "").trim();
@@ -188,7 +191,7 @@ export function parseCategoryForm(
       value = visibilitySpecs.animalType;
     }
     if (!hasFieldValue(value)) {
-      if (field.required) {
+      if (fieldRequiredForSpecs(field, visibilitySpecs)) {
         errors[field.key] = `${field.label} مطلوب.`;
       }
       continue;

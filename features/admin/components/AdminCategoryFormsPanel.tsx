@@ -8,7 +8,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
-import type { AdminCategoryRecord } from "@/types";
+import type { AdminCategoryRecord, CategoryFieldShowWhen } from "@/types";
 import {
   getCategoryFeatureProfileMeta,
   resolveCategoryFeatureProfile,
@@ -28,7 +28,29 @@ type StoredField = {
   note?: string;
   options?: { label: string; value: string }[];
   validation?: string;
+  showWhen?: CategoryFieldShowWhen;
+  hideWhen?: CategoryFieldShowWhen;
 };
+
+function toEditorField(
+  field: StoredField & { fieldKey: string },
+  index: number,
+): StoredField {
+  return {
+    fieldKey: field.fieldKey,
+    label: field.label,
+    type: field.type,
+    required: Boolean(field.required),
+    enabled: field.enabled !== false,
+    sortOrder: field.sortOrder ?? index,
+    placeholder: field.placeholder,
+    note: field.note,
+    options: field.options,
+    validation: field.validation,
+    showWhen: field.showWhen,
+    hideWhen: field.hideWhen,
+  };
+}
 
 type Suggestion = {
   id: string;
@@ -68,18 +90,8 @@ export function AdminCategoryFormsPanel() {
     const data = await response.json();
     setFields(
       (data.fields ?? []).map(
-        (field: StoredField & { fieldKey: string }, index: number) => ({
-          fieldKey: field.fieldKey,
-          label: field.label,
-          type: field.type,
-          required: Boolean(field.required),
-          enabled: field.enabled !== false,
-          sortOrder: field.sortOrder ?? index,
-          placeholder: field.placeholder,
-          note: field.note,
-          options: field.options,
-          validation: field.validation,
-        }),
+        (field: StoredField & { fieldKey: string }, index: number) =>
+          toEditorField(field, index),
       ),
     );
   }, []);
@@ -122,18 +134,8 @@ export function AdminCategoryFormsPanel() {
         if (cancelled) return;
         setFields(
           (data.fields ?? []).map(
-            (field: StoredField & { fieldKey: string }, index: number) => ({
-              fieldKey: field.fieldKey,
-              label: field.label,
-              type: field.type,
-              required: Boolean(field.required),
-              enabled: field.enabled !== false,
-              sortOrder: field.sortOrder ?? index,
-              placeholder: field.placeholder,
-              note: field.note,
-              options: field.options,
-              validation: field.validation,
-            }),
+            (field: StoredField & { fieldKey: string }, index: number) =>
+              toEditorField(field, index),
           ),
         );
       })
