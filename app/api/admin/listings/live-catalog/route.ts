@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { action?: string };
 
   if (body.action === "publish-empty") {
-    const admin = await requireAdminPermission("listings", "update");
+    const admin = await requireAdminPermission("listings", "edit");
     if (!isSessionUser(admin)) {
       return admin;
     }
