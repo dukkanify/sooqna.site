@@ -1,6 +1,8 @@
 import type { CategorySpecs, Listing } from "@/types";
 import {
   canonicalizeEmirate,
+  extractAreaLabel,
+  inferEmirateFromArea,
   listingArea,
   listingEmirate,
 } from "@/shared/listings/uae-emirate";
@@ -83,12 +85,21 @@ export function hydrateCategorySpecsForEdit(
 ): CategorySpecs {
   const specs: CategorySpecs = { ...(listing.categorySpecs ?? {}) };
 
-  const emirate = listingEmirate(listing);
-  if (emirate) setIfEmpty(specs, "emirate", emirate);
-  const area = listingArea(listing);
-  if (area) setIfEmpty(specs, "city", area);
-  else if (listing.city && canonicalizeEmirate(listing.city) !== listing.city) {
-    setIfEmpty(specs, "city", listing.city);
+  const emirate =
+    listingEmirate(listing) ||
+    canonicalizeEmirate(text(specs.emirate)) ||
+    canonicalizeEmirate(text(specs.city)) ||
+    inferEmirateFromArea(text(specs.city)) ||
+    inferEmirateFromArea(text(listing.area)) ||
+    inferEmirateFromArea(text(listing.city));
+  if (emirate) specs.emirate = emirate;
+
+  const area =
+    listingArea({ ...listing, emirate }) ||
+    extractAreaLabel(text(specs.city), emirate) ||
+    extractAreaLabel(text(specs.emirate), emirate);
+  if (area && canonicalizeEmirate(area) !== emirate) {
+    specs.city = area;
   }
 
   if (listing.condition) setIfEmpty(specs, "condition", listing.condition);
