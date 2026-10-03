@@ -14,6 +14,11 @@ import {
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import type { Listing } from "@/types";
 import { getLocalListingById, saveLocalListing } from "@/services/storage";
+import {
+  formatUaeMobileNational,
+  isValidUaeMobile,
+  UAE_MOBILE_ERROR,
+} from "@/shared/utils/phone";
 import { uploadListingImages } from "@/services/upload";
 import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { CategoryFieldErrors } from "./add-listing/CategoryFieldsForm";
@@ -75,13 +80,16 @@ export function useEditListingForm(
 
       const formData = new FormData(event.currentTarget);
       const categoryId = currentListing.categoryId;
-      const contact = String(formData.get("contact") ?? "").trim();
+      const contactRaw = String(formData.get("contact") ?? "").trim();
+      const contact = isValidUaeMobile(contactRaw)
+        ? formatUaeMobileNational(contactRaw)
+        : contactRaw;
       const videoUrl = String(formData.get("videoUrl") ?? "").trim();
       const parsed = parseCategoryForm(formData, categoryId);
       const nextErrors: CategoryFieldErrors = { ...parsed.errors };
 
-      if (!/^(\+971|971|0)?5\d{8}$/.test(contact)) {
-        nextErrors.contact = "اكتب رقم تواصل إماراتي صحيح.";
+      if (contact && !isValidUaeMobile(contact)) {
+        nextErrors.contact = UAE_MOBILE_ERROR;
       }
 
       setErrors(nextErrors);

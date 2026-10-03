@@ -4,6 +4,7 @@ import type { Category } from "@/types";
 import { useCallback, useRef, useState } from "react";
 import { isDynamicCategory } from "@/shared/constants/category-fields";
 import { getSessionUser } from "@/services/storage";
+import { listingPrefillPhone } from "@/shared/utils/phone";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -22,8 +23,8 @@ type AddListingFormProps = {
 export function AddListingForm({ categories }: AddListingFormProps) {
   const detailsSectionRef = useRef<HTMLDivElement>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
-  const [defaultContact] = useState(
-    () => getSessionUser()?.phone?.trim() ?? "",
+  const [defaultContact] = useState(() =>
+    listingPrefillPhone(getSessionUser()?.phone),
   );
   const {
     blockReason,
@@ -147,6 +148,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
 
         <MediaContactStep
           defaultContact={defaultContact}
+          filledFromProfile={Boolean(defaultContact)}
           errors={errors}
           featuredCheckoutAvailable={featuredCheckoutAvailable}
           imagePreviews={imagePreviews}
