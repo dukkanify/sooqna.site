@@ -5,7 +5,7 @@ import { memo } from "react";
 import type { Listing } from "@/types";
 import { AppImage } from "@/shared/components/AppImage";
 import { CardShareButton } from "@/shared/components/CardShareButton";
-import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { ListingPrice } from "@/shared/components/ListingPrice";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { SellerName } from "@/shared/i18n/SellerName";
@@ -147,13 +147,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
       ) : null}
 
       <div>
-        {listing.categoryId === "jobs" ? (
-          <p className="text-sm font-black text-ink">
-            {String(listing.categorySpecs?.salary ?? "").trim() || "وظيفة"}
-          </p>
-        ) : (
-          <CurrencyAmount amount={listing.price} size="sm" />
-        )}
+        <ListingPrice listing={listing} size="sm" />
       </div>
 
       <div className="hidden items-center gap-2 lg:flex">

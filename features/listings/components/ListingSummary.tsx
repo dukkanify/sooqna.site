@@ -5,7 +5,8 @@ import { ListingPrimaryAction } from "@/features/listings/components/ListingPrim
 import { getListingActionConfig } from "@/shared/constants/listingActionConfig";
 import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
 import { StartChatButton } from "@/features/chat/components/StartChatButton";
-import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { ListingPrice } from "@/shared/components/ListingPrice";
+import { listingUsesQuotePricing } from "@/shared/listings/quote-pricing";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ShareButton } from "@/shared/components/ShareButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
@@ -83,14 +84,10 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
       </h1>
 
       <div className="mt-4">
-        {listing.categoryId === "jobs" ? (
-          <p className="text-2xl font-black text-ink md:text-3xl">
-            {String(listing.categorySpecs?.salary ?? "").trim() || "الراتب حسب الاتفاق"}
-          </p>
-        ) : (
-          <CurrencyAmount amount={listing.price} size="xl" />
-        )}
-        {listing.negotiable && listing.categoryId !== "jobs" ? (
+        <ListingPrice listing={listing} size="xl" />
+        {listing.negotiable &&
+        listing.categoryId !== "jobs" &&
+        !listingUsesQuotePricing(listing) ? (
           <p className="mt-1 text-sm font-semibold text-secondary">قابل للتفاوض</p>
         ) : null}
       </div>

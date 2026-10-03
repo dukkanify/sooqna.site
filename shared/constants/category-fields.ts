@@ -616,6 +616,21 @@ const serviceFields: CategoryFieldDefinition[] = [
     { label: "حسب الموعد", value: "حسب الموعد" },
   ]},
   { key: "experience", label: "سنوات الخبرة", type: "text", required: true },
+  {
+    key: "pricingBasis",
+    label: "طريقة احتساب السعر",
+    type: "select",
+    required: false,
+    searchable: true,
+    options: [
+      { label: "للساعة", value: "hourly" },
+      { label: "للزيارة", value: "visit" },
+      { label: "للمهمة أو المشروع", value: "project" },
+      { label: "اشتراك شهري", value: "monthly" },
+      { label: "حسب عرض سعر", value: "quote" },
+    ],
+    note: "عند اختيار «حسب عرض سعر» لا يُطلب مبلغ بالدرهم — يظهر للمشترين طلب عرض سعر.",
+  },
 ];
 
 const foodFields: CategoryFieldDefinition[] = [

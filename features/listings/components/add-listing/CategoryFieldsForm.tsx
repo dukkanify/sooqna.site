@@ -26,6 +26,7 @@ import {
   withImplicitOtherShowWhen,
   withVisibilityContext,
 } from "@/shared/listings/category-field-visibility";
+import { quotePricingFromSpecs } from "@/shared/listings/quote-pricing";
 import {
   addListingCheckboxGridClass,
   addListingCheckboxGroupClass,
@@ -63,7 +64,7 @@ type CategoryFieldsFormProps = {
     hideCondition?: boolean;
     negotiable?: boolean;
     price?: string;
-    priceMode?: "aed" | "salary";
+    priceMode?: "aed" | "salary" | "quote";
     title?: string;
   }) => void;
   showContact?: boolean;
@@ -360,6 +361,7 @@ export function CategoryFieldsForm({
   }, [defaultsFingerprint]);
 
   const visibilitySpecs = withVisibilityContext(specs, { subcategory });
+  const quotePricing = quotePricingFromSpecs(visibilitySpecs);
   const fields = allFields.filter(
     (field) =>
       field.type !== "checkbox-group" &&
@@ -377,7 +379,7 @@ export function CategoryFieldsForm({
     if (!onPreviewChange) return;
     onPreviewChange({
       hideCondition,
-      priceMode: isJobs ? "salary" : "aed",
+      priceMode: isJobs ? "salary" : quotePricing ? "quote" : "aed",
       city: isJobs
         ? specs.location ?? ""
         : specs.city ?? specs.emirate ?? "",
@@ -387,6 +389,7 @@ export function CategoryFieldsForm({
           : "",
       // Keep price a string — never patch `undefined` over existing preview price.
       ...(isJobs ? { price: specs.salary ?? "" } : {}),
+      ...(quotePricing ? { price: "" } : {}),
     });
     // Sync category-derived preview fields only when those values change —
     // intentionally omit onPreviewChange identity to avoid update loops.
@@ -394,11 +397,14 @@ export function CategoryFieldsForm({
   }, [
     hideCondition,
     isJobs,
+    quotePricing,
     specs.city,
     specs.condition,
     specs.emirate,
     specs.location,
     specs.salary,
+    specs.pricingBasis,
+    specs.priceBasis,
   ]);
 
   if (!categoryId) {
@@ -662,6 +668,16 @@ export function CategoryFieldsForm({
               إعلانات الوظائف لا تستخدم سعر درهم ولا حالة مستعمل/جديد — الراتب
               والموقع يظهران من الحقول أعلاه.
             </p>
+          ) : quotePricing ? (
+            <div className="grid gap-2">
+              <input name="price" type="hidden" value="0" />
+              <p className="rounded-[var(--radius-xl)] border border-border bg-surface-muted px-3 py-2.5 text-sm font-medium text-ink">
+                حسب عرض سعر — لا يُطلب مبلغ بالدرهم. سيظهر للمشترين طلب عرض سعر.
+              </p>
+              {errors.price ? (
+                <FormMessage variant="error">{errors.price}</FormMessage>
+              ) : null}
+            </div>
           ) : (
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-2">
               <div className="col-span-2 sm:col-span-1">

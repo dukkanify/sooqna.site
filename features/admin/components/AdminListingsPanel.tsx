@@ -17,7 +17,7 @@ import type {
 } from "@/types";
 import { getCategoryFields, isDynamicCategory } from "@/shared/constants/category-fields";
 import { listingStatusLabels } from "@/shared/constants/listingStatuses";
-import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { ListingPrice } from "@/shared/components/ListingPrice";
 import {
   CategoryFieldsForm,
   type CategoryFieldErrors,
@@ -636,7 +636,10 @@ export function AdminListingsPanel() {
       }
       const parsed = parseCategoryForm(formData, listing.categoryId);
       const submittedPrice = Number(formData.get("price") ?? listing.price);
-      if (!Number.isFinite(submittedPrice) || submittedPrice <= 0) {
+      if (
+        !parsed.skipPrice &&
+        (!Number.isFinite(submittedPrice) || submittedPrice <= 0)
+      ) {
         setEditFieldErrors({ price: "اكتب سعراً صحيحاً." });
         window.alert("السعر مطلوب لحفظ التعديل.");
         return;
@@ -658,7 +661,7 @@ export function AdminListingsPanel() {
       title = parsed.title.trim() || listing.title;
       description =
         String(formData.get("description") ?? "").trim() || description;
-      price = submittedPrice;
+      price = parsed.skipPrice ? 0 : submittedPrice;
       emirate =
         canonicalizeEmirate(parsed.emirate) ||
         canonicalizeEmirate(parsed.city) ||
@@ -774,7 +777,9 @@ export function AdminListingsPanel() {
       return;
     }
 
-    const price = Number(formData.get("price") ?? form.price);
+    const price = parsed.skipPrice
+      ? 0
+      : Number(formData.get("price") ?? form.price);
     const title = isDynamic ? parsed.title : form.title.trim();
     const emirate = isDynamic
       ? canonicalizeEmirate(parsed.emirate) ||
@@ -1450,7 +1455,7 @@ export function AdminListingsPanel() {
                         </p>
                       </td>
                       <td>
-                        <CurrencyAmount amount={listing.price} size="sm" />
+                        <ListingPrice listing={listing} size="sm" />
                       </td>
                       <td>
                         <span className="tabular-nums font-semibold text-ink">
@@ -1645,7 +1650,7 @@ export function AdminListingsPanel() {
                   </div>
                   <div className="admin-listings-mobile-card__meta">
                     <span>{listing.city || "—"}</span>
-                    <CurrencyAmount amount={listing.price} size="sm" />
+                    <ListingPrice listing={listing} size="sm" />
                     <span>
                       {(listing.views ?? 0).toLocaleString(intlLocale(locale))}{" "}
                       مشاهدة
