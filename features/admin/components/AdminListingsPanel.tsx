@@ -59,6 +59,7 @@ import {
 } from "@/shared/listings/uae-emirate";
 import { compactListingNumber, isTechnicalRecordId } from "@/shared/display/technical-id";
 import { listingDetailsHref } from "@/shared/listings/listing-url";
+import { useLocale } from "@/shared/i18n/useLocale";
 
 const statusFilterOptions: { label: string; value: string }[] = [
   { label: "إعلانات السوق", value: "marketplace" },

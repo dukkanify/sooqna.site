@@ -115,6 +115,7 @@ describe("UI never substitutes technical ids for human labels", () => {
     const src = read("features/admin/components/AdminListingsPanel.tsx");
     assert.match(src, /compactListingNumber/);
     assert.match(src, /listingDetailsHref/);
+    assert.match(src, /useLocale/);
     assert.doesNotMatch(src, /title=\{listing\.id\}/);
   });
 
