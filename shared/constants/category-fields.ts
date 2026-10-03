@@ -450,6 +450,15 @@ const mobileFields: CategoryFieldDefinition[] = [
     values: ["إكسسوارات"],
   } },
   { key: "accessoriesIncluded", label: "الملحقات المرفقة", type: "textarea", required: true },
+  { key: "emirate", label: "الإمارة", type: "select", required: true, options: emirateOptions, searchable: true },
+  {
+    key: "city",
+    label: "المدينة / المنطقة",
+    type: "text",
+    required: true,
+    searchable: true,
+    placeholder: "مثال: جميرا، مردف، الكورنيش",
+  },
   { key: "condition", label: "حالة المنتج", type: "select", required: true, options: [
     { label: "جديد", value: "new" },
     { label: "مستعمل", value: "used" },
@@ -465,7 +474,7 @@ const electronicsFields: CategoryFieldDefinition[] = [
     titlePart: true,
     searchable: true,
     options: electronicsBrandOptions,
-    placeholder: "ابحث عن الماركة (App… Son…)",
+    placeholder: "ابحث عن الماركة (Canon… App… Son…)",
   },
   {
     key: "model",
@@ -481,13 +490,36 @@ const electronicsFields: CategoryFieldDefinition[] = [
       { label: "PlayStation 5", value: "PlayStation 5" },
       { label: "Xbox Series X", value: "Xbox Series X" },
       { label: "Nintendo Switch", value: "Nintendo Switch" },
+      { label: "EOS R6", value: "EOS R6" },
+      { label: "EOS R5", value: "EOS R5" },
+      { label: "A7 IV", value: "A7 IV" },
       { label: "أخرى", value: "أخرى" },
     ],
     placeholder: "ابحث أو اكتب الموديل",
   },
+  {
+    key: "modelOther",
+    label: "حدد الموديل (أخرى)",
+    type: "text",
+    required: true,
+    titlePart: true,
+    searchable: true,
+    placeholder: "اكتب الموديل إن لم تجده",
+    showWhen: { key: "model", values: ["أخرى"] },
+  },
+  { key: "emirate", label: "الإمارة", type: "select", required: true, options: emirateOptions, searchable: true },
+  {
+    key: "city",
+    label: "المدينة / المنطقة",
+    type: "text",
+    required: true,
+    searchable: true,
+    placeholder: "مثال: البرشاء، ديرة، الكورنيش",
+  },
   { key: "condition", label: "حالة المنتج", type: "select", required: true, options: [
     { label: "جديد", value: "new" },
     { label: "مستعمل", value: "used" },
+    { label: "ممتاز", value: "excellent" },
     { label: "مجدّد", value: "refurbished" },
     { label: "للقطع", value: "for_parts" },
     { label: "لا يعمل", value: "not_working" },
@@ -505,8 +537,123 @@ const electronicsFields: CategoryFieldDefinition[] = [
     },
     note: "مطلوب عند اختيار مستعمل أو مجدّد أو للقطع أو لا يعمل.",
   },
+  {
+    key: "storage",
+    label: "التخزين",
+    type: "select",
+    required: true,
+    searchable: true,
+    options: [
+      { label: "256 GB", value: "256 GB" },
+      { label: "512 GB", value: "512 GB" },
+      { label: "1 TB", value: "1 TB" },
+      { label: "2 TB", value: "2 TB" },
+    ],
+    showWhen: { key: "subcategory", values: ["لابتوبات"] },
+  },
+  {
+    key: "ram",
+    label: "الذاكرة (RAM)",
+    type: "select",
+    required: true,
+    options: [
+      { label: "8 GB", value: "8 GB" },
+      { label: "16 GB", value: "16 GB" },
+      { label: "32 GB", value: "32 GB" },
+      { label: "64 GB", value: "64 GB" },
+    ],
+    showWhen: { key: "subcategory", values: ["لابتوبات"] },
+  },
+  {
+    key: "consoleEdition",
+    label: "إصدار الجهاز",
+    type: "text",
+    required: false,
+    searchable: true,
+    placeholder: "مثال: Digital / Disc / OLED",
+    showWhen: { key: "subcategory", values: ["ألعاب"] },
+  },
+  {
+    key: "shutterCount",
+    label: "عدد الشُتر",
+    type: "text",
+    required: true,
+    searchable: true,
+    placeholder: "مثال: 12000",
+    showWhen: { key: "subcategory", values: ["كاميرات"] },
+    note: "مهم لمشتري الكاميرات المستعملة.",
+  },
+  {
+    key: "lensIncluded",
+    label: "العدسة المرفقة",
+    type: "text",
+    required: true,
+    searchable: true,
+    placeholder: "مثال: RF 24-105mm f/4L",
+    showWhen: { key: "subcategory", values: ["كاميرات"] },
+  },
+  {
+    key: "connectivity",
+    label: "الاتصال",
+    type: "select",
+    required: false,
+    options: [
+      { label: "Bluetooth", value: "Bluetooth" },
+      { label: "Wi-Fi", value: "Wi-Fi" },
+      { label: "سلكي", value: "سلكي" },
+      { label: "Bluetooth + Wi-Fi", value: "Bluetooth + Wi-Fi" },
+    ],
+    showWhen: { key: "subcategory", values: ["سماعات"] },
+  },
   { key: "warranty", label: "الضمان", type: "select", required: true, options: yesNoOptions },
   { key: "accessories", label: "الملحقات", type: "textarea", required: true },
+];
+
+const goodsFields: CategoryFieldDefinition[] = [
+  {
+    key: "itemType",
+    label: "النوع",
+    type: "text",
+    required: true,
+    titlePart: true,
+    searchable: true,
+    placeholder: "مثال: ساعة، عربة أطفال، دراجة…",
+  },
+  {
+    key: "brand",
+    label: "الماركة",
+    type: "text",
+    required: false,
+    titlePart: true,
+    searchable: true,
+  },
+  { key: "emirate", label: "الإمارة", type: "select", required: true, options: emirateOptions, searchable: true },
+  {
+    key: "city",
+    label: "المدينة / المنطقة",
+    type: "text",
+    required: true,
+    searchable: true,
+  },
+  {
+    key: "condition",
+    label: "حالة المنتج",
+    type: "select",
+    required: true,
+    options: [
+      { label: "جديد", value: "new" },
+      { label: "مستعمل", value: "used" },
+      { label: "ممتاز", value: "excellent" },
+    ],
+  },
+  {
+    key: "size",
+    label: "المقاس / الحجم",
+    type: "text",
+    required: false,
+    searchable: true,
+    showWhen: { key: "subcategory", values: ["ملابس", "ملابس أطفال", "حقائب", "ساعات"] },
+  },
 ];
 
 const jobFields: CategoryFieldDefinition[] = [
@@ -731,6 +878,7 @@ const furnitureFields: CategoryFieldDefinition[] = [
       { label: "أثاث خارجي", value: "أثاث خارجي" },
       { label: "أخرى", value: "other" },
     ],
+    note: "يُملأ تلقائياً من التصنيف الفرعي عند اختياره في الخطوة الأولى.",
   },
   {
     key: "furnitureTypeOther",
@@ -760,6 +908,7 @@ const furnitureFields: CategoryFieldDefinition[] = [
     required: false,
     searchable: true,
   },
+  { key: "emirate", label: "الإمارة", type: "select", required: true, options: emirateOptions, searchable: true },
   {
     key: "city",
     label: "المدينة / المنطقة",
@@ -837,7 +986,7 @@ const petFields: CategoryFieldDefinition[] = [
   },
   {
     key: "condition",
-    label: "الحالة",
+    label: "حالة المستلزم",
     type: "select",
     required: true,
     options: [
@@ -845,6 +994,8 @@ const petFields: CategoryFieldDefinition[] = [
       { label: "مستعمل", value: "used" },
       { label: "ممتاز", value: "excellent" },
     ],
+    showWhen: { key: "animalType", values: ["مستلزمات"] },
+    note: "حالة المنتج للمستلزمات فقط — لا تُطلب للحيوانات الحية.",
   },
   {
     key: "city",
@@ -865,6 +1016,10 @@ export const DYNAMIC_CATEGORY_IDS = [
   "food",
   "furniture",
   "pets",
+  "fashion",
+  "kids",
+  "sports",
+  "books",
 ] as const;
 
 export type DynamicCategoryId = (typeof DYNAMIC_CATEGORY_IDS)[number];
@@ -879,6 +1034,10 @@ const categoryFieldMap: Record<DynamicCategoryId, CategoryFieldDefinition[]> = {
   food: foodFields,
   furniture: furnitureFields,
   pets: petFields,
+  fashion: goodsFields,
+  kids: goodsFields,
+  sports: goodsFields,
+  books: goodsFields,
 };
 
 export function isDynamicCategory(categoryId: string): categoryId is DynamicCategoryId {

@@ -172,6 +172,25 @@ export function parseCategoryForm(
     }
   }
 
+  // Furniture: seed furnitureType from the directory subcategory when the
+  // seller already chose غرف نوم / كنب / … in step 1.
+  const FURNITURE_TYPES = ["غرف نوم", "كنب", "طاولات طعام", "أثاث خارجي"] as const;
+  if (categoryId === "furniture" && !visibilitySpecs.furnitureType) {
+    const subcategory = String(formData.get("subcategory") ?? "").trim();
+    if ((FURNITURE_TYPES as readonly string[]).includes(subcategory)) {
+      visibilitySpecs.furnitureType = subcategory;
+    }
+  }
+
+  // Goods (fashion/kids/sports/books): seed itemType from subcategory label.
+  if (
+    ["fashion", "kids", "sports", "books"].includes(categoryId) &&
+    !visibilitySpecs.itemType
+  ) {
+    const subcategory = String(formData.get("subcategory") ?? "").trim();
+    if (subcategory) visibilitySpecs.itemType = subcategory;
+  }
+
   for (const field of fields) {
     if (!fieldVisibleForSpecs(field, visibilitySpecs)) {
       continue;
@@ -194,6 +213,20 @@ export function parseCategoryForm(
       visibilitySpecs.animalType
     ) {
       value = visibilitySpecs.animalType;
+    }
+    if (
+      !hasFieldValue(value) &&
+      field.key === "furnitureType" &&
+      visibilitySpecs.furnitureType
+    ) {
+      value = visibilitySpecs.furnitureType;
+    }
+    if (
+      !hasFieldValue(value) &&
+      field.key === "itemType" &&
+      visibilitySpecs.itemType
+    ) {
+      value = visibilitySpecs.itemType;
     }
     if (!hasFieldValue(value)) {
       if (fieldRequiredForSpecs(field, visibilitySpecs)) {

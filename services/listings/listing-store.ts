@@ -38,7 +38,10 @@ import type {
 } from "@/types/domain/admin";
 import { SHOWCASE_SOURCE } from "@/shared/listings/showcase-listing";
 import { sanitizeListingMediaFields } from "@/shared/listings/durable-media";
-import { hydrateCategorySpecsForEdit } from "@/shared/listings/listing-form-hydrate";
+import {
+  hydrateCategorySpecsForEdit,
+  mergeCategorySpecs,
+} from "@/shared/listings/listing-form-hydrate";
 import { migrateJobsListingFields } from "@/shared/listings/jobs-taxonomy";
 
 let cacheRows: Listing[] | null = null;
@@ -249,15 +252,23 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
   const { applyListingViewCount } = await import(
     "@/services/listings/listing-views-store"
   );
+  const { syncLiveCatalogMedia } = await import(
+    "@/services/listings/live-marketplace-catalog"
+  );
+  const withCatalogParity = (listing: Listing) =>
+    syncLiveCatalogMedia([withEscrowDefault(listing)])[0];
+
   const persisted = await loadListingById(id).catch(() => null);
   if (persisted) {
     return applyListingViewCount(
-      sanitizeListingMediaFields(withEscrowDefault(persisted)),
+      sanitizeListingMediaFields(withCatalogParity(persisted)),
     );
   }
   const listings = await getAllListings();
   const found = listings.find((listing) => listing.id === id || listing.slug === id);
-  return found ? sanitizeListingMediaFields(found) : undefined;
+  return found
+    ? sanitizeListingMediaFields(withCatalogParity(found))
+    : undefined;
 }
 
 export async function getListingBySlug(slug: string): Promise<Listing | undefined> {
@@ -555,10 +566,27 @@ export async function patchListingRecord(
         }
       : {}),
     ...(patch.categorySpecs !== undefined
-      ? { categorySpecs: patch.categorySpecs }
+      ? {
+          // Merge so a partial admin form never wipes untouched specs.
+          categorySpecs: mergeCategorySpecs(
+            previous.categorySpecs,
+            patch.categorySpecs,
+          ),
+        }
       : {}),
     ...(patch.features !== undefined
-      ? { features: patch.features.length ? patch.features : undefined }
+      ? {
+          features:
+            patch.features.length > 0
+              ? patch.features
+              : previous.features,
+        }
+      : {}),
+    // Never blank a non-empty description with an accidental empty patch.
+    ...(patch.description !== undefined &&
+    patch.description.trim() === "" &&
+    (previous.description ?? "").trim()
+      ? { description: previous.description }
       : {}),
     ...(typeof patch.negotiable === "boolean"
       ? { negotiable: patch.negotiable }

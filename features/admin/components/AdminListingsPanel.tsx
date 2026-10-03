@@ -239,6 +239,9 @@ export function AdminListingsPanel() {
   const [liveCatalogMessage, setLiveCatalogMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editLoading, setEditLoading] = useState(false);
+  /** True only after GET /api/admin/listings/:id succeeds — never save on slim desk rows. */
+  const [editHydrated, setEditHydrated] = useState(false);
+  const [editLoadError, setEditLoadError] = useState("");
   const editRequestRef = useRef<string | null>(null);
   const [editDraft, setEditDraft] = useState({
     title: "",
@@ -595,20 +598,40 @@ export function AdminListingsPanel() {
     setEditingId(requestId);
     setEditImagesTouched(false);
     setEditFieldErrors({});
+    setEditHydrated(false);
+    setEditLoadError("");
+    // Seed price/seller from the desk row for immediate feedback, but do not
+    // mount the saveable form until the full listing GET succeeds.
     applyEditRecord(listing);
     setEditLoading(true);
     try {
       const response = await adminFetch(`/api/admin/listings/${requestId}`);
       const data = (await response.json().catch(() => null)) as {
         listing?: AdminListingRecord;
+        error?: string;
       } | null;
       if (editRequestRef.current !== requestId) return;
-      if (!response.ok || !data?.listing) return;
+      if (!response.ok || !data?.listing) {
+        setEditHydrated(false);
+        setEditLoadError(
+          "تعذر تحميل بيانات الإعلان الكاملة. أعد المحاولة قبل التعديل حتى لا تُحفظ بيانات ناقصة.",
+        );
+        return;
+      }
       const full = data.listing;
       setListings((prev) =>
         prev.map((row) => (row.id === full.id ? { ...row, ...full } : row)),
       );
       applyEditRecord(full);
+      setEditHydrated(true);
+      setEditLoadError("");
+    } catch {
+      if (editRequestRef.current === requestId) {
+        setEditHydrated(false);
+        setEditLoadError(
+          "تعذر تحميل بيانات الإعلان الكاملة. أعد المحاولة قبل التعديل حتى لا تُحفظ بيانات ناقصة.",
+        );
+      }
     } finally {
       if (editRequestRef.current === requestId) setEditLoading(false);
     }
@@ -637,6 +660,13 @@ export function AdminListingsPanel() {
     listing: AdminListingRecord,
     formElement?: HTMLFormElement | null,
   ) {
+    if (!editHydrated || editLoading) {
+      window.alert(
+        editLoadError ||
+          "انتظر تحميل بيانات الإعلان الكاملة قبل الحفظ حتى لا تُستبدل البيانات الناقصة.",
+      );
+      return;
+    }
     const dynamic = isDynamicCategory(listing.categoryId);
     let title = editDraft.title.trim();
     let description = editDraft.description.trim();
@@ -1841,29 +1871,38 @@ export function AdminListingsPanel() {
                   <h2 className="text-sm font-bold text-ink">
                     تعديل الإعلان · {listingNumberLabel(listing.id)}
                   </h2>
+                  {editLoadError ? (
+                    <p className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+                      {editLoadError}
+                    </p>
+                  ) : null}
                   {editLoading ? (
                     <p className="text-sm text-muted">
                       جاري تحميل المواصفات والصور من الكتالوج…
                     </p>
+                  ) : !editHydrated ? (
+                    <p className="text-sm text-muted">
+                      لن يُعرض نموذج التعديل حتى تُحمَّل بيانات الإعلان الكاملة (العنوان والوصف والمواصفات والصور).
+                    </p>
                   ) : isDynamicCategory(listing.categoryId) ? (
                     <CategoryFieldsForm
-                      key={`edit-${listing.id}-ready`}
+                      key={`edit-${listing.id}-ready-${editDraft.images.length}-${(editDraft.description || "").length}`}
                       categoryId={listing.categoryId}
                       defaults={{
                         categorySpecs: hydrateCategorySpecsForEdit({
                           categorySpecs: listing.categorySpecs,
-                          condition: listing.condition,
-                          emirate: listing.emirate,
+                          condition: listing.condition ?? (editDraft.condition as AdminListingRecord["condition"]),
+                          emirate: listing.emirate || editDraft.emirate,
                           city: listing.city,
-                          area: listing.area,
+                          area: listing.area || editDraft.area,
                         }),
-                        condition: listing.condition,
-                        contactPhone: listing.contactPhone,
-                        description: listing.description || editDraft.description,
+                        condition: listing.condition ?? (editDraft.condition as AdminListingRecord["condition"]),
+                        contactPhone: listing.contactPhone || editDraft.contactPhone,
+                        description: editDraft.description || listing.description || "",
                         features: listing.features,
                         negotiable: listing.negotiable,
-                        price: listing.price,
-                        title: listing.title,
+                        price: Number(editDraft.price) || listing.price,
+                        title: editDraft.title || listing.title,
                       }}
                       errors={editFieldErrors}
                       heading="تفاصيل القسم"
@@ -1966,7 +2005,7 @@ export function AdminListingsPanel() {
                     </div>
                   )}
 
-                  {editLoading ? null : isDynamicCategory(listing.categoryId) ? (
+                  {editLoading || !editHydrated ? null : isDynamicCategory(listing.categoryId) ? (
                     <Input
                       label="اسم البائع"
                       onChange={(event) =>
@@ -1979,7 +2018,7 @@ export function AdminListingsPanel() {
                     />
                   ) : null}
 
-                  {editLoading ? null : (
+                  {editLoading || !editHydrated ? null : (
                   <div className="grid gap-2 rounded-[var(--radius-xl)] border border-border bg-surface/60 p-3">
                     <p className="text-sm font-semibold text-ink">
                       معرض الصور
@@ -1995,7 +2034,7 @@ export function AdminListingsPanel() {
 
                   <div className="flex flex-wrap gap-2">
                     <Button
-                      disabled={editLoading}
+                      disabled={editLoading || !editHydrated}
                       loading={busyId === listing.id || editLoading}
                       size="sm"
                       type="submit"
@@ -2008,6 +2047,8 @@ export function AdminListingsPanel() {
                         setEditingId(null);
                         setEditFieldErrors({});
                         setEditImagesTouched(false);
+                        setEditHydrated(false);
+                        setEditLoadError("");
                       }}
                       size="sm"
                       type="button"

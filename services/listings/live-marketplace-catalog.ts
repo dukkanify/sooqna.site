@@ -1800,9 +1800,15 @@ export function getLiveMarketplaceCatalogListings(): Listing[] {
   return cached;
 }
 
+function isBlankText(value: unknown): boolean {
+  return value === undefined || value === null || String(value).trim() === "";
+}
+
 /**
  * Overlay fresh product-matched media onto persisted live-catalog rows
  * so title/photo mismatches disappear without waiting for a DB rewrite.
+ * Also fills empty description / location / specs from the seed when the
+ * durable row is sparse — never overwrites non-empty seller/admin values.
  */
 export function syncLiveCatalogMedia(listings: Listing[]): Listing[] {
   const byId = new Map(
@@ -1812,18 +1818,63 @@ export function syncLiveCatalogMedia(listings: Listing[]): Listing[] {
   const next = listings.map((listing) => {
     if (listing.source !== LIVE_MARKETPLACE_SOURCE) return listing;
     const fresh = byId.get(listing.id);
-    if (!fresh?.imageUrl) return listing;
+    if (!fresh) return listing;
+
+    const mediaStale =
+      Boolean(fresh.imageUrl) &&
+      (listing.imageUrl !== fresh.imageUrl ||
+        (listing.images?.[0] ?? "") !== (fresh.images?.[0] ?? ""));
+    const fillDescription =
+      isBlankText(listing.description) && !isBlankText(fresh.description);
+    const fillTitle = isBlankText(listing.title) && !isBlankText(fresh.title);
+    const fillCity = isBlankText(listing.city) && !isBlankText(fresh.city);
+    const fillEmirate =
+      isBlankText(listing.emirate) && !isBlankText(fresh.emirate);
+    const fillArea = isBlankText(listing.area) && !isBlankText(fresh.area);
+    const fillSubcategory =
+      isBlankText(listing.subcategory) && !isBlankText(fresh.subcategory);
+    const fillCondition = !listing.condition && Boolean(fresh.condition);
+    const fillFeatures =
+      (!listing.features || listing.features.length === 0) &&
+      Boolean(fresh.features?.length);
+    const existingSpecKeys = Object.keys(listing.categorySpecs ?? {}).filter(
+      (key) => !isBlankText(listing.categorySpecs?.[key]),
+    );
+    const fillSpecs =
+      existingSpecKeys.length === 0 &&
+      Boolean(fresh.categorySpecs) &&
+      Object.keys(fresh.categorySpecs ?? {}).length > 0;
+
     if (
-      listing.imageUrl === fresh.imageUrl &&
-      (listing.images?.[0] ?? "") === (fresh.images?.[0] ?? "")
+      !mediaStale &&
+      !fillDescription &&
+      !fillTitle &&
+      !fillCity &&
+      !fillEmirate &&
+      !fillArea &&
+      !fillSubcategory &&
+      !fillCondition &&
+      !fillFeatures &&
+      !fillSpecs
     ) {
       return listing;
     }
+
     changed = true;
     return {
       ...listing,
-      imageUrl: fresh.imageUrl,
-      images: fresh.images,
+      ...(mediaStale
+        ? { imageUrl: fresh.imageUrl, images: fresh.images }
+        : {}),
+      ...(fillTitle ? { title: fresh.title } : {}),
+      ...(fillDescription ? { description: fresh.description } : {}),
+      ...(fillCity ? { city: fresh.city } : {}),
+      ...(fillEmirate ? { emirate: fresh.emirate } : {}),
+      ...(fillArea ? { area: fresh.area } : {}),
+      ...(fillSubcategory ? { subcategory: fresh.subcategory } : {}),
+      ...(fillCondition ? { condition: fresh.condition } : {}),
+      ...(fillFeatures ? { features: fresh.features } : {}),
+      ...(fillSpecs ? { categorySpecs: { ...fresh.categorySpecs } } : {}),
     };
   });
   return changed ? next : listings;
