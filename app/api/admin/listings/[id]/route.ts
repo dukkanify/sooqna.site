@@ -28,7 +28,22 @@ export async function PATCH(request: Request, context: RouteParams) {
   const body = (await request.json()) as AdminListingPatch;
   const { rejectReason, ...patch } = body;
   const previous = await getListingById(id);
-  const listing = await patchListingRecord(id, patch);
+  let listing;
+  try {
+    listing = await patchListingRecord(id, patch);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (
+      message === "LISTINGS_STORE_UNAVAILABLE" ||
+      message === "LISTING_STATUS_PERSIST_FAILED"
+    ) {
+      return NextResponse.json(
+        { error: "SAVE_FAILED", message: "تعذر حفظ حالة الإعلان. أعد المحاولة." },
+        { status: 503 },
+      );
+    }
+    throw error;
+  }
 
   if (!listing) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });

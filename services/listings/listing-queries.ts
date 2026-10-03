@@ -642,7 +642,7 @@ export async function loadAdminListingRecords(): Promise<AdminListingRecord[]> {
             slug,
             seller_id,
             category_id,
-            status,
+            COALESCE(NULLIF(payload->>'status', ''), status) AS status,
             is_featured,
             posted_at,
             payload->>'title' AS title,

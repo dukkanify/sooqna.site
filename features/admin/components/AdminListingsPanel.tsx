@@ -221,6 +221,7 @@ export function AdminListingsPanel() {
   const [areaFilter, setAreaFilter] = useState(
     () => searchParams.get("area") ?? "all",
   );
+  const [deskMessage, setDeskMessage] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -469,6 +470,7 @@ export function AdminListingsPanel() {
     },
   ) {
     setBusyId(id);
+    setDeskMessage("");
     try {
       const response = await adminFetch(`/api/admin/listings/${id}`, {
         method: "PATCH",
@@ -498,7 +500,15 @@ export function AdminListingsPanel() {
             };
           }),
         );
+      } else {
+        setDeskMessage(
+          typeof data?.message === "string" && data.message.trim()
+            ? data.message
+            : "تعذر حفظ حالة الإعلان. أعد المحاولة.",
+        );
       }
+    } catch {
+      setDeskMessage("تعذر الاتصال بالخادم أثناء حفظ الإعلان.");
     } finally {
       setBusyId(null);
     }
@@ -1274,6 +1284,10 @@ export function AdminListingsPanel() {
           </p>
         </div>
       </Card>
+
+      {deskMessage ? (
+        <FormMessage variant="error">{deskMessage}</FormMessage>
+      ) : null}
 
       {filtered.length === 0 ? (
         <Card className="p-8 text-center" variant="flat">
