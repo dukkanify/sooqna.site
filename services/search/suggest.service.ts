@@ -1,5 +1,6 @@
 import { getEnabledCategories } from "@/services/categories/category-store";
 import { queryListings } from "@/services/listings/listing-queries";
+import { categoryBranchHref } from "@/shared/listings/category-branch";
 import { getListingPath } from "@/shared/listings/listing-url";
 import {
   CATEGORY_SEARCH_KEYWORDS,
@@ -9,7 +10,7 @@ import type { Category, Listing } from "@/types";
 import type { SearchSuggestion, SearchSuggestionKind } from "@/features/search/types";
 import { buildSearchUrl } from "@/features/search/components/search-url";
 
-const INDEX_VERSION = 5;
+const INDEX_VERSION = 6;
 const MAX_RESULTS = 8;
 const MAX_LISTING_RESULTS = 5;
 const PRODUCT_CATEGORY_IDS = new Set(["cars", "mobiles", "electronics"]);
@@ -252,6 +253,18 @@ function buildDocs(listings: Listing[], categories: Category[]): SuggestDoc[] {
       views: 0,
       weight: 3.4,
     });
+    for (const subcategory of category.subcategories ?? []) {
+      docs.push({
+        categoryId: category.id,
+        featured: false,
+        href: categoryBranchHref(category.slug, subcategory),
+        kind: "category",
+        label: subcategory,
+        searchNorm: normalizeSearchText(`${subcategory} ${category.name}`),
+        views: 0,
+        weight: 3.7,
+      });
+    }
   }
 
   const cities = new Map<string, string>();

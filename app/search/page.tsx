@@ -1,10 +1,14 @@
+import { redirect } from "next/navigation";
 import { countries } from "@/shared/constants/locations";
 import { getLocations } from "@/services/locations/location-store";
 import { MobileBottomNav } from "@/features/home/components/mobile/MobileBottomNav";
 import { RecordRecentSearch } from "@/features/search/components/RecordRecentSearch";
 import { SearchFilters } from "@/features/search/components/SearchFilters";
 import { SearchResultsList } from "@/features/search/components/SearchResultsList";
-import { parseSearchFilterState } from "@/features/search/components/search-url";
+import {
+  branchNavigationRedirectHref,
+  parseSearchFilterState,
+} from "@/features/search/components/search-url";
 import { toListingSearchFilters } from "@/features/search/lib/to-listing-filters";
 import { buildSearchSuggestions } from "@/features/search/components/search-suggestions";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
@@ -17,6 +21,7 @@ import {
   searchListings,
 } from "@/services/listings";
 import { getRequestLocale } from "@/shared/i18n/locale";
+import { resolveCategoryBranchStateForCategories } from "@/shared/listings/category-branch";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -47,22 +52,32 @@ export default async function SearchPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const selectedFilters = parseSearchFilterState(params);
+  const parsedFilters = parseSearchFilterState(params);
   const priceBand = parseHomePriceBand(
     Array.isArray(params.price) ? params.price[0] : params.price,
   );
-  if (!selectedFilters.minPrice && priceBand.minPrice) {
-    selectedFilters.minPrice = priceBand.minPrice;
+  if (!parsedFilters.minPrice && priceBand.minPrice) {
+    parsedFilters.minPrice = priceBand.minPrice;
   }
-  if (!selectedFilters.maxPrice && priceBand.maxPrice) {
-    selectedFilters.maxPrice = priceBand.maxPrice;
+  if (!parsedFilters.maxPrice && priceBand.maxPrice) {
+    parsedFilters.maxPrice = priceBand.maxPrice;
   }
+
+  const categories = await getCategories();
+  const selectedFilters = resolveCategoryBranchStateForCategories(
+    parsedFilters,
+    categories,
+  );
+  const branchRedirect = branchNavigationRedirectHref(
+    parsedFilters,
+    selectedFilters,
+  );
+  if (branchRedirect) redirect(branchRedirect);
 
   const listingFilters = toListingSearchFilters(selectedFilters);
 
-  const [categories, listings, total, suggestionTitles, locale, locationRows] =
+  const [listings, total, suggestionTitles, locale, locationRows] =
     await Promise.all([
-      getCategories(),
       searchListings(listingFilters),
       countSearchListings(listingFilters),
       getSearchSuggestionTitles(),

@@ -3,6 +3,7 @@ import type { SearchSuggestion } from "./SearchTypeahead";
 import { buildSearchUrl, type SearchFilterState } from "./search-url";
 import { listingTitle } from "@/shared/i18n/listing-copy";
 import type { AppLocale } from "@/shared/i18n/locale";
+import { categoryBranchHref } from "@/shared/listings/category-branch";
 
 /** Builds typeahead rows from categories, cities, and listing titles. */
 export function buildSearchSuggestions({
@@ -31,6 +32,15 @@ export function buildSearchSuggestions({
     }),
   }));
 
+  const subcategoryItems: SearchSuggestion[] = categories.flatMap((category) =>
+    (category.subcategories ?? []).map((subcategory) => ({
+      kind: "category" as const,
+      label: subcategory,
+      href: categoryBranchHref(category.slug, subcategory),
+      hint: category.name,
+    })),
+  );
+
   const cityItems: SearchSuggestion[] = cities.map((city) => ({
     kind: "city",
     label: city.name,
@@ -44,5 +54,5 @@ export function buildSearchSuggestions({
   }));
 
   // Prefer categories/cities first, then listing titles for free-text matches.
-  return [...categoryItems, ...cityItems, ...listingItems];
+  return [...categoryItems, ...subcategoryItems, ...cityItems, ...listingItems];
 }

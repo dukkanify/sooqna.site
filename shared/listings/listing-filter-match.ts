@@ -1,5 +1,6 @@
 import type { Listing } from "@/types";
 import { listingMatchesQuery } from "@/shared/listings/listing-specs";
+import { normalizeSearchText } from "@/shared/listings/search-text";
 
 function listingMatchesEmirate(listing: Listing, emirate: string): boolean {
   if (!emirate) return true;
@@ -54,6 +55,14 @@ export function specValuesEqual(stored: string, wanted: string): boolean {
   if (!aliases) return false;
   const compactAliases = aliases.map(compactSpecText);
   return compactAliases.includes(compactSpecText(a)) && compactAliases.includes(compactSpecText(b));
+}
+
+/** Taxonomy label match (آيفون ≈ ايفون) — never a listing title search. */
+export function subcategoryValuesEqual(stored: string, wanted: string): boolean {
+  if (specValuesEqual(stored, wanted)) return true;
+  const a = normalizeSearchText(stored);
+  const b = normalizeSearchText(wanted);
+  return Boolean(a && b && a === b);
 }
 
 function nestedRecord(value: unknown): Record<string, unknown> | undefined {
@@ -129,7 +138,11 @@ export function listingMatchesSmartFilters(
   if (filters.query?.trim() && !listingMatchesQuery(listing, filters.query)) return false;
 
   if (filters.subcategory) {
-    if (listing.subcategory !== filters.subcategory) return false;
+    const stored =
+      listing.subcategory?.trim() || listingSpecValue(listing, "subcategory");
+    if (!stored || !subcategoryValuesEqual(stored, filters.subcategory)) {
+      return false;
+    }
   }
 
   if (filters.area?.trim()) {
