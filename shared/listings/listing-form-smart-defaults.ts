@@ -12,6 +12,21 @@ export type SmartDefaultContext = {
   subcategory?: string;
 };
 
+/** Keep in sync with jobs-taxonomy.listingTypeFromSubcategory (no cross-import for node tests). */
+function jobsListingTypeFromSubcategory(
+  subcategory: string | undefined | null,
+): "vacancy" | "seeker" {
+  const value = String(subcategory ?? "").trim();
+  if (
+    value === "باحثون عن عمل" ||
+    value.includes("باحث") ||
+    /^seeker$/i.test(value)
+  ) {
+    return "seeker";
+  }
+  return "vacancy";
+}
+
 const EV_SUBCATEGORIES = new Set(["سيارات كهربائية", "كهربائية"]);
 const EV_BRAND_PATTERN =
   /^(tesla|byd|lucid|rivian|polestar|nio|xpeng|zeekr|li\s*auto|leapmotor|hongqi\s*e|Ora)$/i;
@@ -21,6 +36,9 @@ const EV_MODEL_HINT =
 const PET_ANIMAL_TYPES = ["قطط", "كلاب", "طيور", "مستلزمات"] as const;
 const FURNITURE_TYPES = ["غرف نوم", "كنب", "طاولات طعام", "أثاث خارجي"] as const;
 const GOODS_CATEGORY_IDS = new Set(["fashion", "kids", "sports", "books"]);
+
+/** Shown under fields the form filled for the seller. */
+export const SMART_FILL_HINT_AR = "تم اختياره تلقائياً — يمكنك تعديله";
 
 function empty(value: string | undefined): boolean {
   return !value?.trim();
@@ -39,9 +57,11 @@ function setIfEmpty(
 
 function isElectricVehicleHint(input: {
   brand?: string;
+  fuelType?: string;
   model?: string;
   subcategory?: string;
 }): boolean {
+  if (input.fuelType?.trim() === "كهربائي") return true;
   const subcategory = input.subcategory?.trim() ?? "";
   if (EV_SUBCATEGORIES.has(subcategory) || /كهرب|electric|\bev\b/i.test(subcategory)) {
     return true;
@@ -60,9 +80,19 @@ function inferCarsSmartDefaults(
 ) {
   const existing = ctx.existing ?? {};
   const subcategory = ctx.subcategory?.trim() ?? "";
+  const fuelExisting = existing.fuelType || next.fuelType || "";
 
-  if (isElectricVehicleHint(ctx)) {
+  if (
+    isElectricVehicleHint({
+      brand: ctx.brand,
+      fuelType: fuelExisting,
+      model: ctx.model,
+      subcategory,
+    })
+  ) {
     setIfEmpty(next, existing, "fuelType", "كهربائي");
+    // Nearly all EVs are single-speed automatic — prefill; seller can change.
+    setIfEmpty(next, existing, "transmission", "أوتوماتيك");
   } else if (/هجين|hybrid/i.test(subcategory)) {
     setIfEmpty(next, existing, "fuelType", "هجين");
   } else if (/ديزل|diesel/i.test(subcategory)) {
@@ -118,6 +148,50 @@ function inferMobilesSmartDefaults(
   }
 }
 
+function inferJobsSmartDefaults(
+  ctx: SmartDefaultContext,
+  next: Record<string, string>,
+) {
+  const existing = ctx.existing ?? {};
+  const subcategory = ctx.subcategory?.trim() ?? "";
+  if (!subcategory) return;
+  setIfEmpty(
+    next,
+    existing,
+    "listingType",
+    jobsListingTypeFromSubcategory(subcategory),
+  );
+}
+
+function inferElectronicsSmartDefaults(
+  ctx: SmartDefaultContext,
+  next: Record<string, string>,
+) {
+  const existing = ctx.existing ?? {};
+  const model = ctx.model?.trim() ?? "";
+  const subcategory = ctx.subcategory?.trim() ?? "";
+  const haystack = `${model} ${subcategory}`.toLowerCase();
+
+  if (/playstation|ps\s*[45]|dualsense/i.test(haystack)) {
+    setIfEmpty(next, existing, "brand", "Sony");
+  } else if (/xbox/i.test(haystack)) {
+    setIfEmpty(next, existing, "brand", "Microsoft");
+  } else if (/nintendo|switch/i.test(haystack)) {
+    setIfEmpty(next, existing, "brand", "Nintendo");
+  } else if (/macbook|ipad/i.test(haystack)) {
+    setIfEmpty(next, existing, "brand", "Apple");
+  } else if (/\beos\b/i.test(haystack)) {
+    setIfEmpty(next, existing, "brand", "Canon");
+  } else if (/\ba7\b|alpha\s*7/i.test(haystack)) {
+    setIfEmpty(next, existing, "brand", "Sony");
+  } else if (subcategory === "سماعات" && /bose|jbl|beats|sony/i.test(model)) {
+    if (/bose/i.test(model)) setIfEmpty(next, existing, "brand", "Bose");
+    else if (/jbl/i.test(model)) setIfEmpty(next, existing, "brand", "JBL");
+    else if (/beats/i.test(model)) setIfEmpty(next, existing, "brand", "Beats");
+    else if (/sony/i.test(model)) setIfEmpty(next, existing, "brand", "Sony");
+  }
+}
+
 function inferBranchTypeDefaults(
   ctx: SmartDefaultContext,
   next: Record<string, string>,
@@ -161,6 +235,10 @@ export function inferListingFormSmartSpecs(
     inferRealEstateSmartDefaults(ctx, next);
   } else if (ctx.categoryId === "mobiles") {
     inferMobilesSmartDefaults(ctx, next);
+  } else if (ctx.categoryId === "jobs") {
+    inferJobsSmartDefaults(ctx, next);
+  } else if (ctx.categoryId === "electronics") {
+    inferElectronicsSmartDefaults(ctx, next);
   }
 
   return next;
