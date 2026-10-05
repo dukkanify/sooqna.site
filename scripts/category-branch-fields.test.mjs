@@ -80,12 +80,12 @@ describe("category branch fields", () => {
 
   it("parser seeds furnitureType and goods itemType from subcategory", () => {
     const src = read("features/listings/components/add-listing/category-form-utils.ts");
-    assert.match(src, /FURNITURE_TYPES/);
-    assert.match(src, /visibilitySpecs\.furnitureType/);
-    assert.match(src, /visibilitySpecs\.itemType/);
+    assert.match(src, /inferListingFormSmartSpecs/);
     const step = read("features/listings/components/add-listing/CategoryFieldsStep.tsx");
-    assert.match(step, /furnitureType/);
-    assert.match(step, /itemType/);
+    assert.match(step, /inferListingFormSmartSpecs/);
+    const smart = read("shared/listings/listing-form-smart-defaults.ts");
+    assert.match(smart, /furnitureType/);
+    assert.match(smart, /itemType/);
   });
 
   it("directory and electronics cameras share one subcategory branch href", () => {

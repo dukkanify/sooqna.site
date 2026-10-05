@@ -15,6 +15,7 @@ import {
 } from "@/shared/listings/jobs-taxonomy";
 import { regulatorEmirateError } from "@/shared/listings/real-estate-license";
 import { quotePricingFromFormData } from "@/shared/listings/quote-pricing";
+import { inferListingFormSmartSpecs } from "@/shared/listings/listing-form-smart-defaults";
 
 export type CategoryFormResult = {
   categorySpecs: CategorySpecs;
@@ -162,34 +163,18 @@ export function parseCategoryForm(
     visibilitySpecs.subcategory = formSubcategory;
   }
 
-  // Pets: step-1 subcategory (قطط/كلاب/…) seeds required animalType so sellers
-  // who only pick the subcategory are not blocked by a duplicate empty select.
-  const PET_ANIMAL_TYPES = ["قطط", "كلاب", "طيور", "مستلزمات"] as const;
-  if (categoryId === "pets" && !visibilitySpecs.animalType) {
-    const subcategory = String(formData.get("subcategory") ?? "").trim();
-    if ((PET_ANIMAL_TYPES as readonly string[]).includes(subcategory)) {
-      visibilitySpecs.animalType = subcategory;
-    }
-  }
-
-  // Furniture: seed furnitureType from the directory subcategory when the
-  // seller already chose غرف نوم / كنب / … in step 1.
-  const FURNITURE_TYPES = ["غرف نوم", "كنب", "طاولات طعام", "أثاث خارجي"] as const;
-  if (categoryId === "furniture" && !visibilitySpecs.furnitureType) {
-    const subcategory = String(formData.get("subcategory") ?? "").trim();
-    if ((FURNITURE_TYPES as readonly string[]).includes(subcategory)) {
-      visibilitySpecs.furnitureType = subcategory;
-    }
-  }
-
-  // Goods (fashion/kids/sports/books): seed itemType from subcategory label.
-  if (
-    ["fashion", "kids", "sports", "books"].includes(categoryId) &&
-    !visibilitySpecs.itemType
-  ) {
-    const subcategory = String(formData.get("subcategory") ?? "").trim();
-    if (subcategory) visibilitySpecs.itemType = subcategory;
-  }
+  // Smart fills from subcategory / brand (EV fuel, RE purpose, pets type, …).
+  // Never overwrite a value the seller already submitted in the form.
+  Object.assign(
+    visibilitySpecs,
+    inferListingFormSmartSpecs({
+      brand: visibilitySpecs.brand,
+      categoryId,
+      existing: visibilitySpecs,
+      model: visibilitySpecs.model,
+      subcategory: formSubcategory,
+    }),
+  );
 
   for (const field of fields) {
     if (!fieldVisibleForSpecs(field, visibilitySpecs)) {
@@ -207,26 +192,10 @@ export function parseCategoryForm(
     }
 
     let value = raw as string;
-    if (
-      !hasFieldValue(value) &&
-      field.key === "animalType" &&
-      visibilitySpecs.animalType
-    ) {
-      value = visibilitySpecs.animalType;
-    }
-    if (
-      !hasFieldValue(value) &&
-      field.key === "furnitureType" &&
-      visibilitySpecs.furnitureType
-    ) {
-      value = visibilitySpecs.furnitureType;
-    }
-    if (
-      !hasFieldValue(value) &&
-      field.key === "itemType" &&
-      visibilitySpecs.itemType
-    ) {
-      value = visibilitySpecs.itemType;
+    // Prefer smart-seeded values when the visible control was left empty
+    // (hidden inputs are not rendered for auto-filled related fields).
+    if (!hasFieldValue(value) && visibilitySpecs[field.key]) {
+      value = visibilitySpecs[field.key];
     }
     if (!hasFieldValue(value)) {
       if (fieldRequiredForSpecs(field, visibilitySpecs)) {
