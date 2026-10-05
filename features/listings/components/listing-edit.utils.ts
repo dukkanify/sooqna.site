@@ -1,6 +1,7 @@
 import type { Listing } from "@/types";
 import type { CategoryFieldsDefaults } from "./add-listing/CategoryFieldsForm";
 import { hydrateCategorySpecsForEdit } from "@/shared/listings/listing-form-hydrate";
+import { sellerEnglishPrefill } from "@/shared/i18n/listing-translator";
 
 export function buildCategoryFieldsDefaults(listing: Listing): CategoryFieldsDefaults {
   return {
@@ -12,6 +13,7 @@ export function buildCategoryFieldsDefaults(listing: Listing): CategoryFieldsDef
     negotiable: listing.negotiable,
     price: listing.price,
     title: listing.title,
+    ...sellerEnglishPrefill(listing),
   };
 }
 

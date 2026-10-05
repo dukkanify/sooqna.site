@@ -43,6 +43,7 @@ import {
   mergeCategorySpecs,
 } from "@/shared/listings/listing-form-hydrate";
 import { migrateJobsListingFields } from "@/shared/listings/jobs-taxonomy";
+import { enrichListingCopy } from "@/shared/i18n/listing-translator";
 
 let cacheRows: Listing[] | null = null;
 let inflight: Promise<Listing[]> | null = null;
@@ -353,20 +354,22 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
     });
   }
 
+  const copy = enrichListingCopy(listing, previous);
+
   // Keep slug unique across rows — colliding slugs made seller cards and detail
   // pages resolve to different payloads for the "same" URL.
-  let slug = (listing.slug || slugifyTitle(listing.title)).trim();
+  let slug = (copy.slug || slugifyTitle(copy.titleEnglish || copy.title)).trim();
   const slugOwner = listings.find(
     (item) => item.slug === slug && item.id !== listing.id,
   );
   if (slugOwner) {
     const suffix = listing.id.replace(/\W+/g, "").slice(-8) || String(Date.now()).slice(-6);
-    slug = `${slugifyTitle(listing.title) || "listing"}-${suffix}`;
+    slug = `${slugifyTitle(copy.titleEnglish || copy.title) || "listing"}-${suffix}`;
   }
 
   const next: Listing = sanitizeListingMediaFields(
     migrateJobsListingFields({
-      ...listing,
+      ...copy,
       slug,
       postedAt,
       escrowAvailable:
@@ -530,8 +533,14 @@ export async function patchListingRecord(
   const next: Listing = {
     ...previous,
     ...(patch.title !== undefined ? { title: patch.title.trim() } : {}),
+    ...(patch.titleEnglish !== undefined
+      ? { titleEnglish: patch.titleEnglish.trim() }
+      : {}),
     ...(patch.description !== undefined
       ? { description: patch.description.trim() }
+      : {}),
+    ...(patch.descriptionEnglish !== undefined
+      ? { descriptionEnglish: patch.descriptionEnglish.trim() }
       : {}),
     ...(typeof patch.price === "number" && Number.isFinite(patch.price)
       ? { price: patch.price }
@@ -609,7 +618,7 @@ export async function patchListingRecord(
       : {}),
     statusHistory: history,
   };
-  const saved = sanitizeListingMediaFields(next);
+  const saved = sanitizeListingMediaFields(enrichListingCopy(next, previous));
   await upsertListingRow(saved);
   cacheRows = null;
   bumpListingsCache();
@@ -785,7 +794,9 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     id: media.id,
     slug: media.slug,
     title: media.title,
+    titleEnglish: media.titleEnglish,
     description: media.description,
+    descriptionEnglish: media.descriptionEnglish,
     sellerName: media.seller.name,
     sellerId: media.seller.id,
     categoryId: media.categoryId,

@@ -10,6 +10,7 @@ import { listingUsesQuotePricing } from "@/shared/listings/quote-pricing";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ShareButton } from "@/shared/components/ShareButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
+import { ListingMachineHint } from "@/features/listings/components/ListingMachineHint";
 import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
 import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { Badge } from "@/shared/ui/Badge";
@@ -82,6 +83,7 @@ export function ListingSummary({ category, listing }: ListingSummaryProps) {
       <h1 className="mt-4 text-2xl font-black leading-tight text-ink md:text-3xl">
         <ListingTitle listing={listing} />
       </h1>
+      <ListingMachineHint className="mt-2" listing={listing} />
 
       <div className="mt-4">
         <ListingPrice listing={listing} size="xl" />

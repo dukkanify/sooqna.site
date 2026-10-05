@@ -19,6 +19,7 @@ import { ListingCard } from "@/features/listings/components/ListingCard";
 import { SellerPanel } from "@/features/listings/components/SellerPanel";
 import { ListingPrice } from "@/shared/components/ListingPrice";
 import { listingDescription } from "@/shared/i18n/listing-copy";
+import { ListingMachineHint } from "@/features/listings/components/ListingMachineHint";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
@@ -112,6 +113,7 @@ export function ListingDetailsView({
               <h1 className="mt-3 break-words text-xl font-black leading-tight text-ink sm:text-2xl">
                 <ListingTitle listing={listing} />
               </h1>
+              <ListingMachineHint className="mt-2" listing={listing} />
               <div className="mt-2 min-w-0 overflow-x-auto">
                 <ListingPrice listing={listing} size="lg" />
               </div>
@@ -149,7 +151,10 @@ export function ListingDetailsView({
             </div>
 
             <div className="marketplace-panel mt-6 p-5 md:p-6">
-              <h2 className="text-lg font-black text-ink">وصف الإعلان</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-black text-ink">وصف الإعلان</h2>
+                <ListingMachineHint field="description" listing={listing} />
+              </div>
               <p
                 className="mt-3 max-w-3xl text-sm font-medium leading-8 text-muted md:text-[0.95rem]"
                 data-ugc

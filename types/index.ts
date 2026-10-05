@@ -24,6 +24,7 @@ export type {
   ElectronicsSpecs,
   Listing,
   ListingCondition,
+  ListingCopySource,
   ListingImageTone,
   ListingSearchFilters,
   ListingSeller,

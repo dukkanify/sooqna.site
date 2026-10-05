@@ -37,6 +37,7 @@ export function slimListingForCard(listing: Listing): Listing {
     },
     imageTone: listing.imageTone,
     titleEnglish: listing.titleEnglish,
+    titleTranslationSource: listing.titleTranslationSource,
     subcategory: listing.subcategory,
     emirate: listing.emirate,
     area: listing.area,

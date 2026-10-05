@@ -83,6 +83,8 @@ export type ListingImageTone = "gold" | "amber" | "sky" | "rose" | "slate";
 import type { CategorySpecs } from "./category-fields";
 import type { CategoryFeatureProfile } from "@/shared/constants/category-feature-profiles";
 
+export type ListingCopySource = "seller" | "machine";
+
 export type Listing = {
   id: string;
   title: string;
@@ -104,6 +106,10 @@ export type Listing = {
   imageTone: ListingImageTone;
   titleEnglish?: string;
   descriptionEnglish?: string;
+  /** Who authored the English title — seller copy is never overwritten. */
+  titleTranslationSource?: ListingCopySource;
+  /** Who authored the English description — seller copy is never overwritten. */
+  descriptionTranslationSource?: ListingCopySource;
   subcategory?: string;
   emirate?: string;
   area?: string;

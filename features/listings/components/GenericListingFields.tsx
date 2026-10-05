@@ -5,7 +5,9 @@ import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
+import { ListingEnglishCopyFields } from "./add-listing/ListingEnglishCopyFields";
 import type { CategoryFieldErrors } from "./add-listing/CategoryFieldsForm";
+import { sellerEnglishPrefill } from "@/shared/i18n/listing-translator";
 
 type GenericListingFieldsProps = {
   errors: CategoryFieldErrors;
@@ -14,6 +16,7 @@ type GenericListingFieldsProps = {
 
 export function GenericListingFields({ errors, listing }: GenericListingFieldsProps) {
   const cityDefault = cities.find((city) => city.name === listing.city)?.id;
+  const englishPrefill = sellerEnglishPrefill(listing);
 
   return (
     <Card className="p-6">
@@ -41,6 +44,11 @@ export function GenericListingFields({ errors, listing }: GenericListingFieldsPr
         {errors.description ? (
           <FormMessage variant="error">{errors.description}</FormMessage>
         ) : null}
+
+        <ListingEnglishCopyFields
+          defaultDescriptionEnglish={englishPrefill.descriptionEnglish}
+          defaultTitleEnglish={englishPrefill.titleEnglish}
+        />
 
         <div className="grid gap-4 md:grid-cols-3">
           <div>
