@@ -917,9 +917,16 @@ html[data-theme="dark"] .category-mark {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
   .market-hero__orb {
     animation: none;
+    will-change: auto;
+    filter: blur(36px);
+  }
+
+  .market-hero__orb--navy,
+  .market-hero__orb--mist {
+    display: none;
   }
 }
 
@@ -1497,12 +1504,21 @@ html[data-theme="dark"] .market-header__drawer-account {
 .marketplace-card-image {
   object-fit: cover !important;
   object-position: center;
-  transition: transform 0.55s var(--ease-premium);
 }
 
-.marketplace-card:hover .marketplace-card-image,
-.marketplace-card:focus-within .marketplace-card-image {
-  transform: scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .marketplace-card-image {
+    transition: transform 0.4s var(--ease-premium);
+  }
+
+  .marketplace-card:hover .marketplace-card-image,
+  .marketplace-card:focus-within .marketplace-card-image {
+    transform: scale(1.04);
+  }
+
+  .marketplace-card:hover .marketplace-card-media::after {
+    opacity: 1;
+  }
 }
 
 .marketplace-card-media::after {
@@ -1517,10 +1533,6 @@ html[data-theme="dark"] .market-header__drawer-account {
   pointer-events: none;
   opacity: 0.85;
   transition: opacity var(--duration-normal) var(--ease-premium);
-}
-
-.marketplace-card:hover .marketplace-card-media::after {
-  opacity: 1;
 }
 
 .marketplace-card-category {
@@ -1864,4 +1876,9 @@ html[data-theme="dark"] .language-switch--compact {
   .motion-press:active {
     transform: none !important;
   }
+}
+
+.market-rail--defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 28rem;
 }

@@ -29,7 +29,7 @@ const ibmPlexArabic = localFont({
   ],
   adjustFontFallback: "Arial",
   display: "swap",
-  preload: true,
+  preload: false,
   variable: "--font-ibm-plex-arabic",
 });
 

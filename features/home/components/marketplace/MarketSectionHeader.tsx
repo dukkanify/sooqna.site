@@ -43,14 +43,16 @@ export function MarketSectionHeader({
 
 export function MarketSectionShell({
   children,
+  deferPaint = false,
   variant = "sand",
 }: {
   children: ReactNode;
+  deferPaint?: boolean;
   variant?: "sand" | "white";
 }) {
   return (
     <section
-      className={`py-8 md:py-10 ${variant === "sand" ? "bg-background" : "bg-surface"}`}
+      className={`py-8 md:py-10 ${deferPaint ? "market-rail--defer" : ""} ${variant === "sand" ? "bg-background" : "bg-surface"}`}
     >
       <div className="app-container">{children}</div>
     </section>

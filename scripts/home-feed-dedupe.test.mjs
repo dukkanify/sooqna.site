@@ -61,12 +61,16 @@ describe("home feed composition contract", () => {
   });
 
   it("empty home uses catalogCount, not diverse leftover slices", () => {
-    const page = read("app/page.tsx");
-    const mobile = read("features/home/components/mobile/MobileHomePage.tsx");
+    const desktop = read(
+      "features/home/components/marketplace/DesktopHomeFeed.tsx",
+    );
+    const mobile = read(
+      "features/home/components/mobile/MobileHomeFeed.tsx",
+    );
     const feed = read("services/listings/home-feed.ts");
     assert.match(feed, /catalogCount: catalogRows\.length/);
-    assert.match(page, /feed\.catalogCount > 0/);
-    assert.match(mobile, /catalogCount === 0/);
+    assert.match(desktop, /feed\.catalogCount > 0/);
+    assert.match(mobile, /feed\.catalogCount === 0/);
     assert.match(feed, /allowReuse/);
   });
 });

@@ -3,6 +3,7 @@
 import { useEffect, useId, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import type { Category, City } from "@/types";
 import { Button } from "@/shared/ui/Button";
 import { Select } from "@/shared/ui/Select";
@@ -13,7 +14,6 @@ import {
   SearchTypeahead,
   type SearchSuggestion,
 } from "./SearchTypeahead";
-import { CategorySmartFields } from "./CategorySmartFields";
 import { PriceRangeFields } from "./PriceRangeFields";
 import { sortByPopularity } from "@/services/search/search-popularity";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
@@ -24,6 +24,11 @@ import {
   buildSearchUrl,
   type SearchFilterState,
 } from "./search-url";
+
+const CategorySmartFields = dynamic(
+  () =>
+    import("./CategorySmartFields").then((mod) => mod.CategorySmartFields),
+);
 
 /** Drop an invalid To-year when URL/state arrives inverted (From > To). */
 function sanitizeYearDraft(filters: SearchFilterState): SearchFilterState {

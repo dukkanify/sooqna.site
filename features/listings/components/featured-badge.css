@@ -47,6 +47,13 @@
   animation: listing-featured-sheen 4.8s ease-in-out infinite;
 }
 
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .listing-featured-badge__sheen {
+    animation: none;
+    background: none;
+  }
+}
+
 .listing-featured-badge__star,
 .listing-featured-badge__label {
   position: relative;

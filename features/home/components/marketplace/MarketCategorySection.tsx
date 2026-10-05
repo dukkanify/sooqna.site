@@ -6,6 +6,7 @@ import { MarketSectionHeader, MarketSectionShell } from "./MarketSectionHeader";
 type MarketCategorySectionProps = {
   categoryId: string;
   categorySlug: string;
+  deferPaint?: boolean;
   description: string;
   eyebrow: string;
   listings: Listing[];
@@ -15,6 +16,7 @@ type MarketCategorySectionProps = {
 
 export function MarketCategorySection({
   categorySlug,
+  deferPaint = false,
   description,
   eyebrow,
   listings,
@@ -28,7 +30,7 @@ export function MarketCategorySection({
   }
 
   return (
-    <MarketSectionShell variant={variant}>
+    <MarketSectionShell deferPaint={deferPaint} variant={variant}>
       <MarketSectionHeader
         actionHref={`/categories/${categorySlug}`}
         description={description}

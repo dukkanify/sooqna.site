@@ -65,7 +65,7 @@ function uniqueUrls(urls: string[]): string[] {
   return out;
 }
 
-/** Candidate covers for a listing: own media first, then same-product gallery only. */
+/** Candidate covers for a listing: own media only when the seller uploaded photos. */
 function coverCandidates(listing: Listing): string[] {
   const own = [
     ...(listing.images ?? []),
@@ -73,6 +73,8 @@ function coverCandidates(listing: Listing): string[] {
   ]
     .map((url) => url?.trim())
     .filter((url): url is string => Boolean(url));
+
+  if (own.length > 0) return uniqueUrls(own);
 
   const generated = galleryForListingProduct({
     categoryId: listing.categoryId,
@@ -82,7 +84,7 @@ function coverCandidates(listing: Listing): string[] {
     titleEnglish: listing.titleEnglish,
   });
 
-  return uniqueUrls([...own, ...generated]);
+  return uniqueUrls(generated);
 }
 
 function withCover(listing: Listing, cover: string): Listing {
@@ -235,7 +237,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v22-public-catalog-parity"],
+  ["sooqna-home-feed-v23-stream-own-covers"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

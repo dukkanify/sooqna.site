@@ -51,12 +51,17 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["zod"],
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
   },
   images: {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     formats: ["image/avif", "image/webp"],
     imageSizes: [64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24 * 30,
+    qualities: [70, 75, 78],
     remotePatterns: mediaRemotePatterns(),
   },
   async headers() {
