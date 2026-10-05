@@ -31,6 +31,8 @@ describe("listing edit hydrates specs and images", () => {
     assert.match(defaults, /hydrateCategorySpecsForEdit\(listing\)/);
     assert.match(hook, /mergeCategorySpecs/);
     assert.match(hook, /MAX_LISTING_IMAGES/);
+    assert.match(hook, /typeof price === "number" \? \{ price \}/);
+    assert.match(hook, /titleEnglish \? \{ titleEnglish \}/);
     assert.match(hook, /area: isDynamicCategory\(categoryId\) \? parsed\.city/);
     const api = read("app/api/listings/[id]/route.ts");
     assert.match(api, /area: optionalTrimmedString\(80\)/);
@@ -54,6 +56,7 @@ describe("listing edit hydrates specs and images", () => {
     assert.match(panel, /\/api\/admin\/listings\/\$\{requestId\}/);
     assert.match(panel, /جاري تحميل المواصفات والصور/);
     assert.match(store, /hydrateCategorySpecsForEdit\(media\)/);
+    assert.match(store, /videoUrl: listing\.videoUrl/);
   });
 
   it("image cap is 12 across add, edit, and admin gallery", () => {

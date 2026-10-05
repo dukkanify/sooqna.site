@@ -152,6 +152,53 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1454165804606-c3d57bc86b40",
     "photo-1586281380349-632531db7ed4",
   ],
+  job_hotel: [
+    "photo-1566073771259-6a8506099945",
+    "photo-1542314831-068cd1dbfeeb",
+    "photo-1571896349842-33c89424de2d",
+    "photo-1564501049412-61c2a3083791",
+    "photo-1582719478250-c89cae4dc85b",
+  ],
+  job_nurse: [
+    "photo-1576091160399-112ba8d25d1d",
+    "photo-1579684385127-1ef15d508118",
+    "photo-1666214280557-f1b5022eb634",
+    "photo-1551076805-e1869033e561",
+    "photo-1519494026892-80bbd2d6fd0d",
+  ],
+  job_delivery: [
+    "photo-1566576912321-d58ddd7a6088",
+    "photo-1586528116311-ad8dd3c8310d",
+    "photo-1601584115197-04ecc0da31d7",
+    "photo-1595273670150-bd0c3c392e46",
+  ],
+  job_engineer: [
+    "photo-1504307651254-35680f356dfd",
+    "photo-1541888946425-d81bb19240f5",
+    "photo-1503387762-592deb58ef4e",
+  ],
+  job_designer: [
+    "photo-1561070791-2526d30994b5",
+    "photo-1626785774573-4b799315345d",
+    "photo-1558655146-d09347e92766",
+  ],
+  job_accountant: [
+    "photo-1554224155-6726b3ff858f",
+    "photo-1460925895917-afdab827c52f",
+    "photo-1454165804606-c3d57bc86b40",
+  ],
+  job_agent: [
+    "photo-1560518883-ce09059eeffa",
+    "photo-1582407947304-fd86f028f716",
+    "photo-1486406146926-c627a92ad1ab",
+    "photo-1560448204-e02f11c3d0e2",
+  ],
+  job_sales: [
+    "photo-1521737711867-e3b97375f902",
+    "photo-1600880292089-90a7e086ee0c",
+    "photo-1556740738-b6a63e27c4df",
+    "photo-1556761175-b413da4baf72",
+  ],
 } as const;
 
 type ProductKind = keyof typeof PRODUCT_PHOTO_POOLS;
@@ -164,9 +211,53 @@ type ProductHint = {
 };
 
 const CAR_ONLY = "cars" as const;
+const JOBS_ONLY = "jobs" as const;
+const REAL_ESTATE_ONLY = "real-estate" as const;
 
 const PRODUCT_HINTS: Array<ProductHint> = [
   { kind: "honey", pattern: /\b(honey|sidr|عسل)\b/i },
+  {
+    kind: "job_hotel",
+    categoryId: JOBS_ONLY,
+    pattern: /(?<!\p{L})(hotel|front\s*desk|reception|استقبال|فندق)(?!\p{L})/iu,
+  },
+  {
+    kind: "job_nurse",
+    categoryId: JOBS_ONLY,
+    pattern: /(?<!\p{L})(nurse|clinic|hospital|ممرض|عيادة|مستشفى)(?!\p{L})/iu,
+  },
+  {
+    kind: "job_delivery",
+    categoryId: JOBS_ONLY,
+    pattern: /(?<!\p{L})(delivery|driver|courier|سائق|توصيل)(?!\p{L})/iu,
+  },
+  {
+    kind: "job_engineer",
+    categoryId: JOBS_ONLY,
+    pattern:
+      /(?<!\p{L})(site\s*engineer|civil\s*engineer|مهندس\s*موقع|مهندس\s*مدني)(?!\p{L})/iu,
+  },
+  {
+    kind: "job_designer",
+    categoryId: JOBS_ONLY,
+    pattern: /(?<!\p{L})(graphic\s*designer|designer|مصمم|جرافيك)(?!\p{L})/iu,
+  },
+  {
+    kind: "job_accountant",
+    categoryId: JOBS_ONLY,
+    pattern: /(?<!\p{L})(accountant|payroll|محاسب|رواتب|ضرائب)(?!\p{L})/iu,
+  },
+  {
+    kind: "job_agent",
+    categoryId: JOBS_ONLY,
+    pattern:
+      /(?<!\p{L})(real\s*estate\s*agent|property\s*consultant|وسيط\s*عقاري|مستشار\s*عقاري)(?!\p{L})/iu,
+  },
+  {
+    kind: "job_sales",
+    categoryId: JOBS_ONLY,
+    pattern: /(?<!\p{L})(sales|مندوب|مبيعات)(?!\p{L})/iu,
+  },
   { kind: "dates", pattern: /\b(khalas|medjool|ajwa|تمر|تمور|خلاص)\b/i },
   {
     kind: "porsche",
@@ -290,14 +381,17 @@ const PRODUCT_HINTS: Array<ProductHint> = [
   },
   {
     kind: "villa",
+    categoryId: REAL_ESTATE_ONLY,
     pattern: /\b(villa|townhouse|duplex|penthouse|فيلا|تاون|دوبلكس|بنتهاوس)\b/i,
   },
   {
     kind: "office",
+    categoryId: REAL_ESTATE_ONLY,
     pattern: /\b(office|retail|shop|مكتب|محل|تجاري)\b/i,
   },
   {
     kind: "apartment",
+    categoryId: REAL_ESTATE_ONLY,
     pattern: /\b(apartment|studio|flat|شقة|استوديو|غرف)\b/i,
   },
 ];

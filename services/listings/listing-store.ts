@@ -393,7 +393,11 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
   if (index >= 0) listings[index] = next;
   else listings.unshift(next);
   await upsertListingRow(next);
-  cacheRows = null;
+  if (cacheRows) {
+    const cachedIndex = cacheRows.findIndex((item) => item.id === next.id);
+    if (cachedIndex >= 0) cacheRows[cachedIndex] = { ...next };
+    else cacheRows.unshift({ ...next });
+  }
   bumpListingsCache();
   return { ...next };
 }
@@ -605,7 +609,12 @@ export async function patchListingRecord(
       ? { negotiable: patch.negotiable }
       : {}),
     ...(patch.videoUrl !== undefined
-      ? { videoUrl: patch.videoUrl.trim() || undefined }
+      ? {
+          videoUrl:
+            patch.videoUrl.trim() ||
+            previous.videoUrl ||
+            undefined,
+        }
       : {}),
     ...(patch.status ? { status: patch.status } : {}),
     ...featuredPatch,
@@ -620,7 +629,11 @@ export async function patchListingRecord(
   };
   const saved = sanitizeListingMediaFields(enrichListingCopy(next, previous));
   await upsertListingRow(saved);
-  cacheRows = null;
+  if (cacheRows) {
+    const cachedIndex = cacheRows.findIndex((item) => item.id === saved.id);
+    if (cachedIndex >= 0) cacheRows[cachedIndex] = { ...saved };
+    else cacheRows.unshift({ ...saved });
+  }
   bumpListingsCache();
   const verified = await loadListingById(saved.id).catch(() => null);
   if (patch.status && verified && verified.status !== patch.status) {
@@ -812,6 +825,7 @@ export function toAdminListingRecord(listing: Listing): AdminListingRecord {
     area: media.area,
     condition: media.condition,
     contactPhone: media.contactPhone,
+    videoUrl: listing.videoUrl,
     imageUrl: media.imageUrl ?? media.images?.[0],
     images: media.images?.length
       ? media.images

@@ -64,9 +64,12 @@ describe("quote pricing skips AED amount", () => {
 
     const edit = read("features/listings/components/useEditListingForm.ts");
     assert.match(edit, /parsed\.skipPrice/);
+    assert.match(edit, /typeof price === "number" \? \{ price \}/);
 
     const admin = read("features/admin/components/AdminListingsPanel.tsx");
-    assert.match(admin, /parsed\.skipPrice \? 0/);
+    assert.match(admin, /skipPricePatch = Boolean\(parsed\.skipPrice\)/);
+    assert.match(admin, /skipPricePatch \? \{\} : \{ price \}/);
+    assert.match(admin, /parsed\.skipPrice \? listing\.price/);
 
     const adminApi = read("app/api/admin/listings/route.ts");
     assert.match(adminApi, /quotePricingFromSpecs\(create\.categorySpecs\)/);

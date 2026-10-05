@@ -1,7 +1,9 @@
 import type { Listing, ListingCondition, ListingImageTone } from "@/types";
 import type { CategorySpecs } from "@/types/domain/category-fields";
 import {
-  galleryFromPool,
+  galleryForListingProduct,
+} from "@/shared/constants/listing-product-media";
+import {
   type ImageFallbackCategory,
 } from "@/shared/constants/image-fallbacks";
 import {
@@ -47,25 +49,15 @@ type ShowcaseSeed = {
   mediaCategory?: ImageFallbackCategory;
 };
 
-function mediaFor(categoryId: string, slug: string): { imageUrl: string; images: string[] } {
-  const key = (categoryId in {
-    cars: 1,
-    "real-estate": 1,
-    electronics: 1,
-    mobiles: 1,
-    furniture: 1,
-    jobs: 1,
-    fashion: 1,
-    services: 1,
-    pets: 1,
-    kids: 1,
-    books: 1,
-    sports: 1,
-    food: 1,
-  }
-    ? categoryId
-    : "default") as ImageFallbackCategory;
-  const images = galleryFromPool(key, slug, 4);
+function mediaFor(seed: ShowcaseSeed, slug: string): { imageUrl: string; images: string[] } {
+  const images = galleryForListingProduct({
+    categoryId: seed.categoryId,
+    count: 4,
+    imageCategory: seed.mediaCategory,
+    seed: slug,
+    title: seed.title,
+    titleEnglish: seed.titleEnglish,
+  });
   return { imageUrl: images[0] ?? "", images };
 }
 
@@ -78,7 +70,7 @@ function withDemoCopy(arabic: string, english: string): { description: string; d
 
 function buildListing(seed: ShowcaseSeed, index: number): Listing {
   const slug = `showcase-${seed.key}`;
-  const media = mediaFor(seed.mediaCategory ?? seed.categoryId, slug);
+  const media = mediaFor(seed, slug);
   const copy = withDemoCopy(seed.description, seed.descriptionEnglish);
   const postedAt = new Date(Date.UTC(2026, 8, 8, 12, 0, 0) - index * 6 * 60 * 60 * 1000).toISOString();
 
