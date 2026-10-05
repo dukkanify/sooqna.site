@@ -47,10 +47,12 @@ describe("listing price and search English chrome", () => {
   it("localizes the search page header through tx", () => {
     const src = read("app/search/page.tsx");
     const filters = read("features/search/components/SearchFilters.tsx");
+    const quick = read("features/search/components/SearchQuickFilters.tsx");
     assert.match(src, /tx\(locale, "بحث السوق"\)/);
     assert.match(src, /tx\(locale, `نتائج: \$\{selectedFilters\.query\}`\)/);
     assert.match(src, /tx\(locale, "اعثر على الإعلان المناسب"\)/);
     assert.match(filters, /t\("كل التصنيفات"\)/);
+    assert.match(quick, /t\("كل التصنيفات"\)/);
   });
 
   it("keeps the gallery video chip inside LocalizedTree", () => {

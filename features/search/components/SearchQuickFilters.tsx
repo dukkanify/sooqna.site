@@ -6,6 +6,7 @@ import type { Category } from "@/types";
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { DragScrollRow } from "@/shared/components/DragScrollRow";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
+import { useTx } from "@/shared/i18n/useTx";
 import { sortByPopularity } from "@/services/search/search-popularity";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 import {
@@ -66,6 +67,7 @@ export function SearchQuickFilters({
   categories,
   selectedFilters,
 }: SearchQuickFiltersProps) {
+  const t = useTx();
   const cities = useMarketplaceLocations();
   const [scores, setScores] = useState<Record<string, number>>({});
 
@@ -92,7 +94,7 @@ export function SearchQuickFilters({
 
   const emirateChips: QuickChip[] = [
     {
-      label: "كل الإمارات",
+      label: t("كل الإمارات"),
       active: !selectedFilters.city,
       href: hrefFor({ city: "", area: "" }),
     },
@@ -108,7 +110,7 @@ export function SearchQuickFilters({
 
   const priceChips: QuickChip[] = [
     {
-      label: "أي سعر",
+      label: t("أي سعر"),
       active: !selectedFilters.maxPrice && !selectedFilters.minPrice,
       href: hrefFor({ maxPrice: "", minPrice: "" }),
     },
@@ -131,7 +133,7 @@ export function SearchQuickFilters({
   const categoryChips: QuickChip[] = showCategories
     ? [
         {
-          label: "كل التصنيفات",
+          label: t("كل التصنيفات"),
           active: !selectedFilters.category,
           href: hrefFor({
             category: "",
