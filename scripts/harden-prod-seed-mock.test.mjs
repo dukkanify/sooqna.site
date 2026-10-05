@@ -55,20 +55,21 @@ describe("live catalog opt-in", () => {
     assert.match(src, /v9-relative-posted-at/);
   });
 
-  it("public catalog hides live seeds when disabled", () => {
+  it("public catalog hides live seeds when disabled (empty-category exception only)", () => {
     const queries = read("services/listings/listing-queries.ts");
     assert.match(queries, /LIVE_MARKETPLACE_LISTING_SQL/);
     assert.match(queries, /isLiveCatalogEnabled/);
     assert.match(queries, /isLiveCatalogListing/);
     assert.match(queries, /publicCatalogExclusionSql/);
-    assert.match(
-      queries,
-      /!isLiveCatalogEnabled\(\) && isLiveCatalogListing\(listing\)/,
-    );
+    // Default still hides live-mkt; empty categories may opt back in.
+    assert.match(queries, /NOT \$\{LIVE_MARKETPLACE_LISTING_SQL\}/);
+    assert.match(queries, /cachedEmptyCategoryIds/);
+    assert.match(queries, /ensureEmptyCategoryStartersPublished/);
 
     const details = read("services/listings/listings.service.ts");
     assert.match(details, /isLiveCatalogEnabled/);
     assert.match(details, /isLiveCatalogListing/);
+    assert.match(details, /isLiveCatalogVisibleForEmptyCategories/);
   });
 
   it("seed postedAt is relative to now", () => {
