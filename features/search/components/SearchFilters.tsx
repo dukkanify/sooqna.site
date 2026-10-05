@@ -196,7 +196,7 @@ function FilterFields({
               })
             }
             options={[
-              { label: "كل التصنيفات", value: "" },
+              { label: t("كل التصنيفات"), value: "" },
               ...rankedCategories.map((category) => ({
                 label: t(category.name),
                 value: category.id,

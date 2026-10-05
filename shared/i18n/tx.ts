@@ -5,7 +5,7 @@ const EN = phrasesEn as Record<string, string>;
 
 const MONTHS =
   "يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر";
-const DATE_RE = new RegExp(`^(\\d{1,2}) (${MONTHS})$`);
+const DATE_RE = new RegExp(`^(\\d{1,2}) (${MONTHS})(?: (\\d{4}))?$`);
 
 const NAME_TEMPLATES: Array<[RegExp, (match: RegExpMatchArray) => string]> = [
   [
@@ -73,6 +73,14 @@ const NAME_TEMPLATES: Array<[RegExp, (match: RegExpMatchArray) => string]> = [
   [
     /^معاينة صورة (\d+)$/u,
     (match) => `Image preview ${match[1]}`,
+  ],
+  [
+    /^عرض صورة (\d+)$/u,
+    (match) => `View image ${match[1]}`,
+  ],
+  [
+    /^صورة (\d+)$/u,
+    (match) => `Image ${match[1]}`,
   ],
   [
     /^تم تأكيد حجز المعاينة وأرسلنا التفاصيل إلى (.+)\.$/u,
@@ -375,7 +383,9 @@ export function tx(locale: AppLocale, text: string): string {
   const date = text.match(DATE_RE);
   if (date) {
     const month = lookup(date[2]);
-    if (month) return `${date[1]} ${month}`;
+    if (month) {
+      return date[3] ? `${date[1]} ${month} ${date[3]}` : `${date[1]} ${month}`;
+    }
   }
 
   const withUnits = applyUnits(text);

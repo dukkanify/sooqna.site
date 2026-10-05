@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { Category } from "@/types";
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { DragScrollRow } from "@/shared/components/DragScrollRow";
+import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { sortByPopularity } from "@/services/search/search-popularity";
 import { fetchPopularityScores } from "@/features/search/lib/record-search-popularity";
 import {
@@ -154,6 +155,7 @@ export function SearchQuickFilters({
     : [];
 
   return (
+    <LocalizedTree>
     <div className="min-w-0 space-y-3 md:hidden">
       <ChipRail ariaLabel="الإمارة" chips={emirateChips} />
       <ChipRail ariaLabel="السعر" chips={priceChips} />
@@ -161,5 +163,6 @@ export function SearchQuickFilters({
         <ChipRail ariaLabel="التصنيف" chips={categoryChips} />
       ) : null}
     </div>
+    </LocalizedTree>
   );
 }

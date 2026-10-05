@@ -2,6 +2,7 @@
 
 import type { Listing } from "@/types";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
+import { useTx } from "@/shared/i18n/useTx";
 import { QUOTE_PRICING_LABEL_AR, listingUsesQuotePricing } from "@/shared/listings/quote-pricing";
 
 type CurrencyAmountSize = "sm" | "md" | "lg" | "xl";
@@ -24,11 +25,13 @@ export function ListingPrice({
   listing,
   size = "md",
 }: ListingPriceProps) {
+  const t = useTx();
+
   if (listing.categoryId === "jobs") {
     const salary = String(listing.categorySpecs?.salary ?? "").trim();
     return (
       <span className={`text-ink ${sizeClasses[size]} ${className}`}>
-        {salary || "الراتب حسب الاتفاق"}
+        {salary || t("الراتب حسب الاتفاق")}
       </span>
     );
   }
@@ -36,7 +39,7 @@ export function ListingPrice({
   if (listingUsesQuotePricing(listing)) {
     return (
       <span className={`text-ink ${sizeClasses[size]} ${className}`}>
-        {QUOTE_PRICING_LABEL_AR}
+        {t(QUOTE_PRICING_LABEL_AR)}
       </span>
     );
   }
