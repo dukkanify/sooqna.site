@@ -21,6 +21,7 @@ import {
   searchListings,
 } from "@/services/listings";
 import { getRequestLocale } from "@/shared/i18n/locale";
+import { tx } from "@/shared/i18n/tx";
 import { resolveCategoryBranchStateForCategories } from "@/shared/listings/category-branch";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -108,14 +109,19 @@ export default async function SearchPage({
       <main className="bg-background">
         <section className="app-container page-padding pb-28 lg:pb-8">
           <div className="mb-5">
-            <p className="text-xs font-bold text-[#B8955F]">بحث السوق</p>
+            <p className="text-xs font-bold text-[#B8955F]">
+              {tx(locale, "بحث السوق")}
+            </p>
             <h1 className="mt-1 text-2xl font-bold text-ink md:text-3xl">
               {selectedFilters.query
-                ? `نتائج: ${selectedFilters.query}`
-                : "اعثر على الإعلان المناسب"}
+                ? tx(locale, `نتائج: ${selectedFilters.query}`)
+                : tx(locale, "اعثر على الإعلان المناسب")}
             </h1>
             <p className="mt-1.5 max-w-xl text-sm leading-6 text-muted">
-              اختر الإمارة والسعر والتصنيف — ثم ضيّق النتيجة من الفلاتر إذا احتجت.
+              {tx(
+                locale,
+                "اختر الإمارة والسعر والتصنيف — ثم ضيّق النتيجة من الفلاتر إذا احتجت.",
+              )}
             </p>
           </div>
 

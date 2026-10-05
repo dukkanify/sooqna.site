@@ -5,6 +5,7 @@ import { QUOTE_PRICING_LABEL_AR } from "@/shared/listings/quote-pricing";
 import { Card } from "@/shared/ui/Card";
 import { CategoryIcon } from "@/shared/ui/CategoryIcon";
 import { Icon } from "@/shared/ui/Icon";
+import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import type { ListingPreview } from "./types";
 import { conditionLabels } from "./utils";
 
@@ -25,7 +26,8 @@ export function ListingPreviewPanel({
 
   return (
     <aside className="lg:sticky lg:top-28 lg:self-start">
-      <Card className="p-5">
+      <LocalizedTree>
+        <Card className="p-5">
         <p className="text-sm font-semibold text-muted">معاينة الإعلان</p>
         <div className="mt-4 overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-surface-muted">
           <div className="relative aspect-[3/2] w-full">
@@ -97,7 +99,8 @@ export function ListingPreviewPanel({
             </div>
           </div>
         </div>
-      </Card>
+        </Card>
+      </LocalizedTree>
     </aside>
   );
 }

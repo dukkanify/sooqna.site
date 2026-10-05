@@ -12,6 +12,21 @@ export type DisplaySpecEntry = {
   value: string;
 };
 
+const ARABIC_MONTHS = [
+  "يناير",
+  "فبراير",
+  "مارس",
+  "أبريل",
+  "مايو",
+  "يونيو",
+  "يوليو",
+  "أغسطس",
+  "سبتمبر",
+  "أكتوبر",
+  "نوفمبر",
+  "ديسمبر",
+] as const;
+
 function fieldByKey(
   fields: CategoryFieldDefinition[],
   key: string,
@@ -74,11 +89,9 @@ function formatScalarValue(
   ) {
     const parsed = Date.parse(value);
     if (Number.isFinite(parsed)) {
-      return new Date(parsed).toLocaleDateString("ar-AE", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
+      const date = new Date(parsed);
+      const month = ARABIC_MONTHS[date.getMonth()];
+      return `${date.getDate()} ${month} ${date.getFullYear()}`;
     }
   }
 
