@@ -1,5 +1,5 @@
 /**
- * Smart listing-form defaults: EV fuel, RE purpose, branch types.
+ * Smart listing-form defaults: EV fuel/transmission, jobs, electronics, UI hint.
  * Run: node --test --experimental-strip-types scripts/listing-form-smart-defaults.test.mjs
  */
 import assert from "node:assert/strict";
@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   applyListingFormSmartSpecs,
   inferListingFormSmartSpecs,
+  SMART_FILL_HINT_AR,
 } from "../shared/listings/listing-form-smart-defaults.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -19,49 +20,41 @@ function read(rel) {
 }
 
 describe("inferListingFormSmartSpecs", () => {
-  it("sets fuelType to كهربائي for EV subcategory", () => {
+  it("sets fuelType + automatic transmission for EV subcategory", () => {
     assert.deepEqual(
       inferListingFormSmartSpecs({
         categoryId: "cars",
         subcategory: "سيارات كهربائية",
       }),
-      { fuelType: "كهربائي" },
+      { fuelType: "كهربائي", transmission: "أوتوماتيك" },
     );
     assert.deepEqual(
       inferListingFormSmartSpecs({
         categoryId: "cars",
         subcategory: "كهربائية",
       }),
-      { fuelType: "كهربائي" },
+      { fuelType: "كهربائي", transmission: "أوتوماتيك" },
     );
   });
 
-  it("sets fuelType for Tesla / BYD brands without overwriting seller choice", () => {
-    assert.equal(
-      inferListingFormSmartSpecs({
-        brand: "Tesla",
-        categoryId: "cars",
-      }).fuelType,
-      "كهربائي",
-    );
-    assert.equal(
-      inferListingFormSmartSpecs({
-        brand: "BYD",
-        categoryId: "cars",
-      }).fuelType,
-      "كهربائي",
-    );
+  it("sets fuelType/transmission for Tesla / BYD without overwriting seller choice", () => {
+    const tesla = inferListingFormSmartSpecs({
+      brand: "Tesla",
+      categoryId: "cars",
+    });
+    assert.equal(tesla.fuelType, "كهربائي");
+    assert.equal(tesla.transmission, "أوتوماتيك");
     assert.deepEqual(
       inferListingFormSmartSpecs({
         brand: "Tesla",
         categoryId: "cars",
-        existing: { fuelType: "هجين" },
+        existing: { fuelType: "هجين", transmission: "يدوي" },
       }),
       {},
     );
   });
 
-  it("seeds used condition for مستعملة and RE purpose/type from subcategory", () => {
+  it("seeds used condition, RE purpose/type, jobs listingType, electronics brand", () => {
     assert.equal(
       inferListingFormSmartSpecs({
         categoryId: "cars",
@@ -75,6 +68,36 @@ describe("inferListingFormSmartSpecs", () => {
     });
     assert.equal(rent.purpose, "للإيجار");
     assert.equal(rent.propertyType, "شقة");
+
+    assert.equal(
+      inferListingFormSmartSpecs({
+        categoryId: "jobs",
+        subcategory: "باحثون عن عمل",
+      }).listingType,
+      "seeker",
+    );
+    assert.equal(
+      inferListingFormSmartSpecs({
+        categoryId: "jobs",
+        subcategory: "توظيف (وظائف)",
+      }).listingType,
+      "vacancy",
+    );
+
+    assert.equal(
+      inferListingFormSmartSpecs({
+        categoryId: "electronics",
+        model: "PlayStation 5",
+      }).brand,
+      "Sony",
+    );
+    assert.equal(
+      inferListingFormSmartSpecs({
+        categoryId: "electronics",
+        model: "MacBook Pro",
+      }).brand,
+      "Apple",
+    );
   });
 
   it("seeds mobile brand and pets/furniture branch types", () => {
@@ -112,13 +135,19 @@ describe("add-listing wiring", () => {
     assert.match(step, /categorySpecs: smartSpecs/);
   });
 
-  it("CategoryFieldsForm applies smart fills on brand/model change", () => {
+  it("CategoryFieldsForm shows auto-fill hint and tracks smart keys", () => {
     const form = read(
       "features/listings/components/add-listing/CategoryFieldsForm.tsx",
     );
     assert.match(form, /inferListingFormSmartSpecs/);
-    assert.match(form, /key === "brand" \|\| key === "model"/);
-    assert.match(form, /حقول الذكية|الحقول الذكية/);
+    assert.match(form, /smartFilledKeys/);
+    assert.match(form, /SMART_FILL_HINT_AR/);
+    assert.match(form, /smartFilledKeys\.has\(field\.key\)/);
+    assert.match(form, /الحقول الذكية/);
+    assert.equal(
+      SMART_FILL_HINT_AR,
+      "تم اختياره تلقائياً — يمكنك تعديله",
+    );
   });
 
   it("parser seeds smart specs before required checks", () => {

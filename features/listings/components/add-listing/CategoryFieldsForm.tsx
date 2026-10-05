@@ -27,7 +27,10 @@ import {
   withVisibilityContext,
 } from "@/shared/listings/category-field-visibility";
 import { quotePricingFromSpecs } from "@/shared/listings/quote-pricing";
-import { inferListingFormSmartSpecs } from "@/shared/listings/listing-form-smart-defaults";
+import {
+  inferListingFormSmartSpecs,
+  SMART_FILL_HINT_AR,
+} from "@/shared/listings/listing-form-smart-defaults";
 import { ListingEnglishCopyFields } from "./ListingEnglishCopyFields";
 import {
   addListingCheckboxGridClass,
@@ -342,6 +345,25 @@ export function CategoryFieldsForm({
   const [specs, setSpecs] = useState<Record<string, string>>(() =>
     specsFromDefaults(defaults),
   );
+  // Only mark keys that the smart helper produced (add-listing step), not edit hydrate.
+  const [smartFilledKeys, setSmartFilledKeys] = useState<Set<string>>(() => {
+    const initial = specsFromDefaults(defaults);
+    const inferred = inferListingFormSmartSpecs({
+      brand: initial.brand,
+      categoryId,
+      existing: {},
+      model: initial.model,
+      subcategory,
+    });
+    const inferredKeys = Object.keys(inferred);
+    const defaultKeys = Object.keys(initial);
+    const defaultsAreOnlySmart =
+      defaultKeys.length > 0 &&
+      defaultKeys.every(
+        (key) => inferredKeys.includes(key) && initial[key] === inferred[key],
+      );
+    return new Set(defaultsAreOnlySmart ? defaultKeys : []);
+  });
   const defaultsFingerprint = JSON.stringify(defaults?.categorySpecs ?? {});
 
   useEffect(() => {
@@ -369,6 +391,7 @@ export function CategoryFieldsForm({
       return changed ? next : prev;
     });
     // Fill missing keys when a full listing payload arrives — do not reset edits.
+    // Do not mark edit-hydrate keys as smart-filled (seller/admin data).
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fingerprint of stored specs
   }, [defaultsFingerprint]);
 
@@ -427,6 +450,7 @@ export function CategoryFieldsForm({
   }
 
   function onSpecChange(key: string, value: string) {
+    let newlyFilled: string[] = [];
     setSpecs((prev) => {
       const next = { ...prev, [key]: value };
       // Cars/mobiles/electronics: changing brand clears a stale model + Other text.
@@ -441,20 +465,25 @@ export function CategoryFieldsForm({
           next[field.key] = "";
         }
       }
-      // Smart fills (EV fuel, RE purpose, …) — only empty keys; seller can override.
-      if (key === "brand" || key === "model" || key === "fuelType") {
-        const inferred = inferListingFormSmartSpecs({
-          brand: next.brand,
-          categoryId,
-          existing: next,
-          model: next.model,
-          subcategory,
-        });
-        Object.assign(next, inferred);
-        if (next.fuelType === "كهربائي") {
-          delete next.engineSize;
-        }
+      // Smart fills (EV fuel/transmission, jobs type, electronics brand, …).
+      const inferred = inferListingFormSmartSpecs({
+        brand: next.brand,
+        categoryId,
+        existing: next,
+        model: next.model,
+        subcategory,
+      });
+      newlyFilled = Object.keys(inferred);
+      Object.assign(next, inferred);
+      if (next.fuelType === "كهربائي") {
+        delete next.engineSize;
       }
+      return next;
+    });
+    setSmartFilledKeys((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      for (const filled of newlyFilled) next.add(filled);
       return next;
     });
 
@@ -650,6 +679,11 @@ export function CategoryFieldsForm({
                       Boolean(specs.brand?.trim()) &&
                       (optionsForField(field)?.length ?? 0) === 0,
                   )}
+                  {smartFilledKeys.has(field.key) ? (
+                    <p className="mt-1 text-xs font-medium text-secondary">
+                      {SMART_FILL_HINT_AR}
+                    </p>
+                  ) : null}
                   {field.note ? (
                     <p className="mt-1 text-xs text-muted">{field.note}</p>
                   ) : null}
