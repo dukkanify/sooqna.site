@@ -139,72 +139,108 @@ const PRODUCT_PHOTO_POOLS = {
     "photo-1494976388531-d1058494cdd8",
     "photo-1549317661-bd32c8ce0db2",
   ],
+  soundbar: [
+    "photo-1484704849700-f032a568e944",
+    "photo-1558618666-fcd25c85cd64",
+  ],
+  monitor: [
+    "photo-1461151304267-38535e780c79",
+    "photo-1593359677879-a4bb92f829d1",
+    "photo-1622297845775-5ff3fef71d13",
+  ],
+  printer: [
+    "photo-1454165804606-c3d57bc86b40",
+    "photo-1586281380349-632531db7ed4",
+  ],
 } as const;
 
 type ProductKind = keyof typeof PRODUCT_PHOTO_POOLS;
 
-const PRODUCT_HINTS: Array<{ kind: ProductKind; pattern: RegExp }> = [
+type ProductHint = {
+  kind: ProductKind;
+  pattern: RegExp;
+  /** When set, the hint only applies to this listing category. */
+  categoryId?: string;
+};
+
+const CAR_ONLY = "cars" as const;
+
+const PRODUCT_HINTS: Array<ProductHint> = [
   { kind: "honey", pattern: /\b(honey|sidr|عسل)\b/i },
   { kind: "dates", pattern: /\b(khalas|medjool|ajwa|تمر|تمور|خلاص)\b/i },
   {
     kind: "porsche",
+    categoryId: CAR_ONLY,
     pattern: /\b(porsche|بورش|cayenne|macan|panamera|911|taycan)\b/i,
   },
   {
     kind: "bmw",
+    categoryId: CAR_ONLY,
     pattern: /\b(bmw|بي\s*ام\s*دبليو|بي ام|x5|x7|x3|m3|m5)\b/i,
   },
   {
     kind: "byd_suv",
+    categoryId: CAR_ONLY,
     pattern:
       /\b(byd|بي\s*واي\s*دي|بي\s*واي|song(\s*plus)?|atto\s*3|seal(ion)?|dolphin|han|tang|seagull)\b/i,
   },
   {
     kind: "mercedes_suv",
+    categoryId: CAR_ONLY,
     pattern:
       /\b(g[- ]?class|g[- ]?wagon|g63|gle|gls|glc|مرسيدس\s*جي)\b/i,
   },
   // Model-first before brand defaults — Altima must not become a Patrol cover.
   {
     kind: "honda_sedan",
+    categoryId: CAR_ONLY,
     pattern: /\b(civic|accord|سيفيك|أكورد|اكورد)\b/i,
   },
   {
     kind: "sedan",
+    categoryId: CAR_ONLY,
     pattern:
       /\b(altima|camry|corolla|sentra|التيما|كامري|كورولا|سيدان|sedan)\b/i,
   },
   {
     kind: "lexus_suv",
+    categoryId: CAR_ONLY,
     pattern: /\b(lexus|لكزس|lx|gx|rx|nx)\b/i,
   },
   {
     kind: "toyota_suv",
+    categoryId: CAR_ONLY,
     pattern:
       /\b(land\s*cruiser|prado|fortuner|لاندكروزر|برادو)\b/i,
   },
   {
     kind: "nissan_suv",
+    categoryId: CAR_ONLY,
     pattern: /\b(patrol|باترول|armada|pathfinder)\b/i,
   },
   {
     kind: "mercedes_suv",
+    categoryId: CAR_ONLY,
     pattern: /\b(mercedes|مرسيدس)\b/i,
   },
   {
     kind: "toyota_suv",
+    categoryId: CAR_ONLY,
     pattern: /\b(toyota|تويوتا)\b/i,
   },
   {
     kind: "honda_sedan",
+    categoryId: CAR_ONLY,
     pattern: /\b(honda|هوندا)\b/i,
   },
   {
     kind: "nissan_suv",
+    categoryId: CAR_ONLY,
     pattern: /\b(nissan|نيسان)\b/i,
   },
   {
     kind: "suv",
+    categoryId: CAR_ONLY,
     pattern: /\b(tahoe|suburban|suv|جيب)\b/i,
   },
   {
@@ -221,7 +257,7 @@ const PRODUCT_HINTS: Array<{ kind: ProductKind; pattern: RegExp }> = [
   },
   {
     kind: "laptop",
-    pattern: /\b(macbook|laptop|notebook|لابتوب|حاسوب محمول)\b/i,
+    pattern: /\b(macbook|laptop|notebook|لابتوب|ماك بوك|حاسوب محمول)\b/i,
   },
   {
     kind: "gaming",
@@ -232,8 +268,20 @@ const PRODUCT_HINTS: Array<{ kind: ProductKind; pattern: RegExp }> = [
     pattern: /\b(camera|canon|sony a7|nikon|كاميرا|عدسة)\b/i,
   },
   {
+    kind: "soundbar",
+    pattern: /\b(soundbar|sound\s*bar|ساوند\s*بار|سبيكر|speaker)\b/i,
+  },
+  {
     kind: "tv",
-    pattern: /\b(tv|television|oled|تلفزيون|شاشة تلفاز)\b/i,
+    pattern: /\b(tv|television|oled|تلفزيون|شاشة\s*تلفاز)\b/i,
+  },
+  {
+    kind: "monitor",
+    pattern: /\b(monitor|ultrasharp|شاشات|شاشة)\b/i,
+  },
+  {
+    kind: "printer",
+    pattern: /\b(printer|طابعة|طابعات)\b/i,
   },
   {
     kind: "smartphone",
@@ -289,11 +337,23 @@ function galleryFromPhotoIds(
   return urls;
 }
 
-function detectProductKind(text: string): ProductKind | undefined {
+function detectProductKind(
+  text: string,
+  categoryId?: string,
+): ProductKind | undefined {
   for (const hint of PRODUCT_HINTS) {
+    if (hint.categoryId && hint.categoryId !== categoryId) continue;
     if (hint.pattern.test(text)) return hint.kind;
   }
   return undefined;
+}
+
+/** Exported for unit tests — car model tokens must not steal electronics titles. */
+export function resolveListingProductKind(
+  text: string,
+  categoryId?: string,
+): ProductKind | undefined {
+  return detectProductKind(text, categoryId);
 }
 
 export type ListingProductMediaInput = {
@@ -317,7 +377,7 @@ export function galleryForListingProduct({
   width = 1200,
 }: ListingProductMediaInput): string[] {
   const text = `${titleEnglish} ${title} ${categoryId}`;
-  const kind = detectProductKind(text);
+  const kind = detectProductKind(text, categoryId);
   if (kind) {
     return galleryFromPhotoIds(PRODUCT_PHOTO_POOLS[kind], seed, count, width);
   }
