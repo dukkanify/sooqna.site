@@ -27,6 +27,7 @@ import {
   withVisibilityContext,
 } from "@/shared/listings/category-field-visibility";
 import { quotePricingFromSpecs } from "@/shared/listings/quote-pricing";
+import { inferListingFormSmartSpecs } from "@/shared/listings/listing-form-smart-defaults";
 import { ListingEnglishCopyFields } from "./ListingEnglishCopyFields";
 import {
   addListingCheckboxGridClass,
@@ -147,19 +148,27 @@ function renderField(
   }
 
   if (field.type === "select") {
-    // Always force an explicit choice on create — never silently submit the
-    // first option (دبي / جديد / ذكر / …). Edit flows pass defaultValue.
+    // Controlled when the form tracks the value (smart defaults / cascades)
+    // so auto-filled fuelType etc. update the select immediately.
+    const controlled = currentValue !== undefined;
     return (
       <Select
         key={field.key}
         compact
-        defaultValue={defaultValue !== undefined ? String(defaultValue) : undefined}
+        defaultValue={
+          controlled
+            ? undefined
+            : defaultValue !== undefined
+              ? String(defaultValue)
+              : undefined
+        }
         label={field.label}
         name={name}
         onChange={(event) => onSpecChange(field.key, event.target.value)}
         options={options}
         placeholder="اختر..."
         required={field.required}
+        value={controlled ? String(currentValue) : undefined}
       />
     );
   }
@@ -432,6 +441,20 @@ export function CategoryFieldsForm({
           next[field.key] = "";
         }
       }
+      // Smart fills (EV fuel, RE purpose, …) — only empty keys; seller can override.
+      if (key === "brand" || key === "model" || key === "fuelType") {
+        const inferred = inferListingFormSmartSpecs({
+          brand: next.brand,
+          categoryId,
+          existing: next,
+          model: next.model,
+          subcategory,
+        });
+        Object.assign(next, inferred);
+        if (next.fuelType === "كهربائي") {
+          delete next.engineSize;
+        }
+      }
       return next;
     });
 
@@ -486,7 +509,7 @@ export function CategoryFieldsForm({
           {heading}
         </h2>
         <p className={addListingStepDescClass}>
-          الحقول تتغير تلقائياً حسب القسم — ابحث عن الماركة بكتابة أول حروفها.
+          الحقول الذكية تُملأ تلقائياً حسب القسم والاختيارات — يمكنك تعديل أي قيمة.
         </p>
         {subcategory ? (
           <input name="subcategory" type="hidden" value={subcategory} />
@@ -620,7 +643,7 @@ export function CategoryFieldsForm({
                     specs[field.key] ??
                       (getSpecValue(defaults, field.key) !== undefined
                         ? String(getSpecValue(defaults, field.key))
-                        : undefined),
+                        : ""),
                     field.key === "model" &&
                       categoryId === "cars" &&
                       catalogLoading &&
