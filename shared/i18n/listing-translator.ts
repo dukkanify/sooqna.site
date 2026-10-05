@@ -23,6 +23,7 @@ const PHRASES: Array<[string, string]> = [
   ["فل اوبشن", "full option"],
   ["فل أوبشنز", "full option"],
   ["تأمين شامل", "comprehensive insurance"],
+  ["جاهز للتسليم", "ready for handover"],
   ["جاهز للتحويل", "ready for transfer"],
   ["قابل للتفاوض", "negotiable"],
   ["غير قابل للتفاوض", "non-negotiable"],
@@ -145,6 +146,7 @@ const WORDS: Record<string, string> = {
   فحص: "inspection",
   ملكية: "ownership",
   تحويل: "transfer",
+  تسليم: "handover",
   سعر: "price",
   درهم: "AED",
   "د.إ": "AED",
@@ -265,7 +267,7 @@ function applyPhrases(text: string): string {
     if (!arabic || !next.includes(arabic)) continue;
     next = next.split(arabic).join(english);
   }
-  return next;
+  return next.replace(/و(?=[A-Za-z])/g, "and ");
 }
 
 function lookupWord(token: string): string | undefined {
@@ -293,11 +295,17 @@ function applyWords(text: string): string {
 
 function tidyEnglish(text: string): string {
   return text
+    .replace(/،/g, ",")
     .replace(/\s+/g, " ")
     .replace(/\s+([,.;:!?])/g, "$1")
     .replace(/\s+\/\s+/g, " / ")
     .replace(/\s+—\s+/g, " — ")
     .replace(/\s+-\s+/g, " - ")
+    .replace(/(^|[.!?]\s+)([a-z])/g, (full, lead: string, letter: string, offset: number, whole: string) => {
+      const word = whole.slice(offset + lead.length).split(/\s/)[0] ?? "";
+      if (/[A-Z]/.test(word.slice(1))) return full;
+      return lead + letter.toUpperCase();
+    })
     .trim();
 }
 
