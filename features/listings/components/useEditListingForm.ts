@@ -102,7 +102,7 @@ export function useEditListingForm(
       }
 
       const price = parsed.skipPrice
-        ? 0
+        ? undefined
         : Number(formData.get("price") ?? 0);
       const description = String(formData.get("description") ?? "").trim();
       const existingImages = getListingImages(currentListing);
@@ -157,9 +157,9 @@ export function useEditListingForm(
           body: JSON.stringify({
             title,
             description,
-            titleEnglish: titleEnglish ?? "",
-            descriptionEnglish: descriptionEnglish ?? "",
-            price,
+            ...(titleEnglish ? { titleEnglish } : {}),
+            ...(descriptionEnglish ? { descriptionEnglish } : {}),
+            ...(typeof price === "number" ? { price } : {}),
             condition: parsed.condition,
             city: cityName,
             emirate: parsed.emirate,
@@ -173,7 +173,11 @@ export function useEditListingForm(
                 ? parsed.features
                 : currentListing.features ?? [],
             negotiable: parsed.negotiable,
-            videoUrl: videoUrl || "",
+            ...(videoUrl
+              ? { videoUrl }
+              : currentListing.videoUrl
+                ? {}
+                : { videoUrl: "" }),
           }),
         });
 
@@ -190,11 +194,9 @@ export function useEditListingForm(
           title,
           slug: nextSlug,
           description,
-          ...(titleEnglish ? { titleEnglish } : { titleEnglish: undefined }),
-          ...(descriptionEnglish
-            ? { descriptionEnglish }
-            : { descriptionEnglish: undefined }),
-          price,
+          ...(titleEnglish ? { titleEnglish } : {}),
+          ...(descriptionEnglish ? { descriptionEnglish } : {}),
+          ...(typeof price === "number" ? { price } : {}),
           condition: parsed.condition,
           city: cityName,
           country: countries[0].name,
@@ -210,7 +212,7 @@ export function useEditListingForm(
           area: isDynamicCategory(categoryId) ? parsed.city : currentListing.area,
           contactPhone: contact,
           contactMethod: "both" as const,
-          videoUrl: videoUrl || undefined,
+          videoUrl: videoUrl || currentListing.videoUrl,
         }, currentListing);
 
         saveLocalListing(saved);
@@ -227,11 +229,9 @@ export function useEditListingForm(
           title,
           slug: nextSlug,
           description,
-          ...(titleEnglish ? { titleEnglish } : { titleEnglish: undefined }),
-          ...(descriptionEnglish
-            ? { descriptionEnglish }
-            : { descriptionEnglish: undefined }),
-          price,
+          ...(titleEnglish ? { titleEnglish } : {}),
+          ...(descriptionEnglish ? { descriptionEnglish } : {}),
+          ...(typeof price === "number" ? { price } : {}),
           condition: parsed.condition,
           city: cityName,
           country: countries[0].name,
@@ -247,7 +247,7 @@ export function useEditListingForm(
           area: isDynamicCategory(categoryId) ? parsed.city : currentListing.area,
           contactPhone: contact,
           contactMethod: "both",
-          videoUrl: videoUrl || undefined,
+          videoUrl: videoUrl || currentListing.videoUrl,
         },
         currentListing,
       );

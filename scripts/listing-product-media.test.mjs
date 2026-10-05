@@ -39,4 +39,28 @@ describe("listing product media matching", () => {
     assert.equal(bmw.test("MacBook Pro M3 14-inch"), true);
     assert.equal(bmw.test("BMW M3 Competition"), true);
   });
+
+  it("scopes job-role photo pools to the jobs category", () => {
+    assert.match(src, /const JOBS_ONLY = "jobs"/);
+    assert.match(src, /kind: "job_hotel"[\s\S]{0,80}categoryId: JOBS_ONLY/);
+    assert.match(src, /kind: "job_nurse"[\s\S]{0,80}categoryId: JOBS_ONLY/);
+    assert.match(src, /kind: "job_delivery"[\s\S]{0,80}categoryId: JOBS_ONLY/);
+    assert.match(src, /kind: "job_engineer"[\s\S]{0,80}categoryId: JOBS_ONLY/);
+    assert.match(src, /kind: "job_sales"[\s\S]{0,80}categoryId: JOBS_ONLY/);
+    assert.match(src, /const REAL_ESTATE_ONLY = "real-estate"/);
+    assert.match(src, /kind: "office"[\s\S]{0,80}categoryId: REAL_ESTATE_ONLY/);
+  });
+
+  it("matches hotel and nurse titles independently of the generic jobs pool", () => {
+    const hotel = /(?<!\p{L})(hotel|front\s*desk|reception|استقبال|فندق)(?!\p{L})/iu;
+    const nurse = /(?<!\p{L})(nurse|clinic|hospital|ممرض|عيادة|مستشفى)(?!\p{L})/iu;
+    const delivery = /(?<!\p{L})(delivery|driver|courier|سائق|توصيل)(?!\p{L})/iu;
+    assert.equal(hotel.test("Hotel Front Desk Agent"), true);
+    assert.equal(hotel.test("موظف استقبال فندقي"), true);
+    assert.equal(hotel.test("Sales Executive — Full Time"), false);
+    assert.equal(nurse.test("Clinic Nurse"), true);
+    assert.equal(nurse.test("ممرض/ة عيادة خاصة"), true);
+    assert.equal(delivery.test("Delivery Driver — Sharjah"), true);
+    assert.equal(delivery.test("سائق توصيل — الشارقة"), true);
+  });
 });

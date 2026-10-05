@@ -46,6 +46,17 @@ describe("admin listing approval persistence", () => {
     );
   });
 
+  it("JSON catalog writes are serialized and seed snapshots cannot drop extra ids", () => {
+    const src = read("services/listings/listing-persistence.ts");
+    assert.match(src, /enqueueJsonMutation/);
+    assert.match(src, /mergeJsonCatalog\(stored, listings\)/);
+    assert.match(src, /if \(stored\.length > 0\) return;/);
+    assert.match(
+      src,
+      /Serialize JSON catalog mutations so concurrent upserts cannot drop new ads/,
+    );
+  });
+
   it("admin GET prefers payload status when the column is stale", () => {
     const src = read("services/listings/listing-queries.ts");
     assert.match(

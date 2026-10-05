@@ -680,6 +680,7 @@ export function AdminListingsPanel() {
     let categorySpecs = listing.categorySpecs;
     let features = listing.features;
     let negotiable = listing.negotiable;
+    let skipPricePatch = false;
 
     if (dynamic && formElement) {
       const formData = new FormData(formElement);
@@ -713,10 +714,11 @@ export function AdminListingsPanel() {
         return;
       }
       setEditFieldErrors({});
+      skipPricePatch = Boolean(parsed.skipPrice);
       title = parsed.title.trim() || listing.title;
       description =
         String(formData.get("description") ?? "").trim() || description;
-      price = parsed.skipPrice ? 0 : submittedPrice;
+      price = parsed.skipPrice ? listing.price : submittedPrice;
       emirate =
         canonicalizeEmirate(parsed.emirate) ||
         canonicalizeEmirate(parsed.city) ||
@@ -764,7 +766,7 @@ export function AdminListingsPanel() {
     await patchListing(listing.id, {
       title,
       description,
-      price,
+      ...(skipPricePatch ? {} : { price }),
       city,
       emirate,
       // Empty string clears a previously saved area.

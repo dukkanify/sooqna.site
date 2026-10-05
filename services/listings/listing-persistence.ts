@@ -127,6 +127,29 @@ async function writeJsonFile(listings: Listing[]): Promise<void> {
   await rename(tempPath, target);
 }
 
+/** Serialize JSON catalog mutations so concurrent upserts cannot drop new ads. */
+let jsonMutationChain: Promise<unknown> = Promise.resolve();
+
+function enqueueJsonMutation<T>(task: () => Promise<T>): Promise<T> {
+  const run = jsonMutationChain.then(task, task);
+  jsonMutationChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+function mergeJsonCatalog(stored: Listing[], incoming: Listing[]): Listing[] {
+  const byId = new Map<string, Listing>();
+  for (const listing of stored) {
+    if (listing?.id) byId.set(listing.id, listing);
+  }
+  for (const listing of incoming) {
+    if (listing?.id) byId.set(listing.id, listing);
+  }
+  return Array.from(byId.values());
+}
+
 function durableListingsStoreRequired(): boolean {
   return Boolean(process.env.VERCEL);
 }
@@ -200,14 +223,16 @@ export async function upsertListingRow(listing: Listing): Promise<void> {
     throw new Error("LISTINGS_STORE_UNAVAILABLE");
   }
 
-  const stored = (await readJsonFile()) ?? [];
-  const index = stored.findIndex((item) => item.id === listing.id);
-  if (index >= 0) {
-    stored[index] = listing;
-  } else {
-    stored.unshift(listing);
-  }
-  await writeJsonFile(stored);
+  await enqueueJsonMutation(async () => {
+    const stored = (await readJsonFile()) ?? [];
+    const index = stored.findIndex((item) => item.id === listing.id);
+    if (index >= 0) {
+      stored[index] = listing;
+    } else {
+      stored.unshift(listing);
+    }
+    await writeJsonFile(stored);
+  });
 }
 
 export async function persistAllListings(listings: Listing[]): Promise<void> {
@@ -237,7 +262,10 @@ export async function persistAllListings(listings: Listing[]): Promise<void> {
   }
 
   try {
-    await writeJsonFile(listings);
+    await enqueueJsonMutation(async () => {
+      const stored = (await readJsonFile()) ?? [];
+      await writeJsonFile(mergeJsonCatalog(stored, listings));
+    });
   } catch {
     // Local durable write may fail — skip rather than crash reads.
   }
@@ -345,11 +373,13 @@ export async function deleteListingRow(id: string): Promise<boolean> {
     return Boolean((result as { rowCount?: number }).rowCount);
   }
 
-  const stored = (await readJsonFile()) ?? [];
-  const next = stored.filter((item) => item.id !== id);
-  if (next.length === stored.length) return false;
-  await writeJsonFile(next);
-  return true;
+  return enqueueJsonMutation(async () => {
+    const stored = (await readJsonFile()) ?? [];
+    const next = stored.filter((item) => item.id !== id);
+    if (next.length === stored.length) return false;
+    await writeJsonFile(next);
+    return true;
+  });
 }
 
 export async function loadPersistedListings(): Promise<Listing[]> {
@@ -396,11 +426,16 @@ export async function loadCatalogWithoutPostgres(): Promise<Listing[]> {
   if (allowMockCatalogSeed()) {
     const seeded = seedListings();
     try {
-      await writeJsonFile(seeded);
+      await enqueueJsonMutation(async () => {
+        const stored = (await readJsonFile()) ?? [];
+        if (stored.length > 0) return;
+        await writeJsonFile(seeded);
+      });
     } catch {
       // /tmp or durable dir may be unavailable — still return in-memory seed.
     }
-    return seeded;
+    const existing = await readJsonFile();
+    return existing && existing.length > 0 ? existing : seeded;
   }
 
   const [{ getLiveMarketplaceCatalogListings }, { getShowcaseCatalogListings }] =

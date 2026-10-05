@@ -20,6 +20,7 @@ describe("admin edit full hydrate", () => {
     assert.match(store, /syncLiveCatalogMedia/);
     assert.match(store, /export async function getListingById/);
     assert.match(store, /withCatalogParity/);
+    assert.match(store, /videoUrl: listing\.videoUrl/);
   });
 
   it("live catalog enrich fills empty description/media without overwriting", () => {
@@ -43,6 +44,7 @@ describe("admin edit full hydrate", () => {
     const store = read("services/listings/listing-store.ts");
     assert.match(store, /mergeCategorySpecs\(/);
     assert.match(store, /Never blank a non-empty description/);
+    assert.match(store, /previous\.videoUrl/);
     const hydrate = read("shared/listings/listing-form-hydrate.ts");
     assert.match(hydrate, /export function mergeCategorySpecs/);
     assert.match(hydrate, /if \(typeof value === "string" && value\.trim\(\) === ""\) continue/);
