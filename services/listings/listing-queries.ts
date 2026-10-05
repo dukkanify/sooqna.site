@@ -226,16 +226,28 @@ function finalizePublicCatalogRows(
   return dedupeListingsById(sortListings(matched, query.sort));
 }
 
+let catalogsReadyAt = 0;
+let catalogsInflight: Promise<void> | null = null;
+const CATALOGS_READY_TTL_MS = 30_000;
+
 async function ensureCatalogsForPublicRead(): Promise<void> {
-  await Promise.all([
-    ensureShowcaseCatalogPublished(),
-    ensureLiveMarketplaceCatalogPublished().catch(() => 0),
-    ensureEmptyCategoryStartersPublished().catch(() => ({
-      categories: [] as string[],
-      affected: 0,
-    })),
-  ]);
-  cachedEmptyCategoryIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
+  if (Date.now() - catalogsReadyAt < CATALOGS_READY_TTL_MS) return;
+  if (catalogsInflight) return catalogsInflight;
+  catalogsInflight = (async () => {
+    await Promise.all([
+      ensureShowcaseCatalogPublished(),
+      ensureLiveMarketplaceCatalogPublished().catch(() => 0),
+      ensureEmptyCategoryStartersPublished().catch(() => ({
+        categories: [] as string[],
+        affected: 0,
+      })),
+    ]);
+    cachedEmptyCategoryIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
+    catalogsReadyAt = Date.now();
+  })().finally(() => {
+    catalogsInflight = null;
+  });
+  return catalogsInflight;
 }
 
 async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
@@ -428,7 +440,10 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
     // Over-fetch so payload visibility / unique-id filters can drop seed rows
     // without emptying home while category pages still have ads.
     if (typeof want === "number") {
-      const overFetch = Math.min(Math.max(want * 5 + 40, want), 800);
+      const cardLike = query.slim === "card" || query.slim === "suggest";
+      const multiplier = cardLike ? 2 : 4;
+      const cap = query.slim === "suggest" ? 80 : cardLike ? 360 : 800;
+      const overFetch = Math.min(Math.max(want * multiplier + 24, want), cap);
       values.push(overFetch);
       sql += ` LIMIT $${values.length}`;
     }
@@ -474,14 +489,12 @@ export async function countMatchingListings(query: ListingQuery = {}): Promise<n
 
   try {
     const { where, values } = listingSqlFilter(countable);
-    // Same payload visibility, structured filters, and unique-id rules as queryListings.
-    let sql = `SELECT payload FROM ${TABLE}`;
+    // Same SQL visibility as queryListings. DISTINCT id matches
+    // finalizePublicCatalogRows dedupe without shipping every JSON payload.
+    let sql = `SELECT COUNT(DISTINCT COALESCE(NULLIF(payload->>'id', ''), id))::int AS c FROM ${TABLE}`;
     if (where.length > 0) sql += ` WHERE ${where.join(" AND ")}`;
     const result = await pool.query(sql, values);
-    const rows = syncLiveCatalogMedia(
-      result.rows.map((row) => row.payload as Listing),
-    );
-    return finalizePublicCatalogRows(rows, countable).length;
+    return Number(result.rows[0]?.c ?? 0);
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {
       markPostgresUnavailable(error);

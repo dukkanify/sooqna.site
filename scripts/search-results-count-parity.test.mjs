@@ -46,9 +46,9 @@ describe("search results count parity", () => {
     const queries = read("services/listings/listing-queries.ts");
     const start = queries.indexOf("export async function countMatchingListings");
     assert.ok(start >= 0, "countMatchingListings exists");
-    const countFn = queries.slice(start, start + 2200);
+    const countFn = queries.slice(start, start + 2800);
     assert.match(countFn, /finalizePublicCatalogRows/);
-    assert.match(countFn, /SELECT payload FROM \$\{TABLE\}/);
+    assert.match(countFn, /COUNT\(DISTINCT COALESCE\(NULLIF\(payload->>'id', ''\), id\)\)/);
     assert.doesNotMatch(countFn, /SELECT COUNT\(\*\)::int AS c FROM \$\{TABLE\}/);
   });
 

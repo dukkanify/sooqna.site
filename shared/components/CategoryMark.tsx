@@ -45,10 +45,11 @@ export function CategoryMark({
         <Image
           alt=""
           className="category-mark__image"
-          height={256}
+          height={128}
+          loading="lazy"
           sizes="(max-width: 768px) 78px, 92px"
           src={src}
-          width={256}
+          width={128}
         />
       ) : (
         <CategoryGlyph className="category-mark__glyph" name={iconName} size={iconSize} />

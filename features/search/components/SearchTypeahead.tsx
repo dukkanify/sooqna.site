@@ -134,7 +134,7 @@ export function SearchTypeahead({
         .catch(() => {
           if (!controller.signal.aborted) setRemote([]);
         });
-    }, 80);
+    }, 200);
 
     return () => {
       controller.abort();

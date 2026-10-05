@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { MobileBottomNav } from "./MobileBottomNav";
+import "./mobile-home.css";
 
 type MobileHomeShellProps = {
   children: ReactNode;

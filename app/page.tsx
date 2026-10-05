@@ -1,19 +1,23 @@
 import {
-  MarketCatalogEmpty,
   MarketCategoryGrid,
-  MarketCategorySection,
-  MarketFeatured,
   MarketHeader,
   MarketHero,
-  MarketNearbySection,
   MarketPromoBanner,
 } from "@/features/home";
-import { DeferredHomeBelowFold } from "@/features/home/components/marketplace/DeferredHomeBelowFold";
-import { resolveAppPreviewListings } from "@/features/home/components/mobile/mobile-app-preview.config";
+import { DesktopHomeFeed } from "@/features/home/components/marketplace/DesktopHomeFeed";
+import { HomeFeedSkeleton } from "@/features/home/components/marketplace/HomeFeedSkeleton";
+import {
+  MobileCategoryGrid,
+  MobileEmiratesSection,
+  MobileHeroBlock,
+  MobileHomeHeader,
+  MobileHomeShell,
+  MobilePromoBanner,
+} from "@/features/home/components/mobile";
+import { MobileHomeFeed } from "@/features/home/components/mobile/MobileHomeFeed";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { getCategories } from "@/services/categories";
-import { getHomeFeed } from "@/services/listings/home-feed";
 import { headers } from "next/headers";
 import { userAgent } from "next/server";
 import { Suspense } from "react";
@@ -23,53 +27,31 @@ export default async function Home() {
   const preferMobile =
     ua.device.type === "mobile" || ua.device.type === "tablet";
 
-  const [categories, feed] = await Promise.all([getCategories(), getHomeFeed()]);
-
-  const categoryMeta = categories.map((category) => ({
-    id: category.id,
-    name: category.name,
-  }));
-
+  const categories = await getCategories();
   const categoryById = (id: string) =>
     categories.find((c) => c.id === id)?.slug ?? id;
 
-  const sectionListings = feed.sections.map((section) => ({
-    categoryId: section.categoryId,
-    categorySlug: categoryById(section.categoryId),
-    description: section.description,
-    eyebrow: section.eyebrow,
-    listings: section.items,
-    title: section.title,
-    variant: section.variant,
-  }));
-
-  const appPreviewListings = resolveAppPreviewListings([
-    ...feed.featured,
-    ...feed.nearbySource,
-    ...feed.sections.flatMap((section) => section.items),
-  ]);
-
   if (preferMobile) {
-    const { MobileHomePage } = await import(
-      "@/features/home/components/mobile/MobileHomePage"
-    );
     return (
-      <MobileHomePage
-        appPreviewListings={appPreviewListings}
-        catalogCount={feed.catalogCount}
-        categories={categories}
-        categoryById={categoryById}
-        featuredListings={feed.featured}
-        nearbyListings={feed.nearbySource}
-        sectionListings={feed.sections}
-      />
+      <>
+        <MobileHomeShell fullWidth>
+          <MobileHomeHeader />
+          <LocalizedTree>
+            <main className="mobile-home-main">
+              <MobileHeroBlock categories={categories} />
+              <MobileCategoryGrid categories={categories} />
+              <MobilePromoBanner />
+              <MobileEmiratesSection />
+              <Suspense fallback={<HomeFeedSkeleton />}>
+                <MobileHomeFeed categoryById={categoryById} />
+              </Suspense>
+            </main>
+          </LocalizedTree>
+        </MobileHomeShell>
+        <SiteFooter />
+      </>
     );
   }
-
-  const hasPublicListings = feed.catalogCount > 0;
-  // Cars / real-estate / electronics (etc.) most-viewed rails above the fold.
-  const aboveFoldSections = sectionListings.slice(0, 3);
-  const belowFoldSections = sectionListings.slice(3);
 
   return (
     <>
@@ -79,33 +61,9 @@ export default async function Home() {
           <MarketHero categories={categories} />
           <MarketCategoryGrid categories={categories} />
           <MarketPromoBanner />
-          {hasPublicListings ? (
-            <>
-              {/* 1) Featured → 2) most-viewed by category → 3) nearby */}
-              <MarketFeatured categories={categoryMeta} listings={feed.featured} />
-              {aboveFoldSections.map((section) => (
-                <MarketCategorySection
-                  key={section.categoryId}
-                  categoryId={section.categoryId}
-                  categorySlug={section.categorySlug}
-                  description={section.description}
-                  eyebrow={section.eyebrow}
-                  listings={section.listings}
-                  title={section.title}
-                  variant={section.variant}
-                />
-              ))}
-              <MarketNearbySection listings={feed.nearbySource} />
-              <Suspense fallback={null}>
-                <DeferredHomeBelowFold
-                  appPreviewListings={appPreviewListings}
-                  sections={belowFoldSections}
-                />
-              </Suspense>
-            </>
-          ) : (
-            <MarketCatalogEmpty />
-          )}
+          <Suspense fallback={<HomeFeedSkeleton />}>
+            <DesktopHomeFeed />
+          </Suspense>
         </main>
       </LocalizedTree>
       <SiteFooter />

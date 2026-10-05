@@ -37,8 +37,8 @@ export async function MarketHero({ categories }: MarketHeroProps) {
             className="object-cover"
             fill
             priority
-            quality={82}
-            sizes="(max-width: 640px) 100vw, (max-width: 1080px) 100vw, 1600px"
+            quality={75}
+            sizes="(max-width: 768px) 100vw, 1280px"
             src={backgroundUrl}
           />
         </div>

@@ -58,8 +58,10 @@ describe("public catalog parity", () => {
     const service = read("services/listings/listings.service.ts");
     assert.match(service, /dedupeListingsById\(results\)/);
 
-    const page = read("app/page.tsx");
-    assert.match(page, /feed\.catalogCount > 0/);
+    const desktop = read(
+      "features/home/components/marketplace/DesktopHomeFeed.tsx",
+    );
+    assert.match(desktop, /feed\.catalogCount > 0/);
   });
 
   it("package.json registers this parity test", () => {

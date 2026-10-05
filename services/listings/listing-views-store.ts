@@ -15,7 +15,7 @@ const store = createPayloadCollectionStore<ListingViewCount>({
 
 let scoresCache: Map<string, number> | null = null;
 let scoresCacheAt = 0;
-const CACHE_TTL_MS = 15_000;
+const CACHE_TTL_MS = 45_000;
 
 function invalidateCache() {
   scoresCache = null;

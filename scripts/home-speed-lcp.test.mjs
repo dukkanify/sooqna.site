@@ -87,4 +87,35 @@ describe("home speed / LCP", () => {
     assert.match(src, /\*\.r2\.dev/);
     assert.match(src, /S3_PUBLIC_BASE_URL/);
   });
+
+  it("home streams listing rails after the hero", () => {
+    const page = read("app/page.tsx");
+    assert.match(page, /Suspense/);
+    assert.match(page, /DesktopHomeFeed/);
+    assert.match(page, /MobileHomeFeed/);
+    assert.match(page, /HomeFeedSkeleton/);
+    assert.doesNotMatch(page, /await getHomeFeed\(\)/);
+  });
+
+  it("EN localizer walks added nodes instead of the whole body on each mutation", () => {
+    const src = read("shared/i18n/LiveLocalizer.tsx");
+    assert.match(src, /applyRecords/);
+    assert.match(src, /requestAnimationFrame/);
+    assert.doesNotMatch(src, /characterData: true/);
+  });
+
+  it("hero pills keep the server ranking (no client reshuffle)", () => {
+    const src = read(
+      "features/home/components/marketplace/MarketHeroPills.tsx",
+    );
+    assert.doesNotMatch(src, /fetchPopularityScores/);
+    assert.doesNotMatch(src, /sortByPopularity/);
+  });
+
+  it("touch devices skip card zoom and featured sheen", () => {
+    const css = read("app/globals.css");
+    assert.match(css, /\(hover: hover\) and \(pointer: fine\)/);
+    const badge = read("features/listings/components/featured-badge.css");
+    assert.match(badge, /\(hover: none\)/);
+  });
 });

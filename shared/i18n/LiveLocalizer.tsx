@@ -78,8 +78,15 @@ function syncElementAttrs(el: Element, locale: AppLocale) {
 }
 
 function walk(root: Node, locale: AppLocale) {
+  if (root.nodeType === Node.TEXT_NODE) {
+    syncTextNode(root as Text, locale);
+    return;
+  }
+  if (root.nodeType === Node.ELEMENT_NODE) {
+    syncElementAttrs(root as Element, locale);
+  }
   const tree = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
-  let current: Node | null = tree.currentNode;
+  let current: Node | null = tree.nextNode();
   while (current) {
     if (current.nodeType === Node.TEXT_NODE) {
       syncTextNode(current as Text, locale);
@@ -90,6 +97,20 @@ function walk(root: Node, locale: AppLocale) {
   }
 }
 
+function applyRecords(records: MutationRecord[], locale: AppLocale) {
+  for (const record of records) {
+    if (record.type === "attributes" && record.target instanceof Element) {
+      syncElementAttrs(record.target, locale);
+      continue;
+    }
+    if (record.type === "characterData" && record.target.nodeType === Node.TEXT_NODE) {
+      syncTextNode(record.target as Text, locale);
+      continue;
+    }
+    record.addedNodes.forEach((node) => walk(node, locale));
+  }
+}
+
 /** Translates Arabic UI in client-rendered trees before paint. Skips user-generated [data-ugc] nodes. */
 export function LiveLocalizer() {
   const locale = useLocale();
@@ -97,23 +118,27 @@ export function LiveLocalizer() {
   useLayoutEffect(() => {
     if (locale !== "en") return undefined;
     walk(document.body, locale);
-    let queued = false;
-    const observer = new MutationObserver(() => {
-      if (queued) return;
-      queued = true;
-      queueMicrotask(() => {
-        queued = false;
-        walk(document.body, locale);
+    let frame = 0;
+    const pending: MutationRecord[] = [];
+    const observer = new MutationObserver((records) => {
+      pending.push(...records);
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const batch = pending.splice(0, pending.length);
+        applyRecords(batch, locale);
       });
     });
     observer.observe(document.body, {
       subtree: true,
       childList: true,
-      characterData: true,
       attributes: true,
       attributeFilter: [...TEXT_ATTRS],
     });
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [locale]);
 
   return null;

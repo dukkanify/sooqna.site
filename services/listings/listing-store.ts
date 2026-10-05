@@ -298,6 +298,11 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
     if (hit) return withMedia(hit);
   }
 
+  for (const key of keys) {
+    const persisted = await loadListingBySlug(key).catch(() => null);
+    if (persisted) return withMedia(persisted);
+  }
+
   try {
     const { ensureShowcaseCatalogPublished } = await import(
       "@/services/listings/showcase-catalog.service"

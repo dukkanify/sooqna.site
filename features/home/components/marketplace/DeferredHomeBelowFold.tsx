@@ -30,6 +30,7 @@ export function DeferredHomeBelowFold({
           key={section.categoryId}
           categoryId={section.categoryId}
           categorySlug={section.categorySlug}
+          deferPaint
           description={section.description}
           eyebrow={section.eyebrow}
           listings={section.listings}

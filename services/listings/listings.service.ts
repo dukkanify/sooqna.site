@@ -62,27 +62,36 @@ export async function getMyListings(userId?: string): Promise<Listing[]> {
   });
 }
 
+const loadListingBySlugCached = cache(
+  async (slug: string, includeFixtures: "1" | "0"): Promise<Listing | undefined> => {
+    const listing = await getStoredListingBySlug(slug);
+    if (!listing) return undefined;
+    if (includeFixtures !== "1") {
+      if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
+        return undefined;
+      }
+      if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
+        await ensureEmptyCategoryStartersPublished().catch(() => undefined);
+        const emptyIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
+        if (!isLiveCatalogVisibleForEmptyCategories(listing, emptyIds)) {
+          return undefined;
+        }
+      }
+    }
+    const copy = { ...listing };
+    delete copy.isUrgent;
+    return applyListingViewCount(copy);
+  },
+);
+
 export async function getListingBySlug(
   slug: string,
   options?: { includeFixtures?: boolean },
 ): Promise<Listing | undefined> {
-  const listing = await getStoredListingBySlug(slug);
-  if (!listing) return undefined;
-  if (options?.includeFixtures !== true) {
-    if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
-      return undefined;
-    }
-    if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
-      await ensureEmptyCategoryStartersPublished().catch(() => undefined);
-      const emptyIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
-      if (!isLiveCatalogVisibleForEmptyCategories(listing, emptyIds)) {
-        return undefined;
-      }
-    }
-  }
-  const copy = { ...listing };
-  delete copy.isUrgent;
-  return applyListingViewCount(copy);
+  return loadListingBySlugCached(
+    slug,
+    options?.includeFixtures === true ? "1" : "0",
+  );
 }
 
 /** Paid Featured placements for `/featured` — see featured-page-rules. */
