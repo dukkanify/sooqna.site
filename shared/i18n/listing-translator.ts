@@ -26,6 +26,7 @@ const PHRASES: Array<[string, string]> = [
   ["جاهز للتحويل", "ready for transfer"],
   ["قابل للتفاوض", "negotiable"],
   ["غير قابل للتفاوض", "non-negotiable"],
+  ["مع الكرتون والشاحن", "with box and charger"],
   ["مع الكرتون", "with box"],
   ["مع الشاحن", "with charger"],
   ["مع الضمان", "with warranty"],
@@ -106,6 +107,8 @@ const WORDS: Record<string, string> = {
   أصليّ: "original",
   ضمان: "warranty",
   كرتون: "box",
+  جهاز: "device",
+  الشاحن: "charger",
   شاحن: "charger",
   إكسسوارات: "accessories",
   اكسسوارات: "accessories",
@@ -265,13 +268,25 @@ function applyPhrases(text: string): string {
   return next;
 }
 
+function lookupWord(token: string): string | undefined {
+  if (WORDS[token]) return WORDS[token];
+  if (token.startsWith("و") && token.length > 1) {
+    const rest = lookupWord(token.slice(1));
+    if (rest) return `and ${rest}`;
+  }
+  if (token.startsWith("ال") && token.length > 2) {
+    return WORDS[token.slice(2)];
+  }
+  return undefined;
+}
+
 function applyWords(text: string): string {
   return text
     .split(/(\s+|[,،.;:!?()[\]{}"“”«»]+)/)
     .map((part) => {
       if (!part || !/[\u0600-\u06FF]/.test(part)) return part;
       const key = part.replace(/[^\u0600-\u06FFa-zA-Z]/g, "");
-      return WORDS[key] ?? WORDS[part] ?? part;
+      return lookupWord(key) ?? lookupWord(part) ?? part;
     })
     .join("");
 }

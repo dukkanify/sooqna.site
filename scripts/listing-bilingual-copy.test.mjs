@@ -39,6 +39,19 @@ describe("listing bilingual copy translator", () => {
     );
   });
 
+  it("handles و/ال prefixes in marketplace descriptions", () => {
+    const out = translateArabicToEnglish(
+      "جهاز أصلي مع الكرتون والشاحن، استخدام خفيف وقابل للتفاوض في دبي.",
+    );
+    assert.match(out, /device/i);
+    assert.match(out, /original/i);
+    assert.match(out, /box/i);
+    assert.match(out, /charger/i);
+    assert.match(out, /lightly used/i);
+    assert.match(out, /negotiable/i);
+    assert.match(out, /Dubai/);
+  });
+
   it("never overwrites Arabic or seller English", () => {
     const created = enrichListingCopy({
       title: "تويوتا كامري 2022 بحالة ممتازة",
