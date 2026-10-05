@@ -141,9 +141,11 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
 
   if (galleryItems.length === 0) {
     return (
-      <div className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-surface-muted text-sm font-semibold text-muted">
-        لا توجد صورة
-      </div>
+      <LocalizedTree>
+        <div className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-surface-muted text-sm font-semibold text-muted">
+          لا توجد صورة
+        </div>
+      </LocalizedTree>
     );
   }
 
