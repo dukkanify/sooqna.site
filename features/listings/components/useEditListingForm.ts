@@ -24,6 +24,7 @@ import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { CategoryFieldErrors } from "./add-listing/CategoryFieldsForm";
 import { parseCategoryForm } from "./add-listing/category-form-utils";
 import { createListingSlug } from "./add-listing/utils";
+import { enrichListingCopy } from "@/shared/i18n/listing-translator";
 import {
   buildCategoryFieldsDefaults,
   getListingImages,
@@ -135,11 +136,15 @@ export function useEditListingForm(
       const title = isDynamicCategory(categoryId)
         ? parsed.title
         : String(formData.get("title") ?? "").trim();
+      const titleEnglish =
+        String(formData.get("titleEnglish") ?? "").trim() || undefined;
+      const descriptionEnglish =
+        String(formData.get("descriptionEnglish") ?? "").trim() || undefined;
 
       const nextSlug = createListingSlug({
         id: currentListing.id,
         title,
-        titleEnglish: currentListing.titleEnglish,
+        titleEnglish: titleEnglish ?? currentListing.titleEnglish,
       });
 
       if (mode === "server") {
@@ -152,6 +157,8 @@ export function useEditListingForm(
           body: JSON.stringify({
             title,
             description,
+            titleEnglish: titleEnglish ?? "",
+            descriptionEnglish: descriptionEnglish ?? "",
             price,
             condition: parsed.condition,
             city: cityName,
@@ -178,11 +185,15 @@ export function useEditListingForm(
         const payload = (await response.json().catch(() => null)) as {
           listing?: Listing;
         } | null;
-        const saved = payload?.listing ?? {
+        const saved = payload?.listing ?? enrichListingCopy({
           ...currentListing,
           title,
           slug: nextSlug,
           description,
+          ...(titleEnglish ? { titleEnglish } : { titleEnglish: undefined }),
+          ...(descriptionEnglish
+            ? { descriptionEnglish }
+            : { descriptionEnglish: undefined }),
           price,
           condition: parsed.condition,
           city: cityName,
@@ -200,7 +211,7 @@ export function useEditListingForm(
           contactPhone: contact,
           contactMethod: "both" as const,
           videoUrl: videoUrl || undefined,
-        };
+        }, currentListing);
 
         saveLocalListing(saved);
         setServerListing(saved);
@@ -210,29 +221,36 @@ export function useEditListingForm(
         return;
       }
 
-      const updatedListing: Listing = {
-        ...currentListing,
-        title,
-        slug: nextSlug,
-        description,
-        price,
-        condition: parsed.condition,
-        city: cityName,
-        country: countries[0].name,
-        imageUrl: mergedImages[0],
-        images: mergedImages.length > 0 ? mergedImages : undefined,
-        categorySpecs: nextSpecs,
-        features:
-          parsed.features.length > 0
-            ? parsed.features
-            : currentListing.features,
-        negotiable: parsed.negotiable,
-        emirate: parsed.emirate,
-        area: isDynamicCategory(categoryId) ? parsed.city : currentListing.area,
-        contactPhone: contact,
-        contactMethod: "both",
-        videoUrl: videoUrl || undefined,
-      };
+      const updatedListing: Listing = enrichListingCopy(
+        {
+          ...currentListing,
+          title,
+          slug: nextSlug,
+          description,
+          ...(titleEnglish ? { titleEnglish } : { titleEnglish: undefined }),
+          ...(descriptionEnglish
+            ? { descriptionEnglish }
+            : { descriptionEnglish: undefined }),
+          price,
+          condition: parsed.condition,
+          city: cityName,
+          country: countries[0].name,
+          imageUrl: mergedImages[0],
+          images: mergedImages.length > 0 ? mergedImages : undefined,
+          categorySpecs: nextSpecs,
+          features:
+            parsed.features.length > 0
+              ? parsed.features
+              : currentListing.features,
+          negotiable: parsed.negotiable,
+          emirate: parsed.emirate,
+          area: isDynamicCategory(categoryId) ? parsed.city : currentListing.area,
+          contactPhone: contact,
+          contactMethod: "both",
+          videoUrl: videoUrl || undefined,
+        },
+        currentListing,
+      );
 
       saveLocalListing(updatedListing);
       void fetch("/api/listings", {

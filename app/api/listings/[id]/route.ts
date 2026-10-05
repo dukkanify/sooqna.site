@@ -39,7 +39,9 @@ const sellerPatchSchema = z
   .object({
     status: z.enum(["active", "reserved", "sold", "expired"]).optional(),
     title: z.string().trim().min(1).max(200).optional(),
+    titleEnglish: z.string().trim().max(200).optional(),
     description: z.string().max(20_000).optional(),
+    descriptionEnglish: z.string().max(20_000).optional(),
     price: z.number().finite().nonnegative().max(100_000_000).optional(),
     city: optionalTrimmedString(80),
     emirate: optionalTrimmedString(80),
@@ -97,7 +99,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   const patch: AdminListingPatch = {
     ...(data.status ? { status: data.status } : {}),
     ...(data.title !== undefined ? { title: data.title } : {}),
+    ...(data.titleEnglish !== undefined ? { titleEnglish: data.titleEnglish } : {}),
     ...(data.description !== undefined ? { description: data.description } : {}),
+    ...(data.descriptionEnglish !== undefined
+      ? { descriptionEnglish: data.descriptionEnglish }
+      : {}),
     ...(typeof data.price === "number" ? { price: data.price } : {}),
     ...(data.city ? { city: data.city } : {}),
     ...(data.emirate ? { emirate: data.emirate } : {}),

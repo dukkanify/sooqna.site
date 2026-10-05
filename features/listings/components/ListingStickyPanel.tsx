@@ -11,6 +11,7 @@ import { ShareButton } from "@/shared/components/ShareButton";
 import { ListingPrice } from "@/shared/components/ListingPrice";
 import { listingUsesQuotePricing } from "@/shared/listings/quote-pricing";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
+import { ListingMachineHint } from "@/features/listings/components/ListingMachineHint";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
@@ -106,6 +107,7 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
         </div>
 
         <h1 className="mt-4 text-2xl font-black leading-tight text-ink"><ListingTitle listing={listing} /></h1>
+        <ListingMachineHint className="mt-2" listing={listing} />
         <div className="mt-4">
           <ListingPrice listing={listing} size="xl" />
           {listing.negotiable &&

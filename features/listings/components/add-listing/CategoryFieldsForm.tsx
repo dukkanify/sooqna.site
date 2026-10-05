@@ -27,6 +27,7 @@ import {
   withVisibilityContext,
 } from "@/shared/listings/category-field-visibility";
 import { quotePricingFromSpecs } from "@/shared/listings/quote-pricing";
+import { ListingEnglishCopyFields } from "./ListingEnglishCopyFields";
 import {
   addListingCheckboxGridClass,
   addListingCheckboxGroupClass,
@@ -49,6 +50,8 @@ export type CategoryFieldsDefaults = {
   negotiable?: boolean;
   price?: number;
   title?: string;
+  titleEnglish?: string;
+  descriptionEnglish?: string;
 };
 
 type CategoryFieldsFormProps = {
@@ -733,6 +736,11 @@ export function CategoryFieldsForm({
               <FormMessage variant="error">{errors.description}</FormMessage>
             ) : null}
           </div>
+
+          <ListingEnglishCopyFields
+            defaultDescriptionEnglish={defaults?.descriptionEnglish}
+            defaultTitleEnglish={defaults?.titleEnglish}
+          />
 
           {showContact ? (
             <div>

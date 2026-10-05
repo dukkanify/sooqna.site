@@ -31,6 +31,7 @@ import {
   resolveListingSubcategory,
 } from "./subcategory-other";
 import { createListingSlug } from "./utils";
+import { enrichListingCopy } from "@/shared/i18n/listing-translator";
 import { isPurchasableCategory } from "@/shared/listings/purchase-eligibility";
 import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 
@@ -398,13 +399,19 @@ export function useAddListingForm(categories: Category[]) {
       const title = usesDynamicFields
         ? parsed.title
         : String(formData.get("title") ?? "").trim();
+      const titleEnglish =
+        String(formData.get("titleEnglish") ?? "").trim() || undefined;
+      const descriptionEnglish =
+        String(formData.get("descriptionEnglish") ?? "").trim() || undefined;
       const id = `local-${Date.now()}`;
       const postedAt = new Date().toISOString();
-      const listing: Listing = {
+      const listing: Listing = enrichListingCopy({
         id,
         title,
-        slug: createListingSlug({ id, title }),
+        slug: createListingSlug({ id, title, titleEnglish }),
         description,
+        ...(titleEnglish ? { titleEnglish } : {}),
+        ...(descriptionEnglish ? { descriptionEnglish } : {}),
         categoryId,
         featureProfile,
         city: cityName,
@@ -448,7 +455,7 @@ export function useAddListingForm(categories: Category[]) {
         contactMethod: "both",
         escrowAvailable: isPurchasableCategory(categoryId, featureProfile),
         ...(videoUrl ? { videoUrl } : {}),
-      };
+      });
 
       if (!wantsFeatured) {
         saveLocalListing(listing);

@@ -5,6 +5,7 @@ import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
+import { ListingEnglishCopyFields } from "./ListingEnglishCopyFields";
 import type { AddListingErrors, ListingPreview } from "./types";
 import {
   addListingStepBodyClass,
@@ -45,6 +46,8 @@ export function ListingDetailsStep({
           ) : null}
         </div>
 
+        <ListingEnglishCopyFields />
+
         <Textarea
           compact
           label="الوصف"
@@ -61,6 +64,8 @@ export function ListingDetailsStep({
         {errors.description ? (
           <FormMessage variant="error">{errors.description}</FormMessage>
         ) : null}
+
+        <ListingEnglishCopyFields />
 
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
           <div>

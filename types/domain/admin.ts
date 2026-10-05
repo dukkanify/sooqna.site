@@ -56,7 +56,9 @@ export type AdminListingRecord = {
   id: string;
   slug: string;
   title: string;
+  titleEnglish?: string;
   description?: string;
+  descriptionEnglish?: string;
   sellerName: string;
   sellerId: string;
   categoryId: string;
@@ -114,7 +116,9 @@ export type AdminListingPatch = Partial<
     | "status"
     | "isFeatured"
     | "title"
+    | "titleEnglish"
     | "description"
+    | "descriptionEnglish"
     | "price"
     | "city"
     | "emirate"

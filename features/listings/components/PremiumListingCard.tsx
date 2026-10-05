@@ -17,6 +17,7 @@ import { getCarCardMetaLine } from "@/shared/listings/listing-specs";
 import { Badge } from "@/shared/ui/Badge";
 import { Icon } from "@/shared/ui/Icon";
 import { FeaturedBadge } from "./FeaturedBadge";
+import { ListingMachineHint } from "./ListingMachineHint";
 import { ListingCardBadges } from "./ListingCardBadges";
 import { isListingFeaturedActive } from "./listing-card-badges";
 import {
@@ -139,6 +140,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
           <ListingTitle listing={listing} />
         </h3>
       </Link>
+      <ListingMachineHint className="mt-1 w-fit" listing={listing} />
 
       {listing.categoryId === "cars" && getCarCardMetaLine(listing) ? (
         <p className="text-[0.7rem] font-medium text-muted">
