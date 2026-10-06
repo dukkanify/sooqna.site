@@ -140,13 +140,7 @@ export function AdminUsersPanel() {
   }, [session]);
 
   const meFromList = users.find((user) => user.id === session?.id);
-  const sessionIsSuper = isSuperAdminRecord(
-    meFromList ??
-      session ?? {
-        role: "user",
-        adminPermissions: ["users"],
-      },
-  );
+  const sessionIsSuper = isSuperAdminUser(meFromList ?? session);
 
   const pendingCount = useMemo(
     () => users.filter((user) => user.accountStatus === "pending").length,
