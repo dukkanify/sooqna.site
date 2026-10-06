@@ -67,6 +67,35 @@ describe("seller wallet after live Stripe pay", () => {
     );
     assert.match(src, /txn.type !== "platform_fee"/);
   });
+
+  it("refund after dispute unwinds the escrow hold to zero", () => {
+    const balances = projectWalletBalances([
+      txn("escrow_hold", 1500, "2026-10-05T17:12:52.000Z"),
+      txn("platform_fee", -450, "2026-10-05T17:12:52.091Z"),
+      txn("refund", -1500, "2026-10-05T17:14:15.000Z"),
+    ]);
+    assert.deepEqual(balances, {
+      availableBalance: 0,
+      pendingBalance: 0,
+      heldInEscrow: 0,
+    });
+  });
+
+  it("refund path unwinds disputed and still-held escrow", () => {
+    const src = readFileSync(
+      path.join(root, "services/payments/order-service.ts"),
+      "utf8",
+    );
+    assert.match(src, /order.status === "disputed"/);
+    assert.match(src, /order.escrowStatus === "held"/);
+    assert.match(
+      readFileSync(
+        path.join(root, "services/payments/wallet-ledger.ts"),
+        "utf8",
+      ),
+      /healRefundedEscrowHolds/,
+    );
+  });
 });
 
 describe("seller Connect copy", () => {

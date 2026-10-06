@@ -1,5 +1,6 @@
 import type { WalletAccount, WalletTransaction } from "@/types/domain/wallet";
 import { createPayloadCollectionStore } from "@/services/db/durable-json-collection";
+import { getOrderById } from "@/services/payments/order-store";
 import {
   projectWalletBalances,
 } from "@/shared/payments/wallet-balances";
@@ -54,11 +55,57 @@ function syncRecordBalances(record: WalletRecord): boolean {
   return drifted;
 }
 
+/** Refunds opened from a dispute used to skip the seller unwind. Backfill it. */
+async function healRefundedEscrowHolds(record: WalletRecord): Promise<boolean> {
+  const refundedIds = new Set(
+    record.transactions
+      .filter((txn) => txn.type === "refund" && txn.orderId)
+      .map((txn) => txn.orderId as string),
+  );
+  const openHolds = [
+    ...new Set(
+      record.transactions
+        .filter(
+          (txn) =>
+            txn.type === "escrow_hold" &&
+            txn.orderId &&
+            !refundedIds.has(txn.orderId),
+        )
+        .map((txn) => txn.orderId as string),
+    ),
+  ];
+  if (openHolds.length === 0) return false;
+
+  let changed = false;
+  for (const orderId of openHolds) {
+    const order = await getOrderById(orderId);
+    if (!order) continue;
+    if (order.status !== "refunded" && order.escrowStatus !== "refunded") {
+      continue;
+    }
+    const amount = Math.abs(Number(order.fees?.productPrice) || 0);
+    if (amount <= 0) continue;
+    record.transactions.unshift(
+      createTransaction({
+        userId: record.userId,
+        orderId,
+        type: "refund",
+        amount: -amount,
+        description: `استرداد — ${order.listingTitle}`,
+        status: "completed",
+      }),
+    );
+    changed = true;
+  }
+  return changed;
+}
+
 export async function getWalletAccount(userId: string): Promise<WalletAccount> {
   const wallets = await store.listAll();
   const existing = wallets.find((wallet) => wallet.userId === userId);
   if (existing) {
-    if (syncRecordBalances(existing)) {
+    const healed = await healRefundedEscrowHolds(existing);
+    if (healed || syncRecordBalances(existing)) {
       await store.upsert(existing);
     }
     return toAccount(existing);
@@ -89,14 +136,20 @@ export async function addWalletTransaction(
 
 export async function getAllWalletAccounts(): Promise<WalletAccount[]> {
   const wallets = await store.listAll();
-  return wallets.map((record) => {
+  const next: WalletAccount[] = [];
+  for (const record of wallets) {
     const copy: WalletRecord = {
       ...record,
       transactions: [...record.transactions],
     };
-    syncRecordBalances(copy);
-    return toAccount(copy);
-  });
+    const healed = await healRefundedEscrowHolds(copy);
+    const drifted = syncRecordBalances(copy);
+    if (healed || drifted) {
+      await store.upsert(copy);
+    }
+    next.push(toAccount(copy));
+  }
+  return next;
 }
 
 /** Replace the full wallet collection (admin purge / migrations). */

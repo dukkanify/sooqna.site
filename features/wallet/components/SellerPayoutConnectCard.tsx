@@ -111,8 +111,9 @@ export function SellerPayoutConnectCard({
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-semibold text-ink">استلام مبالغ الضمان</h2>
             <p className="mt-1.5 text-sm leading-7 text-muted">
-              اربط حساب Stripe لاستلام صافي الضمان مباشرة عند تأكيد المشتري. بدون الربط يبقى
-              المبلغ في رصيد المحفظة الداخلي فقط.
+              {connectAvailable
+                ? "اربط حساب Stripe لاستلام صافي الضمان مباشرة عند تأكيد المشتري. بدون الربط يبقى المبلغ في رصيد المحفظة الداخلي فقط."
+                : "مبلغ الضمان يبقى في محفظة سوقنا حتى تفعيل التحويل البنكي المباشر على المنصة."}
             </p>
           </div>
         </div>

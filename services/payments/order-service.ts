@@ -52,6 +52,7 @@ import {
   reverseEscrowTransferToSeller,
   transferEscrowToSeller,
 } from "@/services/payments/stripe-connect.service";
+import { findUserById } from "@/services/auth/user-store";
 import { addWalletTransaction } from "@/services/payments/wallet-ledger";
 import type { ListingSnapshot } from "@/services/payments/listing-resolver";
 import { hydrateListingCatalog } from "@/services/payments/listing-resolver";
@@ -168,7 +169,11 @@ export async function initiateCheckout(
     throw new Error("GUEST_CHECKOUT_DISABLED");
   }
 
-  if (!guest && listing.seller.id === input.buyer.id) {
+  const sellerAccount = await findUserById(listing.seller.id);
+  if (
+    listing.seller.id === input.buyer.id ||
+    (sellerAccount && normalizeEmail(sellerAccount.email) === buyerEmail)
+  ) {
     throw new Error("CANNOT_BUY_OWN_LISTING");
   }
 
@@ -1105,7 +1110,15 @@ export async function refundOrder(
     "@/services/admin/admin-finance-metrics"
   );
   if (!isMockPaidOrder(order)) {
-    if (order.status === "paid_held_in_escrow" || order.status === "delivered") {
+    const holdStillOpen =
+      order.escrowStatus === "held" ||
+      order.status === "paid_held_in_escrow" ||
+      order.status === "seller_preparing" ||
+      order.status === "shipped" ||
+      order.status === "ready_for_pickup" ||
+      order.status === "delivered" ||
+      order.status === "disputed";
+    if (holdStillOpen) {
       await addWalletTransaction(order.sellerId, {
         orderId: order.id,
         type: "refund",
@@ -1338,6 +1351,7 @@ export async function notifyBuyerPaymentRequired(
     throw new Error("INVALID_STATUS");
   }
   if (!order.buyerId) {
+    if (options?.source === "checkout") return order;
     throw new Error("NO_BUYER");
   }
 
