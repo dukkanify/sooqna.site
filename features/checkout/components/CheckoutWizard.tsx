@@ -14,10 +14,11 @@ import { LISTING_ERRORS } from "@/shared/constants/listing-errors";
 import { isGuestCheckoutEnabled, isMockCheckoutEnabled } from "@/shared/constants/feature-flags";
 import {
   CHECKOUT_ERRORS,
-  buildDeliveryAddressInput,
+  buildCheckoutDeliveryPayload,
   formatSavedAddressLine,
   normalizeGuestBuyer,
   validateCheckoutReviewStep,
+  validateGuestBuyerFields,
   validateGuestDeliveryFields,
   type CheckoutFieldErrors,
   type GuestDeliveryInfo,
@@ -35,6 +36,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
+import { UaePhoneInput } from "@/shared/ui/UaePhoneInput";
 import { Select } from "@/shared/ui/Select";
 import { PageHero } from "@/shared/ui/PageHero";
 import { AppImage } from "@/shared/components/AppImage";
@@ -42,9 +44,15 @@ import { getListingImageUrl } from "@/features/listings/components/listing-card.
 import { useMarketplaceLocations } from "@/shared/hooks/useMarketplaceLocations";
 import { CheckoutLiveLocation } from "@/features/checkout/components/CheckoutLiveLocation";
 import type { CheckoutLiveLocationValue } from "@/features/checkout/lib/checkout-live-location";
+import {
+  calculateOrderFees,
+  resolveOrderFeeRates,
+  type OrderFeeRates,
+} from "@/shared/payments/order-fees";
 
 type CheckoutWizardProps = {
   catalogListing?: Listing;
+  feeRates?: OrderFeeRates | null;
   listingRef?: string;
   paymentCancelled?: boolean;
   fromOrderId?: string;
@@ -52,15 +60,13 @@ type CheckoutWizardProps = {
 
 type CheckoutStep = "review" | "delivery" | "payment";
 
-const PLATFORM_FEE_RATE = 0.025;
-const GATEWAY_FEE_RATE = 0.029;
-const GATEWAY_FEE_FIXED = 1;
-
 const CHECKOUT_API_ERRORS: Record<string, string> = {
   INVALID_INPUT: "بيانات الطلب غير مكتملة. راجع خطوة التوصيل.",
   LISTING_NOT_FOUND: "الإعلان غير موجود.",
   CANNOT_BUY_OWN_LISTING: "لا يمكنك شراء إعلانك الخاص.",
   SHIPPING_UNAVAILABLE: "التوصيل غير متاح لهذا الطلب.",
+  INVALID_PHONE: "اكتب رقم هاتف إماراتي صحيحًا.",
+  DELIVERY_PHONE_REQUIRED: "رقم هاتف التوصيل مطلوب.",
 };
 
 function formatCheckoutApiError(data: unknown): string {
@@ -69,18 +75,6 @@ function formatCheckoutApiError(data: unknown): string {
   }
   const code = String((data as { error: unknown }).error);
   return CHECKOUT_API_ERRORS[code] ?? `${LISTING_ERRORS.paymentFailed} (${code})`;
-}
-
-function calculateTotals(productPrice: number, shippingFee: number) {
-  const platformFee = Math.round(productPrice * PLATFORM_FEE_RATE);
-  const gatewayFee = Math.round(productPrice * GATEWAY_FEE_RATE + GATEWAY_FEE_FIXED);
-  return {
-    productPrice,
-    shippingFee,
-    platformFee,
-    gatewayFee,
-    total: productPrice + shippingFee + platformFee + gatewayFee,
-  };
 }
 
 const defaultGuestInfo: GuestDeliveryInfo = {
@@ -95,6 +89,7 @@ const defaultGuestInfo: GuestDeliveryInfo = {
 
 export function CheckoutWizard({
   catalogListing,
+  feeRates: initialFeeRates,
   listingRef,
   paymentCancelled,
   fromOrderId,
@@ -135,6 +130,31 @@ export function CheckoutWizard({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<CheckoutFieldErrors>({});
   const [existingAccountHint, setExistingAccountHint] = useState(false);
+  const [feeRates, setFeeRates] = useState<OrderFeeRates | null>(
+    initialFeeRates ?? null,
+  );
+  const [feeRatesError, setFeeRatesError] = useState("");
+
+  async function loadFeeRates(): Promise<OrderFeeRates | null> {
+    try {
+      const response = await fetch("/api/site-settings", { cache: "no-store" });
+      const data = response.ok
+        ? ((await response.json()) as { settings?: Partial<OrderFeeRates> })
+        : null;
+      const next = resolveOrderFeeRates(data?.settings);
+      if (next) {
+        setFeeRates(next);
+        setFeeRatesError("");
+        return next;
+      }
+    } catch {
+      // Keep the server-rendered admin rates if the refresh fails.
+    }
+    if (!initialFeeRates && !feeRates) {
+      setFeeRatesError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+    }
+    return feeRates ?? initialFeeRates ?? null;
+  }
 
   const shippable = listing ? isCategoryShippable(listing.categoryId) : false;
   const requiresAddress = shippable && shippingMethod !== "pickup";
@@ -155,7 +175,10 @@ export function CheckoutWizard({
   const resolvedShippingMethod =
     shippingMethods.some((method) => method.id === shippingMethod) ? shippingMethod : "standard";
   const shippingFee = shippable ? calculateShippingFee(resolvedShippingMethod) : 0;
-  const totals = listing ? calculateTotals(listing.price, shippingFee) : null;
+  const totals =
+    listing && feeRates
+      ? calculateOrderFees(listing.price, shippingFee, feeRates)
+      : null;
 
   function scrollPanelToTop() {
     panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -289,6 +312,11 @@ export function CheckoutWizard({
         if (guestCheckout && !buyer) {
           advanceStep("delivery");
         } else {
+          const liveRates = await loadFeeRates();
+          if (!liveRates) {
+            setError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+            return;
+          }
           advanceStep("payment");
         }
       }
@@ -317,11 +345,16 @@ export function CheckoutWizard({
       Boolean(deliveryInfo.formattedAddress || deliveryInfo.addressLine);
 
     if (buyer && shippable && requiresAddress && addresses.length > 0 && !liveLocationReady) {
+      const buyerErrors = validateGuestBuyerFields(deliveryInfo);
       if (!selectedAddressId) {
         applyDeliveryFieldErrors(
-          { savedAddress: CHECKOUT_ERRORS.savedAddressRequired },
+          { ...buyerErrors, savedAddress: CHECKOUT_ERRORS.savedAddressRequired },
           CHECKOUT_ERRORS.savedAddressRequired,
         );
+        return;
+      }
+      if (Object.keys(buyerErrors).length > 0) {
+        applyDeliveryFieldErrors(buyerErrors);
         return;
       }
     } else {
@@ -337,6 +370,11 @@ export function CheckoutWizard({
     transitionLockRef.current = true;
     setIsContinuing(true);
     try {
+      const liveRates = await loadFeeRates();
+      if (!liveRates) {
+        setError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+        return;
+      }
       advanceStep("payment");
     } finally {
       setIsContinuing(false);
@@ -345,9 +383,15 @@ export function CheckoutWizard({
   }
 
   async function handlePay(options?: { forceMock?: boolean }) {
-    if (!listing || !totals) return;
+    if (!listing) return;
     setError("");
     setIsLoading(true);
+    const liveRates = await loadFeeRates();
+    if (!liveRates) {
+      setIsLoading(false);
+      setError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+      return;
+    }
     try {
       const sessionUser = getSessionSnapshot();
       const normalized = normalizeGuestBuyer(guestInfo);
@@ -358,14 +402,32 @@ export function CheckoutWizard({
         shippingMethod: resolvedShippingMethod,
       };
 
-      if (isGuest) {
-        const nextFieldErrors = validateGuestDeliveryFields(deliveryInfo, requiresAddress);
-        if (Object.keys(nextFieldErrors).length > 0) {
+      const payFieldErrors = validateGuestDeliveryFields(deliveryInfo, requiresAddress);
+      if (!isGuest && sessionUser && requiresAddress && addresses.length > 0) {
+        const buyerErrors = validateGuestBuyerFields(deliveryInfo);
+        const useLiveLocation =
+          typeof deliveryInfo.latitude === "number" &&
+          typeof deliveryInfo.longitude === "number";
+        if (!useLiveLocation && !selectedAddressId) {
           setStep("delivery");
-          applyDeliveryFieldErrors(nextFieldErrors);
+          applyDeliveryFieldErrors(
+            { ...buyerErrors, savedAddress: CHECKOUT_ERRORS.savedAddressRequired },
+            CHECKOUT_ERRORS.savedAddressRequired,
+          );
           return;
         }
-      } else if (!sessionUser) {
+        if (Object.keys(buyerErrors).length > 0) {
+          setStep("delivery");
+          applyDeliveryFieldErrors(buyerErrors);
+          return;
+        }
+      } else if (Object.keys(payFieldErrors).length > 0) {
+        setStep("delivery");
+        applyDeliveryFieldErrors(payFieldErrors);
+        return;
+      }
+
+      if (!isGuest && !sessionUser) {
         router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
         return;
       }
@@ -374,6 +436,13 @@ export function CheckoutWizard({
       const useLiveLocation =
         typeof deliveryInfo.latitude === "number" &&
         typeof deliveryInfo.longitude === "number";
+      const deliveryPayload = buildCheckoutDeliveryPayload({
+        buyer: normalized,
+        deliveryInfo,
+        requiresAddress,
+        selectedAddress,
+        useLiveLocation,
+      });
 
       const response = await fetch("/api/checkout/session", {
         method: "POST",
@@ -386,7 +455,7 @@ export function CheckoutWizard({
             id: sessionUser?.id,
             email: sessionUser?.email ?? normalized.email,
             fullName: sessionUser?.fullName ?? normalized.fullName,
-            phone: sessionUser?.phone?.trim() || normalized.phone,
+            phone: normalized.phone || sessionUser?.phone?.trim() || "",
             role: sessionUser?.role,
           },
           localListing: listing.id.startsWith("local-")
@@ -403,12 +472,8 @@ export function CheckoutWizard({
             : undefined,
           shippingMethod: shippable ? resolvedShippingMethod : undefined,
           shippingFee: shippable ? shippingFee : 0,
-          addressId:
-            sessionUser && selectedAddressId && !useLiveLocation ? selectedAddressId : undefined,
-          deliveryAddress:
-            requiresAddress && (useLiveLocation || !sessionUser || !selectedAddress)
-              ? buildDeliveryAddressInput(deliveryInfo, normalized)
-              : undefined,
+          addressId: deliveryPayload.addressId,
+          deliveryAddress: deliveryPayload.deliveryAddress,
           repurchasedFromOrderId: fromOrderId || undefined,
         }),
       });
@@ -572,18 +637,16 @@ export function CheckoutWizard({
                 type="email"
                 value={guestInfo.email}
               />
-              <Input
-                dir="ltr"
+              <UaePhoneInput
                 error={fieldErrors.phone}
-                inputMode="tel"
-                label="رقم الجوال"
+                hint="هذا الرقم يُحفظ مع عنوان التوصيل لهذا الطلب."
+                label="رقم جوال التوصيل"
                 name="phone"
-                onChange={(event) => {
-                  setGuestInfo((prev) => ({ ...prev, phone: event.target.value }));
+                onValueChange={(phone) => {
+                  setGuestInfo((prev) => ({ ...prev, phone }));
                   setFieldErrors((prev) => ({ ...prev, phone: undefined }));
                 }}
                 required
-                type="tel"
                 value={guestInfo.phone}
               />
             </div>
@@ -740,9 +803,22 @@ export function CheckoutWizard({
           </Card>
         ) : null}
 
-        {step === "payment" && totals ? (
+        {step === "payment" && !feeRates ? (
           <Card className="grid gap-4 p-6" variant="flat">
             <h3 className="font-black text-ink">ملخص الدفع</h3>
+            <p className="text-sm text-muted">
+              {feeRatesError || "جاري تحميل الرسوم من إعدادات لوحة التحكم..."}
+            </p>
+          </Card>
+        ) : null}
+
+        {step === "payment" && feeRates && totals ? (
+          <Card className="grid gap-4 p-6" variant="flat">
+            <h3 className="font-black text-ink">ملخص الدفع</h3>
+            <p className="text-xs text-muted">
+              رسوم المنصة {feeRates.platformFeePercent}% حسب إعدادات لوحة التحكم.
+              تكلفة بوابة الدفع ضمن هذه النسبة وليست مبلغًا إضافيًا.
+            </p>
             <div className="grid gap-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">سعر المنتج</span>
@@ -755,18 +831,20 @@ export function CheckoutWizard({
                 </div>
               ) : null}
               <div className="flex justify-between">
-                <span className="text-muted">رسوم المنصة</span>
+                <span className="text-muted">رسوم المنصة ({feeRates.platformFeePercent}%)</span>
                 <CurrencyAmount amount={totals.platformFee} size="sm" />
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">رسوم الدفع</span>
-                <CurrencyAmount amount={totals.gatewayFee} size="sm" />
               </div>
               <div className="flex justify-between border-t border-border pt-3">
                 <span className="font-bold">الإجمالي</span>
                 <CurrencyAmount amount={totals.total} size="lg" />
               </div>
             </div>
+            {requiresAddress && guestInfo.phone ? (
+              <p className="text-xs text-muted">
+                هاتف التوصيل: <span dir="ltr">{guestInfo.phone}</span>
+                {" — "}يُثبَّت على الطلب عند التأكيد. يمكنك الرجوع لتعديله.
+              </p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <Button
                 loading={isLoading}

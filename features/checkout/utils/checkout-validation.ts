@@ -211,3 +211,70 @@ export function formatSavedAddressLine(address: {
   const parts = [address.area, address.street].map((part) => part.trim()).filter(Boolean);
   return parts.join("، ");
 }
+
+type SavedAddressLike = {
+  id: string;
+  label?: string;
+  fullName: string;
+  phone: string;
+  emirate: string;
+  city: string;
+  area: string;
+  street: string;
+  building?: string;
+  unit?: string;
+  landmark?: string;
+  notes?: string;
+  latitude?: number;
+  longitude?: number;
+  formattedAddress?: string;
+};
+
+/**
+ * Build the address payload actually used at pay time.
+ * Overlay checkout name/phone so a buyer edit beats profile / saved-address phone.
+ */
+export function buildCheckoutDeliveryPayload(input: {
+  buyer: GuestBuyerInfo;
+  deliveryInfo: GuestDeliveryInfo;
+  requiresAddress: boolean;
+  selectedAddress?: SavedAddressLike;
+  useLiveLocation: boolean;
+}): {
+  addressId?: string;
+  deliveryAddress?: DeliveryAddressInput;
+} {
+  const { buyer, deliveryInfo, requiresAddress, selectedAddress, useLiveLocation } =
+    input;
+
+  if (!requiresAddress) {
+    return {};
+  }
+
+  if (selectedAddress && !useLiveLocation) {
+    return {
+      addressId: selectedAddress.id,
+      deliveryAddress: {
+        label: selectedAddress.label,
+        fullName: buyer.fullName || selectedAddress.fullName,
+        phone: buyer.phone || selectedAddress.phone,
+        emirate: selectedAddress.emirate,
+        city: selectedAddress.city,
+        area: selectedAddress.area,
+        street: selectedAddress.street,
+        building: selectedAddress.building,
+        unit: selectedAddress.unit,
+        landmark: selectedAddress.landmark,
+        notes: selectedAddress.notes,
+        latitude: selectedAddress.latitude,
+        longitude: selectedAddress.longitude,
+        formattedAddress: selectedAddress.formattedAddress,
+        saveAddress: deliveryInfo.saveAddress,
+      },
+    };
+  }
+
+  return {
+    deliveryAddress: buildDeliveryAddressInput(deliveryInfo, buyer),
+  };
+}

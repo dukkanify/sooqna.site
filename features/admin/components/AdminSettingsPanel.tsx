@@ -80,7 +80,9 @@ export function AdminSettingsPanel() {
       <Card className="admin-desk-help p-5" variant="flat">
         <h2 className="text-sm font-semibold text-ink">الرسوم والمدفوعات</h2>
         <p className="mt-2 text-xs text-muted">
-          تتحكم في نسبة المنصة وبوابة الدفع لكل طلب جديد.
+          نسبة المنصة هي التي يراها المشتري وتُضاف على سعر الإعلان في Stripe.
+          تكلفة بوابة الدفع تقدير داخلي للتقارير، وتُخصم من هامش المنصة ولا تُضاف
+          فوق المشتري.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Input
@@ -95,7 +97,7 @@ export function AdminSettingsPanel() {
             }
           />
           <Input
-            label="رسوم البوابة %"
+            label="تكلفة البوابة % (داخلي)"
             type="number"
             value={String(settings.gatewayFeePercent)}
             onChange={(e) =>
@@ -106,7 +108,7 @@ export function AdminSettingsPanel() {
             }
           />
           <Input
-            label="رسوم ثابتة (AED)"
+            label="تكلفة ثابتة (AED، داخلي)"
             type="number"
             value={String(settings.gatewayFeeFixed)}
             onChange={(e) =>

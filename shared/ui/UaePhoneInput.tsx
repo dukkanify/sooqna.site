@@ -22,6 +22,8 @@ type UaePhoneInputProps = Omit<
   hint?: string;
   label?: string;
   name: string;
+  onValueChange?: (value: string) => void;
+  value?: string;
   /** Show “filled from profile” only when a valid UAE mobile was prefilled. */
   filledFromProfile?: boolean;
 };
@@ -34,11 +36,20 @@ export function UaePhoneInput({
   hint,
   label = "رقم التواصل",
   name,
+  onValueChange,
   required,
+  value: valueProp,
   ...props
 }: UaePhoneInputProps) {
-  const prefilled = listingPrefillPhone(defaultValue);
-  const [value, setValue] = useState(prefilled);
+  const prefilled = listingPrefillPhone(defaultValue || valueProp || "");
+  const [uncontrolled, setUncontrolled] = useState(prefilled);
+  const isControlled = valueProp !== undefined;
+  const value = isControlled ? valueProp : uncontrolled;
+
+  function setValue(next: string) {
+    if (!isControlled) setUncontrolled(next);
+    onValueChange?.(next);
+  }
   const [touched, setTouched] = useState(false);
   const empty = value.trim().length === 0;
   const valid = isValidUaeMobile(value);

@@ -9,18 +9,24 @@ import {
 /** Public site flags used by storefront (no secrets). */
 export async function GET() {
   await ensureStripeConfigLoaded();
-  const settings = await getAdminSettings();
-  return NextResponse.json({
-    settings: {
-      maintenanceMode: settings.maintenanceMode,
-      allowGuestCheckout: settings.allowGuestCheckout,
-      supportEmail: settings.supportEmail,
-      escrowHoldDays: settings.escrowHoldDays,
-      disputeWindowDays: settings.disputeWindowDays,
-      listingActiveDays: settings.listingActiveDays,
-      featuredListingFeeAed: settings.featuredListingFeeAed,
-      featuredCheckoutAvailable:
-        isStripeConfigured() || isMockCheckoutAllowed(),
+  const settings = await getAdminSettings({ fresh: true });
+  return NextResponse.json(
+    {
+      settings: {
+        maintenanceMode: settings.maintenanceMode,
+        allowGuestCheckout: settings.allowGuestCheckout,
+        supportEmail: settings.supportEmail,
+        escrowHoldDays: settings.escrowHoldDays,
+        disputeWindowDays: settings.disputeWindowDays,
+        listingActiveDays: settings.listingActiveDays,
+        featuredListingFeeAed: settings.featuredListingFeeAed,
+        platformFeePercent: settings.platformFeePercent,
+        gatewayFeePercent: settings.gatewayFeePercent,
+        gatewayFeeFixed: settings.gatewayFeeFixed,
+        featuredCheckoutAvailable:
+          isStripeConfigured() || isMockCheckoutAllowed(),
+      },
     },
-  });
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

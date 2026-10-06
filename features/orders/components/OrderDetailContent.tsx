@@ -20,6 +20,7 @@ import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { isLikelyListingImageFile } from "@/shared/media/image-bytes";
+import { isGatewayPassedThrough } from "@/shared/payments/order-fees";
 
 type OrderDetailContentProps = {
   orderId: string;
@@ -387,16 +388,47 @@ export function OrderDetailContent({
               <span className="text-muted">الإجمالي</span>
               <CurrencyAmount amount={order.fees.total} size="md" />
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted">سعر المنتج</span>
+              <CurrencyAmount amount={order.fees.productPrice} size="sm" />
+            </div>
             {order.fees.shippingFee > 0 ? (
               <div className="flex justify-between">
                 <span className="text-muted">التوصيل</span>
                 <CurrencyAmount amount={order.fees.shippingFee} size="sm" />
               </div>
             ) : null}
+            {order.fees.platformFee > 0 ? (
+              <div className="flex justify-between">
+                <span className="text-muted">رسوم المنصة</span>
+                <CurrencyAmount amount={order.fees.platformFee} size="sm" />
+              </div>
+            ) : null}
+            {isGatewayPassedThrough(order.fees) ? (
+              <div className="flex justify-between">
+                <span className="text-muted">رسوم الدفع</span>
+                <CurrencyAmount amount={order.fees.gatewayFee} size="sm" />
+              </div>
+            ) : null}
             {order.shippingMethod ? (
               <div className="flex justify-between">
                 <span className="text-muted">طريقة التوصيل</span>
                 <span className="font-semibold">{order.shippingMethod}</span>
+              </div>
+            ) : null}
+            {order.deliveryAddressSnapshot ? (
+              <div className="mt-2 grid gap-1 border-t border-border pt-3 text-sm">
+                <p className="font-semibold text-ink">عنوان التوصيل</p>
+                <p>
+                  {order.deliveryAddressSnapshot.fullName}
+                  {order.deliveryAddressSnapshot.phone
+                    ? ` — ${order.deliveryAddressSnapshot.phone}`
+                    : ""}
+                </p>
+                <p className="text-muted">
+                  {order.deliveryAddressSnapshot.area}، {order.deliveryAddressSnapshot.city}،{" "}
+                  {order.deliveryAddressSnapshot.emirate}
+                </p>
               </div>
             ) : null}
             {order.stripePaymentIntentId ? (

@@ -1,8 +1,19 @@
 import { z } from "zod";
+import { isValidUaePhone, normalizeUaePhone } from "@/shared/utils/phone";
 
 const optionalPhoneSchema = z.preprocess(
-  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-  z.string().min(8).optional(),
+  (value) => {
+    if (typeof value !== "string") return value;
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    return normalizeUaePhone(trimmed);
+  },
+  z
+    .string()
+    .refine((value) => isValidUaePhone(value), {
+      message: "INVALID_PHONE",
+    })
+    .optional(),
 );
 
 export const buyerSessionSchema = z.object({
@@ -67,6 +78,18 @@ export const createCheckoutSchema = z.object({
   isGuest: z.boolean().optional(),
   forceMock: z.boolean().optional(),
   repurchasedFromOrderId: z.string().min(1).optional(),
+}).superRefine((data, ctx) => {
+  const method = data.shippingMethod;
+  const needsDeliveryPhone = method !== "pickup";
+  if (!needsDeliveryPhone) return;
+  if (!data.deliveryAddress) return;
+  if (!data.deliveryAddress.phone && !data.buyer.phone) {
+    ctx.addIssue({
+      code: "custom",
+      message: "DELIVERY_PHONE_REQUIRED",
+      path: ["deliveryAddress", "phone"],
+    });
+  }
 });
 
 export const confirmOrderSchema = z.object({

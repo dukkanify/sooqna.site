@@ -43,7 +43,7 @@ export async function initiateFeaturedCheckout(
     throw new Error("ALREADY_FEATURED");
   }
 
-  const settings = await getAdminSettings();
+  const settings = await getAdminSettings({ fresh: true });
   const amountAed = settings.featuredListingFeeAed;
   const days = settings.featuredListingDays;
 
@@ -109,7 +109,7 @@ export async function markListingFeatured(
   );
   const alreadyCompleted = existing?.status === "completed";
 
-  const settings = await getAdminSettings();
+  const settings = await getAdminSettings({ fresh: true });
   await completeFeaturedPaymentBySession(sessionId);
   const updated = await setListingFeatured(
     listingId,

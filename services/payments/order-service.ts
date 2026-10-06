@@ -3,7 +3,11 @@ import type { CheckoutSessionResult } from "@/types/domain/payment";
 import { getAddressesForUser } from "@/services/addresses/address-store";
 import { normalizeEmail } from "@/services/auth/guest-account.service";
 import { finalizeGuestCheckoutAfterPayment } from "@/services/payments/guest-checkout.service";
-import { calculateOrderFees } from "@/services/payments/fee-calculator";
+import { calculateOrderFeesFromSettings } from "@/services/payments/fee-calculator";
+import {
+  checkoutDeliveryFingerprint,
+  snapshotDeliveryAddress,
+} from "@/services/payments/checkout-delivery";
 import {
   getServerListingById,
   getServerListingBySlug,
@@ -159,16 +163,45 @@ export async function initiateCheckout(
   const buyerName = input.buyer.fullName.trim();
   const buyerPhone = normalizeUaePhone(input.buyer.phone ?? "");
 
-  if (guest) {
-    const settings = await getAdminSettings();
-    if (!settings.allowGuestCheckout) {
-      throw new Error("GUEST_CHECKOUT_DISABLED");
-    }
+  const settings = await getAdminSettings();
+  if (guest && !settings.allowGuestCheckout) {
+    throw new Error("GUEST_CHECKOUT_DISABLED");
   }
 
   if (!guest && listing.seller.id === input.buyer.id) {
     throw new Error("CANNOT_BUY_OWN_LISTING");
   }
+
+  let savedAddress;
+  if (input.addressId && input.buyer.id) {
+    const addresses = await getAddressesForUser(input.buyer.id);
+    savedAddress = addresses.find((item) => item.id === input.addressId);
+  }
+
+  let buyerEmirate: string | undefined;
+  if (input.deliveryAddress?.emirate) {
+    buyerEmirate = input.deliveryAddress.emirate;
+  } else if (savedAddress?.emirate) {
+    buyerEmirate = savedAddress.emirate;
+  }
+
+  const shipping = resolveCheckoutShipping({
+    categoryId: context.categoryId,
+    sellerEmirate: context.sellerEmirate,
+    buyerEmirate,
+    shippingMethod: input.shippingMethod,
+  });
+
+  const fees = await calculateOrderFeesFromSettings(
+    listing.price,
+    shipping.shippingFee,
+  );
+  const deliveryAddressSnapshot = snapshotDeliveryAddress({
+    buyerName,
+    buyerPhone,
+    deliveryAddress: input.deliveryAddress,
+    savedAddress,
+  });
 
   const existingPending = await findPendingOrder(
     input.buyer.id,
@@ -189,28 +222,56 @@ export async function initiateCheckout(
         existingPending.repurchasedFromOrderId = input.repurchasedFromOrderId;
       }
     }
+
+    const nextFingerprint = checkoutDeliveryFingerprint({
+      feesTotal: fees.total,
+      shippingMethod: shipping.shippingMethod,
+      addressId: input.addressId,
+      snapshot: deliveryAddressSnapshot,
+    });
+    const existingFingerprint = checkoutDeliveryFingerprint({
+      feesTotal: existingPending.fees.total,
+      shippingMethod: existingPending.shippingMethod,
+      addressId: existingPending.deliveryAddressId,
+      snapshot: existingPending.deliveryAddressSnapshot,
+    });
+    const checkoutChanged = nextFingerprint !== existingFingerprint;
+
+    if (checkoutChanged) {
+      const refreshed = await updateOrder(
+        existingPending.id,
+        {
+          buyerName,
+          buyerEmail,
+          guestEmail: guest ? buyerEmail : existingPending.guestEmail,
+          guestFullName: guest ? buyerName : existingPending.guestFullName,
+          guestPhone: guest ? buyerPhone : existingPending.guestPhone,
+          fees,
+          shippingMethod: shipping.shippingMethod,
+          deliveryAddressId: input.addressId,
+          deliveryAddressSnapshot,
+          saveAddress: input.deliveryAddress?.saveAddress,
+          stripeCheckoutSessionId: undefined,
+          paymentStatus: "pending",
+        },
+        {
+          type: "checkout_details_updated",
+          message: "تم تحديث مبلغ الطلب وبيانات التوصيل قبل الدفع",
+        },
+      );
+      const orderForResume = refreshed ?? existingPending;
+      if (input.forceMock && isMockCheckoutAllowed()) {
+        return { mode: "mock", orderId: orderForResume.id };
+      }
+      return resumeCheckoutForOrder(orderForResume, buyerEmail, listing.title);
+    }
+
     if (input.forceMock && isMockCheckoutAllowed()) {
       return { mode: "mock", orderId: existingPending.id };
     }
     return resumeCheckoutForOrder(existingPending, buyerEmail, listing.title);
   }
 
-  let buyerEmirate: string | undefined;
-  if (input.deliveryAddress?.emirate) {
-    buyerEmirate = input.deliveryAddress.emirate;
-  } else if (input.addressId && input.buyer.id) {
-    const addresses = await getAddressesForUser(input.buyer.id);
-    buyerEmirate = addresses.find((item) => item.id === input.addressId)?.emirate;
-  }
-
-  const shipping = resolveCheckoutShipping({
-    categoryId: context.categoryId,
-    sellerEmirate: context.sellerEmirate,
-    buyerEmirate,
-    shippingMethod: input.shippingMethod,
-  });
-
-  const fees = calculateOrderFees(listing.price, shipping.shippingFee);
   const orderId = generateOrderId();
 
   const order = await createOrder({
@@ -233,25 +294,7 @@ export async function initiateCheckout(
     fees,
     shippingMethod: shipping.shippingMethod,
     deliveryAddressId: input.addressId,
-    deliveryAddressSnapshot: input.deliveryAddress
-      ? {
-          label: input.deliveryAddress.label,
-          fullName: input.deliveryAddress.fullName ?? buyerName,
-          phone: input.deliveryAddress.phone ?? buyerPhone,
-          emirate: input.deliveryAddress.emirate,
-          city: input.deliveryAddress.city,
-          area: input.deliveryAddress.area,
-          street: input.deliveryAddress.street,
-          building: input.deliveryAddress.building,
-          unit: input.deliveryAddress.unit,
-          landmark: input.deliveryAddress.landmark,
-          notes: input.deliveryAddress.notes,
-          companyName: input.deliveryAddress.companyName,
-          latitude: input.deliveryAddress.latitude,
-          longitude: input.deliveryAddress.longitude,
-          formattedAddress: input.deliveryAddress.formattedAddress,
-        }
-      : undefined,
+    deliveryAddressSnapshot,
     saveAddress: input.deliveryAddress?.saveAddress,
     listingCategoryId: context.categoryId,
     repurchasedFromOrderId: await resolveRepurchaseSourceId(
@@ -525,8 +568,10 @@ async function markOrderPaid(
 export async function handleCheckoutSessionCompleted(
   session: {
     id: string;
+    amount_total?: number | null;
     metadata?: Record<string, string> | null;
     payment_intent?: string | { id: string } | null;
+    payment_status?: string | null;
   },
 ): Promise<void> {
   if (session.metadata?.type === "featured_listing") {
@@ -544,6 +589,29 @@ export async function handleCheckoutSessionCompleted(
 
   const order = await getOrderById(orderId);
   if (!order || order.status !== "pending_payment") return;
+
+  if (
+    session.payment_status &&
+    session.payment_status !== "paid" &&
+    session.payment_status !== "no_payment_required"
+  ) {
+    return;
+  }
+
+  if (
+    typeof session.amount_total === "number" &&
+    session.amount_total !== Math.round(order.fees.total * 100)
+  ) {
+    await logPaymentEvent({
+      type: "checkout_amount_mismatch",
+      payload: {
+        orderId: order.id,
+        expectedFils: Math.round(order.fees.total * 100),
+        stripeFils: session.amount_total,
+      },
+    });
+    return;
+  }
 
   const paymentIntentId =
     typeof session.payment_intent === "string"
