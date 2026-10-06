@@ -70,19 +70,33 @@ describe("seller wallet after live Stripe pay", () => {
 });
 
 describe("seller Connect copy", () => {
-  it("does not send sellers to the Stripe Connect dashboard signup URL", () => {
-    const src = readFileSync(
-      path.join(root, "services/payments/stripe-connect.service.ts"),
+  it("maps Stripe Connect signup errors to Arabic and never returns the dashboard URL", async () => {
+    const { sellerConnectPublicMessage } = await import(
+      "../services/payments/stripe-connect-errors.ts"
+    );
+    const message = sellerConnectPublicMessage(
+      new Error(
+        "You can only create new accounts if you've signed up for Connect, which you can do at https://dashboard.stripe.com/connect",
+      ),
+    );
+    assert.equal(message.includes("dashboard.stripe.com"), false);
+    assert.equal(message.includes("You can only"), false);
+    assert.match(message, /الاستلام البنكي/);
+  });
+
+  it("seller wallet hides onboard when platform Connect is off", () => {
+    const card = readFileSync(
+      path.join(root, "features/wallet/components/SellerPayoutConnectCard.tsx"),
       "utf8",
     );
-    assert.match(src, /sellerConnectPublicMessage/);
-    assert.match(src, /signed up for Connect/);
-    assert.match(
+    assert.match(card, /platformConnectEnabled/);
+    assert.match(card, /connectAvailable/);
+    assert.doesNotMatch(
       readFileSync(
         path.join(root, "app/api/seller/stripe/connect/route.ts"),
         "utf8",
       ),
-      /sellerConnectPublicMessage/,
+      /error: message/,
     );
   });
 });
