@@ -14,6 +14,7 @@ export type ConnectStatus = {
   payoutsEnabled: boolean;
   detailsSubmitted: boolean;
   platformConfigured: boolean;
+  platformConnectEnabled?: boolean;
   canOpenDashboard: boolean;
 };
 
@@ -50,7 +51,14 @@ export function SellerPayoutConnectCard({
           message?: string;
         };
         if (!response.ok) {
-          throw new Error(data.message || data.error || "CONNECT_ACTION_FAILED");
+          throw new Error(
+            data.message &&
+              !/dashboard\.stripe\.com|signed up for Connect|CONNECT_/i.test(
+                data.message,
+              )
+              ? data.message
+              : "الاستلام البنكي المباشر غير مفعّل على المنصة حالياً. مبلغ الضمان يبقى في محفظة سوقنا حتى تفعيل التحويل.",
+          );
         }
         if (data.url) {
           window.location.href = data.url;
@@ -60,7 +68,24 @@ export function SellerPayoutConnectCard({
           startTransition(() => setConnect(data.connect!));
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "CONNECT_ACTION_FAILED");
+        const fallback =
+          "الاستلام البنكي المباشر غير مفعّل على المنصة حالياً. مبلغ الضمان يبقى في محفظة سوقنا حتى تفعيل التحويل.";
+        const text = err instanceof Error ? err.message : fallback;
+        const connectDisabled =
+          /dashboard\.stripe\.com|signed up for Connect|CONNECT_|غير مفعّل/i.test(
+            text,
+          );
+        if (connectDisabled) {
+          startTransition(() =>
+            setConnect((current) => ({
+              ...current,
+              platformConnectEnabled: false,
+            })),
+          );
+          setError(null);
+        } else {
+          setError(fallback);
+        }
       } finally {
         setBusy(false);
       }
@@ -69,8 +94,10 @@ export function SellerPayoutConnectCard({
   );
 
   const active = connect.status === "ACTIVE" && connect.payoutsEnabled;
+  const connectAvailable = connect.platformConnectEnabled !== false;
   const needsSetup =
     Boolean(connect.platformConfigured) &&
+    connectAvailable &&
     !active &&
     connect.status !== "UNDER_VERIFICATION";
 
@@ -84,8 +111,9 @@ export function SellerPayoutConnectCard({
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-semibold text-ink">استلام مبالغ الضمان</h2>
             <p className="mt-1.5 text-sm leading-7 text-muted">
-              اربط حساب Stripe لاستلام صافي الضمان مباشرة عند تأكيد المشتري. بدون الربط يبقى
-              المبلغ في رصيد المحفظة الداخلي فقط.
+              {connectAvailable
+                ? "اربط حساب Stripe لاستلام صافي الضمان مباشرة عند تأكيد المشتري. بدون الربط يبقى المبلغ في رصيد المحفظة الداخلي فقط."
+                : "مبلغ الضمان يبقى في محفظة سوقنا حتى تفعيل التحويل البنكي المباشر على المنصة."}
             </p>
           </div>
         </div>
@@ -107,6 +135,11 @@ export function SellerPayoutConnectCard({
           {!connect.platformConfigured ? (
             <p className="mt-2 text-xs leading-6 text-amber-700">
               مفاتيح Stripe للمنصة غير مضبوطة حالياً — الربط يتاح بعد تفعيل الدفع.
+            </p>
+          ) : !connectAvailable ? (
+            <p className="mt-2 text-xs leading-6 text-amber-800">
+              الاستلام البنكي المباشر غير مفعّل حالياً. مبلغ الضمان يبقى في محفظة سوقنا
+              حتى تفعيل التحويل.
             </p>
           ) : null}
         </div>

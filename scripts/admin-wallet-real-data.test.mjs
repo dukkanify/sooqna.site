@@ -45,6 +45,7 @@ describe("admin wallet real data", () => {
     const src = read("services/payments/order-service.ts");
     assert.match(src, /source !== "mock"/);
     assert.match(src, /isMockPaidOrder\(order\)/);
+    assert.doesNotMatch(src, /type: "platform_fee"/);
   });
 
   it("wallets panel surfaces names and real-data copy", () => {

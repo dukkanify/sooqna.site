@@ -9,6 +9,10 @@ import {
   getConnectStatusForUser,
   syncConnectAccountFromStripe,
 } from "@/services/payments/stripe-connect.service";
+import {
+  STRIPE_CONNECT_NOT_ENABLED,
+  sellerConnectPublicMessage,
+} from "@/services/payments/stripe-connect-errors";
 
 function toClientConnect(
   connect: Awaited<ReturnType<typeof getConnectStatusForUser>>,
@@ -21,6 +25,7 @@ function toClientConnect(
     payoutsEnabled: connect.payoutsEnabled,
     detailsSubmitted: connect.detailsSubmitted,
     platformConfigured: connect.platformConfigured,
+    platformConnectEnabled: connect.platformConnectEnabled,
     canOpenDashboard: connect.canOpenDashboard,
   };
 }
@@ -41,7 +46,10 @@ export async function GET() {
       const connect = await getConnectStatusForUser(user, { sync: false });
       return NextResponse.json({ connect: toClientConnect(connect) });
     }
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: "CONNECT_STATUS_FAILED", message: sellerConnectPublicMessage(error) },
+      { status: 500 },
+    );
   }
 }
 
@@ -93,14 +101,16 @@ export async function POST(request: Request) {
         : message === "STRIPE_NOT_CONNECTED" ||
             message === "STRIPE_ONBOARDING_INCOMPLETE"
           ? 409
-          : 500;
+          : message === STRIPE_CONNECT_NOT_ENABLED
+            ? 409
+            : 500;
     return NextResponse.json(
       {
-        error: message,
-        message:
-          message === "STRIPE_NOT_CONFIGURED"
-            ? "اضبط مفاتيح Stripe للمنصة أولاً قبل ربط حساب الاستلام."
-            : message,
+        error:
+          message === STRIPE_CONNECT_NOT_ENABLED
+            ? STRIPE_CONNECT_NOT_ENABLED
+            : "CONNECT_ACTION_FAILED",
+        message: sellerConnectPublicMessage(error),
       },
       { status },
     );

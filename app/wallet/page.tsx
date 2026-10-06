@@ -70,6 +70,7 @@ export default async function WalletPage({ searchParams }: WalletPageProps) {
                 payoutsEnabled: connectStatus.payoutsEnabled,
                 detailsSubmitted: connectStatus.detailsSubmitted,
                 platformConfigured: connectStatus.platformConfigured,
+                platformConnectEnabled: connectStatus.platformConnectEnabled,
                 canOpenDashboard: connectStatus.canOpenDashboard,
               }}
             />

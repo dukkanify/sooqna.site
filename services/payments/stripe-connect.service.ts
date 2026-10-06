@@ -12,8 +12,13 @@ import {
   ensureStripeConfigLoaded,
   getAppUrl,
   isStripeConfigured,
+  isStripeConnectPayoutsEnabled,
 } from "@/services/payments/payment-config";
 import { getStripeClient } from "@/services/payments/stripe.service";
+import {
+  getStoredConnectSignupEnabled,
+  setStoredConnectSignupEnabled,
+} from "@/services/payments/stripe-connect-platform";
 import {
   getConnectAccountByOwner,
   getConnectAccountByStripeId,
@@ -22,6 +27,15 @@ import {
   upsertConnectAccount,
 } from "@/services/payments/stripe-connect-store";
 import { resolveEmailLocale } from "@/shared/i18n/email-locale";
+import {
+  STRIPE_CONNECT_NOT_ENABLED,
+  isConnectSignupDisabledError,
+} from "@/services/payments/stripe-connect-errors";
+
+export {
+  sellerConnectPublicMessage,
+  STRIPE_CONNECT_NOT_ENABLED,
+} from "@/services/payments/stripe-connect-errors";
 
 export type StripeConnectPublicStatus = {
   status: StripeConnectOnboardingStatus;
@@ -37,6 +51,7 @@ export type StripeConnectPublicStatus = {
   connectedAt: string | null;
   updatedAt: string | null;
   platformConfigured: boolean;
+  platformConnectEnabled: boolean;
   shouldAutoRedirect: boolean;
   canOpenDashboard: boolean;
 };
@@ -131,6 +146,7 @@ function requirementsSummary(account: Stripe.Account): {
 function toPublicStatus(
   record: StripeConnectAccountRecord | null,
   platformConfigured: boolean,
+  platformConnectEnabled: boolean,
 ): StripeConnectPublicStatus {
   if (!record) {
     const labels = STATUS_LABELS.NOT_CONNECTED;
@@ -148,16 +164,17 @@ function toPublicStatus(
       connectedAt: null,
       updatedAt: null,
       platformConfigured,
-      shouldAutoRedirect: platformConfigured,
+      platformConnectEnabled,
+      shouldAutoRedirect: platformConfigured && platformConnectEnabled,
       canOpenDashboard: false,
     };
   }
 
   const labels = STATUS_LABELS[record.stripeOnboardingStatus];
-  // Auto-redirect only for first-time connect (NOT_CONNECTED). Incomplete
-  // setup / requirements use explicit CTAs so admins are not surprise-redirected.
   const shouldAutoRedirect =
-    platformConfigured && record.stripeOnboardingStatus === "NOT_CONNECTED";
+    platformConfigured &&
+    platformConnectEnabled &&
+    record.stripeOnboardingStatus === "NOT_CONNECTED";
 
   return {
     status: record.stripeOnboardingStatus,
@@ -173,8 +190,10 @@ function toPublicStatus(
     connectedAt: record.stripeConnectedAt,
     updatedAt: record.stripeUpdatedAt,
     platformConfigured,
+    platformConnectEnabled,
     shouldAutoRedirect,
     canOpenDashboard:
+      platformConnectEnabled &&
       record.stripeDetailsSubmitted &&
       record.stripeOnboardingStatus !== "NOT_CONNECTED",
   };
@@ -273,19 +292,69 @@ async function notifyConnectStatusChange(
   });
 }
 
+let cachedPlatformConnectEnabled: boolean | null = null;
+
+async function markPlatformConnectDisabled(): Promise<void> {
+  cachedPlatformConnectEnabled = false;
+  try {
+    await setStoredConnectSignupEnabled(false);
+  } catch {
+    // Persist is best-effort — in-memory cache still hides onboard on this instance.
+  }
+}
+
+export async function isPlatformConnectEnabled(): Promise<boolean> {
+  if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "false") {
+    cachedPlatformConnectEnabled = false;
+    return false;
+  }
+  if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "true") {
+    cachedPlatformConnectEnabled = true;
+    return true;
+  }
+  if (cachedPlatformConnectEnabled !== null) {
+    return cachedPlatformConnectEnabled;
+  }
+  await ensureStripeConfigLoaded();
+  if (!isStripeConfigured() || !isStripeConnectPayoutsEnabled()) {
+    cachedPlatformConnectEnabled = false;
+    return false;
+  }
+  const stored = await getStoredConnectSignupEnabled().catch(() => null);
+  if (stored === false) {
+    cachedPlatformConnectEnabled = false;
+    return false;
+  }
+  try {
+    const stripe = await getStripeClient();
+    await stripe.accounts.list({ limit: 1 });
+    cachedPlatformConnectEnabled = true;
+    return true;
+  } catch (error) {
+    if (isConnectSignupDisabledError(error)) {
+      await markPlatformConnectDisabled();
+      return false;
+    }
+    return true;
+  }
+}
+
 export async function getConnectStatusForUser(
   user: UserProfile,
   options?: { sync?: boolean },
 ): Promise<StripeConnectPublicStatus> {
   await ensureStripeConfigLoaded();
   const platformConfigured = isStripeConfigured();
+  const platformConnectEnabled = platformConfigured
+    ? await isPlatformConnectEnabled()
+    : false;
   let record = await getConnectAccountByOwner(user.id);
 
   if (options?.sync && record && platformConfigured) {
     record = await syncConnectAccountFromStripe(user.id);
   }
 
-  return toPublicStatus(record, platformConfigured);
+  return toPublicStatus(record, platformConfigured, platformConnectEnabled);
 }
 
 export async function ensureConnectAccount(
@@ -294,6 +363,9 @@ export async function ensureConnectAccount(
   await ensureStripeConfigLoaded();
   if (!isStripeConfigured()) {
     throw new Error("STRIPE_NOT_CONFIGURED");
+  }
+  if (!(await isPlatformConnectEnabled())) {
+    throw new Error(STRIPE_CONNECT_NOT_ENABLED);
   }
 
   const existing = await getConnectAccountByOwner(user.id);
@@ -315,32 +387,41 @@ export async function ensureConnectAccount(
     user.accountType === "business" ||
     Boolean(user.businessProfile?.businessName);
 
-  const account = await stripe.accounts.create(
-    {
-      type: "express",
-      country: "AE",
-      email: user.email,
-      business_type: isCompany ? "company" : "individual",
-      capabilities: {
-        card_payments: { requested: true },
-        transfers: { requested: true },
+  let account: Stripe.Account;
+  try {
+    account = await stripe.accounts.create(
+      {
+        type: "express",
+        country: "AE",
+        email: user.email,
+        business_type: isCompany ? "company" : "individual",
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        business_profile: {
+          name:
+            user.businessProfile?.businessName?.trim() ||
+            user.fullName?.trim() ||
+            "Sooqna",
+          product_description: "Sooqna marketplace — UAE classifieds",
+          url: getAppUrl(),
+        },
+        metadata: {
+          sooqnaUserId: user.id,
+          platform: "sooqna",
+          accountType: user.accountType,
+        },
       },
-      business_profile: {
-        name:
-          user.businessProfile?.businessName?.trim() ||
-          user.fullName?.trim() ||
-          "Sooqna",
-        product_description: "Sooqna marketplace — UAE classifieds",
-        url: getAppUrl(),
-      },
-      metadata: {
-        sooqnaUserId: user.id,
-        platform: "sooqna",
-        accountType: user.accountType,
-      },
-    },
-    { idempotencyKey: `sooqna-connect-${user.id}` },
-  );
+      { idempotencyKey: `sooqna-connect-${user.id}` },
+    );
+  } catch (error) {
+    if (isConnectSignupDisabledError(error)) {
+      await markPlatformConnectDisabled();
+      throw new Error(STRIPE_CONNECT_NOT_ENABLED);
+    }
+    throw error;
+  }
 
   const record = buildRecordFromAccount({
     ownerUserId: user.id,
@@ -364,6 +445,9 @@ export async function createConnectAccountLink(
   user: UserProfile,
   options?: { returnPath?: string; refreshPath?: string },
 ): Promise<{ url: string; stripeAccountId: string }> {
+  if (!(await isPlatformConnectEnabled())) {
+    throw new Error(STRIPE_CONNECT_NOT_ENABLED);
+  }
   const record = await ensureConnectAccount(user);
   const stripe = await getStripeClient();
   const appUrl = getAppUrl();
@@ -520,9 +604,6 @@ export async function transferEscrowToSeller(input: {
     };
   }
 
-  const { isStripeConnectPayoutsEnabled } = await import(
-    "@/services/payments/payment-config"
-  );
   if (!isStripeConnectPayoutsEnabled()) {
     return { status: "skipped", reason: "PAYOUTS_DISABLED" };
   }

@@ -9,6 +9,7 @@ import { isNonLiveOpsOrder } from "@/services/admin/admin-finance-metrics";
 import { BLOCKED_USER_IDS } from "@/services/admin/qa-isolated-cleanup";
 import { getAllOrders } from "@/services/payments/order-store";
 import { getAllWalletAccounts } from "@/services/payments/wallet-ledger";
+import { applyWalletLedgerEffect } from "@/shared/payments/wallet-balances";
 import { getAllUsers } from "@/services/auth/user-store";
 import type { StoredUser } from "@/types/domain/user";
 
@@ -65,41 +66,7 @@ function applyWalletTransaction(
   },
   transaction: WalletTransaction,
 ): void {
-  switch (transaction.type) {
-    case "escrow_hold":
-      balances.pendingBalance += transaction.amount;
-      balances.heldInEscrow += transaction.amount;
-      break;
-    case "escrow_release":
-      balances.pendingBalance = Math.max(
-        0,
-        balances.pendingBalance - transaction.amount,
-      );
-      balances.heldInEscrow = Math.max(
-        0,
-        balances.heldInEscrow - transaction.amount,
-      );
-      balances.availableBalance += transaction.amount;
-      break;
-    case "refund":
-      balances.pendingBalance = Math.max(
-        0,
-        balances.pendingBalance - Math.abs(transaction.amount),
-      );
-      balances.heldInEscrow = Math.max(
-        0,
-        balances.heldInEscrow - Math.abs(transaction.amount),
-      );
-      break;
-    case "deposit":
-    case "stripe_payment":
-    case "withdrawal":
-    case "platform_fee":
-      balances.availableBalance += transaction.amount;
-      break;
-    default:
-      break;
-  }
+  applyWalletLedgerEffect(balances, transaction);
 }
 
 /** Replay ledger excluding mock-order rows (oldest → newest). */
