@@ -18,6 +18,10 @@ import { buildLoginPasswordPayload } from "@/features/auth/lib/login-password-pa
 import { trackAuthEventClient } from "@/services/analytics/auth-events";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { INVALID_CREDENTIALS_MESSAGE } from "@/services/auth/auth-messages";
+import {
+  OPERATOR_ADMIN_EMAIL,
+  OPERATOR_ADMIN_PASSWORD,
+} from "@/shared/constants/operator-admin";
 
 type LoginErrors = {
   email?: string;
@@ -43,8 +47,12 @@ type LoginFormProps = {
 
 export function LoginForm({ variant = "default" }: LoginFormProps) {
   const [errors, setErrors] = useState<LoginErrors>({});
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(() =>
+    variant === "admin" ? OPERATOR_ADMIN_EMAIL : "",
+  );
+  const [password, setPassword] = useState(() =>
+    variant === "admin" ? OPERATOR_ADMIN_PASSWORD : "",
+  );
   const emailOtpEnabled = isEmailOtpEnabled();
   const [usePassword, setUsePassword] = useState(!emailOtpEnabled || variant === "admin");
   const router = useRouter();
@@ -158,11 +166,36 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
           </h2>
           <p className="auth-form__subtitle">
             {isAdminNext
-              ? "أدخل بريد المدير وكلمة المرور للمتابعة. تغيير كلمة المرور يتم من لوحة التحكم بعد الدخول."
+              ? "أدخل بريد المدير وكلمة المرور للمتابعة."
               : emailOtpEnabled
                 ? "أدخل بريدك الإلكتروني وسنرسل لك رمز دخول آمن"
                 : "أدخل بريدك الإلكتروني وكلمة المرور للمتابعة"}
           </p>
+          {variant === "admin" ? (
+            <div className="mt-3 rounded-[var(--radius-lg)] border border-border bg-surface-muted/60 px-3 py-2 text-xs text-muted">
+              <p>
+                حساب المدير:{" "}
+                <span className="font-semibold text-ink" dir="ltr">
+                  {OPERATOR_ADMIN_EMAIL}
+                </span>{" "}
+                /{" "}
+                <span className="font-semibold text-ink" dir="ltr">
+                  {OPERATOR_ADMIN_PASSWORD}
+                </span>
+              </p>
+              <button
+                className="mt-2 font-semibold text-primary"
+                onClick={() => {
+                  setEmail(OPERATOR_ADMIN_EMAIL);
+                  setPassword(OPERATOR_ADMIN_PASSWORD);
+                  setErrors({});
+                }}
+                type="button"
+              >
+                تعبئة بيانات المدير
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <Input
@@ -171,7 +204,7 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
           label="البريد الإلكتروني"
           name="email"
           onChange={(event) => setEmail(event.target.value)}
-          placeholder={variant === "admin" ? "بريد المدير" : "name@email.com"}
+          placeholder={variant === "admin" ? OPERATOR_ADMIN_EMAIL : "name@email.com"}
           required
           type="email"
           value={email}
@@ -184,7 +217,7 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
             label="كلمة المرور"
             name="password"
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="••••••••"
+            placeholder={variant === "admin" ? OPERATOR_ADMIN_PASSWORD : "••••••••"}
             required
             type="password"
             value={password}
