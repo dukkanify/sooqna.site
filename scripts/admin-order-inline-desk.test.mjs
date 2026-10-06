@@ -89,6 +89,21 @@ describe("admin order inline desk", () => {
     assert.match(src, /الفواتير|الفاتورة/);
   });
 
+  it("escrow API returns held, released, and refunded history", () => {
+    const src = read("app/api/admin/escrow/route.ts");
+    assert.match(src, /escrowStatus === "held"/);
+    assert.match(src, /escrowStatus === "released"/);
+    assert.match(src, /escrowStatus === "refunded"/);
+  });
+
+  it("orders desk can filter released and refunded escrow stages", () => {
+    const src = read("features/admin/components/AdminOrdersPanel.tsx");
+    assert.match(src, /value: "released"/);
+    assert.match(src, /value: "refunded"/);
+    assert.match(src, /محرَّر/);
+    assert.match(src, /مسترد/);
+  });
+
   it("EN phrases cover order desk + invoice labels", () => {
     const phrases = JSON.parse(read("shared/i18n/phrases.en.json"));
     assert.equal(phrases["مكتب الطلب"], "Order desk");
