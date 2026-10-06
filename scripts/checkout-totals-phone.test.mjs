@@ -198,7 +198,8 @@ describe("checkout wiring", () => {
 
   it("buyer order page shows itemized fees and delivery snapshot phone", () => {
     const detail = read("features/orders/components/OrderDetailContent.tsx");
-    assert.match(detail, /isGatewayPassedThrough/);
+    assert.match(detail, /buyerFacingInvoiceFees/);
+    assert.doesNotMatch(detail, /رسوم الدفع/);
     assert.match(detail, /deliveryAddressSnapshot/);
     assert.match(detail, /order\.deliveryAddressSnapshot\.phone/);
   });

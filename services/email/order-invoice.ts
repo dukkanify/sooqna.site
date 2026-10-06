@@ -1,6 +1,6 @@
 import type { Order } from "@/types/domain/order";
 import { BRAND, BRAND_COLORS } from "@/shared/constants/brand";
-import { isGatewayPassedThrough } from "@/shared/payments/order-fees";
+import { buyerFacingInvoiceFees } from "@/shared/payments/order-fees";
 import { formatCurrencyLabel } from "@/shared/utils/currency";
 import { escapeEmailHtml } from "@/services/email/sooqna-email-template";
 
@@ -18,17 +18,31 @@ function formatDate(value: string | undefined, locale: InvoiceLocale): string {
   });
 }
 
-function lineRow(
+function metaCell(label: string, value: string): string {
+  return `<td style="width:50%;padding:0 0 14px;vertical-align:top;">
+    <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#8a837a;">${escapeEmailHtml(label)}</p>
+    <p style="margin:0;font-size:14px;line-height:1.55;font-weight:650;color:${BRAND_COLORS.navy};">${value}</p>
+  </td>`;
+}
+
+function amountRow(
   label: string,
   amount: number,
   locale: InvoiceLocale,
-  emphasize = false,
+  options?: { emphasize?: boolean; muted?: boolean },
 ): string {
+  const emphasize = Boolean(options?.emphasize);
+  const muted = Boolean(options?.muted);
+  const color = muted ? "#6b6560" : BRAND_COLORS.navy;
   const weight = emphasize ? "800" : "600";
-  const size = emphasize ? "15px" : "13px";
+  const size = emphasize ? "16px" : "14px";
+  const pad = emphasize ? "14px 0 0" : "10px 0";
+  const border = emphasize
+    ? `border-top:2px solid ${BRAND_COLORS.navy};`
+    : "border-bottom:1px solid #efeae2;";
   return `<tr>
-    <td style="padding:10px 0;border-bottom:1px solid #ece7df;font-size:${size};font-weight:${weight};color:${BRAND_COLORS.navy};">${escapeEmailHtml(label)}</td>
-    <td style="padding:10px 0;border-bottom:1px solid #ece7df;font-size:${size};font-weight:${weight};color:${BRAND_COLORS.navy};text-align:left;direction:ltr;white-space:nowrap;">${escapeEmailHtml(money(amount, locale))}</td>
+    <td style="padding:${pad};${border}font-size:${size};font-weight:${weight};color:${color};">${escapeEmailHtml(label)}</td>
+    <td style="padding:${pad};${border}font-size:${size};font-weight:${weight};color:${color};text-align:left;direction:ltr;white-space:nowrap;">${escapeEmailHtml(money(amount, locale))}</td>
   </tr>`;
 }
 
@@ -47,89 +61,119 @@ export function buildOrderInvoiceHtml(
 ): string {
   const english = locale === "en";
   const invoiceNo = invoiceNumberForOrder(order);
-  const fees = order.fees;
+  const fees = buyerFacingInvoiceFees(order.fees);
   const address = order.deliveryAddressSnapshot;
-  const addressLine = address
+  const addressLines = address
     ? [
         address.fullName,
         address.phone,
-        address.emirate,
-        address.city,
-        address.area,
-        address.street,
-        address.building,
-        address.unit,
-      ]
-        .filter(Boolean)
-        .join(english ? ", " : " · ")
-    : english
-      ? "Not provided"
-      : "غير متوفر";
+        [address.area, address.city, address.emirate].filter(Boolean).join("، "),
+        [address.street, address.building, address.unit].filter(Boolean).join(" · "),
+      ].filter(Boolean)
+    : [];
 
-  const passThrough = isGatewayPassedThrough(fees);
+  const buyerBlock = [
+    escapeEmailHtml(order.buyerName || (english ? "Buyer" : "المشتري")),
+    order.buyerEmail
+      ? `<span style="display:block;font-size:12px;font-weight:500;color:#6b6560;direction:ltr;text-align:inherit;">${escapeEmailHtml(order.buyerEmail)}</span>`
+      : "",
+  ].join("");
+
+  const sellerBlock = escapeEmailHtml(
+    order.sellerName || (english ? "Seller" : "البائع"),
+  );
+
+  const deliveryBlock =
+    addressLines.length > 0
+      ? addressLines
+          .map((line) => escapeEmailHtml(line))
+          .join("<br/>")
+      : escapeEmailHtml(english ? "Not provided" : "غير متوفر");
+
   const rows = [
-    lineRow(
-      english ? "Item / listing" : "المنتج / الإعلان",
+    amountRow(
+      english ? "Item" : "المنتج",
       fees.productPrice,
       locale,
     ),
-    lineRow(english ? "Shipping" : "الشحن", fees.shippingFee, locale),
-    lineRow(english ? "Platform fee" : "رسوم المنصة", fees.platformFee, locale),
-    passThrough
-      ? lineRow(english ? "Gateway fee" : "رسوم البوابة", fees.gatewayFee, locale)
+    fees.shippingFee > 0
+      ? amountRow(english ? "Shipping" : "الشحن", fees.shippingFee, locale, {
+          muted: true,
+        })
       : "",
-    lineRow(english ? "Total paid" : "الإجمالي المدفوع", fees.total, locale, true),
+    fees.platformFee > 0
+      ? amountRow(
+          english ? "Service fee" : "رسوم الخدمة",
+          fees.platformFee,
+          locale,
+          { muted: true },
+        )
+      : "",
+    amountRow(
+      english ? "Total paid" : "الإجمالي المدفوع",
+      fees.total,
+      locale,
+      { emphasize: true },
+    ),
   ].join("");
 
   return `
-    <div style="margin:18px 0 0;padding:16px;border:1px solid #e4dfd6;border-radius:14px;background:#fff;">
-      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid ${BRAND_COLORS.gold};">
-        <div>
-          <p style="margin:0;font-size:11px;font-weight:800;letter-spacing:0.06em;color:${BRAND_COLORS.goldDark};text-transform:uppercase;">${english ? "Tax invoice / receipt" : "فاتورة ضريبية / إيصال"}</p>
-          <p style="margin:6px 0 0;font-size:18px;font-weight:800;color:${BRAND_COLORS.navy};">${english ? BRAND.nameEn : BRAND.nameAr}</p>
+    <div style="margin:0;padding:0;border:1px solid #e7e1d6;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(11,22,40,0.06);">
+      <div style="height:4px;background:linear-gradient(90deg, ${BRAND_COLORS.goldDark}, ${BRAND_COLORS.gold}, ${BRAND_COLORS.goldLight});"></div>
+      <div style="padding:22px 22px 8px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 18px;">
+          <tr>
+            <td style="vertical-align:top;padding:0;">
+              <p style="margin:0;font-size:11px;font-weight:800;letter-spacing:0.08em;color:${BRAND_COLORS.goldDark};text-transform:uppercase;">${english ? "Official receipt" : "إيصال رسمي"}</p>
+              <p style="margin:8px 0 0;font-size:26px;line-height:1.15;font-weight:800;color:${BRAND_COLORS.navy};">${english ? BRAND.nameEn : BRAND.nameAr}</p>
+              <p style="margin:6px 0 0;font-size:13px;color:#6b6560;">${english ? BRAND.taglineEn : BRAND.taglineAr}</p>
+            </td>
+            <td style="vertical-align:top;padding:0;text-align:${english ? "right" : "left"};">
+              <p style="margin:0;font-size:11px;font-weight:700;color:#8a837a;text-transform:uppercase;">${english ? "Invoice" : "رقم الفاتورة"}</p>
+              <p style="margin:6px 0 0;font-size:15px;font-weight:800;color:${BRAND_COLORS.navy};font-family:ui-monospace,Menlo,monospace;">${escapeEmailHtml(invoiceNo)}</p>
+              <p style="margin:8px 0 0;font-size:12px;color:#6b6560;">${escapeEmailHtml(formatDate(order.paidAt || order.createdAt, locale))}</p>
+            </td>
+          </tr>
+        </table>
+
+        <div style="padding:14px 16px;margin:0 0 18px;border-radius:14px;background:#f7f4ee;">
+          <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#8a837a;">${english ? "Listing" : "الإعلان"}</p>
+          <p style="margin:0;font-size:16px;line-height:1.45;font-weight:750;color:${BRAND_COLORS.navy};">${escapeEmailHtml(order.listingTitle)}</p>
+          <p style="margin:8px 0 0;font-size:12px;color:#8a837a;font-family:ui-monospace,Menlo,monospace;">${escapeEmailHtml(order.id)}</p>
         </div>
-        <div style="text-align:${english ? "right" : "left"};">
-          <p style="margin:0;font-size:12px;color:#6b6560;">${english ? "Invoice no." : "رقم الفاتورة"}</p>
-          <p style="margin:4px 0 0;font-size:13px;font-weight:800;color:${BRAND_COLORS.navy};font-family:ui-monospace,Menlo,monospace;">${escapeEmailHtml(invoiceNo)}</p>
-        </div>
+
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 8px;">
+          <tr>
+            ${metaCell(english ? "Buyer" : "المشتري", buyerBlock)}
+            ${metaCell(english ? "Seller" : "البائع", sellerBlock)}
+          </tr>
+          <tr>
+            ${metaCell(english ? "Delivery" : "التسليم", deliveryBlock)}
+            ${metaCell(
+              english ? "Payment" : "الدفع",
+              escapeEmailHtml(
+                english
+                  ? "Card · held in Sooqna escrow"
+                  : "بطاقة · محجوز في ضمان سوقنا",
+              ),
+            )}
+          </tr>
+        </table>
       </div>
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 12px;">
-        <tr>
-          <td style="padding:4px 0;font-size:12px;color:#6b6560;width:40%;">${english ? "Order" : "الطلب"}</td>
-          <td style="padding:4px 0;font-size:12px;font-weight:700;color:${BRAND_COLORS.navy};font-family:ui-monospace,Menlo,monospace;">${escapeEmailHtml(order.id)}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;font-size:12px;color:#6b6560;">${english ? "Date" : "التاريخ"}</td>
-          <td style="padding:4px 0;font-size:12px;font-weight:700;color:${BRAND_COLORS.navy};">${escapeEmailHtml(formatDate(order.paidAt || order.createdAt, locale))}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;font-size:12px;color:#6b6560;">${english ? "Buyer" : "المشتري"}</td>
-          <td style="padding:4px 0;font-size:12px;font-weight:700;color:${BRAND_COLORS.navy};">${escapeEmailHtml(order.buyerName)} · ${escapeEmailHtml(order.buyerEmail)}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;font-size:12px;color:#6b6560;">${english ? "Seller" : "البائع"}</td>
-          <td style="padding:4px 0;font-size:12px;font-weight:700;color:${BRAND_COLORS.navy};">${escapeEmailHtml(order.sellerName)}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;font-size:12px;color:#6b6560;">${english ? "Listing" : "الإعلان"}</td>
-          <td style="padding:4px 0;font-size:12px;font-weight:700;color:${BRAND_COLORS.navy};">${escapeEmailHtml(order.listingTitle)}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;font-size:12px;color:#6b6560;">${english ? "Delivery" : "التسليم"}</td>
-          <td style="padding:4px 0;font-size:12px;font-weight:700;color:${BRAND_COLORS.navy};">${escapeEmailHtml(addressLine)}</td>
-        </tr>
-      </table>
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-        ${rows}
-      </table>
-      <p style="margin:12px 0 0;font-size:12px;line-height:1.7;color:#6b6560;">
-        ${
-          english
-            ? "Payment is held in Sooqna escrow until the buyer confirms receipt. This document is the official marketplace invoice for the purchase."
-            : "المبلغ محجوز في ضمان سوقنا حتى يؤكد المشتري الاستلام. هذا المستند هو فاتورة المنصة الرسمية لعملية الشراء."
-        }
-      </p>
-      <p style="margin:8px 0 0;font-size:11px;color:#8a837a;">${english ? BRAND.supportEmail : BRAND.supportEmail} · ${BRAND.domain}</p>
+
+      <div style="padding:4px 22px 22px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+          ${rows}
+        </table>
+        <p style="margin:16px 0 0;padding:12px 14px;border-radius:12px;background:#f7f4ee;font-size:12px;line-height:1.7;color:#5f5952;">
+          ${
+            english
+              ? "Funds stay in Sooqna escrow until the buyer confirms receipt. This is the official marketplace receipt for the purchase."
+              : "المبلغ يبقى في ضمان سوقنا حتى يؤكد المشتري الاستلام. هذا الإيصال الرسمي لعملية الشراء عبر المنصة."
+          }
+        </p>
+        <p style="margin:12px 0 0;font-size:11px;color:#9a9288;">${BRAND.supportEmail} · ${BRAND.domain}</p>
+      </div>
     </div>
   `.trim();
 }
@@ -139,9 +183,8 @@ export function buildOrderInvoiceTextLines(
   locale: InvoiceLocale = "ar",
 ): string[] {
   const english = locale === "en";
-  const fees = order.fees;
+  const fees = buyerFacingInvoiceFees(order.fees);
   const invoiceNo = invoiceNumberForOrder(order);
-  const passThrough = isGatewayPassedThrough(fees);
   return english
     ? [
         `Invoice: ${invoiceNo}`,
@@ -151,10 +194,7 @@ export function buildOrderInvoiceTextLines(
         `Seller: ${order.sellerName}`,
         `Item: ${money(fees.productPrice, locale)}`,
         `Shipping: ${money(fees.shippingFee, locale)}`,
-        `Platform fee: ${money(fees.platformFee, locale)}`,
-        ...(passThrough
-          ? [`Gateway fee: ${money(fees.gatewayFee, locale)}`]
-          : []),
+        `Service fee: ${money(fees.platformFee, locale)}`,
         `Total: ${money(fees.total, locale)}`,
       ]
     : [
@@ -165,10 +205,7 @@ export function buildOrderInvoiceTextLines(
         `البائع: ${order.sellerName}`,
         `المنتج: ${money(fees.productPrice, locale)}`,
         `الشحن: ${money(fees.shippingFee, locale)}`,
-        `رسوم المنصة: ${money(fees.platformFee, locale)}`,
-        ...(passThrough
-          ? [`رسوم البوابة: ${money(fees.gatewayFee, locale)}`]
-          : []),
+        `رسوم الخدمة: ${money(fees.platformFee, locale)}`,
         `الإجمالي: ${money(fees.total, locale)}`,
       ];
 }

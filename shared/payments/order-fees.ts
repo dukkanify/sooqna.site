@@ -77,6 +77,33 @@ export function isGatewayPassedThrough(fees: {
   return Math.round(fees.total) === billed;
 }
 
+/**
+ * Buyer-facing invoice / receipt lines.
+ * Gateway cost is never shown as its own row — on legacy pass-through orders
+ * it is folded into the platform fee so the printed total still adds up.
+ */
+export function buyerFacingInvoiceFees(fees: {
+  gatewayFee: number;
+  platformFee: number;
+  productPrice: number;
+  shippingFee: number;
+  total: number;
+}): {
+  productPrice: number;
+  shippingFee: number;
+  platformFee: number;
+  total: number;
+} {
+  const passThrough = isGatewayPassedThrough(fees);
+  return {
+    productPrice: fees.productPrice,
+    shippingFee: fees.shippingFee,
+    platformFee:
+      fees.platformFee + (passThrough ? Math.max(0, fees.gatewayFee) : 0),
+    total: fees.total,
+  };
+}
+
 export function stripeAmountFils(totalAed: number): number {
   return Math.round(Math.max(0, totalAed) * 100);
 }

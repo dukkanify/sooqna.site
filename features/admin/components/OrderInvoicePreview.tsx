@@ -25,18 +25,23 @@ function openPrintableInvoice(html: string, locale: "ar" | "en", title: string) 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>${title}</title>
   <style>
-    body{margin:0;padding:24px;background:#f3f0ea;font-family:Tahoma,Arial,sans-serif;color:#1a2744;}
-    .print-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
-    .print-bar button{appearance:none;border:1px solid #c9a962;background:#fff8e8;color:#1a2744;border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;}
+    @page{margin:16mm;}
+    body{margin:0;padding:28px;background:linear-gradient(180deg,#f6f2ea 0%,#efe8db 100%);font-family:"Segoe UI",Tahoma,Arial,sans-serif;color:#0b1628;}
+    .sheet{max-width:720px;margin:0 auto;}
+    .print-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px;}
+    .print-bar button{appearance:none;border:1px solid #c9a962;background:#fff;color:#0b1628;border-radius:999px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 1px 0 rgba(11,22,40,.04);}
+    .print-bar button:hover{background:#fff8e8;}
     @media print{.print-bar{display:none!important;} body{padding:0;background:#fff;}}
   </style>
 </head>
 <body>
-  <div class="print-bar">
-    <button type="button" onclick="window.print()">طباعة</button>
-    <button type="button" onclick="window.close()">إغلاق</button>
+  <div class="sheet">
+    <div class="print-bar">
+      <button type="button" onclick="window.print()">طباعة</button>
+      <button type="button" onclick="window.close()">إغلاق</button>
+    </div>
+    ${html}
   </div>
-  ${html}
   <script>window.addEventListener("load",function(){setTimeout(function(){try{window.focus();}catch(e){}},50);});</script>
 </body>
 </html>`;
