@@ -43,10 +43,17 @@ function openPrintableInvoice(html: string, locale: "ar" | "en", title: string) 
 
   const blob = new Blob([documentHtml], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
-  const win = window.open(url, "_blank", "noopener,noreferrer");
+  // Do not pass noopener in windowFeatures — Chromium returns null then and we
+  // cannot tell a real popup-blocker failure from a successful blob open.
+  const win = window.open(url, "_blank");
   if (!win) {
     URL.revokeObjectURL(url);
     return false;
+  }
+  try {
+    win.opener = null;
+  } catch {
+    /* ignore */
   }
   // Revoke after the tab has a chance to load the blob.
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
