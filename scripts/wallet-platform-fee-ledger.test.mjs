@@ -82,6 +82,15 @@ describe("seller Connect copy", () => {
     assert.equal(message.includes("dashboard.stripe.com"), false);
     assert.equal(message.includes("You can only"), false);
     assert.match(message, /الاستلام البنكي/);
+
+    const fromRaw = sellerConnectPublicMessage({
+      raw: {
+        message:
+          "You can only create new accounts if you've signed up for Connect, which you can do at https://dashboard.stripe.com/connect",
+      },
+    });
+    assert.equal(fromRaw.includes("dashboard.stripe.com"), false);
+    assert.match(fromRaw, /الاستلام البنكي/);
   });
 
   it("seller wallet hides onboard when platform Connect is off", () => {
@@ -98,5 +107,11 @@ describe("seller Connect copy", () => {
       ),
       /error: message/,
     );
+    const service = readFileSync(
+      path.join(root, "services/payments/stripe-connect.service.ts"),
+      "utf8",
+    );
+    assert.match(service, /ENABLE_STRIPE_CONNECT_PAYOUTS/);
+    assert.match(service, /getStoredConnectSignupEnabled/);
   });
 });

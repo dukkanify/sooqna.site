@@ -12,8 +12,13 @@ import {
   ensureStripeConfigLoaded,
   getAppUrl,
   isStripeConfigured,
+  isStripeConnectPayoutsEnabled,
 } from "@/services/payments/payment-config";
 import { getStripeClient } from "@/services/payments/stripe.service";
+import {
+  getStoredConnectSignupEnabled,
+  setStoredConnectSignupEnabled,
+} from "@/services/payments/stripe-connect-platform";
 import {
   getConnectAccountByOwner,
   getConnectAccountByStripeId,
@@ -289,12 +294,34 @@ async function notifyConnectStatusChange(
 
 let cachedPlatformConnectEnabled: boolean | null = null;
 
+async function markPlatformConnectDisabled(): Promise<void> {
+  cachedPlatformConnectEnabled = false;
+  try {
+    await setStoredConnectSignupEnabled(false);
+  } catch {
+    // Persist is best-effort — in-memory cache still hides onboard on this instance.
+  }
+}
+
 export async function isPlatformConnectEnabled(): Promise<boolean> {
+  if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "false") {
+    cachedPlatformConnectEnabled = false;
+    return false;
+  }
+  if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "true") {
+    cachedPlatformConnectEnabled = true;
+    return true;
+  }
   if (cachedPlatformConnectEnabled !== null) {
     return cachedPlatformConnectEnabled;
   }
   await ensureStripeConfigLoaded();
-  if (!isStripeConfigured()) {
+  if (!isStripeConfigured() || !isStripeConnectPayoutsEnabled()) {
+    cachedPlatformConnectEnabled = false;
+    return false;
+  }
+  const stored = await getStoredConnectSignupEnabled().catch(() => null);
+  if (stored === false) {
     cachedPlatformConnectEnabled = false;
     return false;
   }
@@ -305,7 +332,7 @@ export async function isPlatformConnectEnabled(): Promise<boolean> {
     return true;
   } catch (error) {
     if (isConnectSignupDisabledError(error)) {
-      cachedPlatformConnectEnabled = false;
+      await markPlatformConnectDisabled();
       return false;
     }
     return true;
@@ -336,6 +363,9 @@ export async function ensureConnectAccount(
   await ensureStripeConfigLoaded();
   if (!isStripeConfigured()) {
     throw new Error("STRIPE_NOT_CONFIGURED");
+  }
+  if (!(await isPlatformConnectEnabled())) {
+    throw new Error(STRIPE_CONNECT_NOT_ENABLED);
   }
 
   const existing = await getConnectAccountByOwner(user.id);
@@ -387,7 +417,7 @@ export async function ensureConnectAccount(
     );
   } catch (error) {
     if (isConnectSignupDisabledError(error)) {
-      cachedPlatformConnectEnabled = false;
+      await markPlatformConnectDisabled();
       throw new Error(STRIPE_CONNECT_NOT_ENABLED);
     }
     throw error;
@@ -415,6 +445,9 @@ export async function createConnectAccountLink(
   user: UserProfile,
   options?: { returnPath?: string; refreshPath?: string },
 ): Promise<{ url: string; stripeAccountId: string }> {
+  if (!(await isPlatformConnectEnabled())) {
+    throw new Error(STRIPE_CONNECT_NOT_ENABLED);
+  }
   const record = await ensureConnectAccount(user);
   const stripe = await getStripeClient();
   const appUrl = getAppUrl();
@@ -571,9 +604,6 @@ export async function transferEscrowToSeller(input: {
     };
   }
 
-  const { isStripeConnectPayoutsEnabled } = await import(
-    "@/services/payments/payment-config"
-  );
   if (!isStripeConnectPayoutsEnabled()) {
     return { status: "skipped", reason: "PAYOUTS_DISABLED" };
   }

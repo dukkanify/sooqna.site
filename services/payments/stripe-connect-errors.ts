@@ -10,17 +10,24 @@ function flattenErrorText(error: unknown): string {
   if (!error) return "";
   if (typeof error === "string") return error;
   if (error instanceof Error) {
-    const rawMessage =
-      typeof (error as { raw?: { message?: string } }).raw?.message === "string"
-        ? (error as { raw: { message: string } }).raw.message
-        : "";
+    const maybeRaw = (error as unknown as { raw?: { message?: string } }).raw
+      ?.message;
+    const rawMessage = typeof maybeRaw === "string" ? maybeRaw : "";
     return `${error.name} ${error.message} ${rawMessage}`;
   }
   if (typeof error === "object") {
+    const record = error as {
+      message?: unknown;
+      raw?: { message?: unknown };
+    };
+    const maybeMessage =
+      typeof record.message === "string" ? record.message : "";
+    const maybeRaw =
+      typeof record.raw?.message === "string" ? record.raw.message : "";
     try {
-      return JSON.stringify(error);
+      return `${maybeMessage} ${maybeRaw} ${JSON.stringify(error)}`;
     } catch {
-      return String(error);
+      return [maybeMessage, maybeRaw].filter(Boolean).join(" ") || String(error);
     }
   }
   return String(error);
