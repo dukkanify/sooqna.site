@@ -30,7 +30,9 @@ export async function getWalletSummaryForUser(userId?: string) {
   }
 
   const ledger: WalletAccount = await getWalletAccount(userId);
-  const activity = ledger.transactions.map((txn) => ({
+  const activity = ledger.transactions
+    .filter((txn) => txn.type !== "platform_fee")
+    .map((txn) => ({
     id: txn.id,
     type:
       txn.type === "escrow_release"
@@ -40,10 +42,10 @@ export async function getWalletSummaryForUser(userId?: string) {
           : txn.type === "escrow_hold"
             ? ("escrow_hold" as const)
             : txn.type === "refund"
-              ? ("deposit" as const)
+              ? ("refund" as const)
               : txn.type === "withdrawal"
                 ? ("withdrawal" as const)
-                : ("deposit" as const),
+                : txn.type,
     amount: txn.amount,
     description: txn.description,
     date: txn.date,

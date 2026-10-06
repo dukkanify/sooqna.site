@@ -7,6 +7,7 @@ import {
   createConnectAccountLink,
   createConnectExpressLoginLink,
   getConnectStatusForUser,
+  sellerConnectPublicMessage,
   syncConnectAccountFromStripe,
 } from "@/services/payments/stripe-connect.service";
 
@@ -97,10 +98,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: message,
-        message:
-          message === "STRIPE_NOT_CONFIGURED"
-            ? "اضبط مفاتيح Stripe للمنصة أولاً قبل ربط حساب الاستلام."
-            : message,
+        message: sellerConnectPublicMessage(error),
       },
       { status },
     );

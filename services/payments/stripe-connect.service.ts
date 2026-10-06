@@ -65,6 +65,23 @@ export function connectStatusLabels(
   return STATUS_LABELS[status];
 }
 
+const CONNECT_NOT_ENABLED_RE =
+  /signed up for Connect|Connect is not enabled|cannot create connected accounts/i;
+
+export function sellerConnectPublicMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error ?? "");
+  if (raw === "STRIPE_NOT_CONFIGURED") {
+    return "اضبط مفاتيح Stripe للمنصة أولاً قبل ربط حساب الاستلام.";
+  }
+  if (raw === "STRIPE_NOT_CONNECTED" || raw === "STRIPE_ONBOARDING_INCOMPLETE") {
+    return "أكمل ربط حساب الاستلام من زر «ربط حساب الاستلام».";
+  }
+  if (CONNECT_NOT_ENABLED_RE.test(raw)) {
+    return "تحويل الاستلام عبر Stripe غير مفعّل على المنصة حالياً. مبلغ الضمان يبقى محجوزاً في محفظة سوقنا حتى تفعيل التحويل.";
+  }
+  return "تعذر ربط حساب الاستلام حالياً. حاول مرة أخرى أو تواصل مع الدعم.";
+}
+
 export function mapStripeAccountToStatus(
   account: Stripe.Account,
 ): StripeConnectOnboardingStatus {

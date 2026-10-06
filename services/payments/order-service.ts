@@ -513,14 +513,6 @@ async function markOrderPaid(
       status: "pending",
     });
 
-    await addWalletTransaction(order.sellerId, {
-      orderId: order.id,
-      type: "platform_fee",
-      amount: -order.fees.platformFee,
-      description: `رسوم المنصة — ${order.listingTitle}`,
-      status: "completed",
-    });
-
     await recordPaymentTreasury({
       orderId: order.id,
       grossAmount: order.fees.productPrice,
