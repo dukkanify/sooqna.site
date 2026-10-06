@@ -8,6 +8,10 @@ import {
   ADMIN_PERMISSION_LABELS,
   hasAdminPermission,
   hasAdminAction,
+  isSuperAdminUser,
+  visibleAdminPermissions,
+  sanitizeAdminPermissions,
+  sanitizeAdminActionMatrix,
 } from "@/services/auth/admin-permission-checks";
 import type {
   AdminAction,
@@ -20,6 +24,10 @@ export {
   ADMIN_PERMISSION_LABELS,
   hasAdminPermission,
   hasAdminAction,
+  isSuperAdminUser,
+  visibleAdminPermissions,
+  sanitizeAdminPermissions,
+  sanitizeAdminActionMatrix,
 };
 
 export async function requireAdminPermission(

@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import {
   isSessionUser,
-  requireAdminUser,
 } from "@/services/auth/require-session";
+import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { logAdminAction } from "@/services/admin/admin-audit-store";
 import { refundOrder } from "@/services/payments/order-service";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: RouteParams) {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("payments", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

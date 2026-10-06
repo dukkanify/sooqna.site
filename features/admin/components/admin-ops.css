@@ -2365,6 +2365,43 @@ html[data-theme="dark"] .admin-ops .bg-warning-soft {
   gap: 0.35rem;
 }
 
+.admin-users__perm-summary {
+  display: block;
+  max-width: 16rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.45;
+  color: var(--admin-ink);
+}
+
+.admin-users__perm-summary--mobile {
+  max-width: none;
+  margin: 0.35rem 0 0;
+  color: var(--admin-muted);
+}
+
+.admin-users__perms-help {
+  margin: 0.35rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--admin-muted);
+}
+
+.admin-users__perm-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.admin-users__perm-hint {
+  margin: 0.15rem 0 0;
+  padding-inline-start: 1.35rem;
+  font-size: 0.66rem;
+  line-height: 1.45;
+  color: var(--admin-muted);
+}
+
 .admin-users__perms {
   border: 1px solid var(--admin-line);
   border-radius: 0.5rem;

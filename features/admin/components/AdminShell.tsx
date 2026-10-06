@@ -17,6 +17,7 @@ import type { IconName } from "@/shared/ui/Icon";
 import { BRAND } from "@/shared/constants/brand";
 import { hasAdminPermission } from "@/services/auth/admin-permission-checks";
 import { clearSessionUser, getSessionUser } from "@/services/storage";
+import { refreshAdminSession } from "@/features/admin/lib/admin-session";
 import { removeSessionCookie } from "@/services/auth/session-sync";
 import { AdminAssistantFab } from "@/features/admin/components/AdminAssistantFab";
 import "./admin-ops.css";
@@ -250,8 +251,8 @@ const adminLinks: {
     icon: "clock",
     label: "سجل العمليات",
     group: "more",
-    keywords: "audit log تاريخ",
-    permission: "settings",
+    keywords: "audit log تاريخ إجراءات سابقة",
+    permission: "reports",
   },
 ];
 
@@ -271,16 +272,32 @@ export function AdminShell({
   const pathname = usePathname();
 
   useEffect(() => {
+    let cancelled = false;
     const sessionUser = getSessionUser();
-    if (!sessionUser || sessionUser.role !== "admin") {
-      router.replace(`/login?next=${encodeURIComponent(activePath)}`);
-      return;
-    }
     const timeoutId = window.setTimeout(() => {
-      setDisplayUser(sessionUser);
-      setAuthState("admin");
+      if (cancelled) return;
+      if (sessionUser?.role === "admin") {
+        setDisplayUser(sessionUser);
+        setAuthState("admin");
+      }
     }, 0);
-    return () => window.clearTimeout(timeoutId);
+
+    void refreshAdminSession().then((user) => {
+      if (cancelled) return;
+      if (user?.role === "admin") {
+        setDisplayUser(user);
+        setAuthState("admin");
+        return;
+      }
+      if (!sessionUser || sessionUser.role !== "admin") {
+        router.replace(`/login?next=${encodeURIComponent(activePath)}`);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, [pathname, activePath, router]);
 
   const filteredLinks = useMemo(() => {

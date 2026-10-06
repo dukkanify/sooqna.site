@@ -25,7 +25,7 @@ See [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md).
 | **Seller payouts** | Connect Transfer on release when seller Express is ACTIVE. Skipped payouts retry via daily `/api/cron/escrow-maintenance`. `ENABLE_STRIPE_CONNECT_PAYOUTS=false` forces ledger-only. |
 | **Escrow evidence** | Uploads via `/api/uploads` to durable local `/api/media` (or S3 when configured). Metadata prefers Postgres. |
 | **Images** | Prefer `/api/uploads`; listings fall back to client compression if upload fails. |
-| **RBAC** | Module-level flags (not full View/Add/Edit/Delete/Approve/Export matrix). Super Admin empty permissions; Sub Admin assigned modules; Save Permissions required. |
+| **RBAC** | Super admin = empty stored modules (full access). Sub-admin = explicit module + action matrix (users, listings, orders, disputes, payments, reports, settings, categories). Users desk shows current grants; empty save cannot promote to super. |
 | **UAE PASS** | Hidden until `NEXT_PUBLIC_ENABLE_UAE_PASS=true` |
 | **Auto-release** | Daily `/api/cron/escrow-maintenance` after `escrowHoldDays` once seller proof exists (needs `CRON_SECRET` in production). |
 | **Automated tests** | `npm test` covers auth, integrity, filters, buy-again, escrow auto-release eligibility. No Playwright E2E yet. |

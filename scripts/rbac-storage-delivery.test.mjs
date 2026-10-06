@@ -39,7 +39,11 @@ const PERMISSION_MAP = {
   "escrow.manage": { module: "payments", action: "edit" },
   "disputes.view": { module: "disputes", action: "view" },
   "disputes.manage": { module: "disputes", action: "edit" },
+  "settings.view": { module: "settings", action: "view" },
   "settings.edit": { module: "settings", action: "edit" },
+  "categories.view": { module: "categories", action: "view" },
+  "reports.view": { module: "reports", action: "view" },
+  "reports.export": { module: "reports", action: "export" },
 };
 
 function hasAdminPermission(user, permission) {
@@ -153,6 +157,19 @@ test("permission matrix: normal user has no admin permissions", () => {
   const user = { role: "user" };
   assert.equal(hasPermission(user, "users.view"), false);
   assert.equal(hasPermission(user, "orders.manage"), false);
+});
+
+test("role templates expose disputes/reports/settings/categories independently", () => {
+  const supportModules = modulesFromKeys(ROLE_TEMPLATES.read_only_admin);
+  assert.equal(supportModules.includes("disputes"), true);
+  assert.equal(supportModules.includes("reports"), true);
+  assert.equal(supportModules.includes("settings"), true);
+  assert.equal(supportModules.includes("categories"), true);
+
+  const financeModules = modulesFromKeys(ROLE_TEMPLATES.finance_admin);
+  assert.equal(financeModules.includes("payments"), true);
+  assert.equal(financeModules.includes("reports"), true);
+  assert.equal(financeModules.includes("disputes"), false);
 });
 
 test("media class visibility: listing public, evidence/dispute private", () => {

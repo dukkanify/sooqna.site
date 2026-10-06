@@ -1,7 +1,7 @@
 import {
   isSessionUser,
-  requireAdminUser,
 } from "@/services/auth/require-session";
+import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import { getAllListingReports } from "@/services/listings/listing-report-store";
 import { resolveDisplayMaps } from "@/services/display/resolve-display-labels";
@@ -9,7 +9,7 @@ import { humanDisplayLabel } from "@/shared/display/technical-id";
 import { listingDetailsHref } from "@/shared/listings/listing-url";
 
 export async function GET() {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("listings", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }
