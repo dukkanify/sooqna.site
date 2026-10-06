@@ -17,10 +17,7 @@ import { getSafeNextPath } from "@/shared/utils/safe-next";
 import { buildLoginPasswordPayload } from "@/features/auth/lib/login-password-payload";
 import { trackAuthEventClient } from "@/services/analytics/auth-events";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
-import { findDemoAccountByIdentifier } from "@/mock/demo-accounts.mock";
-
-const ADMIN_DEMO_EMAIL = "admin@sooqna.demo";
-const ADMIN_DEMO_PASSWORD = "Admin@123";
+import { INVALID_CREDENTIALS_MESSAGE } from "@/services/auth/auth-messages";
 
 type LoginErrors = {
   email?: string;
@@ -33,10 +30,7 @@ function isValidEmail(value: string) {
 
 function getLoginErrorMessage(data: { message?: string; error?: string }) {
   if (data.error === "INVALID_CREDENTIALS") {
-    return (
-      data.message ??
-      "بيانات الدخول غير صحيحة. إذا غيّرت كلمة المرور مؤخرًا، استخدم «نسيت كلمة المرور» ثم سجّل الدخول بالكلمة الجديدة."
-    );
+    return data.message ?? INVALID_CREDENTIALS_MESSAGE;
   }
 
   return data.message ?? "تعذر تسجيل الدخول. حاول مرة أخرى.";
@@ -49,19 +43,14 @@ type LoginFormProps = {
 
 export function LoginForm({ variant = "default" }: LoginFormProps) {
   const [errors, setErrors] = useState<LoginErrors>({});
-  const [email, setEmail] = useState(() =>
-    variant === "admin" ? ADMIN_DEMO_EMAIL : "",
-  );
-  const [password, setPassword] = useState(() =>
-    variant === "admin" ? ADMIN_DEMO_PASSWORD : "",
-  );
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const emailOtpEnabled = isEmailOtpEnabled();
   const [usePassword, setUsePassword] = useState(!emailOtpEnabled || variant === "admin");
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");
   const isAdminNext = variant === "admin" || Boolean(nextPath?.startsWith("/admin"));
-  const adminDemo = findDemoAccountByIdentifier(ADMIN_DEMO_EMAIL);
 
   const completePasswordLogin = useCallback(
     async (nextEmail: string, nextPassword: string) => {
@@ -169,36 +158,11 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
           </h2>
           <p className="auth-form__subtitle">
             {isAdminNext
-              ? "أدخل بريد المدير وكلمة المرور للمتابعة."
+              ? "أدخل بريد المدير وكلمة المرور للمتابعة. تغيير كلمة المرور يتم من لوحة التحكم بعد الدخول."
               : emailOtpEnabled
                 ? "أدخل بريدك الإلكتروني وسنرسل لك رمز دخول آمن"
                 : "أدخل بريدك الإلكتروني وكلمة المرور للمتابعة"}
           </p>
-          {variant === "admin" ? (
-            <div className="mt-3 rounded-[var(--radius-lg)] border border-border bg-surface-muted/60 px-3 py-2 text-xs text-muted">
-              <p>
-                حساب المدير التجريبي:{" "}
-                <span className="font-semibold text-ink" dir="ltr">
-                  {ADMIN_DEMO_EMAIL}
-                </span>{" "}
-                /{" "}
-                <span className="font-semibold text-ink" dir="ltr">
-                  {ADMIN_DEMO_PASSWORD}
-                </span>
-              </p>
-              <button
-                className="mt-2 font-semibold text-primary"
-                onClick={() => {
-                  setEmail(ADMIN_DEMO_EMAIL);
-                  setPassword(adminDemo?.password ?? ADMIN_DEMO_PASSWORD);
-                  setErrors({});
-                }}
-                type="button"
-              >
-                تعبئة بيانات المدير
-              </button>
-            </div>
-          ) : null}
         </div>
 
         <Input
@@ -207,7 +171,7 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
           label="البريد الإلكتروني"
           name="email"
           onChange={(event) => setEmail(event.target.value)}
-          placeholder={variant === "admin" ? ADMIN_DEMO_EMAIL : "name@email.com"}
+          placeholder={variant === "admin" ? "بريد المدير" : "name@email.com"}
           required
           type="email"
           value={email}
@@ -220,7 +184,7 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
             label="كلمة المرور"
             name="password"
             onChange={(event) => setPassword(event.target.value)}
-            placeholder={variant === "admin" ? ADMIN_DEMO_PASSWORD : "••••••••"}
+            placeholder="••••••••"
             required
             type="password"
             value={password}

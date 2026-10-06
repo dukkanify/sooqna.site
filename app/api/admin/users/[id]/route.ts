@@ -16,6 +16,11 @@ import {
   toAdminUserRecord,
   updateUserAdmin,
 } from "@/services/auth/user-store";
+import { setSessionCookie } from "@/services/auth/session-cookie";
+import {
+  applyAdminSetPassword,
+  parseAdminNewPassword,
+} from "@/services/admin/admin-set-password";
 import { getAllListings } from "@/services/listings/listing-store";
 import type { AdminUserPatch } from "@/types";
 
@@ -168,6 +173,29 @@ export async function PATCH(request: Request, context: RouteParams) {
     });
   }
 
+  if (typeof body.newPassword === "string") {
+    const parsed = parseAdminNewPassword(body);
+    if ("error" in parsed) {
+      return NextResponse.json(parsed, { status: 400 });
+    }
+    const updated = await applyAdminSetPassword({
+      actor: admin,
+      targetId: id,
+      password: parsed.password,
+    });
+    const stored = await findUserById(id);
+    if (!stored) {
+      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+    }
+    if (admin.id === id) {
+      await setSessionCookie(updated);
+    }
+    return NextResponse.json({
+      user: toAdminUserRecord(stored, listingsCount),
+      recovery: { action: "set_password" },
+    });
+  }
+
   if (body.accountStatus === "active" && current.accountStatus === "pending") {
     if (!current.emailVerifiedAt) {
       return NextResponse.json(
@@ -183,6 +211,8 @@ export async function PATCH(request: Request, context: RouteParams) {
 
   const patch: AdminUserPatch = { ...body };
   delete patch.recoveryAction;
+  delete patch.newPassword;
+  delete patch.confirmPassword;
   const user = await updateUserAdmin(id, patch);
   if (!user) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });

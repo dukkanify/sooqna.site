@@ -30,6 +30,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
+import { STRONG_PASSWORD_HINT } from "@/shared/utils/password-rules";
 
 const roleLabels: Record<AdminUserRecord["role"], string> = {
   user: "مستخدم",
@@ -157,7 +158,7 @@ export function AdminUsersPanel() {
       });
   }, [users, query, statusFilter]);
 
-  async function patchUser(id: string, patch: AdminUserPatch) {
+  async function patchUser(id: string, patch: AdminUserPatch): Promise<boolean> {
     setBusyId(id);
     setMessage(null);
     try {
@@ -181,9 +182,12 @@ export function AdminUsersPanel() {
                     ? "الحساب متحقّق مسبقاً."
                     : data.error === "NO_PASSWORD"
                       ? "هذا الحساب يدخل برمز OTP وليس بكلمة مرور."
-                      : (data.message ?? "تعذر حفظ التغيير."),
+                      : data.error === "WEAK_PASSWORD" ||
+                          data.error === "PASSWORD_MISMATCH"
+                        ? (data.message ?? "تعذر حفظ كلمة المرور.")
+                        : (data.message ?? "تعذر حفظ التغيير."),
         });
-        return;
+        return false;
       }
       if (data.user) {
         setUsers((prev) =>
@@ -219,6 +223,11 @@ export function AdminUsersPanel() {
           variant: "success",
           text: "أُرسل رابط إعادة كلمة المرور إلى البريد.",
         });
+      } else if (patch.newPassword) {
+        setMessage({
+          variant: "success",
+          text: "تم حفظ كلمة المرور من لوحة التحكم.",
+        });
       } else if (patch.adminPermissions || patch.adminActionMatrix) {
         setMessage({
           variant: "success",
@@ -229,6 +238,7 @@ export function AdminUsersPanel() {
       } else if (patch.isVerified) {
         setMessage({ variant: "success", text: "تم توثيق الحساب." });
       }
+      return true;
     } finally {
       setBusyId(null);
     }
@@ -536,7 +546,7 @@ type UserDetailPanelProps = {
   busyId: string | null;
   sessionIsSuper: boolean;
   sessionId?: string;
-  patchUser: (id: string, patch: AdminUserPatch) => Promise<void>;
+  patchUser: (id: string, patch: AdminUserPatch) => Promise<boolean>;
   draftFor: (user: AdminUserRecord) => AdminPermission[];
   draftMatrixFor: (user: AdminUserRecord) => AdminActionMatrix;
   toggleDraftPermission: (
@@ -569,6 +579,9 @@ function UserDetailPanel({
   setDraftPermissions,
   setDraftMatrices,
 }: UserDetailPanelProps) {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   return (
     <div className="grid gap-3 py-1">
       <p className="text-xs font-semibold text-muted">
@@ -598,19 +611,6 @@ function UserDetailPanel({
             إعادة إرسال رمز
           </Button>
         ) : null}
-        <Button
-          loading={busyId === user.id}
-          onClick={() =>
-            patchUser(user.id, {
-              recoveryAction: "send_password_reset",
-            })
-          }
-          size="sm"
-          type="button"
-          variant="secondary"
-        >
-          رابط كلمة المرور
-        </Button>
         {user.accountStatus !== "suspended" ? (
           <Button
             loading={busyId === user.id}
@@ -659,6 +659,50 @@ function UserDetailPanel({
             إلغاء المدير
           </Button>
         ) : null}
+      </div>
+
+      <div className="grid gap-2 rounded-[var(--radius-lg)] border border-border p-3">
+        <p className="text-xs font-semibold text-ink">كلمة المرور</p>
+        <p className="text-xs text-muted">
+          عيّن كلمة مرور جديدة من لوحة التحكم. لا يُستخدم رابط «نسيت كلمة المرور»
+          لدخول غرفة التحكم.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Input
+            autoComplete="new-password"
+            hint={STRONG_PASSWORD_HINT}
+            label="كلمة المرور الجديدة"
+            onChange={(event) => setNewPassword(event.target.value)}
+            type="password"
+            value={newPassword}
+          />
+          <Input
+            autoComplete="new-password"
+            label="تأكيد كلمة المرور"
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            type="password"
+            value={confirmPassword}
+          />
+        </div>
+        <Button
+          disabled={!newPassword}
+          loading={busyId === user.id}
+          onClick={async () => {
+            const ok = await patchUser(user.id, {
+              newPassword,
+              confirmPassword,
+            });
+            if (ok) {
+              setNewPassword("");
+              setConfirmPassword("");
+            }
+          }}
+          size="sm"
+          type="button"
+          variant="secondary"
+        >
+          حفظ كلمة المرور
+        </Button>
       </div>
 
       {user.role === "admin" &&

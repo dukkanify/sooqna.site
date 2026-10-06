@@ -4,18 +4,24 @@ import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
 
 import { adminFetch } from "@/features/admin/lib/admin-fetch";
+import { persistSessionCookie } from "@/services/auth/session-sync";
 import { useEffect, useState } from "react";
 import type { AdminSiteSettings } from "@/services/admin/admin-settings-store";
-import { getSessionUser } from "@/services/storage";
+import { getSessionUser, setSessionUser } from "@/services/storage";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
+import { STRONG_PASSWORD_HINT } from "@/shared/utils/password-rules";
+import type { UserProfile } from "@/types";
 
 export function AdminSettingsPanel() {
   const locale = useLocale();
   const [settings, setSettings] = useState<AdminSiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   useEffect(() => {
     const user = getSessionUser();
@@ -56,6 +62,36 @@ export function AdminSettingsPanel() {
       setMessage("تعذّر الحفظ.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSavePassword() {
+    setPasswordSaving(true);
+    setMessage("");
+    try {
+      const res = await adminFetch("/api/admin/account/password", {
+        method: "POST",
+        body: JSON.stringify({
+          newPassword,
+          confirmPassword,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage(data.message ?? "تعذر حفظ كلمة المرور.");
+        return;
+      }
+      if (data.user) {
+        setSessionUser(data.user as UserProfile);
+        await persistSessionCookie();
+      }
+      setNewPassword("");
+      setConfirmPassword("");
+      setMessage("تم حفظ كلمة مرور الدخول.");
+    } catch {
+      setMessage("تعذر حفظ كلمة المرور.");
+    } finally {
+      setPasswordSaving(false);
     }
   }
 
@@ -241,6 +277,41 @@ export function AdminSettingsPanel() {
             />
             <span>اعتماد الحساب تلقائياً بعد التحقق من البريد</span>
           </label>
+        </div>
+      </Card>
+
+      <Card className="admin-desk-help p-5" variant="flat">
+        <h2 className="text-sm font-semibold text-ink">كلمة مرور الدخول</h2>
+        <p className="mt-2 text-xs text-muted">
+          غيّر كلمة مرور المدير من هنا. صفحة الدخول لا تعرض بيانات تجريبية ولا
+          تعيد التعيين عبر «نسيت كلمة المرور».
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Input
+            autoComplete="new-password"
+            hint={STRONG_PASSWORD_HINT}
+            label="كلمة المرور الجديدة"
+            onChange={(e) => setNewPassword(e.target.value)}
+            type="password"
+            value={newPassword}
+          />
+          <Input
+            autoComplete="new-password"
+            label="تأكيد كلمة المرور"
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            type="password"
+            value={confirmPassword}
+          />
+        </div>
+        <div className="mt-4">
+          <Button
+            disabled={passwordSaving || !newPassword}
+            onClick={() => void handleSavePassword()}
+            type="button"
+            variant="secondary"
+          >
+            {passwordSaving ? "جاري الحفظ..." : "حفظ كلمة المرور"}
+          </Button>
         </div>
       </Card>
 
