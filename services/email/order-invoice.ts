@@ -144,11 +144,11 @@ export function buildOrderInvoiceHtml(
 
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 8px;">
           <tr>
-            ${metaCell(english ? "Buyer" : "المشتري", buyerBlock, locale)}
-            ${metaCell(english ? "Seller" : "البائع", sellerBlock, locale)}
+            ${metaCell(english ? "Buyer" : "المشتري", buyerBlock)}
+            ${metaCell(english ? "Seller" : "البائع", sellerBlock)}
           </tr>
           <tr>
-            ${metaCell(english ? "Delivery" : "التسليم", deliveryBlock, locale)}
+            ${metaCell(english ? "Delivery" : "التسليم", deliveryBlock)}
             ${metaCell(
               english ? "Payment" : "الدفع",
               escapeEmailHtml(
@@ -156,7 +156,6 @@ export function buildOrderInvoiceHtml(
                   ? "Card · held in Sooqna escrow"
                   : "بطاقة · محجوز في ضمان سوقنا",
               ),
-              locale,
             )}
           </tr>
         </table>
