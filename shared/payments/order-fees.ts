@@ -1,6 +1,9 @@
 import type { OrderFeeBreakdown } from "@/types/domain/order";
 
-/** Keep in sync with admin-settings-store DEFAULT_SETTINGS. */
+/**
+ * Factory seed only for empty admin-settings store bootstrap.
+ * Never use as a checkout/runtime fallback — pass live panel rates.
+ */
 export const DEFAULT_ORDER_FEE_RATES = {
   platformFeePercent: 2.5,
   gatewayFeePercent: 2.9,
@@ -13,7 +16,7 @@ export type OrderFeeRates = {
   platformFeePercent: number;
 };
 
-/** Live admin-panel rates only — never fills 2.5% defaults. */
+/** Live admin-panel rates only — never fills factory 2.5% defaults. */
 export function resolveOrderFeeRates(
   source: Partial<OrderFeeRates> | null | undefined,
 ): OrderFeeRates | null {
@@ -36,11 +39,13 @@ export function resolveOrderFeeRates(
  * Marketplace buyer total = listing + shipping + admin platform %.
  * Estimated gateway cost is recorded for finance, but absorbed in the
  * platform take — it is not added on top of the buyer.
+ *
+ * `rates` is required so callers cannot silently fall back to factory 2.5%.
  */
 export function calculateOrderFees(
   productPrice: number,
   shippingFee = 0,
-  rates: OrderFeeRates = DEFAULT_ORDER_FEE_RATES,
+  rates: OrderFeeRates,
 ): OrderFeeBreakdown {
   const platformRate = rates.platformFeePercent / 100;
   const gatewayRate = rates.gatewayFeePercent / 100;

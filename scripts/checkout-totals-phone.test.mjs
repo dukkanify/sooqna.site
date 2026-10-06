@@ -38,10 +38,19 @@ describe("calculateOrderFees", () => {
   });
 
   it("rounds listing price before fees (UI/server parity)", () => {
-    const fees = calculateOrderFees(99.6, 15);
+    const fees = calculateOrderFees(99.6, 15, DEFAULT_ORDER_FEE_RATES);
     assert.equal(fees.productPrice, 100);
     assert.equal(fees.platformFee, 3);
     assert.equal(fees.total, 100 + 15 + 3);
+  });
+
+  it("requires explicit rates — no silent factory 2.5% default arg", () => {
+    const src = read("shared/payments/order-fees.ts");
+    assert.match(src, /rates: OrderFeeRates,/);
+    assert.doesNotMatch(
+      src,
+      /rates:\s*OrderFeeRates\s*=\s*DEFAULT_ORDER_FEE_RATES/,
+    );
   });
 
   it("uses live admin rates when provided", () => {
@@ -169,10 +178,16 @@ describe("checkout wiring", () => {
 
   it("server hydrates settings before fees and snapshots delivery phone", () => {
     const service = read("services/payments/order-service.ts");
+    const fees = read("services/payments/fee-calculator.ts");
     assert.match(service, /calculateOrderFeesFromSettings/);
     assert.match(service, /snapshotDeliveryAddress/);
     assert.match(service, /checkout_details_updated/);
     assert.match(service, /amount_total/);
+    assert.match(fees, /getAdminSettings\(\{ fresh: true \}\)/);
+    assert.match(fees, /resolveOrderFeeRates/);
+    assert.match(fees, /ADMIN_FEE_RATES_UNAVAILABLE/);
+    assert.doesNotMatch(fees, /getAdminSettingsSync/);
+    assert.doesNotMatch(fees, /export function calculateOrderFees\(/);
   });
 
   it("site-settings exposes live fee rates without caching defaults", () => {

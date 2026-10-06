@@ -72,9 +72,12 @@ export async function getAdminSettings(options?: {
   return cached;
 }
 
-/** Sync snapshot for fee calculator — falls back to defaults until hydrated. */
-export function getAdminSettingsSync(): AdminSiteSettings {
-  return cached ?? { ...DEFAULT_SETTINGS };
+/**
+ * Sync snapshot of already-hydrated settings.
+ * Returns null until `getAdminSettings` has loaded — never invents fee rates.
+ */
+export function getAdminSettingsSync(): AdminSiteSettings | null {
+  return cached;
 }
 
 export async function updateAdminSettings(
