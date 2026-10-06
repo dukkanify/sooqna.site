@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { DeliveryAddress, ShippingMethodId } from "@/types/domain/address";
 import type { Listing } from "@/types";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
@@ -155,12 +155,6 @@ export function CheckoutWizard({
     }
     return feeRates ?? initialFeeRates ?? null;
   }
-
-  useEffect(() => {
-    void loadFeeRates();
-    // Load live admin rates once on mount; payment step refreshes again.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only
-  }, []);
 
   const shippable = listing ? isCategoryShippable(listing.categoryId) : false;
   const requiresAddress = shippable && shippingMethod !== "pickup";
