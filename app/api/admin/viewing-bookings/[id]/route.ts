@@ -1,7 +1,7 @@
 import {
   isSessionUser,
-  requireAdminUser,
 } from "@/services/auth/require-session";
+import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import { updateActivityStatus } from "@/services/activity/activity-status-update";
 import type { ViewingBooking } from "@/types/domain/viewing-booking";
@@ -9,7 +9,7 @@ import type { ViewingBooking } from "@/types/domain/viewing-booking";
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("listings", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

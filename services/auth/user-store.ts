@@ -107,7 +107,16 @@ export async function ensureOperatorAdminAccount(): Promise<void> {
   );
   const roleOk = existing?.role === "admin";
   const statusOk = existing?.accountStatus === "active";
-  if (existing && passwordOk && roleOk && statusOk && existing.emailVerifiedAt) {
+  const superOk =
+    !existing?.adminPermissions || existing.adminPermissions.length === 0;
+  if (
+    existing &&
+    passwordOk &&
+    roleOk &&
+    statusOk &&
+    existing.emailVerifiedAt &&
+    superOk
+  ) {
     return;
   }
 
@@ -131,8 +140,8 @@ export async function ensureOperatorAdminAccount(): Promise<void> {
     onboardingStatus: existing?.onboardingStatus ?? "none",
     role: "admin",
     walletBalance: existing?.walletBalance ?? 0,
-    adminPermissions: existing?.adminPermissions,
-    adminActionMatrix: existing?.adminActionMatrix,
+    adminPermissions: [],
+    adminActionMatrix: {},
     sessionVersion: passwordOk
       ? existing?.sessionVersion
       : (existing?.sessionVersion ?? 0) + 1,

@@ -53,6 +53,17 @@ export type AdminUserPatch = Partial<
   /** Set from the control panel — not via login-page forgot-password. */
   newPassword?: string;
   confirmPassword?: string;
+  /**
+   * Super = empty stored modules (full access).
+   * Limited = explicit module list; empty list is rejected so a sub-admin
+   * cannot be promoted to super by saving blank checkboxes.
+   */
+  adminAccess?: "super" | "limited";
+  permissionTemplate?:
+    | "content_moderator"
+    | "finance_admin"
+    | "support_dispute_admin"
+    | "read_only_admin";
 };
 
 export type AdminListingRecord = {

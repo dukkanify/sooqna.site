@@ -6,7 +6,7 @@ export default function AdminUsersPage() {
   return (
     <AdminShell
       activePath="/admin/users"
-      description="اعتمد الحسابات العالقة بضغطة — التفاصيل تحت المزيد."
+      description="اعتمد الحسابات، اعرض الصلاحيات الحالية، وامنح أو اسحب الوحدات حسب الدور."
       title="المستخدمون"
     >
       <Suspense fallback={<p className="text-sm text-muted">جاري التحميل...</p>}>

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   isSessionUser,
-  requireAdminUser,
 } from "@/services/auth/require-session";
+import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import {
   filterRealOrders,
@@ -105,7 +105,7 @@ async function buildStripePayload() {
 }
 
 export async function GET() {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("payments", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -115,7 +115,7 @@ export async function GET() {
 
 /** Browser key paste is disabled — platform keys belong in Vercel Production. */
 export async function PUT() {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("payments", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }
@@ -131,7 +131,7 @@ export async function PUT() {
 }
 
 export async function DELETE() {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("payments", "edit");
   if (!isSessionUser(admin)) {
     return admin;
   }

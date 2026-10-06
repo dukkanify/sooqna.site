@@ -22,9 +22,17 @@ import {
   ALL_ADMIN_ACTIONS,
   ALL_ADMIN_PERMISSIONS,
   ADMIN_ACTION_LABELS,
+  ADMIN_PERMISSION_HINTS,
   ADMIN_PERMISSION_LABELS,
+  isSuperAdminUser,
+  visibleAdminPermissions,
 } from "@/services/auth/admin-permission-checks";
-import { getSessionUser } from "@/services/storage";
+import {
+  ADMIN_ROLE_TEMPLATE_LABELS,
+  type AssignableRoleTemplate,
+} from "@/services/auth/permission-matrix";
+import { getSessionUser, setSessionUser } from "@/services/storage";
+import { refreshAdminSession } from "@/features/admin/lib/admin-session";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -39,10 +47,15 @@ const roleLabels: Record<AdminUserRecord["role"], string> = {
 };
 
 function isSuperAdminRecord(user: Pick<AdminUserRecord, "role" | "adminPermissions">) {
-  return (
-    user.role === "admin" &&
-    (!user.adminPermissions || user.adminPermissions.length === 0)
-  );
+  return isSuperAdminUser(user);
+}
+
+function permissionSummary(user: AdminUserRecord): string {
+  if (user.role !== "admin") return "—";
+  if (isSuperAdminRecord(user)) return "كل الصلاحيات";
+  const granted = visibleAdminPermissions(user);
+  if (granted.length === 0) return "بدون صلاحيات";
+  return granted.map((item) => ADMIN_PERMISSION_LABELS[item]).join(" · ");
 }
 
 /** One clear status for the row — avoids badge clutter. */
@@ -107,17 +120,16 @@ export function AdminUsersPanel() {
     text: string;
     variant: "success" | "error";
   } | null>(null);
-  const session = getSessionUser();
-  const sessionIsSuper = Boolean(
-    session &&
-      isSuperAdminRecord({
-        role: session.role ?? "user",
-        adminPermissions: session.adminPermissions,
-      }),
-  );
+  const [session, setSession] = useState(() => getSessionUser());
 
   useEffect(() => {
-    const user = getSessionUser();
+    void refreshAdminSession().then((user) => {
+      if (user) setSession(user);
+    });
+  }, []);
+
+  useEffect(() => {
+    const user = session;
     if (!user || user.role !== "admin") return;
     adminFetch("/api/admin/users")
       .then((res) => res.json())
@@ -125,7 +137,10 @@ export function AdminUsersPanel() {
         setUsers((data.users ?? []) as AdminUserRecord[]);
       })
       .catch(() => setUsers([]));
-  }, []);
+  }, [session]);
+
+  const meFromList = users.find((user) => user.id === session?.id);
+  const sessionIsSuper = isSuperAdminUser(meFromList ?? session);
 
   const pendingCount = useMemo(
     () => users.filter((user) => user.accountStatus === "pending").length,
@@ -174,9 +189,11 @@ export function AdminUsersPanel() {
           text:
             data.error === "CANNOT_MODIFY_SUPER_ADMIN"
               ? "لا يمكن لمدير فرعي تعديل مدير أعلى."
-              : data.error === "SELF_ESCALATION"
-                ? "لا يمكنك توسيع صلاحياتك بنفسك."
-                : data.error === "PERSON_NOT_VERIFIED"
+                : data.error === "SELF_ESCALATION"
+                ? "لا يمكنك تعديل صلاحياتك بنفسك."
+                : data.error === "EMPTY_PERMISSIONS"
+                  ? (data.message ?? "اختر صلاحية واحدة على الأقل.")
+                  : data.error === "PERSON_NOT_VERIFIED"
                   ? "تحقق من الشخص أولاً قبل اعتماد الحساب."
                   : data.error === "ALREADY_VERIFIED"
                     ? "الحساب متحقّق مسبقاً."
@@ -203,6 +220,16 @@ export function AdminUsersPanel() {
           delete next[id];
           return next;
         });
+        if (session?.id === id && data.user.role) {
+          const nextSession = {
+            ...session,
+            role: data.user.role,
+            adminPermissions: data.user.adminPermissions,
+            adminActionMatrix: data.user.adminActionMatrix,
+          };
+          setSessionUser(nextSession);
+          setSession(nextSession);
+        }
       }
       if (patch.recoveryAction === "force_verify") {
         setMessage({
@@ -245,7 +272,9 @@ export function AdminUsersPanel() {
   }
 
   function draftFor(user: AdminUserRecord): AdminPermission[] {
-    return draftPermissions[user.id] ?? user.adminPermissions ?? [];
+    if (draftPermissions[user.id]) return draftPermissions[user.id];
+    if (isSuperAdminRecord(user)) return [...ALL_ADMIN_PERMISSIONS];
+    return user.adminPermissions ?? [];
   }
 
   function draftMatrixFor(user: AdminUserRecord): AdminActionMatrix {
@@ -295,6 +324,7 @@ export function AdminUsersPanel() {
     const draft = draftPermissions[user.id];
     const draftMatrix = draftMatrices[user.id];
     if (!draft && !draftMatrix) return false;
+    if (isSuperAdminRecord(user)) return false;
     if (draft) {
       const saved = user.adminPermissions ?? [];
       if (
@@ -313,11 +343,20 @@ export function AdminUsersPanel() {
     return false;
   }
 
+  function applyTemplate(user: AdminUserRecord, template: AssignableRoleTemplate) {
+    void patchUser(user.id, {
+      role: "admin",
+      permissionTemplate: template,
+    }).then((ok) => {
+      if (ok) setOpenId(user.id);
+    });
+  }
+
   return (
     <div className="admin-desk grid gap-4">
       <div className="admin-desk-toolbar">
         <p className="text-sm text-muted">
-          المستخدمون والصلاحيات — اعتمد الحسابات وعدّل الأدوار من القائمة.
+          المستخدمون والصلاحيات — اعتمد الحسابات، اعرض الصلاحيات الحالية، وامنح أو اسحب الوحدات حسب الدور.
         </p>
       </div>
 
@@ -364,6 +403,7 @@ export function AdminUsersPanel() {
                 <th>الاسم</th>
                 <th>البريد</th>
                 <th>الدور</th>
+                <th>الصلاحيات</th>
                 <th>الحالة</th>
                 <th>إعلانات</th>
                 <th>إجراءات</th>
@@ -372,7 +412,7 @@ export function AdminUsersPanel() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td className="text-muted" colSpan={6}>
+                  <td className="text-muted" colSpan={7}>
                     لا يوجد مستخدمون مطابقون.
                   </td>
                 </tr>
@@ -395,6 +435,11 @@ export function AdminUsersPanel() {
                           </span>
                         </td>
                         <td>{roleLabels[user.role]}</td>
+                        <td className="admin-desk-cell-wrap">
+                          <span className="admin-users__perm-summary">
+                            {permissionSummary(user)}
+                          </span>
+                        </td>
                         <td>
                           <Badge variant={status.variant}>{status.label}</Badge>
                         </td>
@@ -432,8 +477,9 @@ export function AdminUsersPanel() {
                       </tr>
                       {open ? (
                         <tr>
-                          <td className="admin-desk-cell-wrap" colSpan={6}>
+                          <td className="admin-desk-cell-wrap" colSpan={7}>
                             <UserDetailPanel
+                              applyTemplate={applyTemplate}
                               busyId={busyId}
                               draftFor={draftFor}
                               draftMatrixFor={draftMatrixFor}
@@ -485,6 +531,9 @@ export function AdminUsersPanel() {
                     <span>{roleLabels[user.role]}</span>
                     <span>{user.listingsCount} إعلان</span>
                   </div>
+                  <p className="admin-users__perm-summary admin-users__perm-summary--mobile">
+                    {permissionSummary(user)}
+                  </p>
                   <div className="admin-desk-mobile-card__actions">
                     {action ? (
                       <Button
@@ -513,6 +562,7 @@ export function AdminUsersPanel() {
                   </div>
                   {open ? (
                     <UserDetailPanel
+                      applyTemplate={applyTemplate}
                       busyId={busyId}
                       draftFor={draftFor}
                       draftMatrixFor={draftMatrixFor}
@@ -547,6 +597,10 @@ type UserDetailPanelProps = {
   sessionIsSuper: boolean;
   sessionId?: string;
   patchUser: (id: string, patch: AdminUserPatch) => Promise<boolean>;
+  applyTemplate: (
+    user: AdminUserRecord,
+    template: AssignableRoleTemplate,
+  ) => void;
   draftFor: (user: AdminUserRecord) => AdminPermission[];
   draftMatrixFor: (user: AdminUserRecord) => AdminActionMatrix;
   toggleDraftPermission: (
@@ -571,6 +625,7 @@ function UserDetailPanel({
   sessionIsSuper,
   sessionId,
   patchUser,
+  applyTemplate,
   draftFor,
   draftMatrixFor,
   toggleDraftPermission,
@@ -630,7 +685,12 @@ function UserDetailPanel({
             onClick={() =>
               patchUser(user.id, {
                 role: "admin",
+                adminAccess: "limited",
                 adminPermissions: ["listings", "orders"],
+                adminActionMatrix: {
+                  listings: [...ALL_ADMIN_ACTIONS],
+                  orders: [...ALL_ADMIN_ACTIONS],
+                },
               })
             }
             size="sm"
@@ -705,13 +765,44 @@ function UserDetailPanel({
         </Button>
       </div>
 
-      {user.role === "admin" &&
-      sessionIsSuper &&
-      !(isSuperAdminRecord(user) && user.id !== sessionId) ? (
+      {user.role === "admin" ? (
         <div className="admin-users__perms">
           <p className="admin-users__perms-title">صلاحيات المدير</p>
+          <p className="admin-users__perms-help">
+            {isSuperAdminRecord(user)
+              ? "مدير أعلى يملك كل الوحدات: المعاملات، تفاصيل الدفع، الاسترداد، النزاعات، التقارير، الإعدادات، والتصنيفات."
+              : sessionIsSuper
+                ? "فعّل أو أوقف كل وحدة ثم احفظ. منح الصلاحية لا ينشئ حساب دخول جديد."
+                : "عرض فقط — تعديل الصلاحيات متاح للمدير الأعلى."}
+          </p>
+          {sessionIsSuper &&
+          !isSuperAdminRecord(user) &&
+          user.id !== sessionId ? (
+            <div className="admin-users__perm-templates">
+              {(
+                Object.keys(
+                  ADMIN_ROLE_TEMPLATE_LABELS,
+                ) as AssignableRoleTemplate[]
+              ).map((template) => (
+                <Button
+                  key={template}
+                  disabled={busyId === user.id}
+                  onClick={() => applyTemplate(user, template)}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  {ADMIN_ROLE_TEMPLATE_LABELS[template]}
+                </Button>
+              ))}
+            </div>
+          ) : null}
           <div className="admin-users__perms-grid">
             {ALL_ADMIN_PERMISSIONS.map((permission) => {
+              const canEdit =
+                sessionIsSuper &&
+                !isSuperAdminRecord(user) &&
+                user.id !== sessionId;
               const checked = draftFor(user).includes(permission);
               const actions =
                 draftMatrixFor(user)[permission] ?? [...ALL_ADMIN_ACTIONS];
@@ -720,22 +811,22 @@ function UserDetailPanel({
                   <label className="admin-users__perm-label">
                     <input
                       checked={checked}
-                      disabled={
-                        busyId === user.id ||
-                        (user.id === sessionId && !sessionIsSuper)
-                      }
+                      disabled={busyId === user.id || !canEdit}
                       onChange={() => toggleDraftPermission(user, permission)}
                       type="checkbox"
                     />
                     {ADMIN_PERMISSION_LABELS[permission]}
                   </label>
+                  <p className="admin-users__perm-hint">
+                    {ADMIN_PERMISSION_HINTS[permission]}
+                  </p>
                   {checked ? (
                     <div className="admin-users__perm-actions">
                       {ALL_ADMIN_ACTIONS.map((item) => (
                         <label key={item} className="admin-users__perm-action">
                           <input
                             checked={actions.includes(item)}
-                            disabled={busyId === user.id}
+                            disabled={busyId === user.id || !canEdit}
                             onChange={() =>
                               toggleDraftAction(user, permission, item)
                             }
@@ -750,43 +841,48 @@ function UserDetailPanel({
               );
             })}
           </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Button
-              disabled={!hasUnsavedPermissions(user)}
-              loading={busyId === user.id}
-              onClick={() =>
-                patchUser(user.id, {
-                  adminPermissions: draftFor(user),
-                  adminActionMatrix: draftMatrixFor(user),
-                })
-              }
-              size="sm"
-              type="button"
-            >
-              حفظ
-            </Button>
-            {hasUnsavedPermissions(user) ? (
+          {sessionIsSuper &&
+          !isSuperAdminRecord(user) &&
+          user.id !== sessionId ? (
+            <div className="mt-2 flex flex-wrap gap-2">
               <Button
-                onClick={() => {
-                  setDraftPermissions((prev) => {
-                    const next = { ...prev };
-                    delete next[user.id];
-                    return next;
-                  });
-                  setDraftMatrices((prev) => {
-                    const next = { ...prev };
-                    delete next[user.id];
-                    return next;
-                  });
-                }}
+                disabled={!hasUnsavedPermissions(user)}
+                loading={busyId === user.id}
+                onClick={() =>
+                  patchUser(user.id, {
+                    adminAccess: "limited",
+                    adminPermissions: draftFor(user),
+                    adminActionMatrix: draftMatrixFor(user),
+                  })
+                }
                 size="sm"
                 type="button"
-                variant="ghost"
               >
-                إلغاء
+                حفظ
               </Button>
-            ) : null}
-          </div>
+              {hasUnsavedPermissions(user) ? (
+                <Button
+                  onClick={() => {
+                    setDraftPermissions((prev) => {
+                      const next = { ...prev };
+                      delete next[user.id];
+                      return next;
+                    });
+                    setDraftMatrices((prev) => {
+                      const next = { ...prev };
+                      delete next[user.id];
+                      return next;
+                    });
+                  }}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  إلغاء
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

@@ -8,6 +8,7 @@ import {
 } from "@/services/auth/admin-permission-checks";
 import type {
   AdminAction,
+  AdminActionMatrix,
   AdminPermission,
   UserProfile,
 } from "@/types/domain/user";
@@ -107,6 +108,35 @@ export const ROLE_PERMISSION_TEMPLATES = {
     "admin.audit.view",
   ] as PermissionKey[],
 } as const;
+
+export const ADMIN_ROLE_TEMPLATE_LABELS: Record<
+  Exclude<keyof typeof ROLE_PERMISSION_TEMPLATES, "super_admin">,
+  string
+> = {
+  content_moderator: "مشرف محتوى",
+  finance_admin: "مالية وضمان",
+  support_dispute_admin: "دعم ونزاعات",
+  read_only_admin: "قراءة فقط",
+};
+
+export type AssignableRoleTemplate = keyof typeof ADMIN_ROLE_TEMPLATE_LABELS;
+
+export function assignmentFromTemplate(template: AssignableRoleTemplate): {
+  adminPermissions: AdminPermission[];
+  adminActionMatrix: AdminActionMatrix;
+} {
+  const keys = ROLE_PERMISSION_TEMPLATES[template];
+  const adminPermissions = modulesFromPermissionKeys([...keys]);
+  const adminActionMatrix: AdminActionMatrix = {};
+  for (const key of keys) {
+    const spec = PERMISSION_MAP[key];
+    const current = adminActionMatrix[spec.module] ?? [];
+    if (!current.includes(spec.action)) {
+      adminActionMatrix[spec.module] = [...current, spec.action];
+    }
+  }
+  return { adminPermissions, adminActionMatrix };
+}
 
 export function hasPermission(
   user: Pick<UserProfile, "role" | "adminPermissions" | "adminActionMatrix"> | null | undefined,

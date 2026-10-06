@@ -1,7 +1,7 @@
 import {
   isSessionUser,
-  requireAdminUser,
 } from "@/services/auth/require-session";
+import { requireAdminPermission } from "@/services/auth/admin-permissions";
 import { NextResponse } from "next/server";
 import {
   buildDailySeries,
@@ -24,7 +24,7 @@ import { getPaymentEvents } from "@/services/payments/payment-log";
 import { loadAdminWalletsPayload } from "@/services/admin/admin-wallet-metrics";
 
 export async function GET() {
-  const admin = await requireAdminUser();
+  const admin = await requireAdminPermission("reports", "view");
   if (!isSessionUser(admin)) {
     return admin;
   }

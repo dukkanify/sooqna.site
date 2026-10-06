@@ -22,7 +22,30 @@ import {
   parseAdminNewPassword,
 } from "@/services/admin/admin-set-password";
 import { getAllListings } from "@/services/listings/listing-store";
+import {
+  isSuperAdminUser,
+  sanitizeAdminActionMatrix,
+  sanitizeAdminPermissions,
+} from "@/services/auth/admin-permission-checks";
+import {
+  assignmentFromTemplate,
+  type AssignableRoleTemplate,
+} from "@/services/auth/permission-matrix";
 import type { AdminUserPatch } from "@/types";
+
+const ASSIGNABLE_TEMPLATES = new Set<AssignableRoleTemplate>([
+  "content_moderator",
+  "finance_admin",
+  "support_dispute_admin",
+  "read_only_admin",
+]);
+
+function isAssignableTemplate(value: unknown): value is AssignableRoleTemplate {
+  return (
+    typeof value === "string" &&
+    ASSIGNABLE_TEMPLATES.has(value as AssignableRoleTemplate)
+  );
+}
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -39,35 +62,74 @@ export async function PATCH(request: Request, context: RouteParams) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
 
-  const actorIsSuper =
-    !admin.adminPermissions || admin.adminPermissions.length === 0;
-  const targetIsSuper =
-    current.role === "admin" &&
-    (!current.adminPermissions || current.adminPermissions.length === 0);
+  const actorIsSuper = isSuperAdminUser(admin);
+  const targetIsSuper = isSuperAdminUser(current);
 
   // Sub-admins cannot modify super admins.
   if (!actorIsSuper && targetIsSuper) {
     return NextResponse.json({ error: "CANNOT_MODIFY_SUPER_ADMIN" }, { status: 403 });
   }
 
-  // Prevent self-escalation to full super admin or broader modules.
-  if (admin.id === id && body.adminPermissions) {
-    const currentPerms = new Set(admin.adminPermissions ?? []);
-    const nextPerms = body.adminPermissions;
-    const expandingToSuper = nextPerms.length === 0 && currentPerms.size > 0;
-    const addingModules = nextPerms.some((item) => !currentPerms.has(item));
-    if (expandingToSuper || (currentPerms.size > 0 && addingModules)) {
-      return NextResponse.json({ error: "SELF_ESCALATION" }, { status: 403 });
+  if (isAssignableTemplate(body.permissionTemplate)) {
+    const assignment = assignmentFromTemplate(body.permissionTemplate);
+    body.role = "admin";
+    body.adminAccess = "limited";
+    body.adminPermissions = assignment.adminPermissions;
+    body.adminActionMatrix = assignment.adminActionMatrix;
+  } else if (body.permissionTemplate) {
+    return NextResponse.json({ error: "INVALID_TEMPLATE" }, { status: 400 });
+  }
+
+  if (body.adminAccess === "super") {
+    body.role = "admin";
+    body.adminPermissions = [];
+    body.adminActionMatrix = {};
+  } else if (body.adminPermissions !== undefined) {
+    const nextRole = body.role ?? current.role ?? "user";
+    if (nextRole !== "admin") {
+      body.adminPermissions = [];
+      body.adminActionMatrix = {};
+    } else {
+      const sanitized = sanitizeAdminPermissions(body.adminPermissions);
+      if (sanitized.length === 0) {
+        return NextResponse.json(
+          {
+            error: "EMPTY_PERMISSIONS",
+            message: "اختر صلاحية واحدة على الأقل للمدير الفرعي.",
+          },
+          { status: 400 },
+        );
+      }
+      body.adminPermissions = sanitized;
+      body.adminActionMatrix = sanitizeAdminActionMatrix(
+        body.adminActionMatrix,
+        sanitized,
+      );
+      if (body.role === undefined) {
+        body.role = "admin";
+      }
     }
   }
 
+  const changingAccess =
+    body.role !== undefined ||
+    body.adminPermissions !== undefined ||
+    body.adminActionMatrix !== undefined ||
+    body.adminAccess !== undefined ||
+    body.permissionTemplate !== undefined;
+
+  // Nobody may rewrite their own access matrix from this desk.
+  if (admin.id === id && changingAccess) {
+    return NextResponse.json({ error: "SELF_ESCALATION" }, { status: 403 });
+  }
+
+  // Another super admin's role / modules stay locked.
+  if (targetIsSuper && admin.id !== id && changingAccess) {
+    return NextResponse.json({ error: "CANNOT_MODIFY_SUPER_ADMIN" }, { status: 403 });
+  }
+
   // Only super admins may change roles or module permissions.
-  if (
-    !actorIsSuper &&
-    (body.role !== undefined ||
-      body.adminPermissions !== undefined ||
-      body.adminActionMatrix !== undefined)
-  ) {
+  if (!actorIsSuper && changingAccess) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
@@ -213,6 +275,8 @@ export async function PATCH(request: Request, context: RouteParams) {
   delete patch.recoveryAction;
   delete patch.newPassword;
   delete patch.confirmPassword;
+  delete patch.adminAccess;
+  delete patch.permissionTemplate;
   const user = await updateUserAdmin(id, patch);
   if (!user) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
@@ -234,7 +298,7 @@ export async function PATCH(request: Request, context: RouteParams) {
       body.role ? `دور ${body.role}` : null,
       body.adminPermissions
         ? `صلاحيات: ${
-            body.adminPermissions.length === 0
+            body.adminAccess === "super" || body.adminPermissions.length === 0
               ? "مدير أعلى"
               : body.adminPermissions.join(",")
           }`

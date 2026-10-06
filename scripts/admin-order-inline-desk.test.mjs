@@ -56,6 +56,14 @@ describe("admin order inline desk", () => {
     assert.match(src, /عرض \/ طباعة/);
     assert.match(src, /إرسال للمشتري/);
     assert.match(src, /buildOrderInvoiceHtml/);
+    assert.match(src, /createObjectURL/);
+    assert.match(src, /آخر إرسال/);
+  });
+
+  it("inline desk allows sending invoices to guest buyer email", () => {
+    const src = read("features/admin/components/AdminOrderInlineDesk.tsx");
+    assert.match(src, /guestEmail/);
+    assert.match(src, /buyerEmail \|\| order\.guestEmail/);
   });
 
   it("notify-payment and send-invoice admin APIs exist", () => {
