@@ -35,6 +35,7 @@ const customerTypeLabels: Record<NonNullable<Order["customerType"]>, string> = {
 type OrderFilter =
   | "all"
   | "held"
+  | "released"
   | "pending_payment"
   | "failed"
   | "evidence"
@@ -44,6 +45,7 @@ type OrderFilter =
 const filterOptions: { label: string; value: OrderFilter }[] = [
   { label: "الكل", value: "all" },
   { label: "ضمان محجوز", value: "held" },
+  { label: "محرَّر", value: "released" },
   { label: "بانتظار الدفع", value: "pending_payment" },
   { label: "دفع فاشل", value: "failed" },
   { label: "توثيق منتج ناقص", value: "evidence" },
@@ -73,6 +75,12 @@ function needsEvidence(order: Order): boolean {
 function matchesFilter(order: Order, filter: OrderFilter): boolean {
   if (filter === "all") return true;
   if (filter === "held") return isHeld(order);
+  if (filter === "released") {
+    return (
+      (order.escrowStatus === "released" || order.status === "released") &&
+      order.status !== "refunded"
+    );
+  }
   if (filter === "pending_payment") {
     return (
       order.status === "pending_payment" || order.paymentStatus === "pending"

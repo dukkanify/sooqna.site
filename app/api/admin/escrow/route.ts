@@ -11,11 +11,14 @@ export async function GET() {
   }
 
   const orders = filterRealOrders(await getAllOrders());
+  // Include held, released, and refunded so the desk filters match real escrow history.
   const escrowOrders = orders.filter(
     (order) =>
       order.escrowStatus === "held" ||
       order.escrowStatus === "released" ||
-      order.status === "paid_held_in_escrow",
+      order.escrowStatus === "refunded" ||
+      order.status === "paid_held_in_escrow" ||
+      order.status === "refunded",
   );
 
   const summary = {
