@@ -213,7 +213,9 @@ export function AdminOrderInlineDesk({
       </Section>
 
       <OrderInvoicePreview
-        canSend={Boolean(onSendInvoice && order.buyerEmail)}
+        canSend={Boolean(
+          onSendInvoice && (order.buyerEmail || order.guestEmail),
+        )}
         locale={invoiceLocale}
         onSend={onSendInvoice}
         order={order}
