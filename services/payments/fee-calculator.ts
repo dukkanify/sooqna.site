@@ -1,7 +1,8 @@
 import type { OrderFeeBreakdown } from "@/types/domain/order";
-import { getAdminSettings, getAdminSettingsSync } from "@/services/admin/admin-settings-store";
+import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import {
   calculateOrderFees as calculateOrderFeesWithRates,
+  resolveOrderFeeRates,
   type OrderFeeRates,
 } from "@/shared/payments/order-fees";
 
@@ -13,25 +14,17 @@ function ratesFromSettings(settings: {
   gatewayFeePercent: number;
   platformFeePercent: number;
 }): OrderFeeRates {
-  return {
-    gatewayFeeFixed: settings.gatewayFeeFixed,
-    gatewayFeePercent: settings.gatewayFeePercent,
-    platformFeePercent: settings.platformFeePercent,
-  };
+  const rates = resolveOrderFeeRates(settings);
+  if (!rates) {
+    throw new Error("ADMIN_FEE_RATES_UNAVAILABLE");
+  }
+  return rates;
 }
 
-/** Sync snapshot — prefer `calculateOrderFeesFromSettings` at checkout. */
-export function calculateOrderFees(
-  productPrice: number,
-  shippingFee = 0,
-): OrderFeeBreakdown {
-  return calculateOrderFeesWithRates(
-    productPrice,
-    shippingFee,
-    ratesFromSettings(getAdminSettingsSync()),
-  );
-}
-
+/**
+ * Checkout / order creation — always fresh control-panel rates.
+ * Never falls back to factory 2.5% defaults.
+ */
 export async function calculateOrderFeesFromSettings(
   productPrice: number,
   shippingFee = 0,
