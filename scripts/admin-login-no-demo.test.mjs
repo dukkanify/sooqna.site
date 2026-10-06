@@ -1,5 +1,5 @@
 /**
- * Admin login must not show demo credentials; passwords are set in the desk.
+ * Admin gate uses the live operator mailbox, not @sooqna.demo.
  * Run: node --test --experimental-strip-types scripts/admin-login-no-demo.test.mjs
  */
 import assert from "node:assert/strict";
@@ -9,6 +9,10 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { INVALID_CREDENTIALS_MESSAGE } from "../services/auth/auth-messages.ts";
 import { parseNewPasswordPair } from "../shared/utils/password-rules.ts";
+import {
+  OPERATOR_ADMIN_EMAIL,
+  OPERATOR_ADMIN_PASSWORD,
+} from "../shared/constants/operator-admin.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -17,17 +21,15 @@ function read(rel) {
 }
 
 describe("admin login copy", () => {
-  it("does not print demo email/password on the admin gate", () => {
+  it("shows the operator mailbox and password, not demo secrets", () => {
     const login = read("features/auth/components/LoginForm.tsx");
     assert.doesNotMatch(login, /admin@sooqna\.demo/);
-    assert.doesNotMatch(login, /Admin@123/);
-    assert.doesNotMatch(login, /تعبئة بيانات المدير/);
+    assert.match(login, /OPERATOR_ADMIN_EMAIL/);
+    assert.match(login, /OPERATOR_ADMIN_PASSWORD/);
+    assert.match(login, /تعبئة بيانات المدير/);
     assert.doesNotMatch(login, /حساب المدير التجريبي/);
-    assert.doesNotMatch(login, /findDemoAccountByIdentifier/);
-    assert.match(
-      login,
-      /تغيير كلمة المرور يتم من لوحة التحكم بعد الدخول/,
-    );
+    assert.equal(OPERATOR_ADMIN_EMAIL, "info@sooqnauae.com");
+    assert.equal(OPERATOR_ADMIN_PASSWORD, "Admin@123");
   });
 
   it("invalid credentials do not send the buyer to forgot-password", () => {
@@ -66,7 +68,9 @@ describe("admin password from the control panel", () => {
     const users = read("features/admin/components/AdminUsersPanel.tsx");
     const account = read("app/api/admin/account/password/route.ts");
     const patch = read("app/api/admin/users/[id]/route.ts");
-    assert.match(settings, /\/api\/admin\/account\/password/);
+    const loginRoute = read("app/api/auth/login/password/route.ts");
+    const store = read("services/auth/user-store.ts");
+    assert.match(settings, /OPERATOR_ADMIN_EMAIL/);
     assert.match(settings, /حفظ كلمة المرور/);
     assert.match(users, /newPassword/);
     assert.match(users, /حفظ كلمة المرور/);
@@ -74,5 +78,7 @@ describe("admin password from the control panel", () => {
     assert.match(account, /applyAdminSetPassword/);
     assert.match(patch, /body\.newPassword/);
     assert.match(patch, /setSessionCookie/);
+    assert.match(loginRoute, /ensureOperatorAdminAccount/);
+    assert.match(store, /ensureOperatorAdminAccount/);
   });
 });

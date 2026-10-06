@@ -3,12 +3,14 @@ import { z } from "zod";
 import { setSessionCookie } from "@/services/auth/session-cookie";
 import {
   ensureDemoAccounts,
+  ensureOperatorAdminAccount,
   findUserByEmail,
   toUserProfile,
   getRedirectAfterAuth,
   restoreUserWithPasswordProof,
   saveUser,
 } from "@/services/auth/user-store";
+import { OPERATOR_ADMIN_EMAIL } from "@/shared/constants/operator-admin";
 import { verifyPassword } from "@/services/auth/password.service";
 import { readAccountProofCookie } from "@/services/auth/account-vault";
 import { trackAuthEvent } from "@/services/analytics/auth-events";
@@ -95,6 +97,14 @@ export async function POST(request: Request) {
     if (isDemoAccountEmail(email) && shouldSeedDemoAccounts()) {
       try {
         await ensureDemoAccounts();
+      } catch {
+        // Fall through — login still attempts against whatever is stored.
+      }
+    }
+
+    if (email === OPERATOR_ADMIN_EMAIL) {
+      try {
+        await ensureOperatorAdminAccount();
       } catch {
         // Fall through — login still attempts against whatever is stored.
       }

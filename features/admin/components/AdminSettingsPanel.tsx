@@ -12,6 +12,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 import { STRONG_PASSWORD_HINT } from "@/shared/utils/password-rules";
+import { OPERATOR_ADMIN_EMAIL } from "@/shared/constants/operator-admin";
 import type { UserProfile } from "@/types";
 
 export function AdminSettingsPanel() {
@@ -283,8 +284,7 @@ export function AdminSettingsPanel() {
       <Card className="admin-desk-help p-5" variant="flat">
         <h2 className="text-sm font-semibold text-ink">كلمة مرور الدخول</h2>
         <p className="mt-2 text-xs text-muted">
-          غيّر كلمة مرور المدير من هنا. صفحة الدخول لا تعرض بيانات تجريبية ولا
-          تعيد التعيين عبر «نسيت كلمة المرور».
+          حساب الدخول: {OPERATOR_ADMIN_EMAIL}. غيّر كلمة المرور من هنا بعد الدخول.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <Input

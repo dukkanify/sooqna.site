@@ -1,5 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { demoAccounts } from "@/mock/demo-accounts.mock";
+import {
+  OPERATOR_ADMIN_EMAIL,
+  OPERATOR_ADMIN_PASSWORD,
+} from "@/shared/constants/operator-admin";
 import { hashPassword, verifyPassword } from "@/services/auth/password.service";
 import {
   findInAccountVault,
@@ -88,6 +92,55 @@ export async function ensureDemoAccounts(): Promise<void> {
   }
 
   await demoAccountsEnsured;
+}
+
+/**
+ * Ensures the live operator mailbox can sign in to the control room.
+ * Does not seed @sooqna.demo accounts.
+ */
+export async function ensureOperatorAdminAccount(): Promise<void> {
+  const email = OPERATOR_ADMIN_EMAIL.toLowerCase();
+  const existing = await findPersistedUserByEmail(email);
+  const passwordOk = Boolean(
+    existing?.passwordHash &&
+      verifyPassword(OPERATOR_ADMIN_PASSWORD, existing.passwordHash),
+  );
+  const roleOk = existing?.role === "admin";
+  const statusOk = existing?.accountStatus === "active";
+  if (existing && passwordOk && roleOk && statusOk && existing.emailVerifiedAt) {
+    return;
+  }
+
+  const now = new Date().toISOString();
+  await persistUser({
+    id: existing?.id ?? `admin-operator-${randomBytes(4).toString("hex")}`,
+    fullName: existing?.fullName?.trim() || "Sooqna Admin",
+    email,
+    normalizedEmail: email,
+    phone: existing?.phone ?? "",
+    city: existing?.city || "دبي",
+    accountType: existing?.accountType === "company" ? "company" : "individual",
+    isVerified: true,
+    joinedAt: existing?.joinedAt ?? now.slice(0, 10),
+    createdAt: existing?.createdAt ?? now,
+    accountStatus: "active",
+    emailVerifiedAt: existing?.emailVerifiedAt ?? now,
+    passwordHash: hashPassword(OPERATOR_ADMIN_PASSWORD),
+    registrationSource: existing?.registrationSource ?? "STANDARD",
+    isGuestConverted: existing?.isGuestConverted ?? false,
+    onboardingStatus: existing?.onboardingStatus ?? "none",
+    role: "admin",
+    walletBalance: existing?.walletBalance ?? 0,
+    adminPermissions: existing?.adminPermissions,
+    adminActionMatrix: existing?.adminActionMatrix,
+    sessionVersion: passwordOk
+      ? existing?.sessionVersion
+      : (existing?.sessionVersion ?? 0) + 1,
+    passwordUpdatedAt: passwordOk ? existing?.passwordUpdatedAt : now,
+    businessProfile: existing?.businessProfile,
+    socialLinks: existing?.socialLinks,
+    socialLinksPublic: existing?.socialLinksPublic,
+  });
 }
 
 function isPlaceholderUser(user: StoredUser): boolean {
