@@ -21,28 +21,32 @@ import { FormMessage } from "@/shared/ui/FormMessage";
 import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
 
-type StatusFilter = "open" | "all" | SupportMessageStatus;
+type StatusFilter = "received" | "all" | SupportMessageStatus;
 
 const filterOptions: { label: string; value: StatusFilter }[] = [
-  { label: "الجديدة", value: "open" },
+  { label: "مستلم", value: "received" },
   { label: "الكل", value: "all" },
-  { label: SUPPORT_MESSAGE_STATUS_LABELS.reviewed, value: "reviewed" },
-  { label: SUPPORT_MESSAGE_STATUS_LABELS.resolved, value: "resolved" },
-  { label: SUPPORT_MESSAGE_STATUS_LABELS.dismissed, value: "dismissed" },
+  { label: SUPPORT_MESSAGE_STATUS_LABELS.in_review, value: "in_review" },
+  { label: SUPPORT_MESSAGE_STATUS_LABELS.replied, value: "replied" },
+  { label: SUPPORT_MESSAGE_STATUS_LABELS.closed, value: "closed" },
 ];
 
 function parseFilter(raw: string | null): StatusFilter {
   const allowed = new Set(filterOptions.map((o) => o.value));
   if (raw && allowed.has(raw as StatusFilter)) return raw as StatusFilter;
-  return "open";
+  if (raw === "open") return "received";
+  if (raw === "reviewed") return "in_review";
+  if (raw === "resolved") return "replied";
+  if (raw === "dismissed") return "closed";
+  return "received";
 }
 
 function statusBadgeVariant(
   status: SupportMessageStatus,
 ): "pending" | "verified" | "rejected" | "muted" | "escrow" {
-  if (status === "open") return "pending";
-  if (status === "resolved") return "verified";
-  if (status === "dismissed") return "muted";
+  if (status === "received") return "pending";
+  if (status === "replied") return "verified";
+  if (status === "closed") return "muted";
   return "escrow";
 }
 
@@ -63,7 +67,7 @@ export function AdminSupportMessagesPanel() {
 
   function setStatusFilter(next: StatusFilter) {
     const params = new URLSearchParams(searchParams.toString());
-    if (next === "open") params.delete("status");
+    if (next === "received") params.delete("status");
     else params.set("status", next);
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname);
@@ -128,7 +132,7 @@ export function AdminSupportMessagesPanel() {
     }
   }
 
-  const openCount = items.filter((item) => item.status === "open").length;
+  const openCount = items.filter((item) => item.status === "received").length;
 
   return (
     <div className="admin-desk grid gap-4">
@@ -148,7 +152,7 @@ export function AdminSupportMessagesPanel() {
           <p className="admin-ops__kpi-value">{items.length}</p>
         </div>
         <div className="admin-ops__kpi">
-          <p className="admin-ops__kpi-label">جديدة</p>
+          <p className="admin-ops__kpi-label">مستلم</p>
           <p className="admin-ops__kpi-value">{openCount}</p>
         </div>
       </div>
@@ -174,6 +178,7 @@ export function AdminSupportMessagesPanel() {
           <table className="admin-ops__table admin-desk-table admin-desk-table--compact">
             <thead>
               <tr>
+                <th>رقم الطلب</th>
                 <th>المرسل</th>
                 <th>الموضوع</th>
                 <th>الرسالة</th>
@@ -185,7 +190,7 @@ export function AdminSupportMessagesPanel() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td className="text-muted" colSpan={6}>
+                  <td className="text-muted" colSpan={7}>
                     {items.length === 0
                       ? "لا رسائل من نموذج تواصل معنا بعد."
                       : "لا رسائل لهذه التصفية."}
@@ -194,9 +199,15 @@ export function AdminSupportMessagesPanel() {
               ) : (
                 filtered.map((item) => {
                   const expanded = expandedId === item.id;
-                  const isOpen = item.status === "open";
+                  const isOpen =
+                    item.status === "received" || item.status === "in_review";
                   return (
                     <tr key={item.id}>
+                      <td>
+                        <p className="font-bold text-ink" dir="ltr">
+                          {item.ticketNumber}
+                        </p>
+                      </td>
                       <td className="admin-desk-cell-wrap">
                         <p className="admin-desk-cell-title">{item.name}</p>
                         <a
@@ -240,9 +251,9 @@ export function AdminSupportMessagesPanel() {
                                 onClick={() =>
                                   void updateStatus(
                                     item.id,
-                                    "resolved",
-                                    "تأكيد تعليم الرسالة كمُجاب عليها؟",
-                                    "تم تعليم الرسالة كمجاب عليها.",
+                                    "replied",
+                                    "تأكيد تعليم الطلب كمُجاب عليه؟",
+                                    "تم تعليم الطلب كمجاب عليه.",
                                   )
                                 }
                                 size="sm"
@@ -255,25 +266,25 @@ export function AdminSupportMessagesPanel() {
                                 onClick={() =>
                                   void updateStatus(
                                     item.id,
-                                    "reviewed",
-                                    "تأكيد تعليم الرسالة كمراجعة؟",
-                                    "تمت مراجعة الرسالة.",
+                                    "in_review",
+                                    "تأكيد نقل الطلب إلى قيد المراجعة؟",
+                                    "الطلب قيد المراجعة الآن.",
                                   )
                                 }
                                 size="sm"
                                 type="button"
                                 variant="secondary"
                               >
-                                تمت المراجعة
+                                قيد المراجعة
                               </Button>
                               <Button
                                 disabled={busyId === item.id}
                                 onClick={() =>
                                   void updateStatus(
                                     item.id,
-                                    "dismissed",
-                                    "تأكيد إغلاق الرسالة بدون إجراء؟",
-                                    "أُغلقت الرسالة.",
+                                    "closed",
+                                    "تأكيد إغلاق الطلب؟",
+                                    "أُغلق الطلب.",
                                   )
                                 }
                                 size="sm"
@@ -339,12 +350,16 @@ export function AdminSupportMessagesPanel() {
           ) : (
             filtered.map((item) => {
               const expanded = expandedId === item.id;
-              const isOpen = item.status === "open";
+              const isOpen =
+                item.status === "received" || item.status === "in_review";
               return (
                 <li key={item.id} className="admin-desk-mobile-card">
                   <div className="admin-desk-mobile-card__head">
                     <p className="min-w-0 flex-1 text-sm font-bold text-ink">
                       {item.name}
+                      <span className="mt-0.5 block text-xs font-bold text-secondary" dir="ltr">
+                        {item.ticketNumber}
+                      </span>
                     </p>
                     <Badge variant={statusBadgeVariant(item.status)}>
                       {SUPPORT_MESSAGE_STATUS_LABELS[item.status] ??
@@ -410,9 +425,9 @@ export function AdminSupportMessagesPanel() {
                           onClick={() =>
                             void updateStatus(
                               item.id,
-                              "resolved",
-                              "تأكيد تعليم الرسالة كمُجاب عليها؟",
-                              "تم تعليم الرسالة كمجاب عليها.",
+                              "replied",
+                              "تأكيد تعليم الطلب كمُجاب عليه؟",
+                              "تم تعليم الطلب كمجاب عليه.",
                             )
                           }
                           size="sm"
@@ -425,25 +440,25 @@ export function AdminSupportMessagesPanel() {
                           onClick={() =>
                             void updateStatus(
                               item.id,
-                              "reviewed",
-                              "تأكيد تعليم الرسالة كمراجعة؟",
-                              "تمت مراجعة الرسالة.",
+                              "in_review",
+                              "تأكيد نقل الطلب إلى قيد المراجعة؟",
+                              "الطلب قيد المراجعة الآن.",
                             )
                           }
                           size="sm"
                           type="button"
                           variant="secondary"
                         >
-                          تمت المراجعة
+                          قيد المراجعة
                         </Button>
                         <Button
                           disabled={busyId === item.id}
                           onClick={() =>
                             void updateStatus(
                               item.id,
-                              "dismissed",
-                              "تأكيد إغلاق الرسالة بدون إجراء؟",
-                              "أُغلقت الرسالة.",
+                              "closed",
+                              "تأكيد إغلاق الطلب؟",
+                              "أُغلق الطلب.",
                             )
                           }
                           size="sm"

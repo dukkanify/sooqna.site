@@ -7,6 +7,7 @@ import { ProfileActivityPanel } from "@/features/profile/components/ProfileActiv
 import { ProfileHashScroll } from "@/features/profile/components/ProfileHashScroll";
 import { SecuritySettingsPanel } from "@/features/profile/components/SecuritySettingsPanel";
 import { ProfileForm } from "@/features/profile/components/ProfileForm";
+import { SupportTicketsPanel } from "@/features/profile/components/SupportTicketsPanel";
 import { ViewingAvailabilityPanel } from "@/features/profile/components/ViewingAvailabilityPanel";
 import { Card } from "@/shared/ui/Card";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
@@ -66,6 +67,15 @@ export default async function ProfilePage() {
             </p>
             <div className="mt-4">
               <ViewingAvailabilityPanel />
+            </div>
+          </Card>
+          <Card className="mt-6 scroll-mt-24 p-5" id="support-tickets" variant="flat">
+            <h2 className="text-sm font-semibold text-ink">طلبات تواصل معنا</h2>
+            <p className="mt-1 text-xs leading-6 text-muted">
+              طلبات الدعم المرتبطة بحسابك مع رقم الطلب والحالة الحالية (مستلم، قيد المراجعة، تم الرد، مغلق).
+            </p>
+            <div className="mt-4">
+              <SupportTicketsPanel />
             </div>
           </Card>
           <ProfileActivityPanel userId={user.id} />
