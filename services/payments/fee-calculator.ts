@@ -36,7 +36,7 @@ export async function calculateOrderFeesFromSettings(
   productPrice: number,
   shippingFee = 0,
 ): Promise<OrderFeeBreakdown> {
-  const settings = await getAdminSettings();
+  const settings = await getAdminSettings({ fresh: true });
   return calculateOrderFeesWithRates(
     productPrice,
     shippingFee,

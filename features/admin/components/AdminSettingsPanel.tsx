@@ -80,7 +80,8 @@ export function AdminSettingsPanel() {
       <Card className="admin-desk-help p-5" variant="flat">
         <h2 className="text-sm font-semibold text-ink">الرسوم والمدفوعات</h2>
         <p className="mt-2 text-xs text-muted">
-          تتحكم في نسبة المنصة وبوابة الدفع لكل طلب جديد.
+          النسبة المحفوظة هنا هي التي تظهر للمشتري في خطوة الدفع، ونفس الرقم يُحسب
+          في Stripe لكل طلب جديد. غيّرها ثم احفظ لتطبيقها فورًا.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Input

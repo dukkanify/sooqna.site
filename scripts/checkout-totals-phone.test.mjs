@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   calculateOrderFees,
   DEFAULT_ORDER_FEE_RATES,
+  resolveOrderFeeRates,
   stripeAmountFils,
 } from "../shared/payments/order-fees.ts";
 import {
@@ -50,6 +51,34 @@ describe("calculateOrderFees", () => {
     assert.equal(fees.platformFee, 10);
     assert.equal(fees.gatewayFee, 2);
     assert.equal(fees.total, 212);
+  });
+
+  it("matches a 30% admin-panel rate on a 3000 AED listing", () => {
+    const fees = calculateOrderFees(3000, 15, {
+      platformFeePercent: 30,
+      gatewayFeePercent: 2.9,
+      gatewayFeeFixed: 1,
+    });
+    assert.equal(fees.platformFee, 900);
+    assert.equal(fees.gatewayFee, 88);
+    assert.equal(fees.total, 4003);
+  });
+
+  it("does not fill factory 2.5% when admin rates are missing", () => {
+    assert.equal(resolveOrderFeeRates(null), null);
+    assert.equal(resolveOrderFeeRates({ platformFeePercent: 30 }), null);
+    assert.deepEqual(
+      resolveOrderFeeRates({
+        platformFeePercent: 30,
+        gatewayFeePercent: 2.9,
+        gatewayFeeFixed: 1,
+      }),
+      {
+        platformFeePercent: 30,
+        gatewayFeePercent: 2.9,
+        gatewayFeeFixed: 1,
+      },
+    );
   });
 });
 
@@ -107,7 +136,7 @@ describe("delivery phone snapshot", () => {
 });
 
 describe("checkout wiring", () => {
-  it("wizard sends checkout phone and delivery snapshot, not profile-only phone", () => {
+  it("wizard uses admin-panel rates, not a 2.5% first paint", () => {
     const wizard = read("features/checkout/components/CheckoutWizard.tsx");
     const payload = read("features/checkout/utils/checkout-validation.ts");
     assert.match(wizard, /buildCheckoutDeliveryPayload/);
@@ -118,7 +147,14 @@ describe("checkout wiring", () => {
       /phone:\s*sessionUser\?\.phone\?\.trim\(\) \|\| normalized\.phone/,
     );
     assert.match(wizard, /calculateOrderFees/);
-    assert.match(wizard, /platformFeePercent/);
+    assert.match(wizard, /resolveOrderFeeRates/);
+    assert.match(wizard, /cache:\s*"no-store"/);
+    assert.match(wizard, /رسوم المنصة \(\{feeRates\.platformFeePercent\}%\)/);
+    assert.doesNotMatch(wizard, /DEFAULT_ORDER_FEE_RATES/);
+    assert.doesNotMatch(
+      wizard,
+      /useState<OrderFeeRates>\(DEFAULT_ORDER_FEE_RATES\)/,
+    );
     assert.match(wizard, /هاتف التوصيل/);
     assert.match(wizard, /UaePhoneInput/);
   });
@@ -131,11 +167,25 @@ describe("checkout wiring", () => {
     assert.match(service, /amount_total/);
   });
 
-  it("site-settings exposes fee rates used by the payment step", () => {
+  it("site-settings exposes live fee rates without caching defaults", () => {
     const settings = read("app/api/site-settings/route.ts");
     assert.match(settings, /platformFeePercent: settings\.platformFeePercent/);
     assert.match(settings, /gatewayFeePercent: settings\.gatewayFeePercent/);
     assert.match(settings, /gatewayFeeFixed: settings\.gatewayFeeFixed/);
+    assert.match(settings, /getAdminSettings\(\{ fresh: true \}\)/);
+    assert.match(settings, /Cache-Control": "no-store"/);
+  });
+
+  it("checkout page hydrates wizard from current admin settings", () => {
+    const page = read("app/checkout/page.tsx");
+    const fees = read("services/payments/fee-calculator.ts");
+    const store = read("services/admin/admin-settings-store.ts");
+    const admin = read("features/admin/components/AdminSettingsPanel.tsx");
+    assert.match(page, /getAdminSettings\(\{ fresh: true \}\)/);
+    assert.match(page, /feeRates=\{feeRates\}/);
+    assert.match(fees, /getAdminSettings\(\{ fresh: true \}\)/);
+    assert.match(store, /options\?\.fresh/);
+    assert.match(admin, /النسبة المحفوظة هنا هي التي تظهر للمشتري/);
   });
 
   it("buyer order page shows itemized fees and delivery snapshot phone", () => {

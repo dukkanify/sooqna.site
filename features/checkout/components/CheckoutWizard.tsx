@@ -46,12 +46,13 @@ import { CheckoutLiveLocation } from "@/features/checkout/components/CheckoutLiv
 import type { CheckoutLiveLocationValue } from "@/features/checkout/lib/checkout-live-location";
 import {
   calculateOrderFees,
-  DEFAULT_ORDER_FEE_RATES,
+  resolveOrderFeeRates,
   type OrderFeeRates,
 } from "@/shared/payments/order-fees";
 
 type CheckoutWizardProps = {
   catalogListing?: Listing;
+  feeRates?: OrderFeeRates | null;
   listingRef?: string;
   paymentCancelled?: boolean;
   fromOrderId?: string;
@@ -88,6 +89,7 @@ const defaultGuestInfo: GuestDeliveryInfo = {
 
 export function CheckoutWizard({
   catalogListing,
+  feeRates: initialFeeRates,
   listingRef,
   paymentCancelled,
   fromOrderId,
@@ -128,34 +130,36 @@ export function CheckoutWizard({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<CheckoutFieldErrors>({});
   const [existingAccountHint, setExistingAccountHint] = useState(false);
-  const [feeRates, setFeeRates] = useState<OrderFeeRates>(DEFAULT_ORDER_FEE_RATES);
+  const [feeRates, setFeeRates] = useState<OrderFeeRates | null>(
+    initialFeeRates ?? null,
+  );
+  const [feeRatesError, setFeeRatesError] = useState("");
+
+  async function loadFeeRates(): Promise<OrderFeeRates | null> {
+    try {
+      const response = await fetch("/api/site-settings", { cache: "no-store" });
+      const data = response.ok
+        ? ((await response.json()) as { settings?: Partial<OrderFeeRates> })
+        : null;
+      const next = resolveOrderFeeRates(data?.settings);
+      if (next) {
+        setFeeRates(next);
+        setFeeRatesError("");
+        return next;
+      }
+    } catch {
+      // Keep the server-rendered admin rates if the refresh fails.
+    }
+    if (!initialFeeRates && !feeRates) {
+      setFeeRatesError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+    }
+    return feeRates ?? initialFeeRates ?? null;
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    void fetch("/api/site-settings")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { settings?: Partial<OrderFeeRates> } | null) => {
-        if (cancelled || !data?.settings) return;
-        const next: OrderFeeRates = {
-          platformFeePercent:
-            typeof data.settings.platformFeePercent === "number"
-              ? data.settings.platformFeePercent
-              : DEFAULT_ORDER_FEE_RATES.platformFeePercent,
-          gatewayFeePercent:
-            typeof data.settings.gatewayFeePercent === "number"
-              ? data.settings.gatewayFeePercent
-              : DEFAULT_ORDER_FEE_RATES.gatewayFeePercent,
-          gatewayFeeFixed:
-            typeof data.settings.gatewayFeeFixed === "number"
-              ? data.settings.gatewayFeeFixed
-              : DEFAULT_ORDER_FEE_RATES.gatewayFeeFixed,
-        };
-        setFeeRates(next);
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
+    void loadFeeRates();
+    // Load live admin rates once on mount; payment step refreshes again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only
   }, []);
 
   const shippable = listing ? isCategoryShippable(listing.categoryId) : false;
@@ -177,7 +181,10 @@ export function CheckoutWizard({
   const resolvedShippingMethod =
     shippingMethods.some((method) => method.id === shippingMethod) ? shippingMethod : "standard";
   const shippingFee = shippable ? calculateShippingFee(resolvedShippingMethod) : 0;
-  const totals = listing ? calculateOrderFees(listing.price, shippingFee, feeRates) : null;
+  const totals =
+    listing && feeRates
+      ? calculateOrderFees(listing.price, shippingFee, feeRates)
+      : null;
 
   function scrollPanelToTop() {
     panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -311,6 +318,11 @@ export function CheckoutWizard({
         if (guestCheckout && !buyer) {
           advanceStep("delivery");
         } else {
+          const liveRates = await loadFeeRates();
+          if (!liveRates) {
+            setError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+            return;
+          }
           advanceStep("payment");
         }
       }
@@ -364,6 +376,11 @@ export function CheckoutWizard({
     transitionLockRef.current = true;
     setIsContinuing(true);
     try {
+      const liveRates = await loadFeeRates();
+      if (!liveRates) {
+        setError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+        return;
+      }
       advanceStep("payment");
     } finally {
       setIsContinuing(false);
@@ -372,9 +389,15 @@ export function CheckoutWizard({
   }
 
   async function handlePay(options?: { forceMock?: boolean }) {
-    if (!listing || !totals) return;
+    if (!listing) return;
     setError("");
     setIsLoading(true);
+    const liveRates = await loadFeeRates();
+    if (!liveRates) {
+      setIsLoading(false);
+      setError("تعذر تحميل رسوم المنصة من لوحة التحكم. حدّث الصفحة.");
+      return;
+    }
     try {
       const sessionUser = getSessionSnapshot();
       const normalized = normalizeGuestBuyer(guestInfo);
@@ -786,9 +809,22 @@ export function CheckoutWizard({
           </Card>
         ) : null}
 
-        {step === "payment" && totals ? (
+        {step === "payment" && !feeRates ? (
           <Card className="grid gap-4 p-6" variant="flat">
             <h3 className="font-black text-ink">ملخص الدفع</h3>
+            <p className="text-sm text-muted">
+              {feeRatesError || "جاري تحميل الرسوم من إعدادات لوحة التحكم..."}
+            </p>
+          </Card>
+        ) : null}
+
+        {step === "payment" && feeRates && totals ? (
+          <Card className="grid gap-4 p-6" variant="flat">
+            <h3 className="font-black text-ink">ملخص الدفع</h3>
+            <p className="text-xs text-muted">
+              الرسوم حسب إعدادات لوحة التحكم الحالية: منصة {feeRates.platformFeePercent}%
+              {" · "}بوابة {feeRates.gatewayFeePercent}% + {feeRates.gatewayFeeFixed} AED
+            </p>
             <div className="grid gap-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">سعر المنتج</span>
@@ -801,11 +837,11 @@ export function CheckoutWizard({
                 </div>
               ) : null}
               <div className="flex justify-between">
-                <span className="text-muted">رسوم المنصة</span>
+                <span className="text-muted">رسوم المنصة ({feeRates.platformFeePercent}%)</span>
                 <CurrencyAmount amount={totals.platformFee} size="sm" />
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">رسوم الدفع</span>
+                <span className="text-muted">رسوم الدفع ({feeRates.gatewayFeePercent}%)</span>
                 <CurrencyAmount amount={totals.gatewayFee} size="sm" />
               </div>
               <div className="flex justify-between border-t border-border pt-3">

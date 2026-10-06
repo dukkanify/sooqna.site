@@ -43,7 +43,10 @@ const DEFAULT_SETTINGS: AdminSiteSettings = {
   updatedAt: new Date().toISOString(),
 };
 
+const SETTINGS_CACHE_TTL_MS = 5_000;
+
 let cached: AdminSiteSettings | null = null;
+let cachedAt = 0;
 
 function stripId(record: SettingsRecord): AdminSiteSettings {
   const { id, ...settings } = record;
@@ -51,11 +54,21 @@ function stripId(record: SettingsRecord): AdminSiteSettings {
   return settings;
 }
 
-export async function getAdminSettings(): Promise<AdminSiteSettings> {
-  if (cached) return cached;
+export async function getAdminSettings(options?: {
+  fresh?: boolean;
+}): Promise<AdminSiteSettings> {
+  const now = Date.now();
+  if (
+    !options?.fresh &&
+    cached &&
+    now - cachedAt < SETTINGS_CACHE_TTL_MS
+  ) {
+    return cached;
+  }
   const rows = await store.listAll();
   const row = rows.find((item) => item.id === SETTINGS_ID) ?? rows[0];
   cached = row ? { ...DEFAULT_SETTINGS, ...stripId(row) } : { ...DEFAULT_SETTINGS };
+  cachedAt = now;
   return cached;
 }
 
@@ -107,6 +120,7 @@ export async function updateAdminSettings(
     updatedAt: new Date().toISOString(),
   };
   cached = next;
+  cachedAt = Date.now();
   await store.upsert({ ...next, id: SETTINGS_ID });
   return next;
 }

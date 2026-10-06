@@ -13,6 +13,25 @@ export type OrderFeeRates = {
   platformFeePercent: number;
 };
 
+/** Live admin-panel rates only — never fills 2.5% defaults. */
+export function resolveOrderFeeRates(
+  source: Partial<OrderFeeRates> | null | undefined,
+): OrderFeeRates | null {
+  if (
+    !source ||
+    typeof source.platformFeePercent !== "number" ||
+    typeof source.gatewayFeePercent !== "number" ||
+    typeof source.gatewayFeeFixed !== "number"
+  ) {
+    return null;
+  }
+  return {
+    gatewayFeeFixed: source.gatewayFeeFixed,
+    gatewayFeePercent: source.gatewayFeePercent,
+    platformFeePercent: source.platformFeePercent,
+  };
+}
+
 /**
  * Single formula for checkout UI, Stripe charge, and stored order.fees.
  * Fees apply to product price only; shipping is added after.

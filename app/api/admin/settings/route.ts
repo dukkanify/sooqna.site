@@ -15,8 +15,11 @@ export async function GET() {
     return admin;
   }
 
-  const settings = await getAdminSettings();
-  return NextResponse.json({ settings });
+  const settings = await getAdminSettings({ fresh: true });
+  return NextResponse.json(
+    { settings },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 export async function PATCH(request: Request) {
@@ -90,5 +93,8 @@ export async function PATCH(request: Request) {
     }`,
   });
 
-  return NextResponse.json({ settings });
+  return NextResponse.json(
+    { settings },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }
