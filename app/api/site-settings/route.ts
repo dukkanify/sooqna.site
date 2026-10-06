@@ -19,6 +19,9 @@ export async function GET() {
       disputeWindowDays: settings.disputeWindowDays,
       listingActiveDays: settings.listingActiveDays,
       featuredListingFeeAed: settings.featuredListingFeeAed,
+      platformFeePercent: settings.platformFeePercent,
+      gatewayFeePercent: settings.gatewayFeePercent,
+      gatewayFeeFixed: settings.gatewayFeeFixed,
       featuredCheckoutAvailable:
         isStripeConfigured() || isMockCheckoutAllowed(),
     },
