@@ -12,6 +12,7 @@ import {
 } from "@/services/activity/activity-labels";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { listingDetailsHref } from "@/shared/listings/listing-url";
+import { isGatewayPassedThrough } from "@/shared/payments/order-fees";
 import { Button } from "@/shared/ui/Button";
 import { Textarea } from "@/shared/ui/Textarea";
 import { OrderInvoicePreview } from "@/features/admin/components/OrderInvoicePreview";
@@ -197,7 +198,11 @@ export function AdminOrderInlineDesk({
             value={<CurrencyAmount amount={fees.platformFee} size="sm" />}
           />
           <MetaRow
-            label="رسوم البوابة"
+            label={
+              isGatewayPassedThrough(fees)
+                ? "رسوم البوابة"
+                : "تكلفة البوابة (ضمن المنصة)"
+            }
             value={<CurrencyAmount amount={fees.gatewayFee} size="sm" />}
           />
           <MetaRow

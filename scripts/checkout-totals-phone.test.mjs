@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   calculateOrderFees,
   DEFAULT_ORDER_FEE_RATES,
+  isGatewayPassedThrough,
   resolveOrderFeeRates,
   stripeAmountFils,
 } from "../shared/payments/order-fees.ts";
@@ -25,21 +26,22 @@ function read(rel) {
 }
 
 describe("calculateOrderFees", () => {
-  it("matches product + shipping + rounded platform + gateway", () => {
+  it("charges listing + shipping + platform percent; gateway is absorbed", () => {
     const fees = calculateOrderFees(1000, 15, DEFAULT_ORDER_FEE_RATES);
     assert.equal(fees.productPrice, 1000);
     assert.equal(fees.shippingFee, 15);
     assert.equal(fees.platformFee, 25);
     assert.equal(fees.gatewayFee, 30);
-    assert.equal(fees.total, 1070);
-    assert.equal(stripeAmountFils(fees.total), 107000);
+    assert.equal(fees.total, 1040);
+    assert.equal(stripeAmountFils(fees.total), 104000);
+    assert.equal(isGatewayPassedThrough(fees), false);
   });
 
   it("rounds listing price before fees (UI/server parity)", () => {
     const fees = calculateOrderFees(99.6, 15);
     assert.equal(fees.productPrice, 100);
     assert.equal(fees.platformFee, 3);
-    assert.equal(fees.total, 100 + 15 + 3 + Math.round(100 * 0.029 + 1));
+    assert.equal(fees.total, 100 + 15 + 3);
   });
 
   it("uses live admin rates when provided", () => {
@@ -50,7 +52,7 @@ describe("calculateOrderFees", () => {
     });
     assert.equal(fees.platformFee, 10);
     assert.equal(fees.gatewayFee, 2);
-    assert.equal(fees.total, 212);
+    assert.equal(fees.total, 210);
   });
 
   it("matches a 30% admin-panel rate on a 3000 AED listing", () => {
@@ -61,7 +63,8 @@ describe("calculateOrderFees", () => {
     });
     assert.equal(fees.platformFee, 900);
     assert.equal(fees.gatewayFee, 88);
-    assert.equal(fees.total, 4003);
+    assert.equal(fees.total, 3915);
+    assert.equal(isGatewayPassedThrough({ ...fees, total: 4003 }), true);
   });
 
   it("does not fill factory 2.5% when admin rates are missing", () => {
@@ -150,6 +153,11 @@ describe("checkout wiring", () => {
     assert.match(wizard, /resolveOrderFeeRates/);
     assert.match(wizard, /cache:\s*"no-store"/);
     assert.match(wizard, /رسوم المنصة \(\{feeRates\.platformFeePercent\}%\)/);
+    assert.match(wizard, /تكلفة بوابة الدفع ضمن هذه النسبة/);
+    assert.doesNotMatch(
+      wizard,
+      /رسوم الدفع \(\{feeRates\.gatewayFeePercent\}%\)/,
+    );
     assert.doesNotMatch(wizard, /DEFAULT_ORDER_FEE_RATES/);
     assert.doesNotMatch(
       wizard,
@@ -185,12 +193,12 @@ describe("checkout wiring", () => {
     assert.match(page, /feeRates=\{feeRates\}/);
     assert.match(fees, /getAdminSettings\(\{ fresh: true \}\)/);
     assert.match(store, /options\?\.fresh/);
-    assert.match(admin, /النسبة المحفوظة هنا هي التي تظهر للمشتري/);
+    assert.match(admin, /نسبة المنصة هي التي يراها المشتري/);
   });
 
   it("buyer order page shows itemized fees and delivery snapshot phone", () => {
     const detail = read("features/orders/components/OrderDetailContent.tsx");
-    assert.match(detail, /order\.fees\.platformFee/);
+    assert.match(detail, /isGatewayPassedThrough/);
     assert.match(detail, /deliveryAddressSnapshot/);
     assert.match(detail, /order\.deliveryAddressSnapshot\.phone/);
   });

@@ -816,8 +816,8 @@ export function CheckoutWizard({
           <Card className="grid gap-4 p-6" variant="flat">
             <h3 className="font-black text-ink">ملخص الدفع</h3>
             <p className="text-xs text-muted">
-              الرسوم حسب إعدادات لوحة التحكم الحالية: منصة {feeRates.platformFeePercent}%
-              {" · "}بوابة {feeRates.gatewayFeePercent}% + {feeRates.gatewayFeeFixed} AED
+              رسوم المنصة {feeRates.platformFeePercent}% حسب إعدادات لوحة التحكم.
+              تكلفة بوابة الدفع ضمن هذه النسبة وليست مبلغًا إضافيًا.
             </p>
             <div className="grid gap-2 text-sm">
               <div className="flex justify-between">
@@ -833,10 +833,6 @@ export function CheckoutWizard({
               <div className="flex justify-between">
                 <span className="text-muted">رسوم المنصة ({feeRates.platformFeePercent}%)</span>
                 <CurrencyAmount amount={totals.platformFee} size="sm" />
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">رسوم الدفع ({feeRates.gatewayFeePercent}%)</span>
-                <CurrencyAmount amount={totals.gatewayFee} size="sm" />
               </div>
               <div className="flex justify-between border-t border-border pt-3">
                 <span className="font-bold">الإجمالي</span>

@@ -20,6 +20,7 @@ import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { isLikelyListingImageFile } from "@/shared/media/image-bytes";
+import { isGatewayPassedThrough } from "@/shared/payments/order-fees";
 
 type OrderDetailContentProps = {
   orderId: string;
@@ -403,7 +404,7 @@ export function OrderDetailContent({
                 <CurrencyAmount amount={order.fees.platformFee} size="sm" />
               </div>
             ) : null}
-            {order.fees.gatewayFee > 0 ? (
+            {isGatewayPassedThrough(order.fees) ? (
               <div className="flex justify-between">
                 <span className="text-muted">رسوم الدفع</span>
                 <CurrencyAmount amount={order.fees.gatewayFee} size="sm" />

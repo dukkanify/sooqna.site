@@ -33,8 +33,9 @@ export function resolveOrderFeeRates(
 }
 
 /**
- * Single formula for checkout UI, Stripe charge, and stored order.fees.
- * Fees apply to product price only; shipping is added after.
+ * Marketplace buyer total = listing + shipping + admin platform %.
+ * Estimated gateway cost is recorded for finance, but absorbed in the
+ * platform take — it is not added on top of the buyer.
  */
 export function calculateOrderFees(
   productPrice: number,
@@ -49,7 +50,7 @@ export function calculateOrderFees(
   const safeShipping = Math.max(0, Math.round(shippingFee));
   const platformFee = Math.round(safePrice * platformRate);
   const gatewayFee = Math.round(safePrice * gatewayRate + gatewayFixed);
-  const total = safePrice + safeShipping + platformFee + gatewayFee;
+  const total = safePrice + safeShipping + platformFee;
 
   return {
     productPrice: safePrice,
@@ -59,6 +60,21 @@ export function calculateOrderFees(
     total,
     currency: "AED",
   };
+}
+
+/** True only on legacy orders that billed Stripe fees as a buyer surcharge. */
+export function isGatewayPassedThrough(fees: {
+  gatewayFee: number;
+  platformFee: number;
+  productPrice: number;
+  shippingFee: number;
+  total: number;
+}): boolean {
+  if (fees.gatewayFee <= 0) return false;
+  const billed = Math.round(
+    fees.productPrice + fees.shippingFee + fees.platformFee + fees.gatewayFee,
+  );
+  return Math.round(fees.total) === billed;
 }
 
 export function stripeAmountFils(totalAed: number): number {

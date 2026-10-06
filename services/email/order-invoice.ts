@@ -1,5 +1,6 @@
 import type { Order } from "@/types/domain/order";
 import { BRAND, BRAND_COLORS } from "@/shared/constants/brand";
+import { isGatewayPassedThrough } from "@/shared/payments/order-fees";
 import { formatCurrencyLabel } from "@/shared/utils/currency";
 import { escapeEmailHtml } from "@/services/email/sooqna-email-template";
 
@@ -65,6 +66,7 @@ export function buildOrderInvoiceHtml(
       ? "Not provided"
       : "غير متوفر";
 
+  const passThrough = isGatewayPassedThrough(fees);
   const rows = [
     lineRow(
       english ? "Item / listing" : "المنتج / الإعلان",
@@ -73,7 +75,9 @@ export function buildOrderInvoiceHtml(
     ),
     lineRow(english ? "Shipping" : "الشحن", fees.shippingFee, locale),
     lineRow(english ? "Platform fee" : "رسوم المنصة", fees.platformFee, locale),
-    lineRow(english ? "Gateway fee" : "رسوم البوابة", fees.gatewayFee, locale),
+    passThrough
+      ? lineRow(english ? "Gateway fee" : "رسوم البوابة", fees.gatewayFee, locale)
+      : "",
     lineRow(english ? "Total paid" : "الإجمالي المدفوع", fees.total, locale, true),
   ].join("");
 
@@ -137,6 +141,7 @@ export function buildOrderInvoiceTextLines(
   const english = locale === "en";
   const fees = order.fees;
   const invoiceNo = invoiceNumberForOrder(order);
+  const passThrough = isGatewayPassedThrough(fees);
   return english
     ? [
         `Invoice: ${invoiceNo}`,
@@ -147,7 +152,9 @@ export function buildOrderInvoiceTextLines(
         `Item: ${money(fees.productPrice, locale)}`,
         `Shipping: ${money(fees.shippingFee, locale)}`,
         `Platform fee: ${money(fees.platformFee, locale)}`,
-        `Gateway fee: ${money(fees.gatewayFee, locale)}`,
+        ...(passThrough
+          ? [`Gateway fee: ${money(fees.gatewayFee, locale)}`]
+          : []),
         `Total: ${money(fees.total, locale)}`,
       ]
     : [
@@ -159,7 +166,9 @@ export function buildOrderInvoiceTextLines(
         `المنتج: ${money(fees.productPrice, locale)}`,
         `الشحن: ${money(fees.shippingFee, locale)}`,
         `رسوم المنصة: ${money(fees.platformFee, locale)}`,
-        `رسوم البوابة: ${money(fees.gatewayFee, locale)}`,
+        ...(passThrough
+          ? [`رسوم البوابة: ${money(fees.gatewayFee, locale)}`]
+          : []),
         `الإجمالي: ${money(fees.total, locale)}`,
       ];
 }

@@ -6,7 +6,8 @@
  * - GMV: sum of merchandise (`fees.productPrice`) for live paid orders
  *   (payment succeeded or later refunded). Buyer `fees.total` is NOT GMV.
  * - Platform revenue / commissions: sum of `fees.platformFee` on those orders.
- * - Gateway fees: sum of `fees.gatewayFee` (payment processing cost).
+ * - Gateway fees: estimated processing cost (`fees.gatewayFee`), absorbed in
+ *   the platform take for new orders (not a buyer surcharge).
  * - Net platform revenue: commissions − gateway fees.
  * - Refunds: merchandise amount on refunded orders (matches treasury).
  * - Held / released escrow: seller merchandise currently held or released.
