@@ -3,6 +3,11 @@ import { describe, it } from "node:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  buyerFacingInvoiceFees,
+  calculateOrderFees,
+  DEFAULT_ORDER_FEE_RATES,
+} from "../shared/payments/order-fees.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -11,14 +16,45 @@ function read(rel) {
 }
 
 describe("order invoice", () => {
-  it("invoice builder exposes bilingual professional receipt markup", () => {
+  it("buyerFacingInvoiceFees never exposes a separate gateway line", () => {
+    const legacy = buyerFacingInvoiceFees({
+      productPrice: 2100,
+      shippingFee: 15,
+      platformFee: 53,
+      gatewayFee: 62,
+      total: 2230,
+    });
+    assert.equal(legacy.platformFee, 115);
+    assert.equal(legacy.total, 2230);
+    assert.equal(
+      legacy.productPrice + legacy.shippingFee + legacy.platformFee,
+      legacy.total,
+    );
+
+    const current = buyerFacingInvoiceFees(
+      calculateOrderFees(1000, 15, DEFAULT_ORDER_FEE_RATES),
+    );
+    assert.equal(current.platformFee, 25);
+    assert.equal(current.total, 1040);
+    assert.equal(
+      current.productPrice + current.shippingFee + current.platformFee,
+      current.total,
+    );
+  });
+
+  it("invoice builder never prints gateway fee and uses buyer-facing fees", () => {
     const src = read("services/email/order-invoice.ts");
     assert.match(src, /export function invoiceNumberForOrder/);
     assert.match(src, /export function buildOrderInvoiceHtml/);
-    assert.match(src, /فاتورة ضريبية/);
-    assert.match(src, /Tax invoice/);
+    assert.match(src, /buyerFacingInvoiceFees/);
+    assert.match(src, /إيصال رسمي/);
+    assert.match(src, /Official receipt/);
+    assert.match(src, /رسوم الخدمة/);
+    assert.match(src, /Service fee/);
     assert.match(src, /INV-/);
-    assert.match(src, /platformFee|رسوم المنصة/);
+    assert.doesNotMatch(src, /رسوم البوابة/);
+    assert.doesNotMatch(src, /Gateway fee/);
+    assert.doesNotMatch(src, /isGatewayPassedThrough/);
   });
 
   it("send + paid paths attach invoice to purchase emails", () => {

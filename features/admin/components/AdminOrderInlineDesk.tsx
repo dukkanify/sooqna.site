@@ -12,7 +12,7 @@ import {
 } from "@/services/activity/activity-labels";
 import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { listingDetailsHref } from "@/shared/listings/listing-url";
-import { isGatewayPassedThrough } from "@/shared/payments/order-fees";
+import { buyerFacingInvoiceFees } from "@/shared/payments/order-fees";
 import { Button } from "@/shared/ui/Button";
 import { Textarea } from "@/shared/ui/Textarea";
 import { OrderInvoicePreview } from "@/features/admin/components/OrderInvoicePreview";
@@ -94,6 +94,7 @@ export function AdminOrderInlineDesk({
   const address = order.deliveryAddressSnapshot;
   const proofUrls = order.sellerProofUrls ?? [];
   const fees = order.fees;
+  const buyerFees = buyerFacingInvoiceFees(fees);
   const awaitingPayment = isAwaitingBuyerPayment(order);
   const invoiceLocale = locale === "en" ? "en" : "ar";
   const listingHref = listingDetailsHref({
@@ -183,31 +184,30 @@ export function AdminOrderInlineDesk({
         </dl>
       </Section>
 
-      <Section hint="تفصيل المبالغ كما في الفاتورة." title="المبالغ">
+      <Section
+        hint="تفصيل المبالغ كما في فاتورة المشتري (بدون رسوم بوابة منفصلة)."
+        title="المبالغ"
+      >
         <dl className="grid gap-2 sm:grid-cols-2">
           <MetaRow
             label="سعر المنتج"
-            value={<CurrencyAmount amount={fees.productPrice} size="sm" />}
+            value={<CurrencyAmount amount={buyerFees.productPrice} size="sm" />}
           />
           <MetaRow
             label="الشحن"
-            value={<CurrencyAmount amount={fees.shippingFee} size="sm" />}
+            value={<CurrencyAmount amount={buyerFees.shippingFee} size="sm" />}
           />
           <MetaRow
-            label="رسوم المنصة"
-            value={<CurrencyAmount amount={fees.platformFee} size="sm" />}
+            label="رسوم الخدمة"
+            value={<CurrencyAmount amount={buyerFees.platformFee} size="sm" />}
           />
           <MetaRow
-            label={
-              isGatewayPassedThrough(fees)
-                ? "رسوم البوابة"
-                : "تكلفة البوابة (ضمن المنصة)"
-            }
+            label="تكلفة البوابة (داخلي — لا تظهر للمشتري)"
             value={<CurrencyAmount amount={fees.gatewayFee} size="sm" />}
           />
           <MetaRow
             label="الإجمالي"
-            value={<CurrencyAmount amount={fees.total} size="sm" />}
+            value={<CurrencyAmount amount={buyerFees.total} size="sm" />}
           />
         </dl>
       </Section>

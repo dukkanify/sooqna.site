@@ -44,6 +44,9 @@ describe("admin order inline desk", () => {
     assert.match(src, /بانتظار دفع المشتري/);
     assert.match(src, /تنبيه المشتري لإكمال الدفع/);
     assert.match(src, /OrderInvoicePreview/);
+    assert.match(src, /buyerFacingInvoiceFees/);
+    assert.match(src, /تكلفة البوابة \(داخلي/);
+    assert.doesNotMatch(src, /رسوم البوابة/);
     assert.match(src, /تحرير الضمان/);
     assert.match(src, /تأكيد الاسترداد/);
     assert.match(src, /سجل الأحداث/);
@@ -81,7 +84,7 @@ describe("admin order inline desk", () => {
     const invoice = read("services/email/order-invoice.ts");
     assert.match(paid, /invoiceBlockForPaidEmail/);
     assert.match(guest, /invoiceBlockForPaidEmail/);
-    assert.match(invoice, /فاتورة ضريبية|Tax invoice/);
+    assert.match(invoice, /إيصال رسمي|Official receipt/);
     assert.match(invoice, /invoiceNumberForOrder/);
   });
 

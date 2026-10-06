@@ -20,7 +20,7 @@ import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { intlLocale } from "@/shared/i18n/locale";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { isLikelyListingImageFile } from "@/shared/media/image-bytes";
-import { isGatewayPassedThrough } from "@/shared/payments/order-fees";
+import { buyerFacingInvoiceFees } from "@/shared/payments/order-fees";
 
 type OrderDetailContentProps = {
   orderId: string;
@@ -311,6 +311,7 @@ export function OrderDetailContent({
     );
   }
 
+  const buyerFees = buyerFacingInvoiceFees(order.fees);
   const isBuyer = Boolean(sessionUserId && order.buyerId === sessionUserId);
   const isSeller = Boolean(sessionUserId && order.sellerId === sessionUserId);
   const escrowActive =
@@ -390,24 +391,18 @@ export function OrderDetailContent({
             </div>
             <div className="flex justify-between">
               <span className="text-muted">سعر المنتج</span>
-              <CurrencyAmount amount={order.fees.productPrice} size="sm" />
+              <CurrencyAmount amount={buyerFees.productPrice} size="sm" />
             </div>
-            {order.fees.shippingFee > 0 ? (
+            {buyerFees.shippingFee > 0 ? (
               <div className="flex justify-between">
                 <span className="text-muted">التوصيل</span>
-                <CurrencyAmount amount={order.fees.shippingFee} size="sm" />
+                <CurrencyAmount amount={buyerFees.shippingFee} size="sm" />
               </div>
             ) : null}
-            {order.fees.platformFee > 0 ? (
+            {buyerFees.platformFee > 0 ? (
               <div className="flex justify-between">
-                <span className="text-muted">رسوم المنصة</span>
-                <CurrencyAmount amount={order.fees.platformFee} size="sm" />
-              </div>
-            ) : null}
-            {isGatewayPassedThrough(order.fees) ? (
-              <div className="flex justify-between">
-                <span className="text-muted">رسوم الدفع</span>
-                <CurrencyAmount amount={order.fees.gatewayFee} size="sm" />
+                <span className="text-muted">رسوم الخدمة</span>
+                <CurrencyAmount amount={buyerFees.platformFee} size="sm" />
               </div>
             ) : null}
             {order.shippingMethod ? (
