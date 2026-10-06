@@ -50,6 +50,9 @@ export type AdminUserPatch = Partial<
     | "force_verify"
     | "resend_verification"
     | "send_password_reset";
+  /** Set from the control panel — not via login-page forgot-password. */
+  newPassword?: string;
+  confirmPassword?: string;
 };
 
 export type AdminListingRecord = {
