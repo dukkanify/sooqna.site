@@ -117,11 +117,14 @@ export default async function SearchPage({
                 ? tx(locale, `نتائج: ${selectedFilters.query}`)
                 : tx(locale, "اعثر على الإعلان المناسب")}
             </h1>
-            <p className="mt-1.5 max-w-xl text-sm leading-6 text-muted">
+            <p className="mt-1.5 hidden max-w-xl text-sm leading-6 text-muted md:block">
               {tx(
                 locale,
                 "اختر الإمارة والسعر والتصنيف — ثم ضيّق النتيجة من الفلاتر إذا احتجت.",
               )}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted md:hidden">
+              {tx(locale, "استخدم فلترة لتضييق النتائج.")}
             </p>
           </div>
 

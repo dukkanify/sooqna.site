@@ -514,11 +514,11 @@ export function SearchFilters({
 
   return (
     <LocalizedTree>
-      <div className="sticky top-[4.25rem] z-30 min-w-0 md:hidden">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-[var(--shadow-card)] backdrop-blur">
+      <div className="sticky top-[4.25rem] z-30 mb-2 min-w-0 md:mb-0 md:hidden">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-2xl border border-border bg-surface/95 p-1 shadow-[var(--shadow-card)] backdrop-blur">
           <button
             aria-expanded={sheetOpen}
-            className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-secondary-soft/80 px-3 text-sm font-bold text-ink"
+            className="focus-ring inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-secondary-soft/80 px-3 text-sm font-bold text-ink"
             onClick={() => setSheetOpen(true)}
             type="button"
           >
@@ -530,11 +530,11 @@ export function SearchFilters({
               </span>
             ) : null}
           </button>
-          <label className="relative inline-flex min-h-11 w-[9.25rem] shrink-0 items-center">
+          <label className="relative inline-flex min-h-10 w-[8.5rem] shrink-0 items-center">
             <span className="sr-only">الترتيب</span>
             <select
               aria-label="الترتيب"
-              className="focus-ring h-11 w-full cursor-pointer appearance-none rounded-xl border border-border bg-surface pe-8 ps-3 text-xs font-bold text-ink"
+              className="focus-ring h-10 w-full cursor-pointer appearance-none rounded-xl border border-border bg-surface pe-8 ps-3 text-xs font-bold text-ink"
               onChange={(event) => {
                 router.push(
                   buildSearchUrl(
