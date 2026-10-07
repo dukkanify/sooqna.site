@@ -86,30 +86,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </div>
       )}
 
-      {featuredLive ? (
-        <div className="marketplace-card-featured-chip">
-          <FeaturedBadge onMedia placement="chip" size="sm" />
-        </div>
-      ) : null}
-
-      <ListingCardBadges
-        className={featuredLive ? "marketplace-card-badges--with-featured" : undefined}
-        excludeFeatured
-        listing={listing}
-      />
-
-      <div className="marketplace-card-media-actions absolute end-2 top-2 z-20 flex gap-1">
-        <FavoriteButton
-          className="card-media-action !min-h-7 !size-7 !min-w-7 !rounded-full !p-0"
-          iconOnly
-          listing={listing}
-        />
-        <CardShareButton
-          className="card-media-action !size-7"
-          title={displayTitle}
-          url={shareUrl}
-        />
-      </div>
+      <ListingCardBadges excludeFeatured listing={listing} />
 
       {showEscrow ? (
         <div className="absolute bottom-3 start-3 z-10">
@@ -123,11 +100,16 @@ export const PremiumListingCard = memo(function PremiumListingCard({
     <div
       className={`flex min-w-0 flex-1 flex-col ${layout === "card" ? "gap-1 p-2.5 sm:p-3" : "justify-center p-3 md:p-4"}`}
     >
-      {categoryName ? (
-        <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[#B8955F]">
-          {categoryName}
-        </p>
-      ) : null}
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        {categoryName ? (
+          <p className="truncate text-[0.65rem] font-bold uppercase tracking-wide text-[#B8955F]">
+            {categoryName}
+          </p>
+        ) : (
+          <span />
+        )}
+        {featuredLive ? <FeaturedBadge placement="chip" size="sm" /> : null}
+      </div>
 
       <Link className="min-w-0" href={href}>
         <h3
@@ -182,15 +164,29 @@ export const PremiumListingCard = memo(function PremiumListingCard({
           <Icon className="marketplace-card-meta-icon" name="clock" size={12} />
           {formatPostedTime(listing.postedAt)}
         </span>
-        {(listing.views ?? 0) > 0 ? (
-          <span className="inline-flex items-center gap-1">
-            <Icon className="marketplace-card-meta-icon" name="eye" size={12} />
-            {formatViews(listing.views, locale)} مشاهدة
-          </span>
-        ) : null}
-        {showStatus && listing.status !== "active" ? (
-          <span>{listing.status}</span>
-        ) : null}
+        <div className="flex items-center gap-1.5">
+          {(listing.views ?? 0) > 0 ? (
+            <span className="inline-flex items-center gap-1">
+              <Icon className="marketplace-card-meta-icon" name="eye" size={12} />
+              {formatViews(listing.views, locale)} مشاهدة
+            </span>
+          ) : null}
+          {showStatus && listing.status !== "active" ? (
+            <span>{listing.status}</span>
+          ) : null}
+          <div className="marketplace-card-body-actions flex items-center gap-0.5">
+            <FavoriteButton
+              className="!min-h-7 !size-7 !min-w-7 !rounded-full !border-0 !bg-transparent !p-0 text-muted hover:bg-surface-muted hover:text-error"
+              iconOnly
+              listing={listing}
+            />
+            <CardShareButton
+              tone="ghost"
+              title={displayTitle}
+              url={shareUrl}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

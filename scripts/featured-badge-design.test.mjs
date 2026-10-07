@@ -1,5 +1,5 @@
 /**
- * Featured badge — compact chip on card photos (keeps imagery readable).
+ * Featured badge — kept off card photos so imagery stays readable.
  * Run: npm test
  */
 import assert from "node:assert/strict";
@@ -28,26 +28,26 @@ describe("featured badge design", () => {
     assert.doesNotMatch(css, /listing-featured-badge--corner/);
   });
 
-  it("cards use a compact Featured chip — no full-width photo crown", () => {
+  it("cards keep Featured and actions off the photo", () => {
     const card = read("features/listings/components/PremiumListingCard.tsx");
     const badges = read("features/listings/components/ListingCardBadges.tsx");
     const mobile = read("features/home/components/mobile/MobileFeaturedCard.tsx");
-    const css = read("features/listings/components/featured-badge.css");
     const skeleton = read("shared/ui/Skeleton.tsx");
     assert.match(card, /placement="chip"/);
     assert.match(card, /excludeFeatured/);
     assert.match(card, /marketplace-card--featured/);
-    assert.match(card, /marketplace-card-featured-chip/);
-    assert.match(card, /featuredLive \? \(/);
+    assert.match(card, /featuredLive/);
+    assert.match(card, /marketplace-card-body-actions/);
     assert.doesNotMatch(card, /marketplace-card-crown/);
+    assert.doesNotMatch(card, /marketplace-card-featured-chip/);
+    assert.doesNotMatch(card, /marketplace-card-media-actions/);
     assert.doesNotMatch(card, /placement="cap"/);
     assert.match(badges, /excludeFeatured/);
     assert.match(mobile, /placement="chip"/);
     assert.match(mobile, /excludeFeatured/);
-    assert.match(mobile, /mobile-home-featured-card__featured-chip/);
     assert.doesNotMatch(mobile, /mobile-home-featured-card__crown/);
-    assert.match(css, /\.marketplace-card-featured-chip/);
-    assert.match(css, /marketplace-card-badges--with-featured/);
+    assert.doesNotMatch(mobile, /mobile-home-featured-card__featured-chip/);
+    assert.doesNotMatch(mobile, /mobile-home-featured-card__actions/);
     // Regular cards must not reserve an empty white crown strip.
     assert.doesNotMatch(skeleton, /marketplace-card-crown/);
     assert.doesNotMatch(skeleton, /marketplace-card-featured-chip/);

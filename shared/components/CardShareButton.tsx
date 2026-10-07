@@ -7,6 +7,8 @@ import { useTx } from "@/shared/i18n/useTx";
 type CardShareButtonProps = {
   ariaLabel?: string;
   className?: string;
+  /** `media` = glass chip on photos; `ghost` = quiet icon in card body. */
+  tone?: "media" | "ghost";
   title: string;
   url: string;
 };
@@ -23,12 +25,17 @@ function resolveShareUrl(url: string): string {
 export function CardShareButton({
   ariaLabel = "مشاركة الإعلان",
   className = "",
+  tone = "media",
   title,
   url,
 }: CardShareButtonProps) {
   const t = useTx();
   const [shared, setShared] = useState(false);
   const label = t(ariaLabel);
+  const toneClass =
+    tone === "ghost"
+      ? "focus-ring grid size-7 place-items-center rounded-full text-muted transition hover:bg-surface-muted hover:text-ink"
+      : "card-media-action focus-ring grid size-7 place-items-center rounded-full transition";
 
   async function handleClick(event: React.MouseEvent) {
     event.preventDefault();
@@ -55,7 +62,7 @@ export function CardShareButton({
   return (
     <button
       aria-label={label}
-      className={`card-media-action focus-ring grid size-7 place-items-center rounded-full transition ${className}`}
+      className={`${toneClass} ${className}`.trim()}
       onClick={handleClick}
       title={label}
       type="button"
