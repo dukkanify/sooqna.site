@@ -32,6 +32,8 @@ const faqs = [
 ];
 
 const shortcuts = [
+  { href: "/support/track", label: "متابعة طلب التواصل" },
+  { href: "/profile#support-tickets", label: "طلباتي في الملف الشخصي" },
   { href: "/orders", label: "طلباتي" },
   { href: "/disputes/new", label: "فتح نزاع" },
   { href: "/chat", label: "الرسائل" },
@@ -58,7 +60,7 @@ export default function SupportPage() {
                 <a className="font-semibold text-ink" dir="ltr" href={`mailto:${BRAND.supportEmail}`}>
                   {BRAND.supportEmail}
                 </a>{" "}
-                أو أرسل النموذج وسنعود إليك.
+                أو أرسل النموذج — سننشئ رقم طلب للمتابعة ونرسله إلى بريدك.
               </p>
               <div className="mt-5">
                 <SupportContactForm />
