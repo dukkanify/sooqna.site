@@ -28,6 +28,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
   );
   const {
     blockReason,
+    clearFieldError,
     errors,
     featuredCheckoutAvailable,
     handleImageChange,
@@ -138,6 +139,7 @@ export function AddListingForm({ categories }: AddListingFormProps) {
             <CategoryFieldsStep
               categoryId={selectedCategoryId}
               errors={errors}
+              onClearError={clearFieldError}
               onPreviewChange={handlePreviewChange}
               subcategory={selectedSubcategory}
             />

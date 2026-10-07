@@ -116,29 +116,86 @@ async function syncListingToServer(
   }
 }
 
+function fieldControlName(key: string): string | null {
+  if (key === "submit") return null;
+  if (key === "category") return "categoryId";
+  if (key === "subcategory") return "subcategory";
+  if (key === "images") return null;
+  if (key === "contact" || key === "package" || key === "title" || key === "description" || key === "price") {
+    return key;
+  }
+  return `spec_${key}`;
+}
+
 function scrollToFirstError(
   nextErrors: AddListingErrors & Record<string, string | undefined>,
 ) {
   window.requestAnimationFrame(() => {
-    const detailFields = new Set([
-      "title",
-      "description",
-      "price",
+    const preferred = [
+      "category",
+      "subcategory",
+      "brand",
+      "model",
+      "modelOther",
       "condition",
+      "year",
+      "emirate",
       "city",
-      "animalType",
-      "age",
-      "breed",
-    ]);
-    const hasDetailError = Object.keys(nextErrors).some((key) => detailFields.has(key));
-    const targetId = hasDetailError
-      ? "add-listing-details"
-      : nextErrors.images
-        ? "add-listing-media"
-        : nextErrors.contact || nextErrors.package
-          ? "add-listing-media"
-          : "add-listing-submit";
-    document.getElementById(targetId)?.scrollIntoView({
+      "mileage",
+      "transmission",
+      "fuelType",
+      "title",
+      "price",
+      "description",
+      "images",
+      "contact",
+      "package",
+    ];
+    const errorKeys = Object.keys(nextErrors).filter(
+      (key) => key !== "submit" && Boolean(nextErrors[key]),
+    );
+    const firstKey =
+      preferred.find((key) => errorKeys.includes(key)) ?? errorKeys[0];
+
+    if (!firstKey) {
+      document.getElementById("add-listing-submit")?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      return;
+    }
+
+    if (firstKey === "images") {
+      document.getElementById("add-listing-media")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
+
+    const byId = document.getElementById(`add-listing-field-${firstKey}`);
+    const byName = fieldControlName(firstKey)
+      ? document.querySelector<HTMLElement>(
+          `[name="${fieldControlName(firstKey)}"]`,
+        )
+      : null;
+    const target = byId ?? byName;
+
+    if (target) {
+      // Open collapsed «تفاصيل إضافية» if the missing field lives there.
+      const details = target.closest("details");
+      if (details && !details.open) details.open = true;
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      const focusable =
+        (target.matches("input, select, textarea, button")
+          ? target
+          : target.querySelector<HTMLElement>("input, select, textarea, button")) ??
+        null;
+      focusable?.focus({ preventScroll: true });
+      return;
+    }
+
+    document.getElementById("add-listing-details")?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
@@ -633,8 +690,24 @@ export function useAddListingForm(categories: Category[]) {
     };
   }, []);
 
+  const clearFieldError = useCallback((key: string) => {
+    setErrors((prev) => {
+      if (!prev[key] && !prev.submit) return prev;
+      const next = { ...prev };
+      delete next[key];
+      const remaining = Object.keys(next).filter(
+        (item) => item !== "submit" && Boolean(next[item]),
+      );
+      if (remaining.length === 0) {
+        delete next.submit;
+      }
+      return next;
+    });
+  }, []);
+
   return {
     blockReason,
+    clearFieldError,
     errors,
     featuredCheckoutAvailable,
     handleImageChange,
