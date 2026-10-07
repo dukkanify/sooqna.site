@@ -3,7 +3,6 @@
 import type { Category } from "@/types";
 import { SavedSearches } from "./SavedSearches";
 import { SearchFilterChips } from "./SearchFilterChips";
-import { SearchQuickFilters } from "./SearchQuickFilters";
 import { buildSearchUrl, type SearchFilterState } from "./search-url";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
@@ -37,9 +36,9 @@ export function SearchResultsToolbar({
 
   return (
     <LocalizedTree>
-      <div className="mb-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-ink">
+      <div className="mb-3 space-y-2 md:mb-4 md:space-y-3">
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <p className="min-w-0 text-sm font-semibold text-ink">
             <span className="text-lg font-bold text-primary">
               {resultCount.toLocaleString(intlLocale(locale))}
             </span>{" "}
@@ -50,11 +49,10 @@ export function SearchResultsToolbar({
             currentUrl={currentUrl}
           />
         </div>
-        <SearchQuickFilters
-          basePath={basePath}
-          categories={categories}
-          selectedFilters={selectedFilters}
-        />
+        {/*
+          Mobile: no stacked emirate/price/category chip rails — those live in
+          the فلترة sheet. Keep only removable active chips in one scroll row.
+        */}
         <SearchFilterChips
           basePath={basePath}
           categories={categories}
