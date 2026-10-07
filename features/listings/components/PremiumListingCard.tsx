@@ -87,29 +87,25 @@ export const PremiumListingCard = memo(function PremiumListingCard({
       )}
 
       {featuredLive ? (
-        <div className="marketplace-card-crown">
-          <FeaturedBadge placement="cap" />
+        <div className="marketplace-card-featured-chip">
+          <FeaturedBadge onMedia placement="chip" size="sm" />
         </div>
       ) : null}
 
       <ListingCardBadges
-        className={featuredLive ? "marketplace-card-badges--below-crown" : undefined}
+        className={featuredLive ? "marketplace-card-badges--with-featured" : undefined}
         excludeFeatured
         listing={listing}
       />
 
-      <div
-        className={`marketplace-card-media-actions absolute end-3 z-20 flex gap-1.5 ${
-          featuredLive ? "marketplace-card-media-actions--below-crown" : "top-3"
-        }`}
-      >
+      <div className="marketplace-card-media-actions absolute end-2 top-2 z-20 flex gap-1">
         <FavoriteButton
-          className="card-media-action !min-h-8 !size-8 !min-w-8 !rounded-full !p-0"
+          className="card-media-action !min-h-7 !size-7 !min-w-7 !rounded-full !p-0"
           iconOnly
           listing={listing}
         />
         <CardShareButton
-          className="card-media-action"
+          className="card-media-action !size-7"
           title={displayTitle}
           url={shareUrl}
         />

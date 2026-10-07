@@ -55,12 +55,12 @@ export function CardShareButton({
   return (
     <button
       aria-label={label}
-      className={`card-media-action focus-ring grid size-8 place-items-center rounded-full transition ${className}`}
+      className={`card-media-action focus-ring grid size-7 place-items-center rounded-full transition ${className}`}
       onClick={handleClick}
       title={label}
       type="button"
     >
-      <Icon name="share" size={15} />
+      <Icon name="share" size={13} />
       <span className="sr-only">{shared ? t("تمت المشاركة") : label}</span>
     </button>
   );

@@ -8,14 +8,14 @@ type FeaturedBadgeProps = {
   /** Stronger contrast when overlaid on photos. */
   onMedia?: boolean;
   /**
-   * `cap` — elegant bar sitting above the listing card (not on the photo).
-   * `chip` — compact inline mark for gallery / sticky panels.
+   * `cap` — full-width bar (legacy / special surfaces).
+   * `chip` — compact corner mark for cards and gallery (preferred on photos).
    */
   placement?: "cap" | "chip";
 };
 
 /**
- * Brand Featured marker — above-card gold cap, or compact chip off-photo.
+ * Brand Featured marker — compact chip on media, or full-width cap when needed.
  */
 export function FeaturedBadge({
   className = "",

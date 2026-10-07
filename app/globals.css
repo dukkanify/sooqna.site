@@ -107,13 +107,13 @@ html[data-theme="dark"] .bg-\[\#fdfbf7\] {
   background-color: var(--color-background) !important;
 }
 
-/* Listing image overlay actions — soft glass chip */
+/* Listing image overlay actions — light glass so the photo stays visible */
 .card-media-action {
-  background-color: rgb(255 255 255 / 92%) !important;
+  background-color: rgb(255 255 255 / 72%) !important;
   color: #0b1628 !important;
-  border-color: rgb(255 255 255 / 70%) !important;
-  box-shadow: 0 6px 16px rgb(11 22 40 / 22%);
-  backdrop-filter: blur(10px) saturate(1.2);
+  border-color: rgb(255 255 255 / 55%) !important;
+  box-shadow: 0 1px 4px rgb(11 22 40 / 14%);
+  backdrop-filter: blur(8px) saturate(1.15);
 }
 
 .card-media-action:hover {
@@ -1503,7 +1503,8 @@ html[data-theme="dark"] .market-header__drawer-account {
 
 .marketplace-card-image {
   object-fit: cover !important;
-  object-position: center;
+  /* Bias slightly upward so vehicle bodies / subjects stay in frame */
+  object-position: center 40%;
 }
 
 @media (hover: hover) and (pointer: fine) {

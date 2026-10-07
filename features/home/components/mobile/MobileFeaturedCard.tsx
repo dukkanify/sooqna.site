@@ -69,20 +69,20 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
         </Link>
 
         {featuredLive ? (
-          <div className="mobile-home-featured-card__crown">
-            <FeaturedBadge placement="cap" />
+          <div className="mobile-home-featured-card__featured-chip">
+            <FeaturedBadge onMedia placement="chip" size="sm" />
           </div>
         ) : null}
 
         <ListingCardBadges
-          className={`!start-2 ${featuredLive ? "listing-card-badges-below-crown !top-[2.15rem]" : "!top-2"}`}
+          className={`!start-2 ${featuredLive ? "listing-card-badges-with-featured !top-9" : "!top-2"}`}
           excludeFeatured
           listing={listing}
         />
 
         <div className="mobile-home-featured-card__actions">
           <FavoriteButton
-            className="card-media-action !min-h-8 !size-8 !min-w-8 !rounded-full !p-0"
+            className="card-media-action !min-h-7 !size-7 !min-w-7 !rounded-full !p-0"
             iconOnly
             listing={listing}
           />
