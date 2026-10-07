@@ -5,6 +5,7 @@ import {
   createConnectAccountLink,
   createConnectExpressLoginLink,
   getConnectStatusForUser,
+  probePlatformConnectEnabled,
   syncConnectAccountFromStripe,
 } from "@/services/payments/stripe-connect.service";
 
@@ -39,13 +40,17 @@ export async function POST(request: Request) {
   const action = body.action ?? "onboard";
 
   try {
-    if (action === "refresh-status") {
+    if (action === "refresh-status" || action === "probe-connect") {
+      const platformConnectEnabled = await probePlatformConnectEnabled({
+        force: true,
+      });
       const record = await syncConnectAccountFromStripe(admin.id);
       const connect = await getConnectStatusForUser(admin, { sync: false });
       return NextResponse.json({
         ok: true,
         connect,
         synced: Boolean(record),
+        platformConnectEnabled,
       });
     }
 

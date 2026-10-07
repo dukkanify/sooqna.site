@@ -7,6 +7,7 @@ import {
   createConnectAccountLink,
   createConnectExpressLoginLink,
   getConnectStatusForUser,
+  probePlatformConnectEnabled,
   syncConnectAccountFromStripe,
 } from "@/services/payments/stripe-connect.service";
 import {
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
 
   try {
     if (action === "refresh-status") {
+      await probePlatformConnectEnabled({ force: true });
       const record = await syncConnectAccountFromStripe(user.id);
       const connect = await getConnectStatusForUser(user, { sync: false });
       return NextResponse.json({
@@ -104,6 +106,14 @@ export async function POST(request: Request) {
           : message === STRIPE_CONNECT_NOT_ENABLED
             ? 409
             : 500;
+    let connect: ReturnType<typeof toClientConnect> | undefined;
+    try {
+      connect = toClientConnect(
+        await getConnectStatusForUser(user, { sync: false }),
+      );
+    } catch {
+      connect = undefined;
+    }
     return NextResponse.json(
       {
         error:
@@ -111,6 +121,7 @@ export async function POST(request: Request) {
             ? STRIPE_CONNECT_NOT_ENABLED
             : "CONNECT_ACTION_FAILED",
         message: sellerConnectPublicMessage(error),
+        ...(connect ? { connect } : {}),
       },
       { status },
     );

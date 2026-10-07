@@ -28,6 +28,7 @@ export type ConnectStatusPayload = {
   connectedAt: string | null;
   updatedAt: string | null;
   platformConfigured: boolean;
+  platformConnectEnabled?: boolean;
   shouldAutoRedirect: boolean;
   canOpenDashboard: boolean;
 };
@@ -210,13 +211,20 @@ export function AdminStripeConnectPanel({
     try {
       const res = await adminFetch("/api/admin/stripe/connect", {
         method: "POST",
-        body: JSON.stringify({ action: "refresh-status" }),
+        body: JSON.stringify({ action: "probe-connect" }),
       });
       const payload = await res.json();
       if (payload?.connect) setConnect(payload.connect);
+      const enabled =
+        typeof payload?.platformConnectEnabled === "boolean"
+          ? payload.platformConnectEnabled
+          : payload?.connect?.platformConnectEnabled;
       setMessage({
-        variant: "success",
-        text: "تم تحديث الحالة من Stripe.",
+        variant: enabled === false ? "error" : "success",
+        text:
+          enabled === false
+            ? "Connect غير مفعّل بعد في حساب Stripe للمنصة. فعّله من Dashboard ثم أعد الفحص."
+            : "تم فحص Connect — الاستلام البنكي متاح للبائعين.",
       });
     } catch {
       setMessage({ variant: "error", text: "تعذر تحديث الحالة." });
@@ -325,6 +333,22 @@ export function AdminStripeConnectPanel({
         <div className="admin-ops__status-chip">
           Payouts: {status.payoutsEnabled ? "enabled" : "disabled"}
         </div>
+        <div
+          className={`admin-ops__status-chip${
+            status.platformConnectEnabled === false
+              ? " admin-ops__status-chip--warn"
+              : status.platformConnectEnabled
+                ? " admin-ops__status-chip--ok"
+                : ""
+          }`}
+        >
+          Platform Connect:{" "}
+          {status.platformConnectEnabled === false
+            ? "off"
+            : status.platformConnectEnabled
+              ? "on"
+              : "unknown"}
+        </div>
         <div className="admin-ops__status-chip">
           Verification:{" "}
           {status.status === "ACTIVE"
@@ -382,12 +406,12 @@ export function AdminStripeConnectPanel({
         ) : null}
 
         <Button
-          disabled={busy || !platformReady || !status.stripeAccountId}
+          disabled={busy || !platformReady}
           onClick={refreshStatus}
           type="button"
           variant="ghost"
         >
-          تحديث الحالة
+          فحص Connect للمنصة
         </Button>
       </div>
     </section>

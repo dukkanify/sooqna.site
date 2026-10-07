@@ -50,42 +50,32 @@ export function SellerPayoutConnectCard({
           error?: string;
           message?: string;
         };
+        if (data.connect) {
+          startTransition(() => setConnect(data.connect!));
+        }
         if (!response.ok) {
+          // Only hide onboard when the server explicitly reports Connect off.
+          if (data.connect?.platformConnectEnabled === false) {
+            setError(null);
+            return;
+          }
           throw new Error(
             data.message &&
-              !/dashboard\.stripe\.com|signed up for Connect|CONNECT_/i.test(
+              !/dashboard\.stripe\.com|signed up for Connect/i.test(
                 data.message,
               )
               ? data.message
-              : "الاستلام البنكي المباشر غير مفعّل على المنصة حالياً. مبلغ الضمان يبقى في محفظة سوقنا حتى تفعيل التحويل.",
+              : "تعذر إكمال ربط الاستلام حالياً. حاول «تحديث الحالة» ثم أعد المحاولة.",
           );
         }
         if (data.url) {
           window.location.href = data.url;
           return;
         }
-        if (data.connect) {
-          startTransition(() => setConnect(data.connect!));
-        }
       } catch (err) {
         const fallback =
-          "الاستلام البنكي المباشر غير مفعّل على المنصة حالياً. مبلغ الضمان يبقى في محفظة سوقنا حتى تفعيل التحويل.";
-        const text = err instanceof Error ? err.message : fallback;
-        const connectDisabled =
-          /dashboard\.stripe\.com|signed up for Connect|CONNECT_|غير مفعّل/i.test(
-            text,
-          );
-        if (connectDisabled) {
-          startTransition(() =>
-            setConnect((current) => ({
-              ...current,
-              platformConnectEnabled: false,
-            })),
-          );
-          setError(null);
-        } else {
-          setError(fallback);
-        }
+          "تعذر إكمال ربط الاستلام حالياً. حاول «تحديث الحالة» ثم أعد المحاولة.";
+        setError(err instanceof Error ? err.message : fallback);
       } finally {
         setBusy(false);
       }
