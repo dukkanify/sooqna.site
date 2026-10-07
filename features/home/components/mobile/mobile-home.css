@@ -1404,7 +1404,7 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 
 .mobile-home-featured-card__image {
   object-fit: cover !important;
-  object-position: center;
+  object-position: center 40%;
 }
 
 .mobile-home-featured-card__badge-featured {

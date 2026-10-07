@@ -139,8 +139,10 @@ test("mobile drawer still has apply and reset", () => {
   assert.match(src, /CategorySmartFields/);
   assert.match(src, /variant="essential"/);
   assert.match(src, /variant="advanced"/);
+  // Mobile no longer stacks quick chip rails — filters live in the sheet.
+  const toolbar = read("features/search/components/SearchResultsToolbar.tsx");
+  assert.doesNotMatch(toolbar, /SearchQuickFilters/);
+  assert.match(toolbar, /SearchFilterChips/);
   const quick = read("features/search/components/SearchQuickFilters.tsx");
-  assert.match(quick, /كل الإمارات/);
-  assert.match(quick, /حتى 50 ألف/);
-  assert.match(quick, /md:hidden/);
+  assert.match(quick, /SEARCH_PRICE_BANDS/);
 });

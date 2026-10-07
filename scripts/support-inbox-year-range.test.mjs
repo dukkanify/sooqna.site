@@ -43,7 +43,7 @@ describe("support inbox persistence", () => {
     );
     assert.match(
       read("services/support/support-message-store.ts"),
-      /support-messages\.json/,
+      /marketplace_support_messages|sooqna-support-messages\.json/,
     );
   });
 });

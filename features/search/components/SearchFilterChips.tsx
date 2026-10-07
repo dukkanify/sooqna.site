@@ -162,28 +162,30 @@ export function SearchFilterChips({
 
   return (
     <LocalizedTree>
-    <div className="mb-4 flex flex-wrap items-center gap-2">
-      <span className="text-xs font-semibold text-muted">
-        {chips.length.toLocaleString(intlLocale(locale))} فلتر نشط
-      </span>
-      {chips.map((chip) => (
-        <Link
-          key={chip.key}
-          className="premium-chip interactive-lift gap-1.5 !py-1.5 !text-xs text-ink"
-          href={chip.href}
-        >
-          {chip.label}
-          <Icon aria-hidden name="close" size={12} />
-          <span className="sr-only">إزالة الفلتر</span>
-        </Link>
-      ))}
-      <Link
-        className="text-xs font-semibold text-primary transition hover:text-primary-dark"
-        href={basePath}
-      >
-        مسح الكل
-      </Link>
-    </div>
+      <div className="min-w-0">
+        <div className="-mx-1 flex min-w-0 max-w-full items-center gap-2 overflow-x-auto overscroll-x-contain px-1 pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] md:mb-1 md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
+          <span className="shrink-0 text-xs font-semibold text-muted">
+            {chips.length.toLocaleString(intlLocale(locale))} فلتر نشط
+          </span>
+          {chips.map((chip) => (
+            <Link
+              key={chip.key}
+              className="premium-chip interactive-lift shrink-0 gap-1.5 !py-1.5 !text-xs text-ink"
+              href={chip.href}
+            >
+              {chip.label}
+              <Icon aria-hidden name="close" size={12} />
+              <span className="sr-only">إزالة الفلتر</span>
+            </Link>
+          ))}
+          <Link
+            className="shrink-0 text-xs font-semibold text-primary transition hover:text-primary-dark"
+            href={basePath}
+          >
+            مسح الكل
+          </Link>
+        </div>
+      </div>
     </LocalizedTree>
   );
 }

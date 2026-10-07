@@ -82,38 +82,34 @@
 }
 
 /*
- * Featured-only gold cap overlaid on the photo top edge.
+ * Compact Featured chip in the start-top corner — keeps the photo readable.
  * Regular ads keep zero reserved space (no empty white strip).
- * Image tops stay aligned in grids because the crown is out of flow.
  */
-.marketplace-card-crown,
-.mobile-home-featured-card__crown {
+.marketplace-card-featured-chip,
+.mobile-home-featured-card__featured-chip {
   position: absolute;
-  top: 0;
-  inset-inline: 0;
+  top: 0.5rem;
+  inset-inline-start: 0.5rem;
   z-index: 16;
-  display: flex;
-  align-items: stretch;
-  height: 1.7rem;
-  overflow: hidden;
   pointer-events: none;
 }
 
-.marketplace-card-badges--below-crown {
-  top: 2.2rem !important;
+.marketplace-card-featured-chip .listing-featured-badge,
+.mobile-home-featured-card__featured-chip .listing-featured-badge {
+  gap: 0.3rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.62rem;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    0 2px 8px rgb(0 0 0 / 18%);
 }
 
-.marketplace-card-media-actions--below-crown {
-  top: 2.2rem;
+.marketplace-card-badges--with-featured,
+.listing-card-badges-with-featured {
+  top: 2.35rem !important;
 }
 
-.mobile-home-featured-card--featured .mobile-home-featured-card__actions,
-.mobile-home-featured-card--featured .mobile-home-featured-card__media .absolute.start-2.top-2,
-.mobile-home-featured-card--featured .listing-card-badges-below-crown {
-  top: 2.15rem !important;
-}
-
-/* Full-width bar in the crown — sits on the photo, badges shift below */
+/* Legacy full-width cap (detail surfaces / backward compat) */
 .listing-featured-badge--cap {
   display: flex;
   width: 100%;

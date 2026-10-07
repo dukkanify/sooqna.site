@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/shared/ui/Button";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Input } from "@/shared/ui/Input";
 import { Select } from "@/shared/ui/Select";
 import { Textarea } from "@/shared/ui/Textarea";
 import { BRAND } from "@/shared/constants/brand";
+import { getSessionUser } from "@/services/storage";
 
 type FieldErrors = Partial<Record<"name" | "email" | "topic" | "message", string>>;
 
@@ -15,11 +17,20 @@ export function SupportContactForm() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [sent, setSent] = useState(false);
   const [emailed, setEmailed] = useState(false);
+  const [ticketNumber, setTicketNumber] = useState("");
+  const [trackPath, setTrackPath] = useState("/support/track");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [topic, setTopic] = useState("other");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const user = getSessionUser();
+    if (!user) return;
+    if (user.fullName) setName(user.fullName);
+    if (user.email) setEmail(user.email);
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +52,10 @@ export function SupportContactForm() {
         return;
       }
       setEmailed(data.emailed === true);
+      setTicketNumber(String(data.ticketNumber ?? ""));
+      setTrackPath(
+        typeof data.trackPath === "string" ? data.trackPath : "/support/track",
+      );
       setSent(true);
     } catch {
       setError("تعذر إرسال الرسالة. حاول مرة أخرى.");
@@ -51,11 +66,30 @@ export function SupportContactForm() {
 
   if (sent) {
     return (
-      <FormMessage variant="success">
-        {emailed
-          ? `استلمنا رسالتك وأرسلنا تأكيدًا إلى بريدك. يمكنك أيضًا مراسلتنا على ${BRAND.supportEmail}.`
-          : `استلمنا رسالتك. إذا احتجت تواصلًا أسرع راسلنا على ${BRAND.supportEmail}.`}
-      </FormMessage>
+      <div className="grid gap-3">
+        <FormMessage variant="success">
+          {emailed
+            ? `استلمنا رسالتك وأرسلنا تأكيدًا إلى بريدك يتضمن رقم الطلب.`
+            : `استلمنا رسالتك. إذا احتجت تواصلًا أسرع راسلنا على ${BRAND.supportEmail}.`}
+        </FormMessage>
+        {ticketNumber ? (
+          <div className="rounded-[var(--radius-xl)] border border-border bg-surface-muted/40 px-4 py-3 text-sm">
+            <p className="text-muted">رقم الطلب للمتابعة</p>
+            <p className="mt-1 text-lg font-black text-ink" dir="ltr">
+              {ticketNumber}
+            </p>
+            <p className="mt-2 text-muted">الحالة الحالية: مستلم</p>
+            <div className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
+              <Link className="text-primary" href={trackPath}>
+                متابعة حالة الطلب
+              </Link>
+              <Link className="text-primary" href="/profile#support-tickets">
+                طلباتي في الملف الشخصي
+              </Link>
+            </div>
+          </div>
+        ) : null}
+      </div>
     );
   }
 
@@ -104,6 +138,13 @@ export function SupportContactForm() {
         rows={5}
         value={message}
       />
+      <p className="text-xs text-muted">
+        بعد الإرسال ستحصل على رقم طلب للمتابعة عبر البريد وصفحة{" "}
+        <Link className="font-semibold text-primary" href="/support/track">
+          متابعة الطلب
+        </Link>
+        .
+      </p>
       <Button loading={isSubmitting} type="submit" variant="accent">
         إرسال الرسالة
       </Button>
