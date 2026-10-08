@@ -64,6 +64,7 @@ type CategoryFieldsFormProps = {
   errors: CategoryFieldErrors;
   heading?: string;
   listing?: Listing;
+  onClearError?: (key: string) => void;
   onPreviewChange?: (patch: {
     city?: string;
     condition?: ListingCondition | "";
@@ -79,6 +80,8 @@ type CategoryFieldsFormProps = {
   /** Step-1 / listing subcategory — drives hideWhen (EV, accessories). */
   subcategory?: string;
 };
+
+const OPTIONAL_DETAILS_SECTION = "تفاصيل إضافية (اختياري)";
 
 function getSpecValue(
   defaults: CategoryFieldsDefaults | undefined,
@@ -257,6 +260,7 @@ export function CategoryFieldsForm({
   defaults,
   errors,
   heading = "تفاصيل الإعلان",
+  onClearError,
   onPreviewChange,
   showContact = false,
   stepLabel,
@@ -486,6 +490,12 @@ export function CategoryFieldsForm({
       for (const filled of newlyFilled) next.add(filled);
       return next;
     });
+    onClearError?.(key);
+    if (key === "brand") {
+      onClearError?.("model");
+      onClearError?.("modelOther");
+    }
+    for (const filled of newlyFilled) onClearError?.(filled);
 
     if (!onPreviewChange) return;
     if (key === "condition" && !hideCondition) {
@@ -538,22 +548,57 @@ export function CategoryFieldsForm({
           {heading}
         </h2>
         <p className={addListingStepDescClass}>
-          الحقول الذكية تُملأ تلقائياً حسب القسم والاختيارات — يمكنك تعديل أي قيمة.
+          أكمل الحقول الأساسية أولاً — التفاصيل الإضافية اختيارية ويمكن فتحها
+          لاحقاً.
         </p>
         {subcategory ? (
           <input name="subcategory" type="hidden" value={subcategory} />
         ) : null}
 
-        <div className={addListingDynamicFieldsGridClass}>
-          {fields.map((field) => {
+        {(() => {
+          const carCoreKeys = new Set([
+            "brand",
+            "model",
+            "modelOther",
+            "condition",
+            "year",
+            "emirate",
+            "city",
+            "mileage",
+            "transmission",
+            "fuelType",
+          ]);
+          const extraStart = fields.findIndex((field) =>
+            field.section?.includes("تفاصيل إضافية"),
+          );
+          const coreFields =
+            categoryId === "cars"
+              ? fields.filter((field) => carCoreKeys.has(field.key))
+              : extraStart >= 0
+                ? fields.slice(0, extraStart)
+                : fields;
+          const extraFields =
+            categoryId === "cars"
+              ? fields.filter((field) => !carCoreKeys.has(field.key))
+              : extraStart >= 0
+                ? fields.slice(extraStart)
+                : [];
+          const extraHasError = extraFields.some((field) =>
+            Boolean(errors[field.key]),
+          );
+
+          const renderFieldRow = (field: CategoryFieldDefinition) => {
             const spansFullWidth = field.type === "textarea";
-            const sectionHeading = field.section ? (
+            const showSectionHeading =
+              field.section && !field.section.includes("تفاصيل إضافية");
+            const sectionHeading = showSectionHeading ? (
               <div className="col-span-2 min-w-0 pt-1">
                 <h3 className="text-xs font-bold uppercase tracking-wide text-muted">
                   {field.section}
                 </h3>
               </div>
             ) : null;
+            const wrapClass = `min-w-0 ${spansFullWidth ? "col-span-2" : ""}`;
 
             if (field.key === "emirate") {
               const emirateValue = specs.emirate ?? "";
@@ -561,7 +606,8 @@ export function CategoryFieldsForm({
                 <Fragment key={field.key}>
                   {sectionHeading}
                   <div
-                    className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                    className={wrapClass}
+                    id={`add-listing-field-${field.key}`}
                   >
                     <Select
                       compact
@@ -594,7 +640,8 @@ export function CategoryFieldsForm({
                 <Fragment key={field.key}>
                   {sectionHeading}
                   <div
-                    className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                    className={wrapClass}
+                    id={`add-listing-field-${field.key}`}
                   >
                     <Input
                       compact
@@ -625,7 +672,8 @@ export function CategoryFieldsForm({
                 <Fragment key={field.key}>
                   {sectionHeading}
                   <div
-                    className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                    className={wrapClass}
+                    id={`add-listing-field-${field.key}`}
                   >
                     <Select
                       compact
@@ -636,7 +684,9 @@ export function CategoryFieldsForm({
                       }
                       label={field.label}
                       name={`spec_${field.key}`}
-                      onChange={(event) => onSpecChange(field.key, event.target.value)}
+                      onChange={(event) =>
+                        onSpecChange(field.key, event.target.value)
+                      }
                       options={optionsWithStoredValue(
                         field.options ?? [],
                         conditionDefault !== undefined
@@ -647,7 +697,9 @@ export function CategoryFieldsForm({
                       required={field.required}
                     />
                     {errors[field.key] ? (
-                      <FormMessage variant="error">{String(errors[field.key])}</FormMessage>
+                      <FormMessage variant="error">
+                        {String(errors[field.key])}
+                      </FormMessage>
                     ) : null}
                   </div>
                 </Fragment>
@@ -658,7 +710,8 @@ export function CategoryFieldsForm({
               <Fragment key={field.key}>
                 {sectionHeading}
                 <div
-                  className={`min-w-0 ${spansFullWidth ? "col-span-2" : ""}`}
+                  className={wrapClass}
+                  id={`add-listing-field-${field.key}`}
                 >
                   {renderField(
                     field,
@@ -688,30 +741,87 @@ export function CategoryFieldsForm({
                     <p className="mt-1 text-xs text-muted">{field.note}</p>
                   ) : null}
                   {errors[field.key] ? (
-                    <FormMessage variant="error">{String(errors[field.key])}</FormMessage>
+                    <FormMessage variant="error">
+                      {String(errors[field.key])}
+                    </FormMessage>
                   ) : null}
                 </div>
               </Fragment>
             );
-          })}
+          };
 
-          {featureField && fieldVisibleForSpecs(featureField, visibilitySpecs) ? (
-            <div className="col-span-2 min-w-0">
-              {renderField(featureField, defaults, selectedFeatures, onSpecChange)}
-            </div>
-          ) : null}
-        </div>
+          return (
+            <>
+              <div className={addListingDynamicFieldsGridClass}>
+                {coreFields.map(renderFieldRow)}
+              </div>
+
+              {extraFields.length > 0 ? (
+                <details
+                  className="mt-3 rounded-[var(--radius-xl)] border border-border/80 bg-surface-muted/40 open:bg-surface"
+                  open={extraHasError || undefined}
+                >
+                  <summary className="cursor-pointer list-none px-3 py-3 text-sm font-bold text-ink marker:content-none [&::-webkit-details-marker]:hidden">
+                    <span className="flex items-center justify-between gap-2">
+                      <span>{OPTIONAL_DETAILS_SECTION}</span>
+                      <span className="text-xs font-semibold text-muted">
+                        ألوان · ضمان · مواصفات · ميزات
+                      </span>
+                    </span>
+                  </summary>
+                  <div
+                    className={`${addListingDynamicFieldsGridClass} border-t border-border/70 px-3 pb-3 pt-3`}
+                  >
+                    {extraFields.map(renderFieldRow)}
+                    {featureField &&
+                    fieldVisibleForSpecs(featureField, visibilitySpecs) ? (
+                      <div
+                        className="col-span-2 min-w-0"
+                        id="add-listing-field-features"
+                      >
+                        {renderField(
+                          featureField,
+                          defaults,
+                          selectedFeatures,
+                          onSpecChange,
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                </details>
+              ) : featureField &&
+                fieldVisibleForSpecs(featureField, visibilitySpecs) ? (
+                <div
+                  className={`${addListingDynamicFieldsGridClass} mt-3`}
+                >
+                  <div
+                    className="col-span-2 min-w-0"
+                    id="add-listing-field-features"
+                  >
+                    {renderField(
+                      featureField,
+                      defaults,
+                      selectedFeatures,
+                      onSpecChange,
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          );
+        })()}
 
         <div className={addListingStepFooterClass}>
-          <div>
+          <div id="add-listing-field-title">
             <Input
               compact
               defaultValue={defaults?.title}
               label="عنوان الإعلان"
               name="title"
-              onChange={(event) =>
-                onPreviewChange?.({ title: event.target.value })
-              }
+              onChange={(event) => {
+                onClearError?.("title");
+                onPreviewChange?.({ title: event.target.value });
+              }}
               placeholder="مثال: تويوتا كامري 2022 بحالة ممتازة"
               required
             />
@@ -740,7 +850,7 @@ export function CategoryFieldsForm({
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-2">
-              <div className="col-span-2 sm:col-span-1">
+              <div className="col-span-2 sm:col-span-1" id="add-listing-field-price">
                 <Input
                   compact
                   defaultValue={defaults?.price}
@@ -748,12 +858,13 @@ export function CategoryFieldsForm({
                   label="السعر بالدرهم"
                   min="1"
                   name="price"
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    onClearError?.("price");
                     onPreviewChange?.({
                       price: event.target.value,
                       priceMode: "aed",
-                    })
-                  }
+                    });
+                  }}
                   placeholder="اكتب السعر"
                   required
                   type="number"
@@ -777,15 +888,16 @@ export function CategoryFieldsForm({
             </div>
           )}
 
-          <div>
+          <div id="add-listing-field-description">
             <Textarea
               compact
               defaultValue={defaults?.description}
               label="الوصف"
               name="description"
-              onChange={(event) =>
-                onPreviewChange?.({ description: event.target.value })
-              }
+              onChange={(event) => {
+                onClearError?.("description");
+                onPreviewChange?.({ description: event.target.value });
+              }}
               placeholder="اكتب وصفاً واضحاً ومفصلاً للإعلان..."
               required
             />

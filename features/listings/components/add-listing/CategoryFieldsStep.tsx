@@ -6,6 +6,7 @@ import { inferListingFormSmartSpecs } from "@/shared/listings/listing-form-smart
 type CategoryFieldsStepProps = {
   categoryId: string;
   errors: AddListingErrors & CategoryFieldErrors;
+  onClearError?: (key: string) => void;
   onPreviewChange?: (
     patch: Partial<ListingPreview>,
   ) => void;
@@ -16,6 +17,7 @@ type CategoryFieldsStepProps = {
 export function CategoryFieldsStep({
   categoryId,
   errors,
+  onClearError,
   onPreviewChange,
   subcategory = "",
 }: CategoryFieldsStepProps) {
@@ -39,6 +41,7 @@ export function CategoryFieldsStep({
       defaults={defaults}
       errors={errors}
       heading="2. تفاصيل الإعلان"
+      onClearError={onClearError}
       onPreviewChange={onPreviewChange}
       stepLabel="الخطوة 2"
       subcategory={subcategory}

@@ -119,16 +119,18 @@ const carFields: CategoryFieldDefinition[] = [
     note: "اكتب الحي أو المنطقة داخل الإمارة المختارة.",
   },
   { key: "mileage", label: "العداد (كم)", type: "text", required: true, searchable: true },
+  { key: "transmission", label: "ناقل الحركة", type: "select", required: true, options: VEHICLE_TRANSMISSION_OPTIONS },
+  { key: "fuelType", label: "نوع الوقود", type: "select", required: true, options: VEHICLE_FUEL_OPTIONS },
+  // Optional extras — collapsed under «تفاصيل إضافية» so publish stays short.
   {
     key: "bodyType",
     label: "نوع الهيكل",
     type: "select",
     required: false,
     searchable: true,
+    section: "تفاصيل إضافية (اختياري)",
     options: VEHICLE_BODY_TYPE_OPTIONS,
   },
-  { key: "transmission", label: "ناقل الحركة", type: "select", required: true, options: VEHICLE_TRANSMISSION_OPTIONS },
-  { key: "fuelType", label: "نوع الوقود", type: "select", required: true, options: VEHICLE_FUEL_OPTIONS },
   {
     key: "drivetrain",
     label: "نظام الدفع",
@@ -141,9 +143,9 @@ const carFields: CategoryFieldDefinition[] = [
     key: "engineSize",
     label: "سعة المحرك",
     type: "text",
-    required: true,
+    required: false,
     placeholder: "مثال: 2.0 أو 2000 سي سي",
-    note: "لا يُطلب للسيارات الكهربائية.",
+    note: "اختياري — لا يُعرض للسيارات الكهربائية.",
     hideWhen: [
       { key: "fuelType", values: ["كهربائي"] },
       {
@@ -156,7 +158,7 @@ const carFields: CategoryFieldDefinition[] = [
     key: "regionalSpecs",
     label: "المواصفات الإقليمية",
     type: "select",
-    required: true,
+    required: false,
     searchable: true,
     options: REGIONAL_SPEC_OPTIONS,
   },
@@ -164,7 +166,7 @@ const carFields: CategoryFieldDefinition[] = [
     key: "exteriorColor",
     label: "اللون الخارجي",
     type: "select",
-    required: true,
+    required: false,
     options: colorOptions,
   },
   {
@@ -179,7 +181,7 @@ const carFields: CategoryFieldDefinition[] = [
     key: "interiorColor",
     label: "اللون الداخلي",
     type: "select",
-    required: true,
+    required: false,
     options: colorOptions,
   },
   {
@@ -190,13 +192,13 @@ const carFields: CategoryFieldDefinition[] = [
     placeholder: "اكتب اللون",
     showWhen: { key: "interiorColor", values: ["أخرى"] },
   },
-  { key: "warranty", label: "الضمان", type: "select", required: true, options: yesNoOptions },
-  { key: "accidentHistory", label: "سجل الحوادث", type: "select", required: true, options: [
+  { key: "warranty", label: "الضمان", type: "select", required: false, options: yesNoOptions },
+  { key: "accidentHistory", label: "سجل الحوادث", type: "select", required: false, options: [
     { label: "بدون حوادث", value: "بدون حوادث" },
     { label: "حادث بسيط", value: "حادث بسيط" },
     { label: "حادث كبير", value: "حادث كبير" },
   ]},
-  { key: "serviceHistory", label: "سجل الصيانة", type: "select", required: true, options: [
+  { key: "serviceHistory", label: "سجل الصيانة", type: "select", required: false, options: [
     { label: "وكالة كاملة", value: "وكالة كاملة" },
     { label: "صيانة دورية", value: "صيانة دورية" },
     { label: "غير متوفر", value: "غير متوفر" },

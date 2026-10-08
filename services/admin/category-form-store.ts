@@ -90,11 +90,31 @@ export async function resolveCategoryFields(
   // Also keep newer visibility rules (hideWhen/showWhen) on existing keys.
   const known = new Set(fromStore.map((field) => field.key));
   const missing = defaults.filter((field) => !known.has(field.key));
+  // Car publish ease: keep secondary specs optional even if an older admin
+  // snapshot still marked colors / warranty / regional specs as required.
+  const carPublishOptional = new Set([
+    "bodyType",
+    "drivetrain",
+    "engineSize",
+    "regionalSpecs",
+    "exteriorColor",
+    "interiorColor",
+    "warranty",
+    "accidentHistory",
+    "serviceHistory",
+    "vin",
+    "numberOfKeys",
+    "features",
+  ]);
   const withVisibility = fromStore.map((field) => {
     const fallback = defaults.find((item) => item.key === field.key);
     if (!fallback) return field;
+    const forceOptional =
+      categoryId === "cars" && carPublishOptional.has(field.key);
     return {
       ...field,
+      required: forceOptional ? Boolean(fallback.required) : field.required,
+      section: field.section ?? fallback.section,
       showWhen: field.showWhen ?? fallback.showWhen,
       hideWhen: field.hideWhen ?? fallback.hideWhen,
     };
