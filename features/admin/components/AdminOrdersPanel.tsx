@@ -299,11 +299,13 @@ export function AdminOrdersPanel() {
         },
       );
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data.order) {
+      if (data.order) {
         setOrders((prev) =>
           prev.map((order) => (order.id === orderId ? data.order : order)),
         );
-        const status = String(data.status ?? "sent");
+      }
+      const status = String(data.status ?? "");
+      if (res.ok && (status === "sent" || status === "skipped")) {
         setMessage({
           variant: "success",
           text:
@@ -316,10 +318,15 @@ export function AdminOrdersPanel() {
           NO_BUYER_EMAIL: "لا يوجد بريد مشتري لإرسال الفاتورة.",
           NOT_PAID: "لا يمكن إرسال الفاتورة قبل تأكيد الدفع.",
           ORDER_NOT_FOUND: "الطلب غير موجود.",
+          EMAIL_FAILED: "تعذّر تسليم الفاتورة لبريد المشتري. راجع إعدادات البريد ثم أعد المحاولة.",
         };
         setMessage({
           variant: "error",
-          text: map[String(data.error)] ?? "تعذّر إرسال الفاتورة.",
+          text:
+            map[String(data.error)] ??
+            (status === "failed"
+              ? map.EMAIL_FAILED
+              : "تعذّر إرسال الفاتورة."),
         });
       }
     } finally {
