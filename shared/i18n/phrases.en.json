@@ -3118,5 +3118,14 @@
   "وكيل": "Agent",
   "سبب البيع": "Reason for selling",
   "سبب البيع: ": "Reason for selling: ",
-  "استخدم فلترة لتضييق النتائج.": "Use filters to narrow results."
+  "استخدم فلترة لتضييق النتائج.": "Use filters to narrow results.",
+  "الإعلانات التي حفظتها من زر القلب — يمكنك الرجوع إليها من هنا في أي وقت.": "Listings you saved with the heart button — come back to them here anytime.",
+  "احفظ بحثاً من صفحة النتائج — سنرسل إشعاراً عند ظهور إعلان مطابق.": "Save a search from the results page — we'll notify you when a matching listing appears.",
+  "تم حفظ التغييرات في حسابك.": "Your account changes were saved.",
+  "التغييرات تُحفظ في حسابك وتظهر على كل الأجهزة بعد تسجيل الدخول.": "Changes are saved to your account and show on every device after you sign in.",
+  "تغيير البريد": "Change email",
+  "لتغيير البريد استخدم القسم الآمن أسفل نموذج الحفظ": "To change your email, use the secure section below the save form",
+  "تعذر حفظ الملف الشخصي. حاول مرة أخرى.": "Could not save your profile. Please try again.",
+  "طلبات تواصل معنا": "Contact requests",
+  "طلبات الدعم المرتبطة بحسابك مع رقم الطلب والحالة الحالية (مستلم، قيد المراجعة، تم الرد، مغلق).": "Support requests linked to your account with a ticket number and status (Received, Under review, Responded, Closed)."
 }

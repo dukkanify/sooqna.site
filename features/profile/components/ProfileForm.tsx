@@ -213,7 +213,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <Input
               defaultValue={displayUser.email}
               disabled
-              hint="لتغيير البريد استخدم القسم الآمن أسفل نموذج الحفظ"
+              hint="لتغيير البريد استخدم القسم الآمن أدناه"
               label="البريد الإلكتروني"
               name="email"
               type="email"
