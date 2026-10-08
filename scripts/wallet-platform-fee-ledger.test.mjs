@@ -122,13 +122,15 @@ describe("seller Connect copy", () => {
     assert.match(fromRaw, /الاستلام البنكي/);
   });
 
-  it("seller wallet hides onboard when platform Connect is off", () => {
+  it("seller wallet hides onboard only when server reports Connect off", () => {
     const card = readFileSync(
       path.join(root, "features/wallet/components/SellerPayoutConnectCard.tsx"),
       "utf8",
     );
     assert.match(card, /platformConnectEnabled/);
     assert.match(card, /connectAvailable/);
+    assert.match(card, /platformConnectEnabled === false/);
+    assert.doesNotMatch(card, /setConnect\(\(current\) => \(\{[\s\S]*platformConnectEnabled: false/);
     assert.doesNotMatch(
       readFileSync(
         path.join(root, "app/api/seller/stripe/connect/route.ts"),
@@ -141,6 +143,8 @@ describe("seller Connect copy", () => {
       "utf8",
     );
     assert.match(service, /ENABLE_STRIPE_CONNECT_PAYOUTS/);
-    assert.match(service, /getStoredConnectSignupEnabled/);
+    assert.match(service, /probePlatformConnectEnabled/);
+    assert.match(service, /markPlatformConnectEnabled/);
+    assert.match(service, /CONNECT_CACHE_TTL_DISABLED_MS/);
   });
 });

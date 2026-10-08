@@ -55,5 +55,5 @@ export function sellerConnectPublicMessage(error: unknown): string {
   if (isConnectSignupDisabledError(error)) {
     return SELLER_CONNECT_UNAVAILABLE_AR;
   }
-  return SELLER_CONNECT_UNAVAILABLE_AR;
+  return "تعذر إكمال ربط الاستلام حالياً. حاول «تحديث الحالة» ثم أعد المحاولة.";
 }

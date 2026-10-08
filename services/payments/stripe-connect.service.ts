@@ -293,9 +293,15 @@ async function notifyConnectStatusChange(
 }
 
 let cachedPlatformConnectEnabled: boolean | null = null;
+let cachedPlatformConnectAtMs = 0;
+
+/** Re-probe sooner when disabled so enabling Connect in Stripe Dashboard recovers. */
+const CONNECT_CACHE_TTL_ENABLED_MS = 10 * 60 * 1000;
+const CONNECT_CACHE_TTL_DISABLED_MS = 2 * 60 * 1000;
 
 async function markPlatformConnectDisabled(): Promise<void> {
   cachedPlatformConnectEnabled = false;
+  cachedPlatformConnectAtMs = Date.now();
   try {
     await setStoredConnectSignupEnabled(false);
   } catch {
@@ -303,40 +309,83 @@ async function markPlatformConnectDisabled(): Promise<void> {
   }
 }
 
-export async function isPlatformConnectEnabled(): Promise<boolean> {
+async function markPlatformConnectEnabled(): Promise<void> {
+  cachedPlatformConnectEnabled = true;
+  cachedPlatformConnectAtMs = Date.now();
+  try {
+    await setStoredConnectSignupEnabled(true);
+  } catch {
+    // Persist is best-effort.
+  }
+}
+
+function connectCacheFresh(enabled: boolean): boolean {
+  if (cachedPlatformConnectEnabled === null) return false;
+  const ttl = enabled
+    ? CONNECT_CACHE_TTL_ENABLED_MS
+    : CONNECT_CACHE_TTL_DISABLED_MS;
+  return Date.now() - cachedPlatformConnectAtMs < ttl;
+}
+
+/**
+ * Probe Stripe whether Connected Accounts signup is available.
+ * Clears a prior durable latch when Connect has been enabled in the Dashboard.
+ */
+export async function probePlatformConnectEnabled(
+  options?: { force?: boolean },
+): Promise<boolean> {
   if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "false") {
     cachedPlatformConnectEnabled = false;
+    cachedPlatformConnectAtMs = Date.now();
     return false;
   }
   if (process.env.ENABLE_STRIPE_CONNECT_PAYOUTS === "true") {
-    cachedPlatformConnectEnabled = true;
+    await markPlatformConnectEnabled();
     return true;
   }
-  if (cachedPlatformConnectEnabled !== null) {
+
+  const force = Boolean(options?.force);
+  if (
+    !force &&
+    cachedPlatformConnectEnabled !== null &&
+    connectCacheFresh(cachedPlatformConnectEnabled)
+  ) {
     return cachedPlatformConnectEnabled;
   }
+
   await ensureStripeConfigLoaded();
   if (!isStripeConfigured() || !isStripeConnectPayoutsEnabled()) {
     cachedPlatformConnectEnabled = false;
+    cachedPlatformConnectAtMs = Date.now();
     return false;
   }
-  const stored = await getStoredConnectSignupEnabled().catch(() => null);
-  if (stored === false) {
-    cachedPlatformConnectEnabled = false;
-    return false;
-  }
+
   try {
     const stripe = await getStripeClient();
     await stripe.accounts.list({ limit: 1 });
-    cachedPlatformConnectEnabled = true;
+    await markPlatformConnectEnabled();
     return true;
   } catch (error) {
     if (isConnectSignupDisabledError(error)) {
       await markPlatformConnectDisabled();
       return false;
     }
+    // Transient Stripe/network errors: keep prior stored preference when known,
+    // otherwise assume available so sellers are not locked out by blips.
+    const stored = await getStoredConnectSignupEnabled().catch(() => null);
+    if (stored === false) {
+      cachedPlatformConnectEnabled = false;
+      cachedPlatformConnectAtMs = Date.now();
+      return false;
+    }
+    cachedPlatformConnectEnabled = true;
+    cachedPlatformConnectAtMs = Date.now();
     return true;
   }
+}
+
+export async function isPlatformConnectEnabled(): Promise<boolean> {
+  return probePlatformConnectEnabled();
 }
 
 export async function getConnectStatusForUser(
