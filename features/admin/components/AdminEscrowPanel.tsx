@@ -221,11 +221,12 @@ export function AdminEscrowPanel() {
         },
       );
       const data = await res.json().catch(() => ({}));
-      if (res.ok) {
+      const status = String(data.status ?? "");
+      if (res.ok && (status === "sent" || status === "skipped")) {
         setMessage({
           variant: "success",
           text:
-            String(data.status ?? "sent") === "skipped"
+            status === "skipped"
               ? "الفاتورة مُرسلة مسبقًا — سجّلنا إعادة المحاولة في سجل الطلب."
               : "تم إرسال الفاتورة إلى بريد المشتري.",
         });
@@ -239,11 +240,16 @@ export function AdminEscrowPanel() {
           NO_BUYER_EMAIL: "لا يوجد بريد مشتري لإرسال الفاتورة.",
           NOT_PAID: "لا يمكن إرسال الفاتورة قبل تأكيد الدفع.",
           ORDER_NOT_FOUND: "الطلب غير موجود.",
+          EMAIL_FAILED:
+            "تعذّر تسليم الفاتورة لبريد المشتري. راجع إعدادات البريد ثم أعد المحاولة.",
         };
         setMessage({
           variant: "error",
-          text: map[err] ?? "تعذّر إرسال الفاتورة.",
+          text:
+            map[err] ??
+            (status === "failed" ? map.EMAIL_FAILED : "تعذّر إرسال الفاتورة."),
         });
+        load();
       }
     } finally {
       setInvoiceBusyId(null);

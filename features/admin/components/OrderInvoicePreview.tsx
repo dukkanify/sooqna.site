@@ -103,7 +103,13 @@ export function OrderInvoicePreview({
               : "تظهر الفاتورة وتُرسل بعد تأكيد الدفع."}
           </p>
           {lastInvoiceSend ? (
-            <p className="mt-1 text-xs text-muted">
+            <p
+              className={`mt-1 text-xs ${
+                String(lastInvoiceSend.metadata?.status ?? "") === "failed"
+                  ? "font-semibold text-[var(--color-danger,#b42318)]"
+                  : "text-muted"
+              }`}
+            >
               آخر إرسال: {lastInvoiceSend.message}
               {lastInvoiceSend.createdAt
                 ? ` · ${new Date(lastInvoiceSend.createdAt).toLocaleString(
@@ -111,7 +117,13 @@ export function OrderInvoicePreview({
                   )}`
                 : ""}
               {lastInvoiceSend.metadata?.status
-                ? ` · ${String(lastInvoiceSend.metadata.status)}`
+                ? ` · ${
+                    String(lastInvoiceSend.metadata.status) === "failed"
+                      ? "فشل التسليم"
+                      : String(lastInvoiceSend.metadata.status) === "sent"
+                        ? "تم التسليم"
+                        : String(lastInvoiceSend.metadata.status)
+                  }`
                 : ""}
             </p>
           ) : null}

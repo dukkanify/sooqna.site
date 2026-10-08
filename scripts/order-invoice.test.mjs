@@ -70,4 +70,26 @@ describe("order invoice", () => {
     assert.match(route, /sendOrderInvoiceEmail/);
     assert.match(types, /"order_invoice"/);
   });
+
+  it("admin send-invoice never reports success when mail delivery failed", () => {
+    const route = read("app/api/admin/orders/[id]/send-invoice/route.ts");
+    const orders = read("features/admin/components/AdminOrdersPanel.tsx");
+    const escrow = read("features/admin/components/AdminEscrowPanel.tsx");
+    assert.match(route, /status === "failed"/);
+    assert.match(route, /EMAIL_FAILED/);
+    assert.match(route, /status:\s*502/);
+    assert.match(orders, /status === "sent" \|\| status === "skipped"/);
+    assert.match(orders, /EMAIL_FAILED/);
+    assert.match(escrow, /status === "sent" \|\| status === "skipped"/);
+    assert.match(escrow, /EMAIL_FAILED/);
+    // Success toast only after an explicit sent/skipped delivery status.
+    assert.match(
+      orders,
+      /if \(res\.ok && \(status === "sent" \|\| status === "skipped"\)\)/,
+    );
+    assert.match(
+      escrow,
+      /if \(res\.ok && \(status === "sent" \|\| status === "skipped"\)\)/,
+    );
+  });
 });

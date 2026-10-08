@@ -38,6 +38,15 @@ export async function POST(_request: Request, { params }: RouteParams) {
       detail: `إرسال فاتورة — ${order.listingTitle} (${status})`,
     });
 
+    // Delivery failed at the mail provider — keep order audit, but never
+    // report HTTP success so admin desks cannot toast "sent".
+    if (status === "failed") {
+      return NextResponse.json(
+        { order, status, error: "EMAIL_FAILED" },
+        { status: 502 },
+      );
+    }
+
     return NextResponse.json({ order, status });
   } catch (error) {
     const message = error instanceof Error ? error.message : "UNKNOWN_ERROR";
