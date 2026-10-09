@@ -1,4 +1,8 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import {
+  getPostgresConnectionString,
+  postgresPoolSslOption,
+} from "@/services/db/postgres";
 import { loadRecord, saveRecord } from "@/services/payments/data-store";
 
 export type StripeCredentialSource = "env" | "admin" | "none";
@@ -32,60 +36,15 @@ let pool: PostgresPool | null = null;
 let memoryCache: StripeCredentialsSnapshot | null = null;
 let loadPromise: Promise<StripeCredentialsSnapshot> | null = null;
 
-function getPostgresUrl(): string {
-  const direct =
-    process.env.DATABASE_URL?.trim() ||
-    process.env.DATABASE_URL_UNPOOLED?.trim() ||
-    process.env.POSTGRES_URL?.trim() ||
-    process.env.POSTGRES_PRISMA_URL?.trim() ||
-    "";
-  if (direct.startsWith("postgres")) return direct;
-
-  const host =
-    process.env.DATABASE_PGHOST?.trim() ||
-    process.env.DATABASE_PGHOST_UNPOOLED?.trim() ||
-    process.env.PGHOST?.trim() ||
-    "";
-  const user =
-    process.env.DATABASE_PGUSER?.trim() ||
-    process.env.PGUSER?.trim() ||
-    "neondb_owner";
-  const password =
-    process.env.DATABASE_PGPASSWORD?.trim() ||
-    process.env.PGPASSWORD?.trim() ||
-    "";
-  const database =
-    process.env.DATABASE_PGDATABASE?.trim() ||
-    process.env.PGDATABASE?.trim() ||
-    "neondb";
-  const port =
-    process.env.DATABASE_PGPORT?.trim() || process.env.PGPORT?.trim() || "5432";
-
-  if (host && password) {
-    return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}?sslmode=require`;
-  }
-  return "";
-}
-
-function shouldUseSsl(connectionString: string): boolean {
-  if (/localhost|127\.0\.0\.1/i.test(connectionString)) return false;
-  if (/sslmode=disable/i.test(connectionString)) return false;
-  return (
-    process.env.NODE_ENV === "production" ||
-    /sslmode=require/i.test(connectionString) ||
-    /neon\.tech|supabase\.co|amazonaws\.com/i.test(connectionString)
-  );
-}
-
 async function getPool(): Promise<PostgresPool | null> {
-  const connectionString = getPostgresUrl();
+  const connectionString = getPostgresConnectionString();
   if (!connectionString) return null;
   if (pool) return pool;
   const pg = await import("pg");
   const created = new pg.Pool({
     connectionString,
     max: 3,
-    ssl: shouldUseSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
+    ssl: postgresPoolSslOption(connectionString),
   });
   pool = {
     query: (sql, params) => created.query(sql, params),

@@ -116,6 +116,17 @@ export function clearPostgresDegraded(): void {
   postgresDegradedUntil = 0;
 }
 
+/**
+ * Rewrite legacy sslmode values that `pg` currently aliases to verify-full.
+ * Keeps connection behavior identical while silencing the deprecation warning.
+ */
+export function normalizePostgresSslMode(connectionString: string): string {
+  return connectionString.replace(
+    /([?&]sslmode=)(require|prefer|verify-ca)\b/gi,
+    "$1verify-full",
+  );
+}
+
 export function getPostgresConnectionString(): string {
   const direct =
     process.env.DATABASE_URL?.trim() ||
@@ -124,11 +135,7 @@ export function getPostgresConnectionString(): string {
     process.env.POSTGRES_PRISMA_URL?.trim() ||
     "";
   if (direct.startsWith("postgres")) {
-    // pg treats require/prefer/verify-ca as verify-full; name it to silence the warning.
-    return direct.replace(
-      /([?&]sslmode=)(require|prefer|verify-ca)\b/gi,
-      "$1verify-full",
-    );
+    return normalizePostgresSslMode(direct);
   }
 
   const host =
@@ -157,7 +164,8 @@ export function getPostgresConnectionString(): string {
   return "";
 }
 
-function shouldUseSsl(connectionString: string): boolean {
+/** Whether a Pool should enable TLS for this connection string. */
+export function shouldUsePostgresSsl(connectionString: string): boolean {
   if (/localhost|127\.0\.0\.1/i.test(connectionString)) return false;
   if (/sslmode=disable/i.test(connectionString)) return false;
   return (
@@ -165,6 +173,14 @@ function shouldUseSsl(connectionString: string): boolean {
     /sslmode=(require|verify-full)/i.test(connectionString) ||
     /neon\.tech|supabase\.co|amazonaws\.com/i.test(connectionString)
   );
+}
+
+export function postgresPoolSslOption(
+  connectionString: string,
+): { rejectUnauthorized: false } | undefined {
+  return shouldUsePostgresSsl(connectionString)
+    ? { rejectUnauthorized: false }
+    : undefined;
 }
 
 export function isPostgresConfigured(): boolean {
@@ -190,7 +206,7 @@ async function openPool(connectionString: string): Promise<PostgresPool> {
     idleTimeoutMillis: serverless ? 5_000 : 30_000,
     connectionTimeoutMillis: 10_000,
     allowExitOnIdle: serverless,
-    ssl: shouldUseSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
+    ssl: postgresPoolSslOption(connectionString),
   });
   next.on("error", (error) => {
     // Idle clients die often on Neon — drop the pool so the next query reconnects.

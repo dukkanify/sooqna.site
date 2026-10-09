@@ -10,9 +10,11 @@ import {
 } from "@/services/auth/auth-user-mirror";
 import {
   clearPostgresDegraded,
+  getPostgresConnectionString,
   isPostgresQuotaOrUnavailableError,
   isPostgresTemporarilyUnavailable,
   markPostgresUnavailable,
+  postgresPoolSslOption,
 } from "@/services/db/postgres";
 
 const USERS_FILE = "users.json";
@@ -50,50 +52,7 @@ export class AuthStoreError extends Error {
 }
 
 function getPostgresUrl(): string {
-  const direct =
-    process.env.DATABASE_URL?.trim() ||
-    process.env.DATABASE_URL_UNPOOLED?.trim() ||
-    process.env.POSTGRES_URL?.trim() ||
-    process.env.POSTGRES_PRISMA_URL?.trim() ||
-    "";
-  if (direct.startsWith("postgres")) {
-    return direct.replace(
-      /([?&]sslmode=)(require|prefer|verify-ca)\b/gi,
-      "$1verify-full",
-    );
-  }
-
-  // Vercel Neon integration exposes split PG* vars instead of DATABASE_URL.
-  const host =
-    process.env.DATABASE_PGHOST?.trim() ||
-    process.env.DATABASE_PGHOST_UNPOOLED?.trim() ||
-    process.env.PGHOST?.trim() ||
-    "";
-  const user =
-    process.env.DATABASE_PGUSER?.trim() ||
-    process.env.PGUSER?.trim() ||
-    "neondb_owner";
-  const password =
-    process.env.DATABASE_PGPASSWORD?.trim() ||
-    process.env.PGPASSWORD?.trim() ||
-    "";
-  const database =
-    process.env.DATABASE_PGDATABASE?.trim() ||
-    process.env.PGDATABASE?.trim() ||
-    "neondb";
-  const port =
-    process.env.DATABASE_PGPORT?.trim() ||
-    process.env.PGPORT?.trim() ||
-    "5432";
-
-  if (host && password) {
-    const encodedUser = encodeURIComponent(user);
-    const encodedPassword = encodeURIComponent(password);
-    const encodedDb = encodeURIComponent(database);
-    return `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${encodedDb}?sslmode=verify-full`;
-  }
-
-  return "";
+  return getPostgresConnectionString();
 }
 
 function isServerlessRuntime(): boolean {
@@ -108,16 +67,6 @@ function isServerlessRuntime(): boolean {
 function isEphemeralDir(dir: string): boolean {
   const normalized = path.resolve(dir);
   return normalized === "/tmp" || normalized.startsWith("/tmp/");
-}
-
-function shouldUsePostgresSsl(connectionString: string): boolean {
-  if (/localhost|127\.0\.0\.1/i.test(connectionString)) return false;
-  if (/sslmode=disable/i.test(connectionString)) return false;
-  return (
-    process.env.NODE_ENV === "production" ||
-    /sslmode=require/i.test(connectionString) ||
-    /neon\.tech|supabase\.co|amazonaws\.com/i.test(connectionString)
-  );
 }
 
 function resolveDurableJsonDir(): string {
@@ -216,7 +165,7 @@ async function getPostgresPool(): Promise<PostgresPool> {
   const pool = new pg.Pool({
     connectionString,
     max: 5,
-    ssl: shouldUsePostgresSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
+    ssl: postgresPoolSslOption(connectionString),
   });
   postgresPool = {
     query: async (sql: string, params?: unknown[]) => {
