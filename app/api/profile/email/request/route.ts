@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "INVALID_INPUT", message: "أدخل بريداً إلكترونياً صالحاً." },
+      { error: "INVALID_INPUT", message: "أدخل بريداً إلكترونياً صحيحاً." },
       { status: 400 },
     );
   }

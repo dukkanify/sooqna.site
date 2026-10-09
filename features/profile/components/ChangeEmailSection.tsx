@@ -117,7 +117,7 @@ export function ChangeEmailSection({
     const email = newEmail.trim().toLowerCase();
     if (!email || !email.includes("@")) {
       setError(true);
-      setMessage("أدخل بريداً إلكترونياً صالحاً.");
+      setMessage("أدخل بريداً إلكترونياً صحيحاً.");
       return;
     }
     if (hasPassword && !password.trim()) {

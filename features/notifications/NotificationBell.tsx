@@ -194,7 +194,7 @@ export function NotificationBell({
       <LocalizedTree>
       <div className="notify-bell">
         <Link
-          aria-label="الإشعارات"
+          aria-label={tx(locale, "الإشعارات")}
           className={`${className} notify-bell__trigger`}
           href="/login?next=/notifications"
         >
@@ -212,9 +212,12 @@ export function NotificationBell({
       <button
         aria-controls={panelId}
         aria-expanded={open}
-        aria-label={
-          visibleUnread > 0 ? `الإشعارات، ${visibleUnread} غير مقروء` : "الإشعارات"
-        }
+        aria-label={tx(
+          locale,
+          visibleUnread > 0
+            ? `الإشعارات، ${visibleUnread} غير مقروء`
+            : "الإشعارات",
+        )}
         className={`${className} notify-bell__trigger`}
         onClick={() => {
           unlockNotificationAudio();
@@ -242,7 +245,12 @@ export function NotificationBell({
       </button>
 
       {open ? (
-        <div className="notify-bell__panel" id={panelId} role="dialog" aria-label="الإشعارات">
+        <div
+          className="notify-bell__panel"
+          id={panelId}
+          role="dialog"
+          aria-label={tx(locale, "الإشعارات")}
+        >
           <div className="notify-bell__head">
             <p className="notify-bell__title">الإشعارات</p>
             {freshIds.size > 0 ? (
