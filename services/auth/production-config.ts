@@ -8,6 +8,7 @@ import {
   isStripeConfigured,
   isStripeWebhookConfigured,
 } from "@/services/payments/payment-config";
+import { readBlobEnvConfig } from "@/services/storage/blob-provider";
 import { readS3EnvConfig } from "@/services/storage/s3-provider";
 
 const DEFAULT_OTP_PEPPER = "sooqna-dev-pepper";
@@ -138,7 +139,9 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
   const passwordPepperConfigured = Boolean(
     process.env.PASSWORD_PEPPER?.trim(),
   );
-  const objectStorageConfigured = Boolean(readS3EnvConfig());
+  const objectStorageConfigured = Boolean(
+    readS3EnvConfig() || readBlobEnvConfig(),
+  );
   const demoAccountsAllowed = isDemoAccountsAllowed();
 
   const missing: string[] = [];
@@ -186,7 +189,7 @@ export function getProductionConfigSnapshot(): ProductionConfigSnapshot {
     missing.push("ALLOW_DEMO_ACCOUNTS=false");
   }
   if (process.env.NODE_ENV === "production" && !objectStorageConfigured) {
-    warnings.push("S3_BUCKET");
+    warnings.push("BLOB_READ_WRITE_TOKEN");
   }
   if (
     process.env.NODE_ENV === "production" &&

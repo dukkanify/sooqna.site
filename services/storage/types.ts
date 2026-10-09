@@ -7,7 +7,7 @@ export type StoredObject = {
   url: string;
   contentType: string;
   byteSize: number;
-  provider: "local" | "s3";
+  provider: "local" | "s3" | "blob";
   visibility: StorageVisibility;
   mediaClass: MediaClass;
 };
@@ -23,7 +23,7 @@ export type UploadInput = {
 };
 
 export type ObjectStorageProvider = {
-  readonly name: "local" | "s3";
+  readonly name: "local" | "s3" | "blob";
   upload(input: UploadInput): Promise<StoredObject>;
   delete(key: string): Promise<boolean>;
   exists(key: string): Promise<boolean>;

@@ -37,7 +37,8 @@ cp .env.production.example .env.production
 | `ALLOW_DEMO_ACCOUNTS` | `false` | **Yes on Vercel** — blocks `@sooqna.demo` seed/login |
 | `ALLOW_MOCK_CHECKOUT` | `false` | **Yes on Vercel** |
 | `DATABASE_URL` | `postgres://...` (Neon / Vercel Postgres) | **Yes on Vercel** — user accounts must not use `/tmp` |
-| `S3_BUCKET` + `S3_ACCESS_KEY_ID` + `S3_SECRET_ACCESS_KEY` | AWS / Cloudflare R2 / MinIO | **Recommended** — durable listing photos (without S3, images inline as data URLs in Postgres) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob store token | **Recommended on Vercel** — durable listing photos (auto-linked when Blob store is connected) |
+| `S3_BUCKET` + `S3_ACCESS_KEY_ID` + `S3_SECRET_ACCESS_KEY` | AWS / Cloudflare R2 / MinIO | Optional alternative to Blob |
 | `S3_PUBLIC_BASE_URL` | CDN / public bucket base | Recommended with S3 |
 | `S3_ENDPOINT` / `S3_REGION` | Provider endpoint & region | As required by your provider |
 
@@ -45,7 +46,8 @@ cp .env.production.example .env.production
 
 ### Media durability (listing photos)
 
-- With S3/R2 configured, `/api/uploads` returns stable public object URLs.
+- Prefer Vercel Blob (`BLOB_READ_WRITE_TOKEN`) on this project; S3/R2 also works when those credentials are set (S3 wins if both are present).
+- With Blob or S3 configured, `/api/uploads` returns stable public object URLs.
 - Without object storage on serverless, the client compresses images to data URLs so photos survive inside listing JSON (Postgres) instead of ephemeral `/api/media` disk.
 - Set Stripe live keys (`STRIPE_*`) in the Vercel project for real escrow checkout; mock fallback runs only when keys are unset.
 

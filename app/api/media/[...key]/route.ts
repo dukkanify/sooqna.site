@@ -54,7 +54,10 @@ export async function GET(_request: Request, { params }: RouteParams) {
     }
   }
 
-  if (storage.name === "s3" && isPrivateMediaKey(key)) {
+  if (
+    (storage.name === "s3" || storage.name === "blob") &&
+    isPrivateMediaKey(key)
+  ) {
     try {
       const signed = await storage.getSignedUrl(key, 300);
       return NextResponse.redirect(signed, 302);
@@ -63,12 +66,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
     }
   }
 
-  if (storage.name === "s3") {
-    const exists = await storage.exists(key);
-    if (!exists) {
+  if (storage.name === "s3" || storage.name === "blob") {
+    try {
+      const remoteUrl = await storage.getSignedUrl(key, 300);
+      return NextResponse.redirect(remoteUrl, 302);
+    } catch {
       return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
     }
-    return NextResponse.redirect(storage.getPublicUrl(key), 302);
   }
 
   // Compat: ensure absolute path still resolves for local provider edge cases.

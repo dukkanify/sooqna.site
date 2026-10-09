@@ -14,8 +14,8 @@ type UploadApiResponse = {
 /**
  * Listing image upload helper.
  * Normalize every photo to the shared 3:2 cover size first, then prefer
- * durable server URLs (S3). On ephemeral local/media paths, compress to
- * data URLs so seller photos survive in listing JSON (Postgres).
+ * durable server URLs (Vercel Blob / S3). On ephemeral local/media paths,
+ * compress to data URLs so seller photos survive in listing JSON (Postgres).
  */
 export async function uploadListingImages(files: File[]): Promise<string[]> {
   if (typeof window === "undefined") {
