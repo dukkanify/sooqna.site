@@ -77,7 +77,7 @@ export async function requestEmailChange(input: {
     return {
       ok: false,
       error: "INVALID_EMAIL",
-      message: "أدخل بريداً إلكترونياً صالحاً.",
+      message: "أدخل بريداً إلكترونياً صحيحاً.",
     };
   }
 

@@ -3127,5 +3127,11 @@
   "لتغيير البريد استخدم القسم الآمن أسفل نموذج الحفظ": "To change your email, use the secure section below the save form",
   "تعذر حفظ الملف الشخصي. حاول مرة أخرى.": "Could not save your profile. Please try again.",
   "طلبات تواصل معنا": "Contact requests",
-  "طلبات الدعم المرتبطة بحسابك مع رقم الطلب والحالة الحالية (مستلم، قيد المراجعة، تم الرد، مغلق).": "Support requests linked to your account with a ticket number and status (Received, Under review, Responded, Closed)."
+  "طلبات الدعم المرتبطة بحسابك مع رقم الطلب والحالة الحالية (مستلم، قيد المراجعة، تم الرد، مغلق).": "Support requests linked to your account with a ticket number and status (Received, Under review, Responded, Closed).",
+  "أدخل بريداً إلكترونياً صالحاً.": "Enter a valid email address.",
+  "اختر مستخدماً وأدخل مبلغاً صالحاً.": "Choose a user and enter a valid amount.",
+  "للاستفسارات غير المرتبطة بنزاع مفتوح، استخدم صفحة الدعم أو support@sooqnauae.com.": "For questions not tied to an open dispute, use Support or support@sooqnauae.com.",
+  "جدول منظم للأقسام: الاسم، الترتيب، الحالة، والإجراءات — مع بحث وتعديل مباشر.": "A clear categories table: name, order, status, and actions — with search and inline edit.",
+  "مدير أعلى يملك كل الوحدات: المعاملات، تفاصيل الدفع، الاسترداد، النزاعات، التقارير، الإعدادات، والتصنيفات.": "Super admin has every module: transactions, payment details, refunds, disputes, reports, settings, and categories.",
+  "حذف كل إعلانات كتالوج live-mkt التجريبية من قاعدة البيانات؟ إعلانات المستخدمين لن تُمس.": "Delete all live-mkt demo catalog listings from the database? User listings will not be touched."
 }
