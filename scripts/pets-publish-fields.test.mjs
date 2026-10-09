@@ -50,15 +50,16 @@ describe("pets listing publish", () => {
   });
 
   it("seeds animalType from step-1 subcategory for pets", () => {
+    const smart = read("shared/listings/listing-form-smart-defaults.ts");
     const utils = read(
       "features/listings/components/add-listing/category-form-utils.ts",
     );
-    const step = read(
-      "features/listings/components/add-listing/CategoryFieldsStep.tsx",
+    const form = read(
+      "features/listings/components/add-listing/CategoryFieldsForm.tsx",
     );
-    assert.match(utils, /PET_ANIMAL_TYPES/);
-    assert.match(utils, /visibilitySpecs\.animalType = subcategory/);
-    assert.match(step, /petsAnimalType/);
-    assert.match(step, /categorySpecs:\s*\{\s*animalType:\s*petsAnimalType/);
+    assert.match(smart, /PET_ANIMAL_TYPES/);
+    assert.match(smart, /"animalType",\s*subcategory/);
+    assert.match(utils, /inferListingFormSmartSpecs/);
+    assert.match(form, /inferListingFormSmartSpecs/);
   });
 });

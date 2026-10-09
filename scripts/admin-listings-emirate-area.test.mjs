@@ -102,7 +102,8 @@ describe("admin listings emirate/area UI", () => {
     assert.match(panel, /areasForEmirate/);
     assert.match(panel, /listingMatchesEmirateFilter/);
     assert.match(panel, /listingMatchesAreaFilter/);
-    assert.match(panel, /setAreaFilter\("all"\)/);
+    assert.match(panel, /function setAreaFilter/);
+    assert.match(panel, /writeDeskQuery\(\{ emirate: next, area: "all" \}\)/);
     assert.match(panel, /كل الإمارات/);
     assert.match(panel, /كل مناطق الإمارة/);
     // Flat dump of every city/area string must not power the filter.

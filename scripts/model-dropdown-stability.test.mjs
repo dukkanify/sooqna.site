@@ -147,8 +147,9 @@ test("G: edit listing keeps brand/model defaults stable (no Other remount flash)
     ),
     "utf8",
   );
-  assert.match(src, /field\.key === "brand" \|\| field\.key === "model"/);
-  assert.match(src, /specs\[field\.key\] \?\? ""/);
+  assert.match(src, /field\.key === "brand"/);
+  assert.match(src, /optionKind=\{field\.key === "model" \? "model" : "brand"\}/);
+  assert.match(src, /specs\[field\.key\] \?\?/);
   assert.match(src, /model-\$\{categoryId\}-\$\{specs\.brand/);
   assert.doesNotMatch(
     src,
