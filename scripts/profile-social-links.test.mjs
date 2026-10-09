@@ -96,7 +96,8 @@ describe("profile social links wiring", () => {
     assert.match(page, /SellerSocialLinks/);
     assert.match(page, /findUserById/);
     assert.match(component, /if \(!publicVisible\) return null/);
-    assert.match(service, /Fall back to registered account/);
+    assert.match(service, /Prefer live account display name/);
+    assert.match(service, /sellerDisplayNameFromProfile/);
   });
 
   it("EN phrases cover social link copy", () => {

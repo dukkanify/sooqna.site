@@ -11,8 +11,9 @@ let pool: PostgresPool | null = null;
 let rawPool: Pool | null = null;
 /** When Neon/Vercel Postgres hits quota or connectivity failure, skip DB for this process. */
 let postgresDegradedUntil = 0;
-const POSTGRES_TRANSIENT_DEGRADED_TTL_MS = 5 * 60 * 1000;
-/** Quota outages last hours/days — do not reconnect every 5 minutes (that burns more transfer). */
+/** Brief pause after a dropped idle socket — Neon poolers do this routinely. */
+const POSTGRES_TRANSIENT_DEGRADED_TTL_MS = 15 * 1000;
+/** Quota outages last hours/days — do not reconnect every few seconds (that burns transfer). */
 const POSTGRES_QUOTA_DEGRADED_TTL_MS = 12 * 60 * 60 * 1000;
 
 function isQuotaExceededMessage(message: string): boolean {
@@ -21,7 +22,34 @@ function isQuotaExceededMessage(message: string): boolean {
     message.includes("exceeded the compute time quota") ||
     message.includes("data transfer quota") ||
     message.includes("compute time quota") ||
-    message.includes("exceeded the storage size") 
+    message.includes("exceeded the storage size")
+  );
+}
+
+function errorMessage(error: unknown): string {
+  if (!error || typeof error !== "object") return "";
+  return String((error as { message?: string }).message ?? "").toLowerCase();
+}
+
+export function isPostgresTransientDisconnectError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const err = error as { code?: string; message?: string };
+  const message = errorMessage(error);
+  if (
+    err.code === "ECONNRESET" ||
+    err.code === "EPIPE" ||
+    err.code === "PROTOCOL_CONNECTION_LOST"
+  ) {
+    return true;
+  }
+  return (
+    message.includes("connection terminated unexpectedly") ||
+    message.includes("connection terminated") ||
+    message.includes("client has encountered a connection error") ||
+    message.includes("server closed the connection") ||
+    message.includes("cannot use a pool after calling end") ||
+    message.includes("connection ended") ||
+    message.includes("broken pipe")
   );
 }
 
@@ -32,7 +60,7 @@ export function isPostgresQuotaOrUnavailableError(error: unknown): boolean {
     message?: string;
     severity?: string;
   };
-  const message = String(err.message ?? "").toLowerCase();
+  const message = errorMessage(error);
   if (err.code === "53000") return true; // Neon: data transfer / compute quota
   if (err.code === "57P01" || err.code === "57P03") return true;
   if (err.code === "ECONNREFUSED" || err.code === "ETIMEDOUT" || err.code === "ENOTFOUND") {
@@ -41,7 +69,7 @@ export function isPostgresQuotaOrUnavailableError(error: unknown): boolean {
   if (isQuotaExceededMessage(message)) return true;
   if (message.includes("remaining connection slots")) return true;
   if (message.includes("too many connections")) return true;
-  if (message.includes("connection terminated unexpectedly")) return true;
+  if (isPostgresTransientDisconnectError(error)) return true;
   if (message.includes("cannot connect to")) return true;
   return false;
 }
@@ -49,22 +77,29 @@ export function isPostgresQuotaOrUnavailableError(error: unknown): boolean {
 export function isPostgresQuotaExceededError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
   const err = error as { code?: string; message?: string };
-  const message = String(err.message ?? "").toLowerCase();
+  const message = errorMessage(error);
   if (err.code === "53000" && isQuotaExceededMessage(message)) return true;
   return isQuotaExceededMessage(message);
 }
 
-export function markPostgresUnavailable(error?: unknown): void {
-  const ttl = isPostgresQuotaExceededError(error)
-    ? POSTGRES_QUOTA_DEGRADED_TTL_MS
-    : POSTGRES_TRANSIENT_DEGRADED_TTL_MS;
-  postgresDegradedUntil = Date.now() + ttl;
+function degradeTtlMs(error?: unknown): number {
+  if (isPostgresQuotaExceededError(error)) return POSTGRES_QUOTA_DEGRADED_TTL_MS;
+  return POSTGRES_TRANSIENT_DEGRADED_TTL_MS;
+}
+
+function discardPool(): void {
   pool = null;
   const closing = rawPool;
   rawPool = null;
   if (closing) {
     void closing.end().catch(() => undefined);
   }
+}
+
+export function markPostgresUnavailable(error?: unknown): void {
+  const ttl = degradeTtlMs(error);
+  postgresDegradedUntil = Date.now() + ttl;
+  discardPool();
   if (error && process.env.NODE_ENV !== "test") {
     const message =
       error instanceof Error ? error.message : String(error ?? "unknown");
@@ -127,7 +162,7 @@ function shouldUseSsl(connectionString: string): boolean {
   if (/sslmode=disable/i.test(connectionString)) return false;
   return (
     process.env.NODE_ENV === "production" ||
-    /sslmode=require/i.test(connectionString) ||
+    /sslmode=(require|verify-full)/i.test(connectionString) ||
     /neon\.tech|supabase\.co|amazonaws\.com/i.test(connectionString)
   );
 }
@@ -145,32 +180,67 @@ export function isServerlessRuntime(): boolean {
   );
 }
 
+async function openPool(connectionString: string): Promise<PostgresPool> {
+  const pg = await import("pg");
+  const serverless = isServerlessRuntime();
+  const next = new pg.Pool({
+    connectionString,
+    // Serverless: keep the footprint tiny; Neon pooler already multiplexes.
+    max: serverless ? 2 : 5,
+    idleTimeoutMillis: serverless ? 5_000 : 30_000,
+    connectionTimeoutMillis: 10_000,
+    allowExitOnIdle: serverless,
+    ssl: shouldUseSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
+  });
+  next.on("error", (error) => {
+    // Idle clients die often on Neon — drop the pool so the next query reconnects.
+    if (process.env.NODE_ENV !== "test") {
+      console.error(
+        `[postgres] pool error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    if (rawPool === next) {
+      discardPool();
+    }
+  });
+  rawPool = next;
+
+  const runQuery = async (sql: string, params?: unknown[]) => {
+    try {
+      return await next.query(sql, params);
+    } catch (error) {
+      if (isPostgresTransientDisconnectError(error)) {
+        // Drop the broken pool so the next request opens a fresh one.
+        // Do not enter the multi-minute degrade window for a single socket drop.
+        if (rawPool === next) discardPool();
+      } else if (isPostgresQuotaOrUnavailableError(error)) {
+        markPostgresUnavailable(error);
+      }
+      throw error;
+    }
+  };
+
+  pool = {
+    query: (sql, params) => runQuery(sql, params),
+  };
+  return pool;
+}
+
 /** Prefer Postgres; null when unavailable (local JSON / memory catalog fallback). */
 export async function getOptionalPostgresPool(): Promise<PostgresPool | null> {
   if (isPostgresTemporarilyUnavailable()) return null;
   const connectionString = getPostgresConnectionString();
   if (!connectionString) return null;
   if (pool) return pool;
-
-  const pg = await import("pg");
-  rawPool = new pg.Pool({
-    connectionString,
-    max: 5,
-    ssl: shouldUseSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
-  });
-  pool = {
-    query: async (sql, params) => {
-      try {
-        return await rawPool!.query(sql, params);
-      } catch (error) {
-        if (isPostgresQuotaOrUnavailableError(error)) {
-          markPostgresUnavailable(error);
-        }
-        throw error;
-      }
-    },
-  };
-  return pool;
+  try {
+    return await openPool(connectionString);
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return null;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -187,3 +257,9 @@ export async function requirePostgresPool(
   }
   throw new Error(`${label}_POSTGRES_UNAVAILABLE`);
 }
+
+/** Test helpers — not used by app runtime. */
+export const __postgresTest = {
+  transientTtlMs: POSTGRES_TRANSIENT_DEGRADED_TTL_MS,
+  quotaTtlMs: POSTGRES_QUOTA_DEGRADED_TTL_MS,
+};

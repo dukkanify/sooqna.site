@@ -143,7 +143,7 @@ describe("add-listing wiring", () => {
     assert.match(form, /smartFilledKeys/);
     assert.match(form, /SMART_FILL_HINT_AR/);
     assert.match(form, /smartFilledKeys\.has\(field\.key\)/);
-    assert.match(form, /الحقول الذكية/);
+    assert.match(form, /\{SMART_FILL_HINT_AR\}/);
     assert.equal(
       SMART_FILL_HINT_AR,
       "تم اختياره تلقائياً — يمكنك تعديله",

@@ -32,9 +32,15 @@ test("mobile home search keeps visible select text (no transparent value)", () =
     path.join(root, "features/home/components/mobile/mobile-home.css"),
     "utf8",
   );
+  // Chip label stays visible; native select is an invisible hit-target overlay.
+  assert.match(css, /\.mobile-home-search-card__chip-label/);
   assert.match(
     css,
-    /\.mobile-home-search-card__select\s*\{[^}]*color:\s*var\(--mh-primary\)/s,
+    /\.mobile-home-search-card__chip-select\s*\{[^}]*opacity:\s*0/s,
+  );
+  assert.match(
+    css,
+    /\.mobile-home-search-card__input\s*\{[^}]*color:\s*var\(--mh-primary\)/s,
   );
   assert.doesNotMatch(
     css,

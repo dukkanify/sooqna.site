@@ -55,8 +55,11 @@ describe("optional company / merchant name", () => {
       "features/listings/components/add-listing/useAddListingForm.ts",
     );
     const listings = read("app/api/listings/route.ts");
-    assert.match(add, /businessProfile\?\.businessName/);
-    assert.match(listings, /businessProfile\?\.businessName/);
+    const helper = read("shared/listings/seller-display-name.ts");
+    assert.match(add, /sellerDisplayNameFromProfile/);
+    assert.match(listings, /sellerDisplayNameFromProfile/);
+    assert.match(helper, /businessName/);
+    assert.match(helper, /fullName/);
   });
 
   it("EN phrases cover company name labels", () => {
