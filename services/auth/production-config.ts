@@ -54,7 +54,7 @@ export type ProductionConfigSnapshot = {
   otpPepperConfigured: boolean;
   /** True when PASSWORD_PEPPER is set (any value — rotating breaks existing hashes). */
   passwordPepperConfigured: boolean;
-  /** True when S3/R2 object storage env is complete. */
+  /** True when Blob (`BLOB_READ_WRITE_TOKEN`) or S3/R2 object storage env is complete. */
   objectStorageConfigured: boolean;
   /** True when demo @sooqna.demo accounts may seed/login. */
   demoAccountsAllowed: boolean;
