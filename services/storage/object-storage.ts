@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { tryCreateBlobObjectStorage } from "@/services/storage/blob-provider";
 import {
   getLocalUploadAbsolutePath,
   localObjectStorage,
@@ -35,11 +36,15 @@ let cachedProvider: ObjectStorageProvider | null = null;
 /**
  * Active object storage provider.
  * Prefers S3-compatible (AWS / R2 / MinIO) when credentials exist;
+ * else Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set;
  * otherwise durable local fallback under the auth data directory.
  */
 export function getObjectStorage(): ObjectStorageProvider {
   if (cachedProvider) return cachedProvider;
-  cachedProvider = tryCreateS3ObjectStorage() ?? localObjectStorage;
+  cachedProvider =
+    tryCreateS3ObjectStorage() ??
+    tryCreateBlobObjectStorage() ??
+    localObjectStorage;
   return cachedProvider;
 }
 
