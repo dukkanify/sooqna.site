@@ -23,8 +23,8 @@ See [STRIPE_GO_LIVE.md](./STRIPE_GO_LIVE.md).
 | **Data storage** | Users/OTP/notifications/listings/orders/disputes/evidence prefer Postgres. Wallets, favorites, chat, and admin settings use durable collections (Postgres or `.data` files). |
 | **Sessions** | Signed HMAC session cookies (`SESSION_SECRET` / `NEXTAUTH_SECRET`). Client cannot forge profiles via `/api/auth/session`. |
 | **Seller payouts** | Connect Transfer on release when seller Express is ACTIVE. Skipped payouts retry via daily `/api/cron/escrow-maintenance`. `ENABLE_STRIPE_CONNECT_PAYOUTS=false` forces ledger-only. |
-| **Escrow evidence** | Uploads via `/api/uploads` to durable local `/api/media` (or S3 when configured). Metadata prefers Postgres. |
-| **Images** | Prefer `/api/uploads`; listings fall back to client compression if upload fails. |
+| **Escrow evidence** | Uploads via `/api/uploads` to Vercel Blob (or S3 when configured; else local `/api/media`). Metadata prefers Postgres. |
+| **Images** | Prefer `/api/uploads` → Blob CDN URLs. Listings fall back to client data-URL compression only if remote storage is unavailable. |
 | **RBAC** | Super admin = empty stored modules (full access). Sub-admin = explicit module + action matrix (users, listings, orders, disputes, payments, reports, settings, categories). Users desk shows current grants; empty save cannot promote to super. |
 | **UAE PASS** | Hidden until `NEXT_PUBLIC_ENABLE_UAE_PASS=true` |
 | **Auto-release** | Daily `/api/cron/escrow-maintenance` after `escrowHoldDays` once seller proof exists (needs `CRON_SECRET` in production). |

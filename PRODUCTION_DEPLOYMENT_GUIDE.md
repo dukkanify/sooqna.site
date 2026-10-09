@@ -33,7 +33,7 @@ cp .env.production.example .env.production
 | `SESSION_SECRET` | long random | **Yes** — HMAC session cookies |
 | `CRON_SECRET` | long random | **Yes** — escrow auto-release + dispute reminder crons |
 | `OTP_PEPPER` | long random (not the code default) | **Yes** — OTP hashing |
-| `PASSWORD_PEPPER` | stable secret | Recommended — set once; rotating invalidates passwords |
+| `PASSWORD_PEPPER` | stable secret (must match existing hashes) | **Yes on Vercel** — set once; rotating invalidates passwords |
 | `ALLOW_DEMO_ACCOUNTS` | `false` | **Yes on Vercel** — blocks `@sooqna.demo` seed/login |
 | `ALLOW_MOCK_CHECKOUT` | `false` | **Yes on Vercel** |
 | `DATABASE_URL` | `postgres://...` (Neon / Vercel Postgres) | **Yes on Vercel** — user accounts must not use `/tmp` |
