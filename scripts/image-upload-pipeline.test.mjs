@@ -190,6 +190,14 @@ describe("listing upload pipeline wiring", () => {
     assert.match(storage, /sniffed === "heic"/);
   });
 
+  it("rejects non-multipart upload bodies with 415 instead of 500", () => {
+    const route = read("app/api/uploads/route.ts");
+    assert.match(route, /MULTIPART_REQUIRED/);
+    assert.match(route, /status:\s*415/);
+    assert.match(route, /multipart\/form-data/);
+    assert.match(route, /isNonMultipartBodyError/);
+  });
+
   it("file pickers accept JPEG/JPG/PNG/WebP explicitly", () => {
     assert.match(LISTING_IMAGE_ACCEPT, /image\/jpeg/);
     assert.match(LISTING_IMAGE_ACCEPT, /image\/jpg/);

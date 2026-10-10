@@ -15,9 +15,30 @@ import { resolveUploadContentType } from "@/shared/media/image-bytes";
  * Authenticated multipart upload → durable object URL (local media API or S3).
  * Form fields: file (required), folder (optional: evidence | listings | disputes).
  */
+function isNonMultipartBodyError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return (
+    /content-type/i.test(message) ||
+    /multipart/i.test(message) ||
+    /form.?data/i.test(message) ||
+    /Could not parse content as FormData/i.test(message)
+  );
+}
+
 export async function POST(request: Request) {
   const user = await requireSessionUser();
   if (!isSessionUser(user)) return user;
+
+  const contentType = request.headers.get("content-type") ?? "";
+  if (
+    !contentType.toLowerCase().includes("multipart/form-data") &&
+    !contentType.toLowerCase().includes("application/x-www-form-urlencoded")
+  ) {
+    return NextResponse.json(
+      { error: "MULTIPART_REQUIRED" },
+      { status: 415 },
+    );
+  }
 
   try {
     const form = await request.formData();
@@ -85,6 +106,12 @@ export async function POST(request: Request) {
       mediaClass: stored.mediaClass,
     });
   } catch (error) {
+    if (isNonMultipartBodyError(error)) {
+      return NextResponse.json(
+        { error: "MULTIPART_REQUIRED" },
+        { status: 415 },
+      );
+    }
     const message = error instanceof Error ? error.message : "UPLOAD_FAILED";
     const status =
       message === "UNSUPPORTED_MEDIA_TYPE"

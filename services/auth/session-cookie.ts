@@ -6,9 +6,10 @@ import {
   peekSessionRoleFromCookieValue,
   verifySessionToken,
 } from "@/services/auth/session-token";
+import { SESSION_COOKIE_NAME } from "@/shared/auth/session-cookie-name";
 import { parseSessionCookieValue } from "@/services/auth/session-cookie-parse";
 
-export const SESSION_COOKIE_NAME = "sooqna_session";
+export { SESSION_COOKIE_NAME } from "@/shared/auth/session-cookie-name";
 export { parseSessionCookieValue } from "@/services/auth/session-cookie-parse";
 export { peekSessionRoleFromCookieValue };
 
