@@ -90,10 +90,14 @@ export async function getResendPrimaryDomainStatus(): Promise<ResendDomainStatus
       name?: string;
     };
     if (!listResponse.ok) {
+      const message =
+        listBody.message ?? listBody.name ?? `HTTP_${listResponse.status}`;
+      // Sending-only API keys cannot list domains — not a deliverability failure.
+      const sendOnly = /restricted to only send emails/i.test(message);
       return {
         ...empty,
         queried: true,
-        error: listBody.message ?? listBody.name ?? `HTTP_${listResponse.status}`,
+        error: sendOnly ? "RESEND_KEY_SEND_ONLY" : message,
       };
     }
 
