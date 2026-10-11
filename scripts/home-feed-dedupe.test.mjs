@@ -73,4 +73,11 @@ describe("home feed composition contract", () => {
     assert.match(mobile, /feed\.catalogCount === 0/);
     assert.match(feed, /allowReuse/);
   });
+
+  it("bypasses a stale empty Data Cache entry for the home feed", () => {
+    const feed = read("services/listings/home-feed.ts");
+    assert.match(feed, /sooqna-home-feed-v24-empty-bypass-starters/);
+    assert.match(feed, /if \(cached\.catalogCount > 0\) return cached/);
+    assert.match(feed, /return buildHomeFeed\(\)/);
+  });
 });
