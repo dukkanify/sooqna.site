@@ -237,16 +237,22 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v23-stream-own-covers"],
+  ["sooqna-home-feed-v24-empty-bypass-starters"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],
   },
 );
 
-/** Cached homepage slices — unique ids and unique cover photos across sections. */
+/**
+ * Cached homepage slices — unique ids and unique cover photos across sections.
+ * If the Data Cache still holds an empty feed (Neon blip / prior degrade),
+ * rebuild once uncached so / never stays blank while /search has ads.
+ */
 export const getHomeFeed = cache(async (): Promise<HomeFeed> => {
-  return getHomeFeedCached();
+  const cached = await getHomeFeedCached();
+  if (cached.catalogCount > 0) return cached;
+  return buildHomeFeed();
 });
 
 export const getSearchSuggestionTitles = cache(

@@ -24,13 +24,18 @@ describe("empty category starter fill", () => {
     assert.match(src, /insertListingsIfMissing/);
   });
 
-  it("public browse allows live-mkt only when querying an empty category", () => {
+  it("public browse allows live-mkt for empty categories (scoped + home)", () => {
     const queries = read("services/listings/listing-queries.ts");
     assert.match(queries, /ensureEmptyCategoryStartersPublished/);
     assert.match(queries, /cachedEmptyCategoryIds/);
     assert.match(
       queries,
       /NOT \$\{LIVE_MARKETPLACE_LISTING_SQL\} OR category_id =/,
+    );
+    // Uncategorized home/search must also surface empty-category starters.
+    assert.match(
+      queries,
+      /OR category_id = ANY\(\$\$\{values\.length\}::text\[\]\)/,
     );
     assert.match(queries, /isLiveCatalogVisibleForEmptyCategories/);
   });

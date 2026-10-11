@@ -60,8 +60,10 @@ let cachedEmptyCategoryIds: string[] = [];
 
 /**
  * Browse/search exclusion: fixtures + showcase always; live-mkt when catalog OFF
- * — except for empty marketplace categories when the query targets one of them
- * (so electronics/pets are not blank while cars stay real-only).
+ * — except for empty marketplace categories (so electronics/pets are not blank
+ * while cars stay real-only). Applies to category-scoped queries AND
+ * uncategorized home/search so the homepage is not empty while /search?category=
+ * still shows starters.
  * Prefer {@link marketplaceCountExclusionSql} for every COUNT / badge total.
  */
 function publicCatalogExclusionSql(
@@ -72,11 +74,24 @@ function publicCatalogExclusionSql(
   if (isLiveCatalogEnabled()) return parts;
 
   const categoryId = query.categoryId?.trim();
-  if (categoryId && cachedEmptyCategoryIds.includes(categoryId)) {
-    // Allow live-mkt starters for this empty category only.
-    values.push(categoryId);
+  if (categoryId) {
+    if (cachedEmptyCategoryIds.includes(categoryId)) {
+      // Allow live-mkt starters for this empty category only.
+      values.push(categoryId);
+      parts.push(
+        `(NOT ${LIVE_MARKETPLACE_LISTING_SQL} OR category_id = $${values.length})`,
+      );
+      return parts;
+    }
+    parts.push(`NOT ${LIVE_MARKETPLACE_LISTING_SQL}`);
+    return parts;
+  }
+
+  // Home / uncategorized browse: allow starters for every currently-empty category.
+  if (cachedEmptyCategoryIds.length > 0) {
+    values.push(cachedEmptyCategoryIds);
     parts.push(
-      `(NOT ${LIVE_MARKETPLACE_LISTING_SQL} OR category_id = $${values.length})`,
+      `(NOT ${LIVE_MARKETPLACE_LISTING_SQL} OR category_id = ANY($${values.length}::text[]))`,
     );
     return parts;
   }
@@ -196,18 +211,18 @@ function isHiddenFromPublicCatalog(
     return true;
   }
   // When live catalog is disabled (production default), hide seed inventory
-  // that may already exist in the shared Neon DB — unless this query targets
-  // an empty category that is allowed to show starters.
+  // that may already exist in the shared Neon DB — unless the listing belongs
+  // to an empty category that is allowed to show starters (category browse or
+  // uncategorized home/search).
   if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
     const categoryId = query.categoryId?.trim();
-    if (
-      categoryId &&
-      listing.categoryId === categoryId &&
-      isLiveCatalogVisibleForEmptyCategories(listing, cachedEmptyCategoryIds)
-    ) {
-      return false;
+    if (categoryId && listing.categoryId !== categoryId) {
+      return true;
     }
-    return true;
+    return !isLiveCatalogVisibleForEmptyCategories(
+      listing,
+      cachedEmptyCategoryIds,
+    );
   }
   return false;
 }
