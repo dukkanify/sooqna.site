@@ -45,8 +45,8 @@ function needsManualReviewListing(listing) {
   const title = listing.title?.trim() ?? "";
   const sellerName = listing.seller?.name?.trim() ?? "";
   return (
-    /^إعلان تجريبي\b/.test(title) ||
-    /^إعلان مرفوض\b/.test(title) ||
+    /^إعلان (?:تجريبي|مرفوض)(?:\s|$|—|-|–)/.test(title) ||
+    /^إعلان (?:تجريبي|مرفوض)$/.test(title) ||
     /^E2E Preview Test Listing$/i.test(title) ||
     QA_SELLER_NAMES.has(sellerName)
   );
@@ -66,7 +66,11 @@ test("policy file still encodes fixture and no-seed-on-vercel rules", () => {
   assert.match(src, /id ~ '\^e2e-'/);
   assert.match(src, /slug ~ '\^e2e-'/);
   assert.match(src, /local-1789075968004/);
+  assert.match(src, /local-1790600982192/);
   assert.match(src, /sony-ipad-pro/);
+  assert.match(src, /isPublicQaTitleListing/);
+  assert.match(src, /PUBLIC_QA_TITLE_SQL/);
+  // Title hide lives in PUBLIC_QA_TITLE_SQL, not inside FIXTURE_LISTING_SQL.
   assert.doesNotMatch(
     src,
     /OR COALESCE\(payload->>'title', ''\) LIKE 'إعلان تجريبي%'/,

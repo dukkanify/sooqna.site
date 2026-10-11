@@ -32,30 +32,60 @@ const QA_SELLER_NAMES = new Set(["Preview E2E User", "QA26 User"]);
 const PUBLIC_HIDDEN_LISTING_IDS = new Set([
   "local-1789075968004",
   "local-1788919686292",
+  /** Admin-posted demo car that was featured on production home. */
+  "local-1790600982192",
 ]);
 const PUBLIC_HIDDEN_LISTING_SLUGS = new Set([
   "sony-ipad-pro",
   "toyota-patrol-2026",
+  "01-982192",
 ]);
 
 export type FixtureListingRef = {
   id?: string;
   slug?: string;
   title?: string;
+  titleEnglish?: string;
   seller?: { name?: string };
 };
 
 export type ListingIntegrityClass = "CONFIRMED_FAKE" | "MANUAL_REVIEW" | "REAL";
 
-function looksLikeQaTitleOrName(listing: FixtureListingRef): boolean {
+/**
+ * Public-catalog only: hide obvious QA/demo titles so production home/search
+ * never feature “إعلان تجريبي …” rows. Does NOT mark them confirmed fixtures
+ * (admin can still see/review them).
+ */
+/** Arabic titles don't play well with JS `\b` — use space/dash/end anchors. */
+const ARABIC_QA_TITLE =
+  /^إعلان (?:تجريبي|مرفوض)(?:\s|$|—|-|–)/;
+const ARABIC_QA_TITLE_EXACT = /^إعلان (?:تجريبي|مرفوض)$/;
+
+export function isPublicQaTitleListing(listing: FixtureListingRef): boolean {
   const title = listing.title?.trim() ?? "";
-  const sellerName = listing.seller?.name?.trim() ?? "";
+  const titleEnglish = listing.titleEnglish?.trim() ?? "";
   return (
-    /^إعلان تجريبي\b/.test(title) ||
-    /^إعلان مرفوض\b/.test(title) ||
+    ARABIC_QA_TITLE.test(title) ||
+    ARABIC_QA_TITLE_EXACT.test(title) ||
     /^E2E Preview Test Listing$/i.test(title) ||
-    QA_SELLER_NAMES.has(sellerName)
+    /^E2E Preview Test Listing$/i.test(titleEnglish) ||
+    /^Listing(?:\s+)تجريبي(?:\s|$|—|-|–)/i.test(titleEnglish) ||
+    /^Listing(?:\s+)تجريبي$/i.test(titleEnglish)
   );
+}
+
+/** SQL matching {@link isPublicQaTitleListing}. */
+export const PUBLIC_QA_TITLE_SQL = `(
+  COALESCE(payload->>'title', '') ~ '^إعلان تجريبي($|[[:space:]])'
+  OR COALESCE(payload->>'title', '') ~ '^إعلان مرفوض($|[[:space:]])'
+  OR COALESCE(payload->>'title', '') ~* '^e2e preview test listing$'
+  OR COALESCE(payload->>'titleEnglish', '') ~* '^e2e preview test listing$'
+  OR COALESCE(payload->>'titleEnglish', '') ~* '^listing[[:space:]]*تجريبي'
+)`;
+
+function looksLikeQaTitleOrName(listing: FixtureListingRef): boolean {
+  const sellerName = listing.seller?.name?.trim() ?? "";
+  return isPublicQaTitleListing(listing) || QA_SELLER_NAMES.has(sellerName);
 }
 
 function isE2eFixtureKey(value: string): boolean {
@@ -120,8 +150,12 @@ export const FIXTURE_LISTING_SQL = `(
   OR COALESCE(payload->>'id', '') = 'local-1789075968004'
   OR id = 'local-1788919686292'
   OR COALESCE(payload->>'id', '') = 'local-1788919686292'
+  OR id = 'local-1790600982192'
+  OR COALESCE(payload->>'id', '') = 'local-1790600982192'
   OR slug = 'sony-ipad-pro'
   OR COALESCE(payload->>'slug', '') = 'sony-ipad-pro'
   OR slug = 'toyota-patrol-2026'
   OR COALESCE(payload->>'slug', '') = 'toyota-patrol-2026'
+  OR slug = '01-982192'
+  OR COALESCE(payload->>'slug', '') = '01-982192'
 )`;
