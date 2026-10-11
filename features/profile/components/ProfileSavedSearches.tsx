@@ -8,6 +8,7 @@ import {
   replaceSavedSearches,
   type SavedSearch,
 } from "@/services/storage";
+import { hasBrowserSessionCookie } from "@/shared/auth/session-cookie-name";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { Icon } from "@/shared/ui/Icon";
@@ -19,6 +20,7 @@ type ServerSavedSearch = {
 };
 
 async function hydrateFromServer(): Promise<SavedSearch[] | null> {
+  if (!hasBrowserSessionCookie()) return null;
   try {
     const response = await fetch("/api/saved-searches", {
       credentials: "include",
@@ -91,6 +93,7 @@ export function ProfileSavedSearches() {
             className="focus-ring grid size-8 shrink-0 place-items-center rounded-full text-muted transition hover:bg-surface hover:text-error"
             onClick={() => {
               setSaved(removeSavedSearch(item.id));
+              if (!hasBrowserSessionCookie()) return;
               void fetch(`/api/saved-searches?id=${encodeURIComponent(item.id)}`, {
                 method: "DELETE",
                 credentials: "include",

@@ -9,6 +9,7 @@ import {
   saveCurrentSearch,
   type SavedSearch,
 } from "@/services/storage";
+import { hasBrowserSessionCookie } from "@/shared/auth/session-cookie-name";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import { FormMessage } from "@/shared/ui/FormMessage";
 import { Icon } from "@/shared/ui/Icon";
@@ -28,6 +29,8 @@ type ServerSavedSearch = {
 };
 
 async function hydrateFromServer(): Promise<SavedSearch[] | null> {
+  // Guests keep localStorage-only saves — skip the auth API to avoid 401 noise.
+  if (!hasBrowserSessionCookie()) return null;
   try {
     const response = await fetch("/api/saved-searches", {
       credentials: "include",
@@ -80,6 +83,7 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
     window.setTimeout(() => setMessage(""), 4000);
 
     // Sync to server so matching notifications can fire when new ads go live.
+    if (!hasBrowserSessionCookie()) return;
     try {
       const parsed = new URL(currentUrl, window.location.origin);
       void fetch("/api/saved-searches", {
@@ -115,6 +119,7 @@ export function SavedSearches({ currentLabel, currentUrl }: SavedSearchesProps) 
 
   function handleRemove(id: string) {
     setSaved(removeSavedSearch(id));
+    if (!hasBrowserSessionCookie()) return;
     void fetch(`/api/saved-searches?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
       credentials: "include",
