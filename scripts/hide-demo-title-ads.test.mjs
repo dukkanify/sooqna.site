@@ -1,0 +1,81 @@
+/**
+ * Public catalog must hide “إعلان تجريبي …” titles without classifying them
+ * as confirmed fixtures (admin can still review).
+ */
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
+import {
+  isConfirmedFixtureListing,
+  isPublicQaTitleListing,
+  needsManualReviewListing,
+} from "../services/listings/mock-catalog-policy.ts";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+function read(rel) {
+  return readFileSync(path.join(root, rel), "utf8");
+}
+
+describe("hide demo title ads from public catalog", () => {
+  it("detects Arabic/English QA titles for public hide", () => {
+    assert.equal(
+      isPublicQaTitleListing({
+        id: "admin-1",
+        slug: "demo-car",
+        title: "إعلان تجريبي 01 — سيارة صغيرة — غير متاح للبيع",
+      }),
+      true,
+    );
+    assert.equal(
+      isPublicQaTitleListing({
+        id: "admin-2",
+        slug: "real-car",
+        title: "تويوتا كامري 2020",
+      }),
+      false,
+    );
+    assert.equal(
+      isPublicQaTitleListing({
+        id: "x",
+        slug: "y",
+        titleEnglish: "Listing تجريبي 01 — car",
+      }),
+      true,
+    );
+  });
+
+  it("keeps title-only demos as manual review, not confirmed fixtures", () => {
+    const demo = {
+      id: "admin-9001",
+      slug: "used-sofa-dubai",
+      title: "إعلان تجريبي",
+    };
+    assert.equal(isConfirmedFixtureListing(demo), false);
+    assert.equal(needsManualReviewListing(demo), true);
+    assert.equal(isPublicQaTitleListing(demo), true);
+  });
+
+  it("hard-hides the known production demo car by id/slug", () => {
+    assert.equal(
+      isConfirmedFixtureListing({
+        id: "local-1790600982192",
+        slug: "01-982192",
+        title: "إعلان تجريبي 01 — سيارة صغيرة — غير متاح للبيع",
+      }),
+      true,
+    );
+  });
+
+  it("wires public SQL + memory filters into listing queries and detail", () => {
+    const queries = read("services/listings/listing-queries.ts");
+    assert.match(queries, /PUBLIC_QA_TITLE_SQL/);
+    assert.match(queries, /isPublicQaTitleListing/);
+    const details = read("services/listings/listings.service.ts");
+    assert.match(details, /isPublicQaTitleListing/);
+    const feed = read("services/listings/home-feed.ts");
+    assert.match(feed, /sooqna-home-feed-v26-hide-demo-titles/);
+  });
+});

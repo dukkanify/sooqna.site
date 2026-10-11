@@ -1,7 +1,10 @@
 import { cache } from "react";
 import type { Listing, ListingSearchFilters } from "@/types";
 import { queryListings, countMatchingListings } from "@/services/listings/listing-queries";
-import { isConfirmedFixtureListing } from "@/services/listings/mock-catalog-policy";
+import {
+  isConfirmedFixtureListing,
+  isPublicQaTitleListing,
+} from "@/services/listings/mock-catalog-policy";
 import { isShowcaseListing } from "@/shared/listings/showcase-listing";
 import {
   isLiveCatalogEnabled,
@@ -68,6 +71,9 @@ const loadListingBySlugCached = cache(
     if (!listing) return undefined;
     if (includeFixtures !== "1") {
       if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
+        return undefined;
+      }
+      if (isPublicQaTitleListing(listing)) {
         return undefined;
       }
       if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {

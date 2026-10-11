@@ -22,7 +22,9 @@ import {
 } from "@/services/listings/listing-card-model";
 import {
   FIXTURE_LISTING_SQL,
+  PUBLIC_QA_TITLE_SQL,
   isConfirmedFixtureListing,
+  isPublicQaTitleListing,
 } from "@/services/listings/mock-catalog-policy";
 import { ensureLiveMarketplaceCatalogPublished } from "@/services/listings/live-marketplace-catalog.service";
 import { ensureShowcaseCatalogPublished } from "@/services/listings/showcase-catalog.service";
@@ -70,7 +72,11 @@ function publicCatalogExclusionSql(
   query: Pick<ListingQuery, "categoryId">,
   values: unknown[],
 ): string[] {
-  const parts = [`NOT ${FIXTURE_LISTING_SQL}`, `NOT ${SHOWCASE_LISTING_SQL}`];
+  const parts = [
+    `NOT ${FIXTURE_LISTING_SQL}`,
+    `NOT ${SHOWCASE_LISTING_SQL}`,
+    `NOT ${PUBLIC_QA_TITLE_SQL}`,
+  ];
   if (isLiveCatalogEnabled()) return parts;
 
   const categoryId = query.categoryId?.trim();
@@ -208,6 +214,9 @@ function isHiddenFromPublicCatalog(
   query: Pick<ListingQuery, "categoryId">,
 ): boolean {
   if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
+    return true;
+  }
+  if (isPublicQaTitleListing(listing)) {
     return true;
   }
   // When live catalog is disabled (production default), hide seed inventory
