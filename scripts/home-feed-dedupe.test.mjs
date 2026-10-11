@@ -76,8 +76,16 @@ describe("home feed composition contract", () => {
 
   it("bypasses a stale empty Data Cache entry for the home feed", () => {
     const feed = read("services/listings/home-feed.ts");
-    assert.match(feed, /sooqna-home-feed-v24-empty-bypass-starters/);
+    assert.match(feed, /sooqna-home-feed-v25-dense-rails/);
     assert.match(feed, /if \(cached\.catalogCount > 0\) return cached/);
     assert.match(feed, /return buildHomeFeed\(\)/);
+  });
+
+  it("fills category rails densely without starving after featured", () => {
+    const feed = read("services/listings/home-feed.ts");
+    assert.match(feed, /featuredUsedIds/);
+    assert.match(feed, /railUsedIds/);
+    assert.match(feed, /sectionCovers/);
+    assert.match(feed, /nearbyExclude/);
   });
 });

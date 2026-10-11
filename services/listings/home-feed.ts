@@ -165,10 +165,11 @@ function mostViewedSectionCopy(def: {
 }
 
 /**
- * Homepage composition (no duplicate listing ids across slices):
+ * Homepage composition:
  * 1) Featured (paid package)
- * 2) Most-viewed rails per category
- * 3) Nearby / across Emirates
+ * 2) Most-viewed rails per category — filled densely so sections look like
+ *    classic marketplace rows (featured items may reappear in their category)
+ * 3) Nearby / across Emirates — excludes ids already used in featured + rails
  */
 async function buildHomeFeed(): Promise<HomeFeed> {
   const sectionDefs = mockHomeCategorySections.slice(0, HOME_SECTION_LIMIT);
@@ -189,41 +190,44 @@ async function buildHomeFeed(): Promise<HomeFeed> {
     }),
   ]);
 
-  const usedIds = new Set<string>();
-  const usedCovers = new Set<string>();
-
   // Same eligibility as `/featured`, then spread category + emirate before covers.
   const activeFeatured = pickDiverseFeaturedListings(featuredRows, FEATURED_FETCH);
 
   // 1) Featured first — never backfill with non-featured catalog rows.
+  const featuredUsedIds = new Set<string>();
+  const featuredUsedCovers = new Set<string>();
   const featured = takeDiverse(
     activeFeatured,
     FEATURED_SHOW,
-    usedIds,
-    usedCovers,
+    featuredUsedIds,
+    featuredUsedCovers,
   );
 
-  // 2) Most-visited per category (skips ids already used in featured).
+  // 2) Most-visited per category — own cover set so rails fill to SECTION_SHOW
+  // instead of going sparse after featured consumes shared stock covers.
+  const railUsedIds = new Set<string>();
   const sections = sectionDefs.map((section) => {
     const pool = sortByMostViewed(
       catalogRows.filter((listing) => listing.categoryId === section.categoryId),
     );
     const copy = mostViewedSectionCopy(section);
+    const sectionCovers = new Set<string>();
     return {
       ...copy,
-      items: takeDiverse(pool, SECTION_SHOW, usedIds, usedCovers),
+      items: takeDiverse(pool, SECTION_SHOW, railUsedIds, sectionCovers),
     };
   });
 
-  // 3) Nearby last — remaining catalog, category-diverse covers.
+  // 3) Nearby last — remaining catalog after featured + category rails.
+  const nearbyExclude = new Set<string>([...featuredUsedIds, ...railUsedIds]);
   const nearbyPool = sortByMostViewed(
-    catalogRows.filter((listing) => !usedIds.has(listing.id)),
+    catalogRows.filter((listing) => !nearbyExclude.has(listing.id)),
   );
   const nearbySource = takeDiverse(
     nearbyPool,
     NEARBY_SHOW,
-    usedIds,
-    usedCovers,
+    nearbyExclude,
+    new Set<string>(),
   );
 
   return {
@@ -237,7 +241,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v24-empty-bypass-starters"],
+  ["sooqna-home-feed-v25-dense-rails"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],
