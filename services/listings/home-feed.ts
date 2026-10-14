@@ -249,7 +249,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v33-remote-covers"],
+  ["sooqna-home-feed-v34-rail-parity"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],
