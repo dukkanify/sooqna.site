@@ -76,6 +76,6 @@ describe("hide demo title ads from public catalog", () => {
     const details = read("services/listings/listings.service.ts");
     assert.match(details, /isPublicQaTitleListing/);
     const feed = read("services/listings/home-feed.ts");
-    assert.match(feed, /sooqna-home-feed-v30-jank-cut/);
+    assert.match(feed, /sooqna-home-feed-v31-featured-eight/);
   });
 });

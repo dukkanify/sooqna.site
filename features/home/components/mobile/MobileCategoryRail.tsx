@@ -14,7 +14,7 @@ export function MobileCategoryRail({
   listings,
   title,
 }: MobileCategoryRailProps) {
-  const items = listings.slice(0, 6);
+  const items = listings.slice(0, 8);
 
   if (items.length === 0) return null;
 

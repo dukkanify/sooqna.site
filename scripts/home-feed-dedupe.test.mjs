@@ -76,7 +76,7 @@ describe("home feed composition contract", () => {
 
   it("bypasses a stale empty Data Cache entry for the home feed", () => {
     const feed = read("services/listings/home-feed.ts");
-    assert.match(feed, /sooqna-home-feed-v30-jank-cut/);
+    assert.match(feed, /sooqna-home-feed-v31-featured-eight/);
     assert.match(feed, /if \(cached\.catalogCount > 0\) return cached/);
     assert.match(feed, /return buildHomeFeed\(\)/);
   });
@@ -87,5 +87,24 @@ describe("home feed composition contract", () => {
     assert.match(feed, /railUsedIds/);
     assert.match(feed, /sectionCovers/);
     assert.match(feed, /nearbyExclude/);
+  });
+
+  it("home rails fill complete desktop rows (8 featured / 8 section / 8 nearby)", () => {
+    const feed = read("services/listings/home-feed.ts");
+    const desktopFeatured = read(
+      "features/home/components/marketplace/MarketFeatured.tsx",
+    );
+    const mobileFeatured = read(
+      "features/home/components/mobile/MobileFeaturedRail.tsx",
+    );
+    const mobileCategory = read(
+      "features/home/components/mobile/MobileCategoryRail.tsx",
+    );
+    assert.match(feed, /FEATURED_SHOW = 8/);
+    assert.match(feed, /SECTION_SHOW = 8/);
+    assert.match(feed, /NEARBY_SHOW = 8/);
+    assert.match(desktopFeatured, /slice\(0,\s*8\)/);
+    assert.match(mobileFeatured, /slice\(0,\s*8\)/);
+    assert.match(mobileCategory, /slice\(0,\s*8\)/);
   });
 });
