@@ -244,7 +244,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v31-featured-eight"],
+  ["sooqna-home-feed-v32-hide-qa-audit"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

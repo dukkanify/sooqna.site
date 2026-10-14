@@ -45,6 +45,34 @@ describe("hide demo title ads from public catalog", () => {
       }),
       true,
     );
+    assert.equal(
+      isPublicQaTitleListing({
+        id: "admin-3",
+        slug: "camry-real",
+        title: "تويوتا كامري qa-audit-1791190915405",
+      }),
+      true,
+    );
+    assert.equal(
+      isPublicQaTitleListing({
+        id: "admin-4",
+        slug: "camry-en",
+        title: "Toyota Camry",
+        titleEnglish: "Toyota Camry qa-audit-1791190915405 updated",
+      }),
+      true,
+    );
+  });
+
+  it("treats qa-audit id/slug stamps as confirmed fixtures", () => {
+    assert.equal(
+      isConfirmedFixtureListing({
+        id: "local-qa-audit-1791190915405-cars-ab12cd",
+        slug: "local-qa-audit-1791190915405-cars-ab12cd-cars",
+        title: "تويوتا كامري",
+      }),
+      true,
+    );
   });
 
   it("keeps title-only demos as manual review, not confirmed fixtures", () => {
@@ -76,6 +104,10 @@ describe("hide demo title ads from public catalog", () => {
     const details = read("services/listings/listings.service.ts");
     assert.match(details, /isPublicQaTitleListing/);
     const feed = read("services/listings/home-feed.ts");
-    assert.match(feed, /sooqna-home-feed-v31-featured-eight/);
+    assert.match(feed, /sooqna-home-feed-v32-hide-qa-audit/);
+    const policy = read("services/listings/mock-catalog-policy.ts");
+    assert.match(policy, /qa-audit/);
+    assert.match(policy, /PUBLIC_QA_TITLE_SQL/);
+    assert.match(policy, /FIXTURE_LISTING_SQL/);
   });
 });
