@@ -66,10 +66,14 @@ let cachedEmptyCategoryIds: string[] = [];
  * while cars stay real-only). Applies to category-scoped queries AND
  * uncategorized home/search so the homepage is not empty while /search?category=
  * still shows starters.
+ *
+ * Featured queries (`featured: true` for `/featured` + home featured rail) also
+ * keep live-mkt rows that are marked `is_featured`, so "عرض كل المميزة" lists
+ * every active Featured placement even when general live catalog is off.
  * Prefer {@link marketplaceCountExclusionSql} for every COUNT / badge total.
  */
 function publicCatalogExclusionSql(
-  query: Pick<ListingQuery, "categoryId">,
+  query: Pick<ListingQuery, "categoryId" | "featured">,
   values: unknown[],
 ): string[] {
   const parts = [
@@ -78,6 +82,15 @@ function publicCatalogExclusionSql(
     `NOT ${PUBLIC_QA_TITLE_SQL}`,
   ];
   if (isLiveCatalogEnabled()) return parts;
+
+  // /featured + home featured rail: include featured live-mkt placements.
+  if (query.featured) {
+    parts.push(`(
+      NOT ${LIVE_MARKETPLACE_LISTING_SQL}
+      OR COALESCE(is_featured, false) = true
+    )`);
+    return parts;
+  }
 
   const categoryId = query.categoryId?.trim();
   if (categoryId) {
@@ -211,7 +224,7 @@ function shouldExcludeFixtures(query: ListingQuery): boolean {
 
 function isHiddenFromPublicCatalog(
   listing: Listing,
-  query: Pick<ListingQuery, "categoryId">,
+  query: Pick<ListingQuery, "categoryId" | "featured">,
 ): boolean {
   if (isConfirmedFixtureListing(listing) || isShowcaseListing(listing)) {
     return true;
@@ -222,8 +235,11 @@ function isHiddenFromPublicCatalog(
   // When live catalog is disabled (production default), hide seed inventory
   // that may already exist in the shared Neon DB — unless the listing belongs
   // to an empty category that is allowed to show starters (category browse or
-  // uncategorized home/search).
+  // uncategorized home/search), or this is a featured-only query.
   if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
+    if (query.featured && listing.isFeatured === true) {
+      return false;
+    }
     const categoryId = query.categoryId?.trim();
     if (categoryId && listing.categoryId !== categoryId) {
       return true;
