@@ -25,10 +25,13 @@ export async function MobileHomeFeed({
     ...feed.sections.flatMap((section) => section.items),
   ]);
 
+  const aboveFoldSections = feed.sections.slice(0, 2);
+  const belowFoldSections = feed.sections.slice(2);
+
   return (
     <>
       <MobileFeaturedRail listings={feed.featured} />
-      {feed.sections.map((section) => (
+      {aboveFoldSections.map((section) => (
         <MobileCategoryRail
           key={section.categoryId}
           categorySlug={categoryById(section.categoryId)}
@@ -36,8 +39,18 @@ export async function MobileHomeFeed({
           title={section.title}
         />
       ))}
-      <MobileNearbyRail listings={feed.nearbySource} />
-      <MobileAppDownload previewListings={appPreviewListings} />
+      <div className="market-rail--defer">
+        {belowFoldSections.map((section) => (
+          <MobileCategoryRail
+            key={section.categoryId}
+            categorySlug={categoryById(section.categoryId)}
+            listings={section.items}
+            title={section.title}
+          />
+        ))}
+        <MobileNearbyRail listings={feed.nearbySource} />
+        <MobileAppDownload previewListings={appPreviewListings} />
+      </div>
     </>
   );
 }

@@ -109,11 +109,16 @@ html[data-theme="dark"] .bg-\[\#fdfbf7\] {
 
 /* Listing image overlay actions — soft glass chip */
 .card-media-action {
-  background-color: rgb(255 255 255 / 92%) !important;
+  background-color: rgb(255 255 255 / 94%) !important;
   color: #0b1628 !important;
   border-color: rgb(255 255 255 / 70%) !important;
   box-shadow: 0 6px 16px rgb(11 22 40 / 22%);
-  backdrop-filter: blur(10px) saturate(1.2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-media-action {
+    backdrop-filter: blur(10px) saturate(1.2);
+  }
 }
 
 .card-media-action:hover {
@@ -450,10 +455,10 @@ html[data-theme="dark"] .category-mark {
 .market-hero__orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(56px);
-  will-change: transform;
-  animation: market-hero-float 22s ease-in-out infinite alternate;
-  opacity: 0.7;
+  /* Soft static glow — no permanent will-change / infinite transform on LCP */
+  filter: blur(40px);
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .market-hero__orb--gold {
@@ -507,16 +512,14 @@ html[data-theme="dark"] .category-mark {
 
 .market-hero__photo img {
   object-fit: cover;
-  /* Branded Abu Dhabi dusk plate: skyline + water low, soft sky for copy */
+  /* Branded Abu Dhabi dusk plate: skyline + water low, soft sky for copy.
+     No CSS filter/scale on the LCP image — those force expensive paint. */
   object-position: center 48%;
-  transform: scale(1.04);
-  filter: saturate(1.12) contrast(1.08) brightness(0.96);
 }
 
 @media (min-width: 768px) {
   .market-hero__photo img {
     object-position: center 42%;
-    transform: scale(1.02);
   }
 }
 
@@ -688,11 +691,11 @@ html[data-theme="dark"] .category-mark {
   overflow: visible;
   border: 1px solid rgb(255 255 255 / 0.9);
   border-radius: 1.1rem;
-  background: rgb(255 255 255 / 0.94);
+  /* Near-opaque panel — avoid glass blur on the hero search shell */
+  background: rgb(255 255 255 / 0.97);
   box-shadow:
     0 14px 36px rgb(11 22 40 / 12%),
     0 1px 0 rgb(255 255 255 / 0.95) inset;
-  backdrop-filter: blur(28px) saturate(1.4);
 }
 
 .market-hero-search__accent {
@@ -917,17 +920,18 @@ html[data-theme="dark"] .category-mark {
   }
 }
 
-@media (max-width: 767px), (prefers-reduced-motion: reduce) {
-  .market-hero__orb {
-    animation: none;
-    will-change: auto;
-    filter: blur(36px);
+/* Optional gentle float only on desktop mice — never on touch / reduced motion */
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .market-hero__orb--gold {
+      animation: market-hero-float 28s ease-in-out infinite alternate;
+    }
   }
+}
 
-  .market-hero__orb--navy,
-  .market-hero__orb--mist {
-    display: none;
-  }
+.market-hero__orb--navy,
+.market-hero__orb--mist {
+  display: none;
 }
 
 html[data-theme="dark"] .market-hero {

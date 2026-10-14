@@ -118,4 +118,46 @@ describe("home speed / LCP", () => {
     const badge = read("features/listings/components/featured-badge.css");
     assert.match(badge, /\(hover: none\)/);
   });
+
+  it("hero keeps a single static orb and skips LCP image filters", () => {
+    const hero = read("features/home/components/marketplace/MarketHero.tsx");
+    const css = read("app/globals.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    assert.match(hero, /market-hero__orb--gold/);
+    assert.doesNotMatch(hero, /market-hero__orb--navy/);
+    assert.doesNotMatch(hero, /market-hero__orb--mist/);
+    const photoImg = css.match(/\.market-hero__photo img\s*\{[^}]+\}/)?.[0] ?? "";
+    assert.doesNotMatch(photoImg, /filter\s*:/);
+    const search = css.match(/\.market-hero-search\s*\{[^}]+\}/)?.[0] ?? "";
+    assert.ok(search);
+    assert.doesNotMatch(search, /backdrop-filter/);
+  });
+
+  it("mobile sticky header avoids backdrop-filter jank", () => {
+    const css = read("features/home/components/mobile/mobile-home.css").replace(
+      /\/\*[\s\S]*?\*\//g,
+      "",
+    );
+    const headerBlock = css.match(
+      /\.mobile-home-header\s*\{[^}]+\}/,
+    )?.[0];
+    assert.ok(headerBlock);
+    assert.doesNotMatch(headerBlock, /backdrop-filter/);
+  });
+
+  it("mobile home feed defers below-fold rails", () => {
+    const src = read("features/home/components/mobile/MobileHomeFeed.tsx");
+    assert.match(src, /market-rail--defer/);
+    assert.match(src, /aboveFoldSections|slice\(0,\s*2\)/);
+  });
+
+  it("EN localizer prioritizes header/main before idle body walk", () => {
+    const src = read("shared/i18n/LiveLocalizer.tsx");
+    assert.match(src, /requestIdleCallback|scheduleIdle/);
+    assert.match(src, /querySelectorAll\("header, main/);
+  });
+
+  it("marketplace locations fetch is idle-deferred", () => {
+    const src = read("shared/hooks/useMarketplaceLocations.ts");
+    assert.match(src, /requestIdleCallback/);
+  });
 });

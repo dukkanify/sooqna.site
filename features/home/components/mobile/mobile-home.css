@@ -60,8 +60,8 @@
   top: 0;
   z-index: 60;
   border-bottom: 1px solid rgb(15 23 42 / 5%);
-  background: rgb(255 255 255 / 92%);
-  backdrop-filter: blur(20px) saturate(1.4);
+  /* Near-opaque sticky shell — avoid glass blur while rails scroll underneath */
+  background: rgb(255 255 255 / 98%);
   box-shadow: 0 1px 0 rgb(255 255 255 / 80%) inset, 0 8px 24px rgb(15 23 42 / 5%);
 }
 
