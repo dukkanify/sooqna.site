@@ -14,7 +14,7 @@ export async function MobileHeroSection() {
             className="object-cover"
             fill
             priority
-            quality={80}
+            quality={75}
             sizes="(max-width: 430px) 100vw, 480px"
             src={backgroundUrl}
           />

@@ -127,28 +127,34 @@ export function LiveLocalizer() {
   useLayoutEffect(() => {
     if (locale !== "en") return undefined;
 
-    // First paint: only the visible shell (header + main). Full body walks on idle
-    // so streamed home rails don't compete with LCP/hydration on the main thread.
-    const critical = document.querySelectorAll("header, main, [data-localize-critical]");
+    // First paint: sticky chrome only. Streamed `main` rails walk on idle so
+    // they don't compete with LCP/hydration on the main thread.
+    const critical = document.querySelectorAll("header, [data-localize-critical]");
     if (critical.length > 0) {
       critical.forEach((root) => walk(root, locale));
     } else {
       walk(document.body, locale);
     }
 
-    let cancelIdle = scheduleIdle(() => {
+    const cancelIdleWalk = scheduleIdle(() => {
+      const main = document.querySelector("main");
+      if (main) walk(main, locale);
       walk(document.body, locale);
     });
 
-    let frame = 0;
+    let cancelIdleMutations: (() => void) | undefined;
+    let mutationsQueued = false;
     const pending: MutationRecord[] = [];
     const observer = new MutationObserver((records) => {
       pending.push(...records);
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
+      if (mutationsQueued) return;
+      // Idle-batch streamed feed chunks so scroll INP stays responsive.
+      mutationsQueued = true;
+      cancelIdleMutations = scheduleIdle(() => {
+        mutationsQueued = false;
+        cancelIdleMutations = undefined;
         const batch = pending.splice(0, pending.length);
-        applyRecords(batch, locale);
+        if (batch.length) applyRecords(batch, locale);
       });
     });
     observer.observe(document.body, {
@@ -158,9 +164,9 @@ export function LiveLocalizer() {
       attributeFilter: [...TEXT_ATTRS],
     });
     return () => {
-      cancelIdle();
+      cancelIdleWalk();
+      cancelIdleMutations?.();
       observer.disconnect();
-      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [locale]);
 

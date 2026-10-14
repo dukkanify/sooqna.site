@@ -27,7 +27,7 @@ describe("home speed / LCP", () => {
     assert.match(mobile, /loading="lazy"/);
   });
 
-  it("featured rails prioritize the first listing images", () => {
+  it("featured rails prioritize desktop LCP images only", () => {
     const desktop = read(
       "features/home/components/marketplace/MarketFeatured.tsx",
     );
@@ -35,7 +35,8 @@ describe("home speed / LCP", () => {
       "features/home/components/mobile/MobileFeaturedRail.tsx",
     );
     assert.match(desktop, /priority=\{index < 2\}/);
-    assert.match(mobile, /priority=\{index === 0\}/);
+    // Mobile featured sits below cats/promo — never steal LCP from the hero.
+    assert.doesNotMatch(mobile, /\bpriority=/);
   });
 
   it("nearby section is a server component (no use client)", () => {
@@ -97,10 +98,10 @@ describe("home speed / LCP", () => {
     assert.doesNotMatch(page, /await getHomeFeed\(\)/);
   });
 
-  it("EN localizer walks added nodes instead of the whole body on each mutation", () => {
+  it("EN localizer idle-batches mutation walks instead of sync full-body scans", () => {
     const src = read("shared/i18n/LiveLocalizer.tsx");
     assert.match(src, /applyRecords/);
-    assert.match(src, /requestAnimationFrame/);
+    assert.match(src, /cancelIdleMutations = scheduleIdle/);
     assert.doesNotMatch(src, /characterData: true/);
   });
 
@@ -125,23 +126,43 @@ describe("home speed / LCP", () => {
     assert.match(hero, /market-hero__orb--gold/);
     assert.doesNotMatch(hero, /market-hero__orb--navy/);
     assert.doesNotMatch(hero, /market-hero__orb--mist/);
+    const orb = css.match(/\.market-hero__orb\s*\{[^}]+\}/)?.[0] ?? "";
+    assert.ok(orb);
+    assert.doesNotMatch(orb, /filter\s*:/);
+    assert.doesNotMatch(css, /market-hero-float/);
     const photoImg = css.match(/\.market-hero__photo img\s*\{[^}]+\}/)?.[0] ?? "";
     assert.doesNotMatch(photoImg, /filter\s*:/);
+    const darkPhoto = css.match(
+      /html\[data-theme="dark"\]\s*\.market-hero__photo\s*\{[^}]+\}/,
+    )?.[0] ?? "";
+    assert.doesNotMatch(darkPhoto, /filter\s*:/);
     const search = css.match(/\.market-hero-search\s*\{[^}]+\}/)?.[0] ?? "";
     assert.ok(search);
     assert.doesNotMatch(search, /backdrop-filter/);
+    const pills = css.match(/\.market-hero-pill\s*\{[^}]+\}/)?.[0] ?? "";
+    assert.ok(pills);
+    assert.doesNotMatch(pills, /backdrop-filter/);
   });
 
-  it("mobile sticky header avoids backdrop-filter jank", () => {
+  it("sticky chrome avoids backdrop-filter jank", () => {
+    const desktop = read("app/globals.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const header = desktop.match(/\.market-header\s*\{[^}]+\}/)?.[0];
+    assert.ok(header);
+    assert.doesNotMatch(header, /backdrop-filter/);
+
     const css = read("features/home/components/mobile/mobile-home.css").replace(
       /\/\*[\s\S]*?\*\//g,
       "",
     );
-    const headerBlock = css.match(
-      /\.mobile-home-header\s*\{[^}]+\}/,
-    )?.[0];
-    assert.ok(headerBlock);
-    assert.doesNotMatch(headerBlock, /backdrop-filter/);
+    const mobileHeader = css.match(/\.mobile-home-header\s*\{[^}]+\}/)?.[0];
+    assert.ok(mobileHeader);
+    assert.doesNotMatch(mobileHeader, /backdrop-filter/);
+    const bottomNav = css.match(/\.mobile-bottom-nav\s*\{[^}]+\}/)?.[0];
+    assert.ok(bottomNav);
+    assert.doesNotMatch(bottomNav, /backdrop-filter/);
+    const heroBg = css.match(/\.mobile-home-hero__bg img\s*\{[^}]+\}/)?.[0];
+    assert.ok(heroBg);
+    assert.doesNotMatch(heroBg, /filter\s*:/);
   });
 
   it("mobile home feed defers below-fold rails", () => {
@@ -150,14 +171,32 @@ describe("home speed / LCP", () => {
     assert.match(src, /aboveFoldSections|slice\(0,\s*2\)/);
   });
 
-  it("EN localizer prioritizes header/main before idle body walk", () => {
+  it("desktop nearby section uses content-visibility deferral", () => {
+    const src = read(
+      "features/home/components/marketplace/MarketNearbySection.tsx",
+    );
+    assert.match(src, /deferPaint/);
+  });
+
+  it("EN localizer prioritizes header chrome before idle main walk", () => {
     const src = read("shared/i18n/LiveLocalizer.tsx");
     assert.match(src, /requestIdleCallback|scheduleIdle/);
-    assert.match(src, /querySelectorAll\("header, main/);
+    assert.match(src, /querySelectorAll\("header, \[data-localize-critical\]"\)/);
+    assert.match(src, /querySelector\("main"\)/);
   });
 
   it("marketplace locations fetch is idle-deferred", () => {
     const src = read("shared/hooks/useMarketplaceLocations.ts");
     assert.match(src, /requestIdleCallback/);
+  });
+
+  it("notification bell idle-defers the first unread fetch", () => {
+    const src = read("features/notifications/NotificationBell.tsx");
+    assert.match(src, /requestIdleCallback/);
+  });
+
+  it("mobile hero image quality stays modest for LCP", () => {
+    const src = read("features/home/components/mobile/MobileHeroSection.tsx");
+    assert.match(src, /quality=\{75\}/);
   });
 });
