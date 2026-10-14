@@ -61,4 +61,15 @@ describe("home feed desktop/mobile parity", () => {
     assert.doesNotMatch(section, /eyebrow=\{eyebrow\}/);
     assert.match(section, /title=\{title\}/);
   });
+
+  it("desktop and mobile category rails both show at most 8 cards", () => {
+    const desktop = read(
+      "features/home/components/marketplace/MarketCategorySection.tsx",
+    );
+    const mobile = read(
+      "features/home/components/mobile/MobileCategoryRail.tsx",
+    );
+    assert.match(desktop, /listings\.slice\(0,\s*8\)/);
+    assert.match(mobile, /listings\.slice\(0,\s*8\)/);
+  });
 });

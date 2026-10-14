@@ -21,7 +21,8 @@ export function MarketCategorySection({
   title,
   variant = "sand",
 }: MarketCategorySectionProps) {
-  const items = listings;
+  // Same rail length as MobileCategoryRail — never diverge by device.
+  const items = listings.slice(0, 8);
 
   if (items.length === 0) {
     return null;
