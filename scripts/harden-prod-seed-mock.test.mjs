@@ -55,7 +55,7 @@ describe("live catalog opt-in", () => {
     assert.match(src, /v9-relative-posted-at/);
   });
 
-  it("public catalog hides live seeds when disabled (empty-category exception only)", () => {
+  it("public catalog hides live seeds when disabled (empty-category + featured exceptions)", () => {
     const queries = read("services/listings/listing-queries.ts");
     assert.match(queries, /LIVE_MARKETPLACE_LISTING_SQL/);
     assert.match(queries, /isLiveCatalogEnabled/);
@@ -65,11 +65,15 @@ describe("live catalog opt-in", () => {
     assert.match(queries, /NOT \$\{LIVE_MARKETPLACE_LISTING_SQL\}/);
     assert.match(queries, /cachedEmptyCategoryIds/);
     assert.match(queries, /ensureEmptyCategoryStartersPublished/);
+    // Featured page/rail keeps is_featured live-mkt when catalog is off.
+    assert.match(queries, /query\.featured/);
+    assert.match(queries, /COALESCE\(is_featured, false\) = true/);
 
     const details = read("services/listings/listings.service.ts");
     assert.match(details, /isLiveCatalogEnabled/);
     assert.match(details, /isLiveCatalogListing/);
     assert.match(details, /isLiveCatalogVisibleForEmptyCategories/);
+    assert.match(details, /limit: 120/);
   });
 
   it("seed postedAt is relative to now", () => {

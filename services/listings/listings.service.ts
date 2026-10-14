@@ -104,13 +104,13 @@ export async function getListingBySlug(
 export const getFeaturedListings = cache(async (): Promise<Listing[]> => {
   const listings = await queryListings({
     featured: true,
-    limit: 48,
+    limit: 120,
     slim: "card",
     sort: "newest",
   });
   return sortFeaturedPageListings(
     listings.filter((listing) => isEligibleFeaturedPageListing(listing)),
-  ).slice(0, 24);
+  ).slice(0, 96);
 });
 
 export async function getRelatedListings(
