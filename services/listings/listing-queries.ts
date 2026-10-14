@@ -48,6 +48,7 @@ import {
   isMarketplaceListing,
 } from "@/services/listings/listing-stats";
 import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
+import { listingMatchesEmirateFilter } from "@/shared/listings/uae-emirate";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
 import { dedupeListingsById } from "@/services/listings/public-catalog";
 import {
@@ -196,7 +197,7 @@ function matchesStructured(listing: Listing, query: ListingQuery): boolean {
   if (query.featured && listing.isFeatured !== true) return false;
   if (query.condition && listing.condition !== query.condition) return false;
   const emirate = query.emirate ?? query.city;
-  if (emirate && listing.emirate !== emirate && listing.city !== emirate) {
+  if (emirate && !listingMatchesEmirateFilter(listing, emirate)) {
     return false;
   }
   if (query.country && listing.country !== query.country) return false;
@@ -326,9 +327,16 @@ function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: stri
   if (query.condition) add("payload->>'condition' = ?", query.condition);
   const emirate = query.emirate ?? query.city;
   if (emirate) {
+    // Prefer payload.emirate when set so city≠emirate rows don't match two filters.
     values.push(emirate);
     const idx = values.length;
-    where.push(`(payload->>'emirate' = $${idx} OR payload->>'city' = $${idx})`);
+    where.push(`(
+      CASE
+        WHEN COALESCE(NULLIF(payload->>'emirate', ''), '') <> ''
+          THEN payload->>'emirate' = $${idx}
+        ELSE payload->>'city' = $${idx}
+      END
+    )`);
   }
   if (query.country) add("payload->>'country' = ?", query.country);
   if (typeof query.minPrice === "number") {

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Listing } from "@/types";
 import { ListingPrice } from "@/shared/components/ListingPrice";
 import { useToast } from "@/shared/components/ToastProvider";
+import { getListingLocation } from "@/features/listings/components/listing-card.utils";
 import { getListingCanonicalUrl } from "@/shared/listings/listing-url";
 import { Icon } from "@/shared/ui/Icon";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
@@ -50,13 +51,8 @@ export function ShareButton({
   const [modalOpen, setModalOpen] = useState(false);
 
   const locationLabel = useMemo(
-    () =>
-      listing.area
-        ? `${listing.area}، ${listing.emirate ?? listing.city}`
-        : listing.emirate
-          ? `${listing.city}، ${listing.emirate}`
-          : listing.city,
-    [listing.area, listing.city, listing.emirate],
+    () => getListingLocation(listing),
+    [listing],
   );
 
   const shareUrl = useMemo(() => getListingCanonicalUrl(listing), [listing]);

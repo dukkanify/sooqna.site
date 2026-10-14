@@ -24,7 +24,9 @@ describe("uae emirate helper contracts", () => {
     assert.match(src, /export function listingMatchesEmirateFilter/);
     assert.match(src, /export function listingMatchesAreaFilter/);
     assert.match(src, /export function listingArea/);
+    assert.match(src, /export function formatListingLocation/);
     assert.match(src, /export function inferEmirateFromArea/);
+    assert.match(src, /Never concatenates raw city\+emirate/);
     assert.match(src, /dubai:\s*"دبي"/);
     assert.match(src, /ajman:\s*"عجمان"/);
     assert.match(src, /"ام القيوين":\s*"أم القيوين"/);

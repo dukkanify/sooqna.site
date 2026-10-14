@@ -1,6 +1,10 @@
-import { getLiveMarketplaceCatalogListings } from "@/services/listings/live-marketplace-catalog";
+import {
+  getLiveMarketplaceCatalogListings,
+  LIVE_MARKETPLACE_LISTING_SQL,
+} from "@/services/listings/live-marketplace-catalog";
 import {
   deleteLiveMarketplaceListings,
+  ensureListingsTable,
   getDeletedListingIds,
   getMarketplaceFlag,
   insertListingsIfMissing,
@@ -8,13 +12,65 @@ import {
   upsertListingRow,
 } from "@/services/listings/listing-persistence";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
+import {
+  getOptionalPostgresPool,
+  isPostgresQuotaOrUnavailableError,
+  markPostgresUnavailable,
+} from "@/services/db/postgres";
 import { isLiveCatalogEnabled } from "@/shared/listings/live-catalog-listing";
 
 const LIVE_CATALOG_VERSION_KEY = "live_marketplace_catalog_version";
 const LIVE_CATALOG_VERSION = "v9-relative-posted-at";
 const LIVE_CATALOG_RETIRED_FLAG = "live_marketplace_catalog_retired";
+/** Location pins for titles that name an emirate — runs even when catalog is off. */
+const LIVE_LOCATION_REPAIR_KEY = "live_marketplace_location_repair";
+const LIVE_LOCATION_REPAIR_VERSION = "v1-title-emirate-pins";
 
 let ensureInflight: Promise<number> | null = null;
+
+async function existingLiveCatalogIds(): Promise<Set<string>> {
+  if (!(await ensureListingsTable())) return new Set();
+  const pool = await getOptionalPostgresPool();
+  if (!pool) return new Set();
+  try {
+    const result = await pool.query(
+      `SELECT id FROM marketplace_listings WHERE ${LIVE_MARKETPLACE_LISTING_SQL}`,
+    );
+    return new Set(result.rows.map((row) => String(row.id)));
+  } catch (error) {
+    if (isPostgresQuotaOrUnavailableError(error)) {
+      markPostgresUnavailable(error);
+      return new Set();
+    }
+    throw error;
+  }
+}
+
+/**
+ * Refresh city/emirate/area on existing live-mkt rows from seed so filters match
+ * titles (e.g. "— دبي") even when SOOQNA_LIVE_CATALOG is off.
+ * Never inserts new seed rows while the catalog is disabled.
+ */
+async function repairLiveCatalogLocations(): Promise<number> {
+  const current = await getMarketplaceFlag(LIVE_LOCATION_REPAIR_KEY);
+  if (current === LIVE_LOCATION_REPAIR_VERSION) return 0;
+  const existingIds = await existingLiveCatalogIds();
+  if (existingIds.size === 0) {
+    await setMarketplaceFlag(LIVE_LOCATION_REPAIR_KEY, LIVE_LOCATION_REPAIR_VERSION);
+    return 0;
+  }
+  const listings = getLiveMarketplaceCatalogListings();
+  const deletedIds = await getDeletedListingIds();
+  let repaired = 0;
+  for (const listing of listings) {
+    if (deletedIds.has(listing.id) || !existingIds.has(listing.id)) continue;
+    await upsertListingRow(listing);
+    repaired += 1;
+  }
+  await setMarketplaceFlag(LIVE_LOCATION_REPAIR_KEY, LIVE_LOCATION_REPAIR_VERSION);
+  if (repaired > 0) await bumpListingsCache();
+  return repaired;
+}
 
 /**
  * Publish the professional live marketplace listings.
@@ -24,11 +80,21 @@ let ensureInflight: Promise<number> | null = null;
  * (Preview shares production Neon).
  */
 export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
-  if (!isLiveCatalogEnabled()) return 0;
   if (ensureInflight) return ensureInflight;
 
   ensureInflight = (async () => {
     try {
+      // Always repair pinned locations for rows already in Neon.
+      const repaired = await repairLiveCatalogLocations().catch((error) => {
+        console.error(
+          "[live-catalog] location repair skipped:",
+          error instanceof Error ? error.message : error,
+        );
+        return 0;
+      });
+
+      if (!isLiveCatalogEnabled()) return repaired;
+
       const listings = getLiveMarketplaceCatalogListings();
       const deletedIds = await getDeletedListingIds();
       const eligible = listings.filter((listing) => !deletedIds.has(listing.id));
@@ -46,7 +112,7 @@ export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
       if (inserted > 0) {
         await bumpListingsCache();
       }
-      return inserted;
+      return inserted + repaired;
     } catch (error) {
       // Never take down public listing pages when Postgres quota/connectivity fails.
       console.error(
@@ -58,7 +124,6 @@ export async function ensureLiveMarketplaceCatalogPublished(): Promise<number> {
       ensureInflight = null;
     }
   })();
-
   return ensureInflight;
 }
 

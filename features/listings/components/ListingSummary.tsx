@@ -3,7 +3,10 @@
 import type { Category, Listing } from "@/types";
 import { ListingPrimaryAction } from "@/features/listings/components/ListingPrimaryAction";
 import { getListingActionConfig } from "@/shared/constants/listingActionConfig";
-import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
+import {
+  formatPostedTime,
+  getListingLocation,
+} from "@/features/listings/components/listing-card.utils";
 import { StartChatButton } from "@/features/chat/components/StartChatButton";
 import { ListingPrice } from "@/shared/components/ListingPrice";
 import { listingUsesQuotePricing } from "@/shared/listings/quote-pricing";
@@ -53,11 +56,7 @@ const conditionLabels: Record<Listing["condition"], string> = {
 export function ListingSummary({ category, listing }: ListingSummaryProps) {
   const locale = useLocale();
   const config = getListingActionConfig(listing);
-  const locationLabel = listing.area
-    ? `${listing.area}، ${listing.emirate ?? listing.city}`
-    : listing.emirate
-      ? `${listing.city}، ${listing.emirate}`
-      : listing.city;
+  const locationLabel = getListingLocation(listing);
 
   return (
     <LocalizedTree>

@@ -27,6 +27,7 @@ import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import { getCarKeySpecRows } from "@/shared/listings/listing-specs";
 import {
   formatPostedTime,
+  getListingLocation,
   MARKETPLACE_LISTING_GRID_CLASS,
 } from "@/features/listings/components/listing-card.utils";
 import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
@@ -74,11 +75,7 @@ export function ListingDetailsView({
 }: ListingDetailsViewProps) {
   const locale = useLocale();
   const escrowProtected = showsEscrowProtection(listing);
-  const locationLabel = listing.area
-    ? `${listing.area}، ${listing.emirate ?? listing.city}`
-    : listing.emirate
-      ? `${listing.city}، ${listing.emirate}`
-      : listing.city;
+  const locationLabel = getListingLocation(listing);
 
   return (
     <LocalizedTree>

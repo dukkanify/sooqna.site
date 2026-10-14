@@ -36,7 +36,10 @@ import {
   showsListingCondition,
 } from "@/shared/listings/showcase-listing";
 import { getCarKeySpecRows } from "@/shared/listings/listing-specs";
-import { formatPostedTime } from "@/features/listings/components/listing-card.utils";
+import {
+  formatPostedTime,
+  getListingLocation,
+} from "@/features/listings/components/listing-card.utils";
 import { FeaturedBadge } from "@/features/listings/components/FeaturedBadge";
 import { isListingFeaturedActive } from "@/features/listings/components/listing-card-badges";
 import { Badge } from "@/shared/ui/Badge";
@@ -79,11 +82,7 @@ export function ListingStickyPanel({ category, listing }: ListingStickyPanelProp
   const isOwn = user ? isOwnListing(listing, user) : false;
   const canTransact = isPublicListingStatus(listing.status) && !isOwn;
 
-  const locationLabel = listing.area
-    ? `${listing.area}، ${listing.emirate ?? listing.city}`
-    : listing.emirate
-      ? `${listing.city}، ${listing.emirate}`
-      : listing.city;
+  const locationLabel = getListingLocation(listing);
 
   return (
     <LocalizedTree>

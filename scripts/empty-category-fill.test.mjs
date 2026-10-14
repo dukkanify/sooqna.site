@@ -74,9 +74,9 @@ describe("empty category starter fill", () => {
     const service = read(
       "services/listings/live-marketplace-catalog.service.ts",
     );
-    assert.match(
-      service,
-      /export async function ensureLiveMarketplaceCatalogPublished[\s\S]*?if \(!isLiveCatalogEnabled\(\)\) return 0/,
-    );
+    // Location repair may run first; full publish/insert stays gated.
+    assert.match(service, /if \(!isLiveCatalogEnabled\(\)\) return repaired/);
+    assert.match(service, /insertListingsIfMissing/);
+    assert.match(service, /repairLiveCatalogLocations/);
   });
 });

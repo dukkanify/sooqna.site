@@ -2,10 +2,7 @@ import Link from "next/link";
 import type { Category, Listing } from "@/types";
 import { PremiumListingCard } from "@/features/listings/components/PremiumListingCard";
 import { MARKETPLACE_LISTING_GRID_CLASS } from "@/features/listings/components/listing-card.utils";
-import {
-  FEATURED_PAGE_PURPOSE,
-  featuredPageRuleLabels,
-} from "@/shared/listings/featured-page-rules";
+import { FEATURED_PAGE_PURPOSE } from "@/shared/listings/featured-page-rules";
 import { listingCountLabel } from "@/shared/i18n/count-labels";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -21,7 +18,7 @@ type FeaturedListingsViewProps = {
 
 /**
  * `/featured` UI — paid Featured package destination only.
- * Appearance, order, and duration rules live in featured-page-rules.
+ * Keep the header light: title, count, and actions — no policy essay.
  */
 export function FeaturedListingsView({
   categories,
@@ -31,33 +28,20 @@ export function FeaturedListingsView({
 }: FeaturedListingsViewProps) {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
   const copy = FEATURED_PAGE_PURPOSE.ar;
-  const rules = featuredPageRuleLabels(packageDays);
 
   return (
     <LocalizedTree>
       <section className="app-container page-padding">
-        <div className="mb-8 max-w-3xl">
-          <p className="text-xs font-bold text-[#B8955F]">{copy.eyebrow}</p>
-          <h1 className="mt-1 text-2xl font-bold text-ink md:text-3xl">
-            {copy.title}
-          </h1>
-          <p className="mt-2 text-sm leading-7 text-muted">{copy.summary}</p>
-
-          <ul className="mt-4 grid gap-2 text-sm text-muted sm:grid-cols-2">
-            {rules.map((rule) => (
-              <li
-                key={rule}
-                className="rounded-xl border border-border/70 bg-surface-muted/40 px-3 py-2 font-medium leading-6 text-ink"
-              >
-                {rule}
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <p className="text-sm font-semibold text-ink">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-ink md:text-3xl">
+              {copy.title}
+            </h1>
+            <p className="mt-1 text-sm font-semibold text-ink">
               {listingCountLabel(listings.length, locale)}
             </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
             <Button href="/dashboard/listings" size="sm" variant="secondary">
               ميّز إعلانك
             </Button>
