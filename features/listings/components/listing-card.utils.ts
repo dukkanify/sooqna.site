@@ -1,6 +1,7 @@
 import type { Listing } from "@/types";
 import type { AppLocale } from "@/shared/i18n/locale";
 import { intlLocale } from "@/shared/i18n/locale";
+import { formatListingLocation } from "@/shared/listings/uae-emirate";
 
 /** Compact marketplace density — always 2-up (never full-width), 4-up on large screens. */
 export const MARKETPLACE_LISTING_GRID_CLASS =
@@ -37,10 +38,7 @@ export function getListingHref(listing: Listing): string {
 }
 
 export function getListingLocation(listing: Listing): string {
-  if (listing.area) {
-    return `${listing.area}، ${listing.emirate ?? listing.city}`;
-  }
-  return listing.emirate ?? listing.city;
+  return formatListingLocation(listing);
 }
 
 /**

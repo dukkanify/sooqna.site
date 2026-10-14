@@ -228,3 +228,16 @@ export function listingMatchesAreaFilter(
   if (area === areaFilter) return true;
   return listing.city?.trim() === areaFilter;
 }
+
+/**
+ * Single display label for cards + detail: `area، emirate` or just emirate.
+ * Never concatenates raw city+emirate (that produced "دبي، أبوظبي").
+ */
+export function formatListingLocation(listing: ListingLocationRef): string {
+  const emirate = listingEmirate(listing);
+  const area = listingArea(listing);
+  if (area && emirate) return `${area}، ${emirate}`;
+  if (emirate) return emirate;
+  if (area) return area;
+  return (listing.city || listing.emirate || "").trim();
+}

@@ -51,8 +51,10 @@ describe("live catalog opt-in", () => {
   it("ensureLiveMarketplaceCatalogPublished short-circuits when disabled", () => {
     const src = read("services/listings/live-marketplace-catalog.service.ts");
     assert.match(src, /isLiveCatalogEnabled/);
-    assert.match(src, /if \(!isLiveCatalogEnabled\(\)\) return 0/);
+    // Location repair may run; full insert/publish still returns early when off.
+    assert.match(src, /if \(!isLiveCatalogEnabled\(\)\) return repaired/);
     assert.match(src, /v9-relative-posted-at/);
+    assert.match(src, /Never inserts new seed rows while the catalog is disabled/);
   });
 
   it("public catalog hides live seeds when disabled (empty-category + featured exceptions)", () => {

@@ -135,6 +135,8 @@ type SeedDef = {
   condition: ListingCondition;
   features: string[];
   featured?: boolean;
+  /** When set, pin city/emirate so titles that name a place stay accurate. */
+  emirate?: string;
 };
 
 /** 317 professional UAE marketplace listings (12 core cars + 72 brand cars + 145 remaining models + other categories). */
@@ -445,6 +447,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 32000,
     condition: "used",
     features: ["قريبة من الكورنيش", "موقف", "مصعد"],
+    emirate: "الشارقة",
   },
   {
     categoryId: "real-estate",
@@ -460,6 +463,7 @@ const SEED_DEFS: SeedDef[] = [
     condition: "excellent",
     features: ["تراس", "إطلالة مارينا", "مطبخ ألماني", "غرفة خادمة"],
     featured: true,
+    emirate: "دبي",
   },
   {
     categoryId: "real-estate",
@@ -474,6 +478,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 75000,
     condition: "excellent",
     features: ["شارع رئيسي", "واجهة زجاجية", "موقف زبائن"],
+    emirate: "الفجيرة",
   },
   {
     categoryId: "real-estate",
@@ -488,6 +493,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 22000,
     condition: "excellent",
     features: ["مفروش", "هادئ", "قريب من الخدمات"],
+    emirate: "أم القيوين",
   },
 
   // —— electronics (8)
@@ -866,6 +872,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 8000,
     condition: "new",
     features: ["عمولات عالية", "دعم تسويقي"],
+    emirate: "أبوظبي",
   },
   {
     categoryId: "jobs",
@@ -880,6 +887,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 3500,
     condition: "new",
     features: ["بدل وقود", "دوام مرن"],
+    emirate: "الشارقة",
   },
   {
     categoryId: "jobs",
@@ -894,6 +902,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 7000,
     condition: "new",
     features: ["ضرائب", "رواتب", "Excel"],
+    emirate: "الفجيرة",
   },
   {
     categoryId: "jobs",
@@ -908,6 +917,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 7500,
     condition: "new",
     features: ["Adobe", "هجين", "مشاريع رقمية"],
+    emirate: "دبي",
   },
   {
     categoryId: "jobs",
@@ -1197,6 +1207,7 @@ const SEED_DEFS: SeedDef[] = [
     condition: "new",
     features: ["مطعم", "أوراق", "فحص بيطري"],
     featured: true,
+    emirate: "دبي",
   },
   {
     categoryId: "pets",
@@ -1211,6 +1222,7 @@ const SEED_DEFS: SeedDef[] = [
     price: 1800,
     condition: "excellent",
     features: ["صندوق", "هادئة", "أغراض"],
+    emirate: "الشارقة",
   },
   {
     categoryId: "pets",
@@ -1720,7 +1732,10 @@ function buildCategorySpecs(def: SeedDef): Record<string, string> {
 }
 
 function buildListing(def: SeedDef, index: number): Listing {
-  const emiratePack = EMIRATES[index % EMIRATES.length];
+  const pinned = def.emirate
+    ? EMIRATES.find((pack) => pack.emirate === def.emirate)
+    : undefined;
+  const emiratePack = pinned ?? EMIRATES[index % EMIRATES.length];
   const area = emiratePack.areas[index % emiratePack.areas.length];
   const seller = SELLERS[index % SELLERS.length];
   const images = galleryForListingProduct({
@@ -1829,10 +1844,12 @@ export function syncLiveCatalogMedia(listings: Listing[]): Listing[] {
     const fillDescription =
       isBlankText(listing.description) && !isBlankText(fresh.description);
     const fillTitle = isBlankText(listing.title) && !isBlankText(fresh.title);
-    const fillCity = isBlankText(listing.city) && !isBlankText(fresh.city);
-    const fillEmirate =
-      isBlankText(listing.emirate) && !isBlankText(fresh.emirate);
-    const fillArea = isBlankText(listing.area) && !isBlankText(fresh.area);
+    // Curated seed owns location — keep title/emirate pairs accurate on read
+    // even when durable Neon rows still have the old rotated placement.
+    const locationStale =
+      listing.city !== fresh.city ||
+      listing.emirate !== fresh.emirate ||
+      listing.area !== fresh.area;
     const fillSubcategory =
       isBlankText(listing.subcategory) && !isBlankText(fresh.subcategory);
     const fillCondition = !listing.condition && Boolean(fresh.condition);
@@ -1851,9 +1868,7 @@ export function syncLiveCatalogMedia(listings: Listing[]): Listing[] {
       !mediaStale &&
       !fillDescription &&
       !fillTitle &&
-      !fillCity &&
-      !fillEmirate &&
-      !fillArea &&
+      !locationStale &&
       !fillSubcategory &&
       !fillCondition &&
       !fillFeatures &&
@@ -1870,9 +1885,9 @@ export function syncLiveCatalogMedia(listings: Listing[]): Listing[] {
         : {}),
       ...(fillTitle ? { title: fresh.title } : {}),
       ...(fillDescription ? { description: fresh.description } : {}),
-      ...(fillCity ? { city: fresh.city } : {}),
-      ...(fillEmirate ? { emirate: fresh.emirate } : {}),
-      ...(fillArea ? { area: fresh.area } : {}),
+      ...(locationStale
+        ? { city: fresh.city, emirate: fresh.emirate, area: fresh.area }
+        : {}),
       ...(fillSubcategory ? { subcategory: fresh.subcategory } : {}),
       ...(fillCondition ? { condition: fresh.condition } : {}),
       ...(fillFeatures ? { features: fresh.features } : {}),
