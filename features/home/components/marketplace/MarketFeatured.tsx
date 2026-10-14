@@ -21,7 +21,6 @@ export function MarketFeatured({ categories, listings }: MarketFeaturedProps) {
       <MarketSectionHeader
         actionHref="/featured"
         actionLabel="عرض كل المميزة"
-        description="إعلانات فعّل أصحابها باقة التمييز — تظهر أولاً في الصفحة الرئيسية وقوائم الإعلانات، مع تنويع التصنيف والموقع خلال مدة الباقة."
         eyebrow="مميز"
         title="إعلانات مميزة"
       />

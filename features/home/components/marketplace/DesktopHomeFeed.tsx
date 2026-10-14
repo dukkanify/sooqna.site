@@ -23,7 +23,6 @@ export async function DesktopHomeFeed() {
   const sectionListings = feed.sections.map((section) => ({
     categoryId: section.categoryId,
     categorySlug: categoryById(section.categoryId),
-    description: section.description,
     eyebrow: section.eyebrow,
     listings: section.items,
     title: section.title,
@@ -52,7 +51,6 @@ export async function DesktopHomeFeed() {
           key={section.categoryId}
           categoryId={section.categoryId}
           categorySlug={section.categorySlug}
-          description={section.description}
           eyebrow={section.eyebrow}
           listings={section.listings}
           title={section.title}

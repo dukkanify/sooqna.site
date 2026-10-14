@@ -6,7 +6,6 @@ import { MarketAppDownload } from "@/features/home/components/marketplace/Market
 type HomeSection = {
   categoryId: string;
   categorySlug: string;
-  description: string;
   eyebrow: string;
   listings: Listing[];
   title: string;
@@ -31,7 +30,6 @@ export function DeferredHomeBelowFold({
           categoryId={section.categoryId}
           categorySlug={section.categorySlug}
           deferPaint
-          description={section.description}
           eyebrow={section.eyebrow}
           listings={section.listings}
           title={section.title}

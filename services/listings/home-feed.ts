@@ -160,7 +160,8 @@ function mostViewedSectionCopy(def: {
     ...def,
     eyebrow: "الأكثر مشاهدة",
     title: `الأكثر زيارة — ${def.eyebrow}`,
-    description: `أعلى إعلانات ${def.eyebrow} مشاهدة حالياً — بدون تكرار مع المميزة أو القريبة منك.`,
+    // Headers stay title-only on home (match mobile rails / lean /featured).
+    description: "",
   };
 }
 
@@ -241,7 +242,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v26-hide-demo-titles"],
+  ["sooqna-home-feed-v30-jank-cut"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

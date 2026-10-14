@@ -108,9 +108,22 @@ export function NotificationBell({
   useEffect(() => {
     if (!user) return undefined;
 
-    const initial = window.setTimeout(() => {
-      void refresh();
-    }, 0);
+    // Idle-defer the first unread fetch so it doesn't contend with home LCP.
+    let cancelInitial: (() => void) | undefined;
+    if (typeof window.requestIdleCallback === "function") {
+      const idleId = window.requestIdleCallback(
+        () => {
+          void refresh();
+        },
+        { timeout: 2500 },
+      );
+      cancelInitial = () => window.cancelIdleCallback(idleId);
+    } else {
+      const timeoutId = window.setTimeout(() => {
+        void refresh();
+      }, 200);
+      cancelInitial = () => window.clearTimeout(timeoutId);
+    }
     const onChange = () => {
       void refresh();
     };
@@ -127,7 +140,7 @@ export function NotificationBell({
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
     return () => {
-      window.clearTimeout(initial);
+      cancelInitial?.();
       window.clearInterval(timer);
       window.removeEventListener(STORAGE_EVENTS.notificationsChange, onChange);
       document.removeEventListener("visibilitychange", onVisible);
