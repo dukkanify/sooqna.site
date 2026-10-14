@@ -7,7 +7,6 @@ type MarketCategorySectionProps = {
   categoryId: string;
   categorySlug: string;
   deferPaint?: boolean;
-  description: string;
   eyebrow: string;
   listings: Listing[];
   title: string;
@@ -17,7 +16,6 @@ type MarketCategorySectionProps = {
 export function MarketCategorySection({
   categorySlug,
   deferPaint = false,
-  description,
   eyebrow,
   listings,
   title,
@@ -33,7 +31,6 @@ export function MarketCategorySection({
     <MarketSectionShell deferPaint={deferPaint} variant={variant}>
       <MarketSectionHeader
         actionHref={`/categories/${categorySlug}`}
-        description={description}
         eyebrow={eyebrow}
         title={title}
       />

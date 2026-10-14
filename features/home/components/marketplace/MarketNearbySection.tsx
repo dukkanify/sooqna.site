@@ -18,7 +18,6 @@ export function MarketNearbySection({ listings }: MarketNearbySectionProps) {
       <MarketSectionHeader
         actionHref="/search"
         actionLabel="عرض الكل"
-        description="إعلانات من مدن الإمارات بعد المميزة والأكثر مشاهدة — بلا تكرار."
         eyebrow="قريب منك"
         title="القريبة منك"
       />
