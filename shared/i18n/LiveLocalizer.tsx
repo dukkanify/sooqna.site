@@ -111,22 +111,50 @@ function applyRecords(records: MutationRecord[], locale: AppLocale) {
   }
 }
 
+function scheduleIdle(task: () => void): () => void {
+  if (typeof window.requestIdleCallback === "function") {
+    const id = window.requestIdleCallback(task, { timeout: 1200 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(task, 1);
+  return () => window.clearTimeout(id);
+}
+
 /** Translates Arabic UI in client-rendered trees before paint. Skips user-generated [data-ugc] nodes. */
 export function LiveLocalizer() {
   const locale = useLocale();
 
   useLayoutEffect(() => {
     if (locale !== "en") return undefined;
-    walk(document.body, locale);
-    let frame = 0;
+
+    // First paint: sticky chrome only. Streamed `main` rails walk on idle so
+    // they don't compete with LCP/hydration on the main thread.
+    const critical = document.querySelectorAll("header, [data-localize-critical]");
+    if (critical.length > 0) {
+      critical.forEach((root) => walk(root, locale));
+    } else {
+      walk(document.body, locale);
+    }
+
+    const cancelIdleWalk = scheduleIdle(() => {
+      const main = document.querySelector("main");
+      if (main) walk(main, locale);
+      walk(document.body, locale);
+    });
+
+    let cancelIdleMutations: (() => void) | undefined;
+    let mutationsQueued = false;
     const pending: MutationRecord[] = [];
     const observer = new MutationObserver((records) => {
       pending.push(...records);
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
+      if (mutationsQueued) return;
+      // Idle-batch streamed feed chunks so scroll INP stays responsive.
+      mutationsQueued = true;
+      cancelIdleMutations = scheduleIdle(() => {
+        mutationsQueued = false;
+        cancelIdleMutations = undefined;
         const batch = pending.splice(0, pending.length);
-        applyRecords(batch, locale);
+        if (batch.length) applyRecords(batch, locale);
       });
     });
     observer.observe(document.body, {
@@ -136,8 +164,9 @@ export function LiveLocalizer() {
       attributeFilter: [...TEXT_ATTRS],
     });
     return () => {
+      cancelIdleWalk();
+      cancelIdleMutations?.();
       observer.disconnect();
-      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [locale]);
 

@@ -60,8 +60,8 @@
   top: 0;
   z-index: 60;
   border-bottom: 1px solid rgb(15 23 42 / 5%);
-  background: rgb(255 255 255 / 92%);
-  backdrop-filter: blur(20px) saturate(1.4);
+  /* Near-opaque sticky shell — avoid glass blur while rails scroll underneath */
+  background: rgb(255 255 255 / 98%);
   box-shadow: 0 1px 0 rgb(255 255 255 / 80%) inset, 0 8px 24px rgb(15 23 42 / 5%);
 }
 
@@ -819,7 +819,6 @@ html[data-theme="dark"] .mobile-guest-menu__profile {
 
 .mobile-home-hero__bg img {
   object-position: center 55%;
-  filter: saturate(1.12) contrast(1.08) brightness(1.04);
 }
 
 .mobile-home-hero__media-overlay {
@@ -838,7 +837,7 @@ html[data-theme="dark"] .mobile-home-hero__media-overlay {
 }
 
 html[data-theme="dark"] .mobile-home-hero__bg img {
-  filter: brightness(0.55) saturate(0.85);
+  opacity: 0.72;
 }
 
 .mobile-home-hero__content {
@@ -874,7 +873,6 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   font-weight: 700;
   color: #7a6230;
   box-shadow: 0 4px 14px rgb(15 23 42 / 12%);
-  backdrop-filter: blur(10px);
 }
 
 .mobile-home-hero__title {
@@ -2377,9 +2375,8 @@ html[data-theme="dark"] .mobile-home-hero__badge {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 999px;
-  background: rgb(255 255 255 / 16%);
+  background: rgb(255 255 255 / 22%);
   color: white;
-  backdrop-filter: blur(6px);
 }
 
 @media (min-width: 390px) {
@@ -2425,7 +2422,6 @@ html[data-theme="dark"] .mobile-home-hero__badge {
 
   border-top: 1px solid var(--mh-border);
   background: rgb(255 255 255 / 98%);
-  backdrop-filter: blur(14px);
   padding-bottom: env(safe-area-inset-bottom, 0);
   box-shadow: 0 -8px 28px rgb(15 23 42 / 8%);
 }

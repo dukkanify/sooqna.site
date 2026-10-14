@@ -28,9 +28,8 @@ export async function MarketHero({ categories }: MarketHeroProps) {
     <section className="market-hero">
       <div aria-hidden className="market-hero__scene">
         <div className="market-hero__mesh" />
+        {/* Single static orb — animated layers fight LCP compositing */}
         <span className="market-hero__orb market-hero__orb--gold" />
-        <span className="market-hero__orb market-hero__orb--navy" />
-        <span className="market-hero__orb market-hero__orb--mist" />
         <div className="market-hero__photo">
           <Image
             alt="أفق أبوظبي عند الغروب — أبراج الاتحاد والكورنيش"
