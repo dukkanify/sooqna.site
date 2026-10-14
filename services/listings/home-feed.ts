@@ -67,14 +67,19 @@ function uniqueUrls(urls: string[]): string[] {
   return out;
 }
 
-/** Candidate covers for a listing: own media only when the seller uploaded photos. */
+/** Candidate covers for a listing: remote own media only (never inline data URLs). */
 function coverCandidates(listing: Listing): string[] {
   const own = [
     ...(listing.images ?? []),
     listing.imageUrl ?? "",
   ]
     .map((url) => url?.trim())
-    .filter((url): url is string => Boolean(url));
+    .filter(
+      (url): url is string =>
+        Boolean(url) &&
+        !url.toLowerCase().startsWith("data:") &&
+        !url.toLowerCase().startsWith("blob:"),
+    );
 
   if (own.length > 0) return uniqueUrls(own);
 
@@ -244,7 +249,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v31-featured-eight"],
+  ["sooqna-home-feed-v33-remote-covers"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

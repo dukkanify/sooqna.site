@@ -70,7 +70,10 @@ export function isPublicQaTitleListing(listing: FixtureListingRef): boolean {
     /^E2E Preview Test Listing$/i.test(title) ||
     /^E2E Preview Test Listing$/i.test(titleEnglish) ||
     /^Listing(?:\s+)تجريبي(?:\s|$|—|-|–)/i.test(titleEnglish) ||
-    /^Listing(?:\s+)تجريبي$/i.test(titleEnglish)
+    /^Listing(?:\s+)تجريبي$/i.test(titleEnglish) ||
+    // Live cert stamps from scripts/audit-e2e-http.mjs (e.g. "تويوتا كامري qa-audit-…")
+    /\bqa-audit\b/i.test(title) ||
+    /\bqa-audit\b/i.test(titleEnglish)
   );
 }
 
@@ -81,6 +84,8 @@ export const PUBLIC_QA_TITLE_SQL = `(
   OR COALESCE(payload->>'title', '') ~* '^e2e preview test listing$'
   OR COALESCE(payload->>'titleEnglish', '') ~* '^e2e preview test listing$'
   OR COALESCE(payload->>'titleEnglish', '') ~* '^listing[[:space:]]*تجريبي'
+  OR COALESCE(payload->>'title', '') ~* 'qa-audit'
+  OR COALESCE(payload->>'titleEnglish', '') ~* 'qa-audit'
 )`;
 
 function looksLikeQaTitleOrName(listing: FixtureListingRef): boolean {
@@ -89,7 +94,7 @@ function looksLikeQaTitleOrName(listing: FixtureListingRef): boolean {
 }
 
 function isE2eFixtureKey(value: string): boolean {
-  return /^e2e-/i.test(value);
+  return /^e2e-/i.test(value) || /qa-audit/i.test(value);
 }
 
 /**
@@ -140,6 +145,10 @@ export const FIXTURE_LISTING_SQL = `(
   OR COALESCE(payload->>'id', '') ~ '^e2e-'
   OR slug ~ '^e2e-'
   OR COALESCE(payload->>'slug', '') ~ '^e2e-'
+  OR id ~* 'qa-audit'
+  OR COALESCE(payload->>'id', '') ~* 'qa-audit'
+  OR slug ~* 'qa-audit'
+  OR COALESCE(payload->>'slug', '') ~* 'qa-audit'
   OR id ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR COALESCE(payload->>'id', '') ~ '^qa26-[a-z]+-[a-f0-9]+$'
   OR slug ~ '^qa26-[a-z]+-[a-f0-9]+$'
