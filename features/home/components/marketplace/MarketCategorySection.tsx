@@ -7,7 +7,8 @@ type MarketCategorySectionProps = {
   categoryId: string;
   categorySlug: string;
   deferPaint?: boolean;
-  eyebrow: string;
+  /** @deprecated Lean headers — title only (parity with mobile rails). */
+  eyebrow?: string;
   listings: Listing[];
   title: string;
   variant?: "sand" | "white";
@@ -16,12 +17,12 @@ type MarketCategorySectionProps = {
 export function MarketCategorySection({
   categorySlug,
   deferPaint = false,
-  eyebrow,
   listings,
   title,
   variant = "sand",
 }: MarketCategorySectionProps) {
-  const items = listings;
+  // Same rail length as MobileCategoryRail — never diverge by device.
+  const items = listings.slice(0, 8);
 
   if (items.length === 0) {
     return null;
@@ -31,7 +32,6 @@ export function MarketCategorySection({
     <MarketSectionShell deferPaint={deferPaint} variant={variant}>
       <MarketSectionHeader
         actionHref={`/categories/${categorySlug}`}
-        eyebrow={eyebrow}
         title={title}
       />
 

@@ -2,6 +2,7 @@ import type { Listing } from "@/types";
 import { MarketCategorySection } from "@/features/home/components/marketplace/MarketCategorySection";
 import { MarketEmirates } from "@/features/home/components/marketplace/MarketEmirates";
 import { MarketAppDownload } from "@/features/home/components/marketplace/MarketAppDownload";
+import { MarketNearbySection } from "@/features/home/components/marketplace/MarketNearbySection";
 
 type HomeSection = {
   categoryId: string;
@@ -14,12 +15,17 @@ type HomeSection = {
 
 type DeferredHomeBelowFoldProps = {
   appPreviewListings: Listing[];
+  nearbyListings: Listing[];
   sections: HomeSection[];
 };
 
-/** Below-fold desktop rails. Stays a Server Component so async sections can await. */
+/**
+ * Below-fold desktop rails. Order matches mobile home feed:
+ * remaining category rails → Nearby → emirates → app download.
+ */
 export function DeferredHomeBelowFold({
   appPreviewListings,
+  nearbyListings,
   sections,
 }: DeferredHomeBelowFoldProps) {
   return (
@@ -30,12 +36,12 @@ export function DeferredHomeBelowFold({
           categoryId={section.categoryId}
           categorySlug={section.categorySlug}
           deferPaint
-          eyebrow={section.eyebrow}
           listings={section.listings}
           title={section.title}
           variant={section.variant}
         />
       ))}
+      <MarketNearbySection listings={nearbyListings} />
       <MarketEmirates />
       <MarketAppDownload previewListings={appPreviewListings} />
     </>
