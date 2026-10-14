@@ -208,7 +208,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             <>
               <button
                 aria-label="الوسائط السابقة"
-                className="focus-ring absolute start-2 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur-sm sm:start-3 sm:size-9"
+                className="focus-ring absolute start-2 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white sm:start-3 sm:size-9"
                 onClick={(event) => {
                   event.stopPropagation();
                   goPrev();
@@ -219,7 +219,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
               </button>
               <button
                 aria-label="الوسائط التالية"
-                className="focus-ring absolute end-2 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur-sm sm:end-3 sm:size-9"
+                className="focus-ring absolute end-2 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white sm:end-3 sm:size-9"
                 onClick={(event) => {
                   event.stopPropagation();
                   goNext();
@@ -228,7 +228,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
               >
                 <Icon name="chevron-left" size={16} />
               </button>
-              <p className="absolute bottom-2.5 end-2.5 rounded-full bg-black/50 px-2.5 py-0.5 text-[0.6875rem] font-semibold text-white backdrop-blur-sm sm:bottom-3 sm:end-3 sm:px-3 sm:py-1 sm:text-xs">
+              <p className="absolute bottom-2.5 end-2.5 rounded-full bg-black/60 px-2.5 py-0.5 text-[0.6875rem] font-semibold text-white sm:bottom-3 sm:end-3 sm:px-3 sm:py-1 sm:text-xs">
                 {clampedIndex + 1}
                 <span className="px-0.5 opacity-80">/</span>
                 {galleryItems.length}

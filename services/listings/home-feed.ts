@@ -37,10 +37,12 @@ export type HomeFeed = {
 
 const HOME_SECTION_LIMIT = 13;
 const FEATURED_FETCH = 24;
-const FEATURED_SHOW = 6;
+/** Two full rows on the 4-col desktop grid; matches mobile rail length. */
+const FEATURED_SHOW = 8;
 const CATALOG_FETCH = 200;
 const NEARBY_SHOW = 8;
-const SECTION_SHOW = 4;
+/** Two full rows on desktop; enough cards for mobile horizontal rails. */
+const SECTION_SHOW = 8;
 
 /** Strip query/size so the same Unsplash photo collides across listings. */
 function coverKey(url: string | undefined): string {
@@ -242,7 +244,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v30-jank-cut"],
+  ["sooqna-home-feed-v31-featured-eight"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

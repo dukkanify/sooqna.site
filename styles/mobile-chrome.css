@@ -132,8 +132,8 @@
   --mh-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   border-top: 1px solid var(--mh-border);
+  /* Opaque — no backdrop-filter (search/categories/sellers scroll under this bar) */
   background: rgb(255 255 255 / 98%);
-  backdrop-filter: blur(14px);
   padding-bottom: env(safe-area-inset-bottom, 0);
   box-shadow: 0 -8px 28px rgb(15 23 42 / 8%);
 }
@@ -294,7 +294,7 @@ html[data-theme="dark"] .mobile-bottom-nav {
   --mh-muted: #a8b0c0;
   --mh-gold: #d4b87a;
   border-top-color: #2a3448;
-  background: rgb(10 16 28 / 96%);
+  background: rgb(10 16 28 / 98%);
   box-shadow: 0 -8px 28px rgb(0 0 0 / 45%);
 }
 

@@ -10,7 +10,7 @@ type MarketFeaturedProps = {
 
 export function MarketFeatured({ categories, listings }: MarketFeaturedProps) {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
-  const featured = listings.slice(0, 6);
+  const featured = listings.slice(0, 8);
 
   if (featured.length === 0) {
     return null;
@@ -21,7 +21,6 @@ export function MarketFeatured({ categories, listings }: MarketFeaturedProps) {
       <MarketSectionHeader
         actionHref="/featured"
         actionLabel="عرض كل المميزة"
-        eyebrow="مميز"
         title="إعلانات مميزة"
       />
 

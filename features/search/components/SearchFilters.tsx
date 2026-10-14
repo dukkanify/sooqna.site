@@ -515,7 +515,7 @@ export function SearchFilters({
   return (
     <LocalizedTree>
       <div className="sticky top-[4.25rem] z-30 mb-2 min-w-0 md:mb-0 md:hidden">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-2xl border border-border bg-surface/95 p-1 shadow-[var(--shadow-card)] backdrop-blur">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-2xl border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
           <button
             aria-expanded={sheetOpen}
             className="focus-ring inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-secondary-soft/80 px-3 text-sm font-bold text-ink"

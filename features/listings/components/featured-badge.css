@@ -36,20 +36,19 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  /* Static highlight — no infinite animation while grids scroll */
   background: linear-gradient(
     115deg,
     transparent 28%,
-    rgb(255 255 255 / 40%) 48%,
+    rgb(255 255 255 / 28%) 48%,
     transparent 68%
   );
   background-size: 220% 100%;
-  background-position: 140% 0;
-  animation: listing-featured-sheen 4.8s ease-in-out infinite;
+  background-position: 42% 0;
 }
 
 @media (hover: none), (prefers-reduced-motion: reduce) {
   .listing-featured-badge__sheen {
-    animation: none;
     background: none;
   }
 }
@@ -161,19 +160,15 @@ html[data-theme="dark"] .marketplace-card--featured {
     0 8px 20px rgb(201 164 92 / 12%);
 }
 
+/* Keyframe kept for design token name; sheen is static (no infinite scroll jank). */
 @keyframes listing-featured-sheen {
-  0%,
-  62% {
-    background-position: 140% 0;
-  }
-  100% {
-    background-position: -40% 0;
+  to {
+    background-position: 42% 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .listing-featured-badge__sheen {
-    animation: none;
     opacity: 0.25;
     background-position: 50% 0;
   }
