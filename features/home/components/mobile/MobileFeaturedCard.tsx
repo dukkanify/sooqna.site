@@ -51,11 +51,11 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
     >
       <Link
         aria-label={displayTitle}
-        className="marketplace-card-stretched-link absolute inset-0 z-[1]"
+        className="marketplace-card-stretched-link absolute inset-0 z-0"
         href={href}
       />
 
-      <div className="relative z-0">
+      <div className="pointer-events-none relative z-10">
         <div className="mobile-home-featured-card__media">
           {imageUrl ? (
             <AppImage
@@ -75,7 +75,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
           )}
 
           {featuredLive ? (
-            <div className="mobile-home-featured-card__crown pointer-events-none">
+            <div className="mobile-home-featured-card__crown">
               <FeaturedBadge placement="cap" />
             </div>
           ) : null}
@@ -86,7 +86,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
             listing={listing}
           />
 
-          <div className="mobile-home-featured-card__actions relative z-20">
+          <div className="mobile-home-featured-card__actions pointer-events-auto relative z-20">
             <FavoriteButton
               className="card-media-action !min-h-8 !size-8 !min-w-8 !rounded-full !p-0"
               iconOnly

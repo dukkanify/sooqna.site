@@ -96,9 +96,9 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         listing={listing}
       />
 
-      {/* Above the stretched card link so share/favorite stay clickable */}
+      {/* pointer-events-auto: parent content is pointer-events-none for stretched link */}
       <div
-        className={`marketplace-card-media-actions absolute end-3 z-20 flex gap-1.5 ${
+        className={`marketplace-card-media-actions pointer-events-auto absolute end-3 z-20 flex gap-1.5 ${
           featuredLive ? "marketplace-card-media-actions--below-crown" : "top-3"
         }`}
       >
@@ -203,7 +203,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   const stretchedLink = (
     <Link
       aria-label={displayTitle}
-      className="marketplace-card-stretched-link absolute inset-0 z-[1]"
+      className="marketplace-card-stretched-link absolute inset-0 z-0"
       href={href}
     />
   );
@@ -213,7 +213,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
       <LocalizedTree>
         <article className={`${cardClass} flex flex-col overflow-hidden`}>
           {stretchedLink}
-          <div className="relative z-0 flex min-h-0 flex-1 overflow-hidden">
+          <div className="pointer-events-none relative z-10 flex min-h-0 flex-1 overflow-hidden">
             <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
             <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
           </div>
@@ -226,7 +226,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
     <LocalizedTree>
       <article className={`${cardClass} flex h-full flex-col`}>
         {stretchedLink}
-        <div className="relative z-0 flex h-full flex-col">
+        <div className="pointer-events-none relative z-10 flex h-full flex-col">
           {imageArea}
           {bodyBlock}
         </div>

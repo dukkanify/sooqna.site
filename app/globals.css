@@ -1476,9 +1476,9 @@ html[data-theme="dark"] .market-header__drawer-account {
     border-color var(--duration-normal) var(--ease-premium);
 }
 
-/* Whole-card hit target; media actions sit at z-20 above this. */
+/* Whole-card hit target. Card content uses pointer-events-none; actions use pointer-events-auto. */
 .marketplace-card-stretched-link {
-  z-index: 1;
+  z-index: 0;
   border-radius: inherit;
 }
 .marketplace-card-stretched-link:focus-visible {
