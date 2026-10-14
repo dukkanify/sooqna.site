@@ -74,6 +74,8 @@ describe("live catalog opt-in", () => {
     assert.match(details, /isLiveCatalogListing/);
     assert.match(details, /isLiveCatalogVisibleForEmptyCategories/);
     assert.match(details, /limit: 120/);
+    // Detail pages for featured live-mkt must not 404 when catalog is off.
+    assert.match(details, /isEligibleFeaturedPageListing\(listing\)/);
   });
 
   it("seed postedAt is relative to now", () => {

@@ -77,10 +77,13 @@ const loadListingBySlugCached = cache(
         return undefined;
       }
       if (!isLiveCatalogEnabled() && isLiveCatalogListing(listing)) {
-        await ensureEmptyCategoryStartersPublished().catch(() => undefined);
-        const emptyIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
-        if (!isLiveCatalogVisibleForEmptyCategories(listing, emptyIds)) {
-          return undefined;
+        // Featured placements shown on /featured must remain openable.
+        if (!isEligibleFeaturedPageListing(listing)) {
+          await ensureEmptyCategoryStartersPublished().catch(() => undefined);
+          const emptyIds = await getEmptyMarketplaceCategoryIds().catch(() => []);
+          if (!isLiveCatalogVisibleForEmptyCategories(listing, emptyIds)) {
+            return undefined;
+          }
         }
       }
     }
