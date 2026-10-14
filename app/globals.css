@@ -1476,6 +1476,16 @@ html[data-theme="dark"] .market-header__drawer-account {
     border-color var(--duration-normal) var(--ease-premium);
 }
 
+/* Whole-card hit target; media actions sit at z-20 above this. */
+.marketplace-card-stretched-link {
+  z-index: 1;
+  border-radius: inherit;
+}
+.marketplace-card-stretched-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-secondary) 70%, transparent);
+  outline-offset: 2px;
+}
+
 .marketplace-card:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--color-secondary) 35%, var(--color-border));

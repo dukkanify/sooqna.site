@@ -61,22 +61,20 @@ export const PremiumListingCard = memo(function PremiumListingCard({
       className={`marketplace-card-media relative aspect-[3/2] w-full overflow-hidden ${layout === "row" ? "marketplace-card-media--row" : ""}`}
     >
       {imageUrl ? (
-        <Link aria-hidden className="absolute inset-0" href={href} tabIndex={-1}>
-          <AppImage
-            alt=""
-            className="marketplace-card-image"
-            fallback="none"
-            fill
-            loading={priority ? undefined : "lazy"}
-            priority={priority}
-            sizes={
-              layout === "row"
-                ? "144px"
-                : "(max-width: 1024px) 50vw, 25vw"
-            }
-            src={imageUrl}
-          />
-        </Link>
+        <AppImage
+          alt=""
+          className="marketplace-card-image"
+          fallback="none"
+          fill
+          loading={priority ? undefined : "lazy"}
+          priority={priority}
+          sizes={
+            layout === "row"
+              ? "144px"
+              : "(max-width: 1024px) 50vw, 25vw"
+          }
+          src={imageUrl}
+        />
       ) : (
         <div
           aria-hidden
@@ -87,7 +85,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
       )}
 
       {featuredLive ? (
-        <div className="marketplace-card-crown">
+        <div className="marketplace-card-crown pointer-events-none">
           <FeaturedBadge placement="cap" />
         </div>
       ) : null}
@@ -98,6 +96,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         listing={listing}
       />
 
+      {/* Above the stretched card link so share/favorite stay clickable */}
       <div
         className={`marketplace-card-media-actions absolute end-3 z-20 flex gap-1.5 ${
           featuredLive ? "marketplace-card-media-actions--below-crown" : "top-3"
@@ -116,7 +115,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
       </div>
 
       {showEscrow ? (
-        <div className="absolute bottom-3 start-3 z-10">
+        <div className="pointer-events-none absolute bottom-3 start-3 z-10">
           <Badge variant="escrow">ضمان مالي</Badge>
         </div>
       ) : null}
@@ -133,13 +132,11 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </p>
       ) : null}
 
-      <Link className="min-w-0" href={href}>
-        <h3
-          className={`line-clamp-2 break-words text-xs font-bold leading-snug text-ink transition group-hover:text-secondary sm:text-sm`}
-        >
-          <ListingTitle listing={listing} />
-        </h3>
-      </Link>
+      <h3
+        className={`line-clamp-2 break-words text-xs font-bold leading-snug text-ink transition group-hover:text-secondary sm:text-sm`}
+      >
+        <ListingTitle listing={listing} />
+      </h3>
       <ListingMachineHint className="mt-1 w-fit" listing={listing} />
 
       {listing.categoryId === "cars" && getCarCardMetaLine(listing) ? (
@@ -199,29 +196,41 @@ export const PremiumListingCard = memo(function PremiumListingCard({
     </div>
   );
 
-  const cardClass = `marketplace-card group ${
+  const cardClass = `marketplace-card group relative ${
     featuredLive ? "marketplace-card--featured" : ""
   }`.trim();
+
+  const stretchedLink = (
+    <Link
+      aria-label={displayTitle}
+      className="marketplace-card-stretched-link absolute inset-0 z-[1]"
+      href={href}
+    />
+  );
 
   if (layout === "row") {
     return (
       <LocalizedTree>
-      <article className={`${cardClass} flex flex-col overflow-hidden`}>
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
-          <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
-        </div>
-      </article>
+        <article className={`${cardClass} flex flex-col overflow-hidden`}>
+          {stretchedLink}
+          <div className="relative z-0 flex min-h-0 flex-1 overflow-hidden">
+            <div className="relative w-28 shrink-0 sm:w-36">{imageArea}</div>
+            <div className="flex min-w-0 flex-1 flex-col">{bodyBlock}</div>
+          </div>
+        </article>
       </LocalizedTree>
     );
   }
 
   return (
     <LocalizedTree>
-    <article className={`${cardClass} flex h-full flex-col`}>
-      {imageArea}
-      {bodyBlock}
-    </article>
+      <article className={`${cardClass} flex h-full flex-col`}>
+        {stretchedLink}
+        <div className="relative z-0 flex h-full flex-col">
+          {imageArea}
+          {bodyBlock}
+        </div>
+      </article>
     </LocalizedTree>
   );
 });
