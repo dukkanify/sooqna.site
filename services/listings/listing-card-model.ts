@@ -1,10 +1,34 @@
 import type { Listing } from "@/types";
+import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
+
+/** Inline data/blob URLs must never ship in SSR card payloads (multi‑MB HTML). */
+export function isInlineListingImageUrl(url: string | undefined): boolean {
+  const value = url?.trim().toLowerCase() ?? "";
+  return value.startsWith("data:") || value.startsWith("blob:");
+}
+
+function remoteCoverImage(listing: Listing): string | undefined {
+  for (const url of [...(listing.images ?? []), listing.imageUrl ?? ""]) {
+    const trimmed = url?.trim();
+    if (!trimmed || isInlineListingImageUrl(trimmed)) continue;
+    return trimmed;
+  }
+  return undefined;
+}
 
 function coverImage(listing: Listing): string | undefined {
-  const gallery = listing.images?.find((url) => url?.trim());
-  if (gallery) return gallery.trim();
-  const cover = listing.imageUrl?.trim();
-  return cover || undefined;
+  const remote = remoteCoverImage(listing);
+  if (remote) return remote;
+  // Seller photos stored as data: URLs — use product gallery https covers for cards
+  // so home/search HTML stays small. Detail pages can still resolve media separately.
+  const generated = galleryForListingProduct({
+    categoryId: listing.categoryId,
+    count: 1,
+    seed: `${listing.id}-card-cover`,
+    title: listing.title,
+    titleEnglish: listing.titleEnglish,
+  });
+  return generated[0]?.trim() || undefined;
 }
 
 /** Card-sized listing: bilingual titles, cover only, no descriptions/history.
@@ -12,6 +36,9 @@ function coverImage(listing: Listing): string | undefined {
 export function slimListingForCard(listing: Listing): Listing {
   const cover = coverImage(listing);
   const slimSpecs = slimCategorySpecsForCard(listing);
+  const avatarUrl = isInlineListingImageUrl(listing.seller.avatarUrl)
+    ? undefined
+    : listing.seller.avatarUrl;
   return {
     id: listing.id,
     title: listing.title,
@@ -31,7 +58,7 @@ export function slimListingForCard(listing: Listing): Listing {
       id: listing.seller.id,
       name: listing.seller.name,
       nameEnglish: listing.seller.nameEnglish,
-      avatarUrl: listing.seller.avatarUrl,
+      avatarUrl,
       isVerified: listing.seller.isVerified,
       sellerType: listing.seller.sellerType,
     },

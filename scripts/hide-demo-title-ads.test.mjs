@@ -104,7 +104,7 @@ describe("hide demo title ads from public catalog", () => {
     const details = read("services/listings/listings.service.ts");
     assert.match(details, /isPublicQaTitleListing/);
     const feed = read("services/listings/home-feed.ts");
-    assert.match(feed, /sooqna-home-feed-v32-hide-qa-audit/);
+    assert.match(feed, /sooqna-home-feed-v33-remote-covers/);
     const policy = read("services/listings/mock-catalog-policy.ts");
     assert.match(policy, /qa-audit/);
     assert.match(policy, /PUBLIC_QA_TITLE_SQL/);
