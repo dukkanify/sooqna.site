@@ -1,14 +1,18 @@
 import { MarketCatalogEmpty } from "@/features/home/components/marketplace/MarketCatalogEmpty";
 import { MarketCategorySection } from "@/features/home/components/marketplace/MarketCategorySection";
 import { MarketFeatured } from "@/features/home/components/marketplace/MarketFeatured";
-import { MarketNearbySection } from "@/features/home/components/marketplace/MarketNearbySection";
 import { DeferredHomeBelowFold } from "@/features/home/components/marketplace/DeferredHomeBelowFold";
 import { resolveAppPreviewListings } from "@/features/home/components/mobile/mobile-app-preview.config";
 import { getCategories } from "@/services/categories";
 import { getHomeFeed } from "@/services/listings/home-feed";
 import { Suspense } from "react";
 
-/** Listing rails — fetched inside Suspense so the hero can paint first. */
+/**
+ * Desktop listing rails — same composition order as mobile:
+ * Featured → most-viewed category rails → Nearby → emirates/app download.
+ * Nearby must not jump between category rails (that made sections look
+ * different across phone vs desktop).
+ */
 export async function DesktopHomeFeed() {
   const [categories, feed] = await Promise.all([getCategories(), getHomeFeed()]);
 
@@ -36,6 +40,7 @@ export async function DesktopHomeFeed() {
   ]);
 
   const hasPublicListings = feed.catalogCount > 0;
+  // Keep first rails eager; defer the rest — but never split Nearby into the middle.
   const aboveFoldSections = sectionListings.slice(0, 3);
   const belowFoldSections = sectionListings.slice(3);
 
@@ -51,16 +56,15 @@ export async function DesktopHomeFeed() {
           key={section.categoryId}
           categoryId={section.categoryId}
           categorySlug={section.categorySlug}
-          eyebrow={section.eyebrow}
           listings={section.listings}
           title={section.title}
           variant={section.variant}
         />
       ))}
-      <MarketNearbySection listings={feed.nearbySource} />
       <Suspense fallback={null}>
         <DeferredHomeBelowFold
           appPreviewListings={appPreviewListings}
+          nearbyListings={feed.nearbySource}
           sections={belowFoldSections}
         />
       </Suspense>

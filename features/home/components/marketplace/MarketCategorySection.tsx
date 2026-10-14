@@ -7,7 +7,8 @@ type MarketCategorySectionProps = {
   categoryId: string;
   categorySlug: string;
   deferPaint?: boolean;
-  eyebrow: string;
+  /** @deprecated Lean headers — title only (parity with mobile rails). */
+  eyebrow?: string;
   listings: Listing[];
   title: string;
   variant?: "sand" | "white";
@@ -16,7 +17,6 @@ type MarketCategorySectionProps = {
 export function MarketCategorySection({
   categorySlug,
   deferPaint = false,
-  eyebrow,
   listings,
   title,
   variant = "sand",
@@ -31,7 +31,6 @@ export function MarketCategorySection({
     <MarketSectionShell deferPaint={deferPaint} variant={variant}>
       <MarketSectionHeader
         actionHref={`/categories/${categorySlug}`}
-        eyebrow={eyebrow}
         title={title}
       />
 
