@@ -198,15 +198,29 @@ function isEmirateName(value: string, emirate?: string): boolean {
   return lookupEmirateToken(value) === canonical;
 }
 
+function isForeignEmirateName(value: string, emirate?: string): boolean {
+  const canonical = canonicalizeEmirate(value);
+  if (!canonical) return false;
+  return !emirate || canonical !== emirate;
+}
+
 /** Best-effort area for a listing row. */
 export function listingArea(listing: ListingLocationRef): string | undefined {
   const emirate = listingEmirate(listing);
-  const fromCity = extractAreaLabel(listing.city, emirate);
   if (listing.area?.trim()) {
     const area = listing.area.trim();
-    if (area !== emirate && !isEmirateName(area, emirate)) {
+    if (area !== emirate && !isEmirateName(area, emirate) && !isForeignEmirateName(area, emirate)) {
       return extractAreaLabel(area, emirate) || area;
     }
+  }
+  const fromCity = extractAreaLabel(listing.city, emirate);
+  // city="دبي" while emirate="أبوظبي" (or compound "دبي، أبوظبي") must not
+  // become a fake neighborhood label.
+  if (fromCity && isForeignEmirateName(fromCity, emirate)) {
+    return undefined;
+  }
+  if (fromCity && isEmirateName(fromCity, emirate)) {
+    return undefined;
   }
   return fromCity;
 }
@@ -236,8 +250,11 @@ export function listingMatchesAreaFilter(
 export function formatListingLocation(listing: ListingLocationRef): string {
   const emirate = listingEmirate(listing);
   const area = listingArea(listing);
-  if (area && emirate) return `${area}، ${emirate}`;
+  if (area && emirate && !isForeignEmirateName(area, emirate)) {
+    return `${area}، ${emirate}`;
+  }
   if (emirate) return emirate;
-  if (area) return area;
-  return (listing.city || listing.emirate || "").trim();
+  if (area && !canonicalizeEmirate(area)) return area;
+  const fallback = (listing.city || listing.emirate || "").trim();
+  return canonicalizeEmirate(fallback) || fallback;
 }
