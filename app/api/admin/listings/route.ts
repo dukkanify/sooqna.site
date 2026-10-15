@@ -51,16 +51,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "INVALID_PRICE" }, { status: 400 });
     }
 
-    const listing = await createListingFromAdmin(create);
-    return NextResponse.json(
-      {
-        listing: (await getAdminListingRecords()).find(
-          (item) => item.id === listing.id,
-        ),
-        listings: await getAdminListingRecords(),
-      },
-      { status: 201 },
-    );
+    try {
+      const listing = await createListingFromAdmin(create);
+      return NextResponse.json(
+        {
+          listing: (await getAdminListingRecords()).find(
+            (item) => item.id === listing.id,
+          ),
+          listings: await getAdminListingRecords(),
+        },
+        { status: 201 },
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (
+        message === LISTING_TITLE_INVALID ||
+        message === LISTING_IMAGES_REQUIRED
+      ) {
+        return NextResponse.json(
+          { error: message, message: publishGuardMessage(message) },
+          { status: 400 },
+        );
+      }
+      throw error;
+    }
   }
 
   if (body.listings || body.listing) {
