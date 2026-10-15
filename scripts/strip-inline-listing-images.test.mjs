@@ -1,5 +1,7 @@
 /**
  * Card payloads must never embed data:/blob: images (SSR HTML size).
+ * Missing remote covers stay empty — never invent Unsplash stock photos.
+ * Detail/edit keep real seller `data:` media via getListingImages.
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
@@ -14,27 +16,32 @@ function read(rel) {
 }
 
 describe("strip inline listing images from card payloads", () => {
-  it("slimListingForCard rejects data/blob covers and uses product gallery", () => {
+  it("slimListingForCard rejects data/blob covers and never invents stock", () => {
     const src = read("services/listings/listing-card-model.ts");
     assert.match(src, /export function isInlineListingImageUrl/);
     assert.match(src, /startsWith\("data:"\)/);
     assert.match(src, /startsWith\("blob:"\)/);
-    assert.match(src, /galleryForListingProduct/);
-    assert.match(src, /remoteCoverImage/);
-    assert.match(src, /card-cover/);
+    assert.doesNotMatch(src, /galleryForListingProduct/);
+    assert.match(src, /never invent Unsplash/);
   });
 
-  it("home feed cover candidates skip inline data URLs", () => {
+  it("home feed cover candidates skip inline data URLs and stock fallbacks", () => {
     const feed = read("services/listings/home-feed.ts");
     assert.match(feed, /startsWith\("data:"\)/);
     assert.match(feed, /startsWith\("blob:"\)/);
-    assert.match(feed, /sooqna-home-feed-v33-remote-covers/);
+    assert.doesNotMatch(feed, /galleryForListingProduct/);
+    assert.match(feed, /sooqna-home-feed-v35-honest-covers/);
   });
 
-  it("getListingImages omits inline data/blob URLs", () => {
+  it("getListingImages keeps seller data: URLs and only omits blob:", () => {
     const src = read("features/listings/components/listing-card.utils.ts");
-    assert.match(src, /startsWith\("data:"\)/);
     assert.match(src, /startsWith\("blob:"\)/);
+    assert.match(src, /Keep `data:` URLs/);
+    // Must not filter out data: the way cards do — detail needs real photos.
+    assert.doesNotMatch(
+      src,
+      /!url\.toLowerCase\(\)\.startsWith\("data:"\)/,
+    );
   });
 
   it("public listing queries slim cards through slimListingForCard", () => {

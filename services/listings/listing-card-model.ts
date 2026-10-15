@@ -1,5 +1,4 @@
 import type { Listing } from "@/types";
-import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
 
 /** Inline data/blob URLs must never ship in SSR card payloads (multi‑MB HTML). */
 export function isInlineListingImageUrl(url: string | undefined): boolean {
@@ -7,28 +6,14 @@ export function isInlineListingImageUrl(url: string | undefined): boolean {
   return value.startsWith("data:") || value.startsWith("blob:");
 }
 
-function remoteCoverImage(listing: Listing): string | undefined {
+/** Remote https covers only — never invent Unsplash stock for missing seller photos. */
+function coverImage(listing: Listing): string | undefined {
   for (const url of [...(listing.images ?? []), listing.imageUrl ?? ""]) {
     const trimmed = url?.trim();
     if (!trimmed || isInlineListingImageUrl(trimmed)) continue;
     return trimmed;
   }
   return undefined;
-}
-
-function coverImage(listing: Listing): string | undefined {
-  const remote = remoteCoverImage(listing);
-  if (remote) return remote;
-  // Seller photos stored as data: URLs — use product gallery https covers for cards
-  // so home/search HTML stays small. Detail pages can still resolve media separately.
-  const generated = galleryForListingProduct({
-    categoryId: listing.categoryId,
-    count: 1,
-    seed: `${listing.id}-card-cover`,
-    title: listing.title,
-    titleEnglish: listing.titleEnglish,
-  });
-  return generated[0]?.trim() || undefined;
 }
 
 /** Card-sized listing: bilingual titles, cover only, no descriptions/history.

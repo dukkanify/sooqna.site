@@ -34,11 +34,14 @@ const PUBLIC_HIDDEN_LISTING_IDS = new Set([
   "local-1788919686292",
   /** Admin-posted demo car that was featured on production home. */
   "local-1790600982192",
+  /** Keyboard-mash junk that reached production (Gghhhhhh). */
+  "local-1791391793620",
 ]);
 const PUBLIC_HIDDEN_LISTING_SLUGS = new Set([
   "sony-ipad-pro",
   "toyota-patrol-2026",
   "01-982192",
+  "gghhhhhh-793620",
 ]);
 
 export type FixtureListingRef = {
@@ -61,6 +64,35 @@ const ARABIC_QA_TITLE =
   /^إعلان (?:تجريبي|مرفوض)(?:\s|$|—|-|–)/;
 const ARABIC_QA_TITLE_EXACT = /^إعلان (?:تجريبي|مرفوض)$/;
 
+/**
+ * Keyboard-mash / nonsense titles that slipped past moderation.
+ * Conservative: repeated chars, or a single Latin/Arabic token with almost no vowels.
+ */
+export function isKeyboardMashTitle(title: string | undefined): boolean {
+  const raw = title?.trim() ?? "";
+  if (raw.length < 5) return false;
+  const compact = raw.replace(/\s+/g, "");
+  if (compact.length < 5) return false;
+  if (/(.)\1{3,}/u.test(compact)) return true;
+
+  if (/^[A-Za-z]+$/.test(compact) && compact.length >= 6) {
+    const vowels = (compact.match(/[aeiouAEIOU]/g) ?? []).length;
+    if (vowels / compact.length <= 0.15) return true;
+  }
+
+  // Single Arabic token with almost no matres lectionis (ا و ي …).
+  if (
+    /^[\u0600-\u06FF]+$/.test(compact) &&
+    compact.length >= 8 &&
+    !/\s/.test(raw)
+  ) {
+    const vowels = (compact.match(/[اأإآوىيئؤ]/g) ?? []).length;
+    if (vowels / compact.length <= 0.12) return true;
+  }
+
+  return false;
+}
+
 export function isPublicQaTitleListing(listing: FixtureListingRef): boolean {
   const title = listing.title?.trim() ?? "";
   const titleEnglish = listing.titleEnglish?.trim() ?? "";
@@ -73,7 +105,9 @@ export function isPublicQaTitleListing(listing: FixtureListingRef): boolean {
     /^Listing(?:\s+)تجريبي$/i.test(titleEnglish) ||
     // Live cert stamps from scripts/audit-e2e-http.mjs (e.g. "تويوتا كامري qa-audit-…")
     /\bqa-audit\b/i.test(title) ||
-    /\bqa-audit\b/i.test(titleEnglish)
+    /\bqa-audit\b/i.test(titleEnglish) ||
+    isKeyboardMashTitle(title) ||
+    isKeyboardMashTitle(titleEnglish)
   );
 }
 
@@ -86,6 +120,8 @@ export const PUBLIC_QA_TITLE_SQL = `(
   OR COALESCE(payload->>'titleEnglish', '') ~* '^listing[[:space:]]*تجريبي'
   OR COALESCE(payload->>'title', '') ~* 'qa-audit'
   OR COALESCE(payload->>'titleEnglish', '') ~* 'qa-audit'
+  OR COALESCE(payload->>'title', '') ~ '(.)\\1{3,}'
+  OR COALESCE(payload->>'titleEnglish', '') ~ '(.)\\1{3,}'
 )`;
 
 function looksLikeQaTitleOrName(listing: FixtureListingRef): boolean {
@@ -161,10 +197,14 @@ export const FIXTURE_LISTING_SQL = `(
   OR COALESCE(payload->>'id', '') = 'local-1788919686292'
   OR id = 'local-1790600982192'
   OR COALESCE(payload->>'id', '') = 'local-1790600982192'
+  OR id = 'local-1791391793620'
+  OR COALESCE(payload->>'id', '') = 'local-1791391793620'
   OR slug = 'sony-ipad-pro'
   OR COALESCE(payload->>'slug', '') = 'sony-ipad-pro'
   OR slug = 'toyota-patrol-2026'
   OR COALESCE(payload->>'slug', '') = 'toyota-patrol-2026'
   OR slug = '01-982192'
   OR COALESCE(payload->>'slug', '') = '01-982192'
+  OR slug = 'gghhhhhh-793620'
+  OR COALESCE(payload->>'slug', '') = 'gghhhhhh-793620'
 )`;

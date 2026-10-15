@@ -19,6 +19,7 @@ const RESERVED = new Set([
   "q",
   "category",
   "city",
+  "emirate",
   "country",
   "condition",
   "minPrice",
@@ -151,7 +152,8 @@ export function parseSearchFilterState(
   return {
     area: get("area") ?? "",
     category: get("category") ?? "",
-    city: get("city") ?? "",
+    // `emirate=` is an accepted alias for the city/emirate filter chip.
+    city: get("city") ?? get("emirate") ?? "",
     condition: get("condition") ?? "",
     country: get("country") ?? "",
     maxPrice: get("maxPrice") ?? "",
