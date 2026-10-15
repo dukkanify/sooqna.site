@@ -80,20 +80,6 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
             </div>
           ) : null}
 
-          <ListingCardBadges
-            className={`!start-2 ${featuredLive ? "listing-card-badges-below-crown !top-[2.15rem]" : "!top-2"}`}
-            excludeFeatured
-            listing={listing}
-          />
-
-          <div className="mobile-home-featured-card__actions pointer-events-auto relative z-20">
-            <FavoriteButton
-              className="card-media-action !min-h-8 !size-8 !min-w-8 !rounded-full !p-0"
-              iconOnly
-              listing={listing}
-            />
-          </div>
-
           {photoCount > 0 ? (
             <span className="mobile-home-featured-card__photo-count pointer-events-none">
               <Icon name="photo" size={12} />
@@ -103,6 +89,13 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
         </div>
 
         <div className="mobile-home-featured-card__body">
+          <ListingCardBadges
+            className="mb-1"
+            excludeFeatured
+            inline
+            listing={listing}
+          />
+
           <p className="mobile-home-featured-card__price">
             <ListingPrice listing={listing} size="sm" />
           </p>
@@ -115,14 +108,23 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
             {t(location)} • {t(formatPostedTime(listing.postedAt))}
           </p>
 
-          {(listing.views ?? 0) > 0 ? (
-            <div className="mobile-home-featured-card__footer">
+          <div className="mobile-home-featured-card__footer">
+            {(listing.views ?? 0) > 0 ? (
               <span className="mobile-home-featured-card__views">
                 <Icon name="eye" size={12} />
                 {formatViews(listing.views ?? 0, locale)}
               </span>
+            ) : (
+              <span />
+            )}
+            <div className="pointer-events-auto relative z-20">
+              <FavoriteButton
+                className="!min-h-7 !size-7 !min-w-7 !rounded-full !border-0 !bg-transparent !p-0 text-muted hover:bg-surface-muted hover:text-error"
+                iconOnly
+                listing={listing}
+              />
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
     </article>
