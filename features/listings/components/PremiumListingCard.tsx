@@ -4,17 +4,13 @@ import Link from "next/link";
 import { memo } from "react";
 import type { Listing } from "@/types";
 import { AppImage } from "@/shared/components/AppImage";
-import { CardShareButton } from "@/shared/components/CardShareButton";
 import { ListingPrice } from "@/shared/components/ListingPrice";
-import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ListingTitle } from "@/shared/i18n/ListingTitle";
-import { SellerName } from "@/shared/i18n/SellerName";
-import { listingTitle, sellerName } from "@/shared/i18n/listing-copy";
+import { listingTitle } from "@/shared/i18n/listing-copy";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useLocale } from "@/shared/i18n/useLocale";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import { getCarCardMetaLine } from "@/shared/listings/listing-specs";
-import { Badge } from "@/shared/ui/Badge";
 import { Icon } from "@/shared/ui/Icon";
 import { FeaturedBadge } from "./FeaturedBadge";
 import { ListingMachineHint } from "./ListingMachineHint";
@@ -38,6 +34,10 @@ export type PremiumListingCardProps = {
   showStatus?: boolean;
 };
 
+/**
+ * Browse card: photo + title + price + one meta line.
+ * Favorite/share stay on the listing detail page so the grid stays scannable.
+ */
 export const PremiumListingCard = memo(function PremiumListingCard({
   categoryName,
   layout = "card",
@@ -49,12 +49,12 @@ export const PremiumListingCard = memo(function PremiumListingCard({
   const href = getListingHref(listing);
   const imageUrl = getListingImageUrl(listing);
   const location = getListingLocation(listing);
-  const shareUrl = href;
   const displayTitle = listingTitle(listing, locale);
-  const displaySeller = sellerName(listing.seller, locale);
 
   const showEscrow = showsEscrowProtection(listing);
   const featuredLive = isListingFeaturedActive(listing);
+  const views = listing.views ?? 0;
+  const carMeta = listing.categoryId === "cars" ? getCarCardMetaLine(listing) : null;
 
   const imageArea = (
     <div
@@ -84,7 +84,6 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </div>
       )}
 
-      {/* Photo stays clear — only the live Featured crown sits above the media. */}
       {featuredLive ? (
         <div className="marketplace-card-crown pointer-events-none">
           <FeaturedBadge placement="cap" />
@@ -95,96 +94,72 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   const bodyBlock = (
     <div
-      className={`flex min-w-0 flex-col ${layout === "card" ? "gap-0.5 p-2.5 sm:gap-1 sm:p-3" : "justify-center gap-1 p-3 md:p-4"}`}
+      className={`flex min-w-0 flex-col ${layout === "card" ? "gap-0.5 p-2.5 sm:p-3" : "justify-center gap-1 p-3 md:p-4"}`}
     >
-      {categoryName ? (
-        <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[#B8955F]">
-          {categoryName}
-        </p>
-      ) : null}
-
-      <div className="flex flex-wrap items-center gap-1">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+        {categoryName ? (
+          <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[#B8955F]">
+            {categoryName}
+          </p>
+        ) : null}
         <ListingCardBadges excludeFeatured inline listing={listing} />
-        {showEscrow ? <Badge variant="escrow">ضمان مالي</Badge> : null}
+        {showStatus && listing.status !== "active" ? (
+          <span className="text-[0.65rem] font-semibold text-muted">
+            {listing.status}
+          </span>
+        ) : null}
       </div>
 
-      <h3 className="marketplace-card-title line-clamp-3 break-words text-xs font-bold leading-snug text-ink transition group-hover:text-secondary sm:text-sm">
+      <h3 className="marketplace-card-title line-clamp-2 break-words text-xs font-bold leading-snug text-ink transition group-hover:text-secondary sm:text-sm">
         <ListingTitle listing={listing} />
       </h3>
       <ListingMachineHint className="w-fit" listing={listing} />
 
-      {listing.categoryId === "cars" && getCarCardMetaLine(listing) ? (
-        <p className="text-[0.7rem] font-medium text-muted">
-          {getCarCardMetaLine(listing)}
-        </p>
+      {carMeta ? (
+        <p className="text-[0.7rem] font-medium text-muted">{carMeta}</p>
       ) : null}
 
-      <div>
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
         <ListingPrice listing={listing} size="sm" />
+        {showEscrow ? (
+          <span className="inline-flex items-center gap-0.5 text-[0.65rem] font-bold text-emerald-700">
+            <Icon name="shield" size={11} />
+            ضمان مالي
+          </span>
+        ) : null}
       </div>
 
-      <div className="hidden items-center gap-2 lg:flex">
-        {listing.seller.avatarUrl ? (
-          <span className="relative size-6 shrink-0 overflow-hidden rounded-full ring-2 ring-surface">
-            <AppImage
-              alt={displaySeller}
-              className="object-cover"
-              fallback="avatar"
-              fill
-              sizes="24px"
-              src={listing.seller.avatarUrl}
-            />
-          </span>
-        ) : (
-          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-secondary-soft text-[0.55rem] font-bold text-[#8a7040]">
-            {displaySeller.slice(0, 2)}
-          </span>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-semibold text-ink">
-            <SellerName seller={listing.seller} />
-          </p>
-        </div>
-      </div>
-
-      <p className="inline-flex min-w-0 items-center gap-1 text-[0.65rem] font-medium text-muted sm:text-xs">
-        <Icon className="shrink-0" name="map" size={12} />
-        <span className="min-w-0 break-words">{location}</span>
-      </p>
-
-      <div className="mt-1 flex items-center justify-between gap-1 border-t border-border/80 pt-1.5 text-[0.65rem] font-medium text-muted">
-        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
-          <Icon className="marketplace-card-meta-icon" name="clock" size={12} />
-          {formatPostedTime(listing.postedAt)}
+      <p className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.65rem] font-medium text-muted sm:text-xs">
+        <span className="inline-flex min-w-0 items-center gap-0.5">
+          <Icon className="shrink-0" name="map" size={11} />
+          <span className="min-w-0 truncate">{location}</span>
         </span>
-        <div className="flex min-w-0 shrink items-center gap-1">
-          {(listing.views ?? 0) > 0 ? (
-            <span
-              className="inline-flex items-center gap-0.5 whitespace-nowrap"
-              title={`${formatViews(listing.views, locale)} مشاهدة`}
-            >
-              <Icon className="marketplace-card-meta-icon" name="eye" size={12} />
-              {formatViews(listing.views, locale)}
+        {listing.postedAt ? (
+          <>
+            <span aria-hidden className="text-border">
+              ·
             </span>
-          ) : null}
-          {showStatus && listing.status !== "active" ? (
-            <span className="truncate">{listing.status}</span>
-          ) : null}
-          {/* pointer-events-auto: card body is pointer-events-none for stretched link */}
-          <div className="marketplace-card-body-actions pointer-events-auto flex shrink-0 items-center">
-            <FavoriteButton
-              className="!min-h-7 !size-7 !min-w-7 !rounded-full !border-0 !bg-transparent !p-0 text-muted hover:bg-surface-muted hover:text-error"
-              iconOnly
-              listing={listing}
-            />
-            <CardShareButton
-              tone="ghost"
-              title={displayTitle}
-              url={shareUrl}
-            />
-          </div>
-        </div>
-      </div>
+            <span className="inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap">
+              <Icon className="marketplace-card-meta-icon" name="clock" size={11} />
+              {formatPostedTime(listing.postedAt)}
+            </span>
+          </>
+        ) : null}
+        {views > 0 ? (
+          <>
+            <span aria-hidden className="text-border">
+              ·
+            </span>
+            <span
+              className="inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap"
+              title={`${formatViews(views, locale)} مشاهدة`}
+            >
+              <Icon className="marketplace-card-meta-icon" name="eye" size={11} />
+              {formatViews(views, locale)}
+            </span>
+          </>
+        ) : null}
+      </p>
     </div>
   );
 
