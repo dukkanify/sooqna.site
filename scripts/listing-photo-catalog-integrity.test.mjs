@@ -43,7 +43,7 @@ describe("listing photo + catalog integrity", () => {
     assert.match(utils, /Keep `data:` URLs/);
     assert.match(utils, /getListingCardImageUrl/);
     assert.match(temp, /galleryForListingProduct/);
-    assert.match(feed, /sooqna-home-feed-v37-temp-covers/);
+    assert.match(feed, /sooqna-home-feed-v38-blob-optimize/);
     assert.match(policy, /isKeyboardMashTitle/);
     assert.match(policy, /gghhhhhh-793620/);
     assert.match(emirate, /export function listingMatchesEmirateFilter/);

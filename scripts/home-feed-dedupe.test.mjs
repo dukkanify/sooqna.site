@@ -76,7 +76,7 @@ describe("home feed composition contract", () => {
 
   it("bypasses a stale empty Data Cache entry for the home feed", () => {
     const feed = read("services/listings/home-feed.ts");
-    assert.match(feed, /sooqna-home-feed-v37-temp-covers/);
+    assert.match(feed, /sooqna-home-feed-v38-blob-optimize/);
     assert.match(feed, /if \(cached\.catalogCount > 0\) return cached/);
     assert.match(feed, /return buildHomeFeed\(\)/);
   });

@@ -61,7 +61,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
             <AppImage
               alt=""
               className="mobile-home-featured-card__image object-cover"
-              fallbackCategory={listing.categoryId}
+              fallback="none"
               fill
               loading={priority ? undefined : "lazy"}
               priority={priority}

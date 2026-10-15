@@ -25,7 +25,8 @@ describe("listing inline media repair for public cards", () => {
     assert.match(repair, /materializeInlineListingImages/);
     assert.match(queries, /repairInlineMediaForPublicRows/);
     assert.match(details, /persistRepairedInlineListingMedia/);
-    assert.match(feed, /sooqna-home-feed-v37-temp-covers/);
-    assert.match(repair, /temporaryCoverUrlsForListing/);
+    assert.match(feed, /sooqna-home-feed-v38-blob-optimize/);
+    assert.match(repair, /Does NOT invent Unsplash/);
+    assert.doesNotMatch(repair, /temporaryCoverUrlsForListing/);
   });
 });

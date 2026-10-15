@@ -79,7 +79,7 @@ function GalleryMedia({
       <AppImage
         alt={alt}
         className={className}
-        fallbackCategory="default"
+        fallback="none"
         fill={fill}
         priority={priority}
         sizes={sizes}

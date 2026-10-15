@@ -7,6 +7,18 @@ function mediaRemotePatterns(): NonNullable<NextConfig["images"]>["remotePattern
       pathname: "/**",
       protocol: "https",
     },
+    // Seller uploads on Vercel Blob — without this, next/image 400s and cards
+    // fall through to the abstract “default” gradient stock photo.
+    {
+      hostname: "*.public.blob.vercel-storage.com",
+      pathname: "/**",
+      protocol: "https",
+    },
+    {
+      hostname: "*.blob.vercel-storage.com",
+      pathname: "/**",
+      protocol: "https",
+    },
     {
       hostname: "*.amazonaws.com",
       pathname: "/**",

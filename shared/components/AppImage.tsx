@@ -74,6 +74,12 @@ function AppImageInner({
   const [usedErrorFallback, setUsedErrorFallback] = useState(false);
   const [failed, setFailed] = useState(!initialSrc);
   const useNativeImage = isInlineImageSrc(activeSrc);
+  // Vercel Blob must not depend solely on remotePatterns — a missing host
+  // entry makes next/image 400 and previously fell through to abstract stock.
+  const useUnoptimized =
+    useNativeImage ||
+    /\.public\.blob\.vercel-storage\.com(?:\/|$)/i.test(activeSrc) ||
+    /\.blob\.vercel-storage\.com(?:\/|$)/i.test(activeSrc);
 
   function handleError() {
     if (allowStockFallback && fallbackUrl && activeSrc !== fallbackUrl) {
@@ -133,6 +139,7 @@ function AppImageInner({
           quality={priority ? 78 : 70}
           sizes={sizes}
           src={activeSrc}
+          unoptimized={useUnoptimized}
           width={fill ? undefined : width}
         />
       )}

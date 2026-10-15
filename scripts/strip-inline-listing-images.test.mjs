@@ -30,7 +30,7 @@ describe("strip inline listing images from card payloads", () => {
     assert.match(feed, /startsWith\("data:"\)/);
     assert.match(feed, /startsWith\("blob:"\)/);
     assert.doesNotMatch(feed, /galleryForListingProduct/);
-    assert.match(feed, /sooqna-home-feed-v37-temp-covers/);
+    assert.match(feed, /sooqna-home-feed-v38-blob-optimize/);
   });
 
   it("getListingImages keeps seller data: URLs and only omits blob:", () => {

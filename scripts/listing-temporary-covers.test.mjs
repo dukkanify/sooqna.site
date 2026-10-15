@@ -1,5 +1,7 @@
 /**
- * Empty listings get a temporary category-matched cover (display + persist).
+ * Empty listings may show a temporary category-matched cover in the UI only.
+ * Real seller Blob photos must optimize (or load unoptimized) — never fall
+ * through to the abstract default Unsplash gradient.
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
@@ -13,25 +15,38 @@ function read(rel) {
   return readFileSync(path.join(root, rel), "utf8");
 }
 
-describe("temporary listing covers for empty media", () => {
-  it("wires helper + repair + cards + gallery + home cache", () => {
+describe("listing media honesty + blob optimize", () => {
+  it("allows Vercel Blob in next/image remotePatterns", () => {
+    const src = read("next.config.ts");
+    assert.match(src, /public\.blob\.vercel-storage\.com/);
+    assert.match(src, /blob\.vercel-storage\.com/);
+  });
+
+  it("loads Blob via unoptimized next/image and never uses default stock on galleries", () => {
+    const appImage = read("shared/components/AppImage.tsx");
+    const gallery = read("features/listings/components/ListingGallery.tsx");
+    const card = read("features/listings/components/PremiumListingCard.tsx");
+    const mobile = read("features/home/components/mobile/MobileFeaturedCard.tsx");
+    assert.match(appImage, /unoptimized=\{useUnoptimized\}/);
+    assert.match(appImage, /public\\.blob\\.vercel-storage\\.com/);
+    assert.match(gallery, /fallback="none"/);
+    assert.match(card, /fallback="none"/);
+    assert.match(mobile, /fallback="none"/);
+    assert.doesNotMatch(gallery, /fallbackCategory="default"/);
+  });
+
+  it("keeps temporary covers display-only (no Unsplash persist in repair)", () => {
     const helper = read("shared/listings/temporary-listing-cover.ts");
     const repair = read("services/listings/listing-inline-media-repair.ts");
     const utils = read("features/listings/components/listing-card.utils.ts");
-    const card = read("features/listings/components/PremiumListingCard.tsx");
-    const mobile = read("features/home/components/mobile/MobileFeaturedCard.tsx");
-    const gallery = read("features/listings/components/ListingGallery.tsx");
     const feed = read("services/listings/home-feed.ts");
 
     assert.match(helper, /galleryForListingProduct/);
     assert.match(helper, /listingCoverUrlOrTemporary/);
-    assert.match(helper, /temporaryCoverUrlForListing/);
-    assert.match(repair, /temporaryCoverUrlsForListing/);
-    assert.match(repair, /withTemporaryCover/);
     assert.match(utils, /getListingCardImageUrl/);
-    assert.match(card, /getListingCardImageUrl/);
-    assert.match(mobile, /getListingCardImageUrl/);
-    assert.match(gallery, /temporaryCoverUrlsForListing/);
-    assert.match(feed, /sooqna-home-feed-v37-temp-covers/);
+    assert.doesNotMatch(repair, /temporaryCoverUrlsForListing/);
+    assert.doesNotMatch(repair, /withTemporaryCover/);
+    assert.match(repair, /Does NOT invent Unsplash/);
+    assert.match(feed, /sooqna-home-feed-v38-blob-optimize/);
   });
 });
