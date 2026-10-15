@@ -1451,7 +1451,8 @@ html[data-theme="dark"] .market-header__drawer-account {
     0 8px 24px rgb(11 22 40 / 5%);
   /* Skip layout/paint for off-screen cards on long search/featured grids */
   content-visibility: auto;
-  contain-intrinsic-size: auto 18rem;
+  /* Tight estimate — oversized intrinsic height left empty gaps under short cards. */
+  contain-intrinsic-size: auto 14rem;
   transition:
     transform var(--duration-normal) var(--ease-premium),
     box-shadow var(--duration-normal) var(--ease-premium),

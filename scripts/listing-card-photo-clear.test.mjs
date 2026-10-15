@@ -32,6 +32,16 @@ describe("listing card photo clarity", () => {
     );
   });
 
+  it("PremiumListingCard packs body tightly without stretch gaps or harsh title clip", () => {
+    const card = read("features/listings/components/PremiumListingCard.tsx");
+    const css = read("app/globals.css");
+    assert.doesNotMatch(card, /mt-auto/);
+    assert.match(card, /self-start/);
+    assert.match(card, /line-clamp-3/);
+    assert.doesNotMatch(card, /flex h-full flex-col/);
+    assert.match(css, /contain-intrinsic-size:\s*auto 14rem/);
+  });
+
   it("MobileFeaturedCard favorite control sits in the body, not on the cover", () => {
     const mobile = read(
       "features/home/components/mobile/MobileFeaturedCard.tsx",

@@ -95,7 +95,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   const bodyBlock = (
     <div
-      className={`flex min-w-0 flex-1 flex-col ${layout === "card" ? "gap-1 p-2.5 sm:p-3" : "justify-center p-3 md:p-4"}`}
+      className={`flex min-w-0 flex-col ${layout === "card" ? "gap-0.5 p-2.5 sm:gap-1 sm:p-3" : "justify-center gap-1 p-3 md:p-4"}`}
     >
       {categoryName ? (
         <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[#B8955F]">
@@ -103,24 +103,15 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </p>
       ) : null}
 
-      <ListingCardBadges
-        className="mt-1"
-        excludeFeatured
-        inline
-        listing={listing}
-      />
-      {showEscrow ? (
-        <div className="mt-1">
-          <Badge variant="escrow">ضمان مالي</Badge>
-        </div>
-      ) : null}
+      <div className="flex flex-wrap items-center gap-1">
+        <ListingCardBadges excludeFeatured inline listing={listing} />
+        {showEscrow ? <Badge variant="escrow">ضمان مالي</Badge> : null}
+      </div>
 
-      <h3
-        className={`line-clamp-2 break-words text-xs font-bold leading-snug text-ink transition group-hover:text-secondary sm:text-sm`}
-      >
+      <h3 className="marketplace-card-title line-clamp-3 break-words text-xs font-bold leading-snug text-ink transition group-hover:text-secondary sm:text-sm">
         <ListingTitle listing={listing} />
       </h3>
-      <ListingMachineHint className="mt-1 w-fit" listing={listing} />
+      <ListingMachineHint className="w-fit" listing={listing} />
 
       {listing.categoryId === "cars" && getCarCardMetaLine(listing) ? (
         <p className="text-[0.7rem] font-medium text-muted">
@@ -156,17 +147,17 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         </div>
       </div>
 
-      <p className="inline-flex items-center gap-1 text-[0.65rem] font-medium text-muted sm:text-xs">
-        <Icon name="map" size={12} />
-        <span className="truncate">{location}</span>
+      <p className="inline-flex min-w-0 items-center gap-1 text-[0.65rem] font-medium text-muted sm:text-xs">
+        <Icon className="shrink-0" name="map" size={12} />
+        <span className="min-w-0 break-words">{location}</span>
       </p>
 
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/80 pt-1.5 text-[0.65rem] font-medium text-muted sm:pt-2">
-        <span className="inline-flex items-center gap-1">
+      <div className="mt-1 flex items-center justify-between gap-2 border-t border-border/80 pt-1.5 text-[0.65rem] font-medium text-muted">
+        <span className="inline-flex shrink-0 items-center gap-1">
           <Icon className="marketplace-card-meta-icon" name="clock" size={12} />
           {formatPostedTime(listing.postedAt)}
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex min-w-0 items-center gap-1.5">
           {(listing.views ?? 0) > 0 ? (
             <span className="inline-flex items-center gap-1">
               <Icon className="marketplace-card-meta-icon" name="eye" size={12} />
@@ -222,9 +213,9 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 
   return (
     <LocalizedTree>
-      <article className={`${cardClass} flex h-full flex-col`}>
+      <article className={`${cardClass} flex h-auto flex-col self-start`}>
         {stretchedLink}
-        <div className="pointer-events-none relative z-10 flex h-full flex-col">
+        <div className="pointer-events-none relative z-10 flex flex-col">
           {imageArea}
           {bodyBlock}
         </div>
