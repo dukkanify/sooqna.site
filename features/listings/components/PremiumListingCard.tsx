@@ -152,23 +152,26 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         <span className="min-w-0 break-words">{location}</span>
       </p>
 
-      <div className="mt-1 flex items-center justify-between gap-2 border-t border-border/80 pt-1.5 text-[0.65rem] font-medium text-muted">
-        <span className="inline-flex shrink-0 items-center gap-1">
+      <div className="mt-1 flex items-center justify-between gap-1 border-t border-border/80 pt-1.5 text-[0.65rem] font-medium text-muted">
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
           <Icon className="marketplace-card-meta-icon" name="clock" size={12} />
           {formatPostedTime(listing.postedAt)}
         </span>
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="flex min-w-0 shrink items-center gap-1">
           {(listing.views ?? 0) > 0 ? (
-            <span className="inline-flex items-center gap-1">
+            <span
+              className="inline-flex items-center gap-0.5 whitespace-nowrap"
+              title={`${formatViews(listing.views, locale)} مشاهدة`}
+            >
               <Icon className="marketplace-card-meta-icon" name="eye" size={12} />
-              {formatViews(listing.views, locale)} مشاهدة
+              {formatViews(listing.views, locale)}
             </span>
           ) : null}
           {showStatus && listing.status !== "active" ? (
-            <span>{listing.status}</span>
+            <span className="truncate">{listing.status}</span>
           ) : null}
           {/* pointer-events-auto: card body is pointer-events-none for stretched link */}
-          <div className="marketplace-card-body-actions pointer-events-auto flex items-center gap-0.5">
+          <div className="marketplace-card-body-actions pointer-events-auto flex shrink-0 items-center">
             <FavoriteButton
               className="!min-h-7 !size-7 !min-w-7 !rounded-full !border-0 !bg-transparent !p-0 text-muted hover:bg-surface-muted hover:text-error"
               iconOnly
