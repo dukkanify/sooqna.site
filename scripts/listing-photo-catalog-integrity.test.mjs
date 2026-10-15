@@ -39,7 +39,7 @@ describe("listing photo + catalog integrity", () => {
     assert.doesNotMatch(card, /galleryForListingProduct/);
     assert.doesNotMatch(feed, /galleryForListingProduct/);
     assert.match(utils, /Keep `data:` URLs/);
-    assert.match(feed, /sooqna-home-feed-v35-honest-covers/);
+    assert.match(feed, /sooqna-home-feed-v36-inline-repair/);
     assert.match(policy, /isKeyboardMashTitle/);
     assert.match(policy, /gghhhhhh-793620/);
     assert.match(emirate, /export function listingMatchesEmirateFilter/);

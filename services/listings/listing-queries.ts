@@ -50,6 +50,7 @@ import {
 import { compareListingsWithFeaturedPriority } from "@/shared/listings/featured-page-rules";
 import { listingMatchesEmirateFilter } from "@/shared/listings/uae-emirate";
 import { syncLiveCatalogMedia } from "@/services/listings/live-marketplace-catalog";
+import { repairInlineMediaForPublicRows } from "@/services/listings/listing-inline-media-repair";
 import { dedupeListingsById } from "@/services/listings/public-catalog";
 import {
   applyListingViewCounts,
@@ -300,7 +301,9 @@ async function queryFromFile(query: ListingQuery): Promise<Listing[]> {
       ? matched.slice(offset, offset + query.limit)
       : matched.slice(offset);
   const withViews = await applyListingViewCounts(limited);
-  return withViews.map((listing) => applySlim(listing, query.slim));
+  // Promote inline data: covers to Blob before card slim strips them.
+  const repaired = await repairInlineMediaForPublicRows(withViews);
+  return repaired.map((listing) => applySlim(listing, query.slim));
 }
 
 function listingSqlFilter(query: ListingQuery): { values: unknown[]; where: string[] } {
@@ -507,7 +510,10 @@ export async function queryListings(query: ListingQuery = {}): Promise<Listing[]
         ? finalized.slice(offset, offset + query.limit)
         : finalized.slice(offset);
     const withViews = await applyListingViewCounts(limited);
-    return withViews.map((listing) => applySlim(listing, query.slim));
+    // Promote inline data: covers to Blob before card slim strips them —
+    // otherwise home/search show «لا توجد صورة» while detail still has the photo.
+    const repaired = await repairInlineMediaForPublicRows(withViews);
+    return repaired.map((listing) => applySlim(listing, query.slim));
   } catch (error) {
     if (isPostgresQuotaOrUnavailableError(error)) {
       markPostgresUnavailable(error);

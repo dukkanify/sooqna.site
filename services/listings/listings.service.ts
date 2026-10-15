@@ -20,6 +20,7 @@ import {
   getListingBySlug as getStoredListingBySlug,
 } from "@/services/listings/listing-store";
 import { applyListingViewCount } from "@/services/listings/listing-views-store";
+import { persistRepairedInlineListingMedia } from "@/services/listings/listing-inline-media-repair";
 import { dedupeListingsById } from "@/services/listings/public-catalog";
 import {
   isEligibleFeaturedPageListing,
@@ -89,7 +90,8 @@ const loadListingBySlugCached = cache(
     }
     const copy = { ...listing };
     delete copy.isUrgent;
-    return applyListingViewCount(copy);
+    const repaired = await persistRepairedInlineListingMedia(copy);
+    return applyListingViewCount(repaired);
   },
 );
 
