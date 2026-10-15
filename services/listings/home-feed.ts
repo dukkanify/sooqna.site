@@ -8,7 +8,6 @@ import {
   HOME_FEED_REVALIDATE_SECONDS,
   LISTINGS_CACHE_TAG,
 } from "@/services/listings/listings-cache";
-import { galleryForListingProduct } from "@/shared/constants/listing-product-media";
 import { sortByMostViewed } from "@/services/listings/home-feed-rank";
 import { pickDiverseFeaturedListings } from "@/shared/listings/featured-page-rules";
 
@@ -67,7 +66,10 @@ function uniqueUrls(urls: string[]): string[] {
   return out;
 }
 
-/** Candidate covers for a listing: remote own media only (never inline data URLs). */
+/**
+ * Candidate covers: remote own media only.
+ * Never invent Unsplash/stock — missing photos stay empty so cards match detail.
+ */
 function coverCandidates(listing: Listing): string[] {
   const own = [
     ...(listing.images ?? []),
@@ -81,17 +83,7 @@ function coverCandidates(listing: Listing): string[] {
         !url.toLowerCase().startsWith("blob:"),
     );
 
-  if (own.length > 0) return uniqueUrls(own);
-
-  const generated = galleryForListingProduct({
-    categoryId: listing.categoryId,
-    count: 8,
-    seed: `${listing.id}-home-cover`,
-    title: listing.title,
-    titleEnglish: listing.titleEnglish,
-  });
-
-  return uniqueUrls(generated);
+  return uniqueUrls(own);
 }
 
 function withCover(listing: Listing, cover: string): Listing {
@@ -249,7 +241,7 @@ async function buildHomeFeed(): Promise<HomeFeed> {
 
 const getHomeFeedCached = unstable_cache(
   buildHomeFeed,
-  ["sooqna-home-feed-v34-rail-parity"],
+  ["sooqna-home-feed-v35-honest-covers"],
   {
     revalidate: HOME_FEED_REVALIDATE_SECONDS,
     tags: [LISTINGS_CACHE_TAG],

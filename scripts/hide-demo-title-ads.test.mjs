@@ -9,6 +9,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   isConfirmedFixtureListing,
+  isKeyboardMashTitle,
   isPublicQaTitleListing,
   needsManualReviewListing,
 } from "../services/listings/mock-catalog-policy.ts";
@@ -97,6 +98,28 @@ describe("hide demo title ads from public catalog", () => {
     );
   });
 
+  it("hides keyboard-mash titles from the public catalog", () => {
+    assert.equal(isKeyboardMashTitle("Gghhhhhh"), true);
+    assert.equal(isKeyboardMashTitle("نتالبغتنزنت"), true);
+    assert.equal(isKeyboardMashTitle("تويوتا كامري 2020"), false);
+    assert.equal(isKeyboardMashTitle("لاندكروزر"), false);
+    assert.equal(
+      isPublicQaTitleListing({
+        id: "local-1791391793620",
+        slug: "gghhhhhh-793620",
+        title: "Gghhhhhh",
+      }),
+      true,
+    );
+    assert.equal(
+      isConfirmedFixtureListing({
+        id: "local-1791391793620",
+        slug: "gghhhhhh-793620",
+      }),
+      true,
+    );
+  });
+
   it("wires public SQL + memory filters into listing queries and detail", () => {
     const queries = read("services/listings/listing-queries.ts");
     assert.match(queries, /PUBLIC_QA_TITLE_SQL/);
@@ -104,10 +127,13 @@ describe("hide demo title ads from public catalog", () => {
     const details = read("services/listings/listings.service.ts");
     assert.match(details, /isPublicQaTitleListing/);
     const feed = read("services/listings/home-feed.ts");
-    assert.match(feed, /sooqna-home-feed-v33-remote-covers/);
+    assert.match(feed, /sooqna-home-feed-v35-honest-covers/);
     const policy = read("services/listings/mock-catalog-policy.ts");
     assert.match(policy, /qa-audit/);
     assert.match(policy, /PUBLIC_QA_TITLE_SQL/);
     assert.match(policy, /FIXTURE_LISTING_SQL/);
+    assert.match(policy, /isKeyboardMashTitle/);
+    assert.match(policy, /gghhhhhh-793620/);
   });
 });
+

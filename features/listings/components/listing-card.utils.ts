@@ -44,26 +44,24 @@ export function getListingLocation(listing: Listing): string {
 /**
  * Real listing media only — never substitute Unsplash/stock as seller photos.
  * Empty array means the UI should show a neutral "no image" state.
- * Inline data/blob URLs are omitted (they blow up SSR HTML); cards use slim covers.
+ *
+ * Keep `data:` URLs (seller photos persisted when Blob upload was unavailable).
+ * Omit `blob:` object URLs — they only work in the tab that created them.
+ * Browse cards use `slimListingForCard`, which strips inline data URLs so SSR
+ * HTML stays small; detail/edit keep the real seller media here.
  */
 export function getListingImages(listing: Listing): string[] {
   const fromGallery = (listing.images ?? [])
     .map((url) => url?.trim())
     .filter(
       (url): url is string =>
-        Boolean(url) &&
-        !url.toLowerCase().startsWith("data:") &&
-        !url.toLowerCase().startsWith("blob:"),
+        Boolean(url) && !url.toLowerCase().startsWith("blob:"),
     );
   if (fromGallery.length > 0) {
     return fromGallery;
   }
   const cover = listing.imageUrl?.trim();
-  if (
-    cover &&
-    !cover.toLowerCase().startsWith("data:") &&
-    !cover.toLowerCase().startsWith("blob:")
-  ) {
+  if (cover && !cover.toLowerCase().startsWith("blob:")) {
     return [cover];
   }
   return [];
