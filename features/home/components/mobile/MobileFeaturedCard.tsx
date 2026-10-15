@@ -15,7 +15,7 @@ import {
   formatPostedTime,
   formatViews,
   getListingHref,
-  getListingImageUrl,
+  getListingCardImageUrl,
   getListingImages,
   getListingLocation,
 } from "@/features/listings/components/listing-card.utils";
@@ -37,7 +37,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
   const locale = useLocale();
   const t = useTx();
   const href = getListingHref(listing);
-  const imageUrl = getListingImageUrl(listing);
+  const imageUrl = getListingCardImageUrl(listing);
   const location = getListingLocation(listing);
   const photoCount = getListingImages(listing).length;
   const featuredLive = isListingFeaturedActive(listing);
@@ -61,7 +61,7 @@ export const MobileFeaturedCard = memo(function MobileFeaturedCard({
             <AppImage
               alt=""
               className="mobile-home-featured-card__image object-cover"
-              fallback="none"
+              fallbackCategory={listing.categoryId}
               fill
               loading={priority ? undefined : "lazy"}
               priority={priority}

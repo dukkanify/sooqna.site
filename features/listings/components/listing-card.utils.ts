@@ -1,6 +1,7 @@
 import type { Listing } from "@/types";
 import type { AppLocale } from "@/shared/i18n/locale";
 import { intlLocale } from "@/shared/i18n/locale";
+import { listingCoverUrlOrTemporary } from "@/shared/listings/temporary-listing-cover";
 import { formatListingLocation } from "@/shared/listings/uae-emirate";
 
 /** Compact marketplace density — always 2-up (never full-width), 4-up on large screens. */
@@ -69,6 +70,14 @@ export function getListingImages(listing: Listing): string[] {
 
 export function getListingImageUrl(listing: Listing): string | undefined {
   return getListingImages(listing)[0];
+}
+
+/**
+ * Browse-card cover: real durable/seller media first, otherwise a temporary
+ * category-matched stock photo so grids never show «لا توجد صورة».
+ */
+export function getListingCardImageUrl(listing: Listing): string | undefined {
+  return getListingImageUrl(listing) ?? listingCoverUrlOrTemporary(listing);
 }
 
 export const conditionLabels: Record<Listing["condition"], string> = {

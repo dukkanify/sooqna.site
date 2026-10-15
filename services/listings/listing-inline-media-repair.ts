@@ -3,6 +3,7 @@ import {
   listingHasInlineMedia,
   listingHasRemoteDurableCover,
 } from "@/shared/listings/durable-media";
+import { temporaryCoverUrlsForListing } from "@/shared/listings/temporary-listing-cover";
 import {
   hasCloudObjectStorage,
   materializeInlineListingImages,
@@ -10,55 +11,77 @@ import {
 import { upsertListingRow } from "@/services/listings/listing-persistence";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
 
-/** Cap Blob uploads per request so home/search stay responsive. */
-const REPAIR_BUDGET_PER_PASS = 12;
+/** Cap Blob uploads / temp backfills per request so home/search stay responsive. */
+const REPAIR_BUDGET_PER_PASS = 24;
+
+function withTemporaryCover(listing: Listing): Listing {
+  const urls = temporaryCoverUrlsForListing(listing, 3);
+  if (urls.length === 0) return listing;
+  return {
+    ...listing,
+    images: urls,
+    imageUrl: urls[0],
+  };
+}
 
 /**
  * Promote inline `data:` seller photos to Blob/S3 and persist the durable URLs.
- * Browse cards strip inline media (SSR size) — without this repair they show
- * «لا توجد صورة» even though the detail page still has the photo.
+ * When the listing still has no cover (or never had one), attach a temporary
+ * category-matched gallery and persist so browse cards stop showing «لا توجد صورة».
  */
 export async function persistRepairedInlineListingMedia(
   listing: Listing,
 ): Promise<Listing> {
-  if (!hasCloudObjectStorage() || !listingHasInlineMedia(listing)) {
-    return listing;
+  let next = listing;
+
+  if (hasCloudObjectStorage() && listingHasInlineMedia(next)) {
+    const repaired = await materializeInlineListingImages(next);
+    if (listingHasRemoteDurableCover(repaired)) {
+      next = {
+        ...next,
+        images: repaired.images,
+        imageUrl: repaired.imageUrl,
+      };
+    }
   }
 
-  const repaired = await materializeInlineListingImages(listing);
-  if (!listingHasRemoteDurableCover(repaired)) {
-    return listing;
+  if (!listingHasRemoteDurableCover(next) && !listingHasInlineMedia(next)) {
+    next = withTemporaryCover(next);
   }
 
-  const next: Listing = {
-    ...listing,
-    images: repaired.images,
-    imageUrl: repaired.imageUrl,
-  };
+  if (
+    next.imageUrl === listing.imageUrl &&
+    JSON.stringify(next.images ?? []) === JSON.stringify(listing.images ?? [])
+  ) {
+    return listing;
+  }
 
   try {
     await upsertListingRow(next);
     bumpListingsCache();
   } catch {
-    // Still return durable URLs for this response even if persist failed.
+    // Still return repaired/temporary URLs for this response even if persist failed.
   }
   return next;
 }
 
 /**
  * Repair a batch of public catalog rows (home rails, search, category grids).
- * Returns listings with remote covers when Blob/S3 accepted the upload.
+ * Returns listings with remote covers when Blob/S3 accepted the upload, or a
+ * temporary category cover when the ad had no photo at all.
  */
 export async function repairInlineMediaForPublicRows(
   listings: Listing[],
   budget = REPAIR_BUDGET_PER_PASS,
 ): Promise<Listing[]> {
-  if (!hasCloudObjectStorage() || budget <= 0) return listings;
+  if (budget <= 0) return listings;
 
   let remaining = budget;
   const out: Listing[] = [];
   for (const listing of listings) {
-    if (remaining > 0 && listingHasInlineMedia(listing)) {
+    const needsWork =
+      listingHasInlineMedia(listing) || !listingHasRemoteDurableCover(listing);
+    if (remaining > 0 && needsWork) {
       remaining -= 1;
       out.push(await persistRepairedInlineListingMedia(listing));
       continue;

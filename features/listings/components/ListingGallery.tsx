@@ -7,6 +7,7 @@ import { ListingCardBadges } from "@/features/listings/components/ListingCardBad
 import { AppImage } from "@/shared/components/AppImage";
 import { FavoriteButton } from "@/shared/components/FavoriteButton";
 import { ShareButton } from "@/shared/components/ShareButton";
+import { temporaryCoverUrlsForListing } from "@/shared/listings/temporary-listing-cover";
 import { showsEscrowProtection } from "@/shared/listings/escrow-eligibility";
 import { Badge } from "@/shared/ui/Badge";
 import { Icon } from "@/shared/ui/Icon";
@@ -26,7 +27,12 @@ const GALLERY_OVERLAY_BTN_CLASS =
   "card-media-action !min-h-0 !size-8 !min-w-0 !rounded-full !p-0";
 
 function buildGalleryItems(listing: Listing): GalleryMediaItem[] {
-  const items: GalleryMediaItem[] = getListingImages(listing).map((src) => ({
+  const sellerImages = getListingImages(listing);
+  const imageSrcs =
+    sellerImages.length > 0
+      ? sellerImages
+      : temporaryCoverUrlsForListing(listing, 3);
+  const items: GalleryMediaItem[] = imageSrcs.map((src) => ({
     kind: "image",
     src,
   }));
@@ -73,7 +79,7 @@ function GalleryMedia({
       <AppImage
         alt={alt}
         className={className}
-        fallback="none"
+        fallbackCategory="default"
         fill={fill}
         priority={priority}
         sizes={sizes}

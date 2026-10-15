@@ -30,16 +30,20 @@ describe("listing photo + catalog integrity", () => {
     assert.equal(cityWins.city, "عجمان");
   });
 
-  it("does not invent stock covers in card or home feed paths", () => {
+  it("keeps real media first and only uses temporary covers when empty", () => {
     const card = read("services/listings/listing-card-model.ts");
     const feed = read("services/listings/home-feed.ts");
     const utils = read("features/listings/components/listing-card.utils.ts");
     const policy = read("services/listings/mock-catalog-policy.ts");
     const emirate = read("shared/listings/uae-emirate.ts");
+    const temp = read("shared/listings/temporary-listing-cover.ts");
+    // Card slim still never invents stock into SSR payloads.
     assert.doesNotMatch(card, /galleryForListingProduct/);
     assert.doesNotMatch(feed, /galleryForListingProduct/);
     assert.match(utils, /Keep `data:` URLs/);
-    assert.match(feed, /sooqna-home-feed-v36-inline-repair/);
+    assert.match(utils, /getListingCardImageUrl/);
+    assert.match(temp, /galleryForListingProduct/);
+    assert.match(feed, /sooqna-home-feed-v37-temp-covers/);
     assert.match(policy, /isKeyboardMashTitle/);
     assert.match(policy, /gghhhhhh-793620/);
     assert.match(emirate, /export function listingMatchesEmirateFilter/);

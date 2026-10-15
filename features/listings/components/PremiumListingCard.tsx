@@ -18,7 +18,7 @@ import { ListingCardBadges } from "./ListingCardBadges";
 import { isListingFeaturedActive } from "./listing-card-badges";
 import {
   getListingHref,
-  getListingImageUrl,
+  getListingCardImageUrl,
   getListingLocation,
   formatPostedTime,
   formatViews,
@@ -47,7 +47,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
 }: PremiumListingCardProps) {
   const locale = useLocale();
   const href = getListingHref(listing);
-  const imageUrl = getListingImageUrl(listing);
+  const imageUrl = getListingCardImageUrl(listing);
   const location = getListingLocation(listing);
   const displayTitle = listingTitle(listing, locale);
 
@@ -64,7 +64,7 @@ export const PremiumListingCard = memo(function PremiumListingCard({
         <AppImage
           alt=""
           className="marketplace-card-image"
-          fallback="none"
+          fallbackCategory={listing.categoryId}
           fill
           loading={priority ? undefined : "lazy"}
           priority={priority}

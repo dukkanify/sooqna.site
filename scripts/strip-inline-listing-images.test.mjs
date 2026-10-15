@@ -1,6 +1,6 @@
 /**
  * Card payloads must never embed data:/blob: images (SSR HTML size).
- * Missing remote covers stay empty — never invent Unsplash stock photos.
+ * Temporary category covers are applied in UI/repair — not inside slimListingForCard.
  * Detail/edit keep real seller `data:` media via getListingImages.
  */
 import assert from "node:assert/strict";
@@ -16,7 +16,7 @@ function read(rel) {
 }
 
 describe("strip inline listing images from card payloads", () => {
-  it("slimListingForCard rejects data/blob covers and never invents stock", () => {
+  it("slimListingForCard rejects data/blob covers and does not invent stock itself", () => {
     const src = read("services/listings/listing-card-model.ts");
     assert.match(src, /export function isInlineListingImageUrl/);
     assert.match(src, /startsWith\("data:"\)/);
@@ -25,12 +25,12 @@ describe("strip inline listing images from card payloads", () => {
     assert.match(src, /never invent Unsplash/);
   });
 
-  it("home feed cover candidates skip inline data URLs and stock fallbacks", () => {
+  it("home feed cover candidates skip inline data URLs (temps come from repair)", () => {
     const feed = read("services/listings/home-feed.ts");
     assert.match(feed, /startsWith\("data:"\)/);
     assert.match(feed, /startsWith\("blob:"\)/);
     assert.doesNotMatch(feed, /galleryForListingProduct/);
-    assert.match(feed, /sooqna-home-feed-v36-inline-repair/);
+    assert.match(feed, /sooqna-home-feed-v37-temp-covers/);
   });
 
   it("getListingImages keeps seller data: URLs and only omits blob:", () => {
