@@ -14,6 +14,11 @@ import {
   notifyListingApproved,
   notifyListingRejected,
 } from "@/services/listings/listing-notifications";
+import {
+  LISTING_IMAGES_REQUIRED,
+  LISTING_TITLE_INVALID,
+  publishGuardMessage,
+} from "@/services/listings/listing-publish-guards";
 import type { AdminListingPatch } from "@/types";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -47,6 +52,15 @@ export async function PATCH(request: Request, context: RouteParams) {
     listing = await patchListingRecord(id, patch);
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
+    if (
+      message === LISTING_TITLE_INVALID ||
+      message === LISTING_IMAGES_REQUIRED
+    ) {
+      return NextResponse.json(
+        { error: message, message: publishGuardMessage(message) },
+        { status: 400 },
+      );
+    }
     if (
       message === "LISTINGS_STORE_UNAVAILABLE" ||
       message === "LISTING_STATUS_PERSIST_FAILED"
