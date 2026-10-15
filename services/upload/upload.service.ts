@@ -64,7 +64,19 @@ export async function uploadListingImages(files: File[]): Promise<string[]> {
     return urls;
   }
 
-  // Already normalized — write data URLs without a second canvas pass.
+  // Never silently fall back to multi‑MB data: URLs outside local dev —
+  // those break browse cards and used to show “no photo” on detail. Fail loud
+  // so the seller retries once Blob/S3 is healthy instead of shipping junk.
+  const isLocalHost =
+    typeof window !== "undefined" &&
+    /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
+  if (!isLocalHost) {
+    throw new Error(
+      "تعذر رفع الصور إلى التخزين السحابي. أعد المحاولة بعد لحظات — لا يمكن حفظ صور مؤقتة على الإنتاج.",
+    );
+  }
+
+  // Local/dev only — write data URLs without a second canvas pass.
   return Promise.all(
     normalized.map(
       (file) =>

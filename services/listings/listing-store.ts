@@ -44,6 +44,7 @@ import {
 } from "@/shared/listings/listing-form-hydrate";
 import { migrateJobsListingFields } from "@/shared/listings/jobs-taxonomy";
 import { enrichListingCopy } from "@/shared/i18n/listing-translator";
+import { prepareListingForPersistence } from "@/services/listings/listing-publish-guards";
 
 let cacheRows: Listing[] | null = null;
 let inflight: Promise<Listing[]> | null = null;
@@ -338,28 +339,31 @@ export async function getListingBySlug(slug: string): Promise<Listing | undefine
 
 export async function upsertListing(listing: Listing): Promise<Listing> {
   const listings = await loadListingsUncached();
-  const settings = await getAdminSettings();
-  const postedAt = listing.postedAt ?? new Date().toISOString();
   const index = listings.findIndex((item) => item.id === listing.id);
   const previous = index >= 0 ? listings[index] : undefined;
-  const history = [...(listing.statusHistory ?? previous?.statusHistory ?? [])];
+  const guarded = await prepareListingForPersistence(listing, {
+    previousStatus: previous?.status,
+  });
+  const settings = await getAdminSettings();
+  const postedAt = guarded.postedAt ?? new Date().toISOString();
+  const history = [...(guarded.statusHistory ?? previous?.statusHistory ?? [])];
   if (!previous) {
     history.push({
       at: postedAt,
-      to: listing.status,
-      byUserId: listing.seller.id,
+      to: guarded.status,
+      byUserId: guarded.seller.id,
       note: "created",
     });
-  } else if (previous.status !== listing.status) {
+  } else if (previous.status !== guarded.status) {
     history.push({
       at: new Date().toISOString(),
       from: previous.status,
-      to: listing.status,
-      byUserId: listing.seller.id,
+      to: guarded.status,
+      byUserId: guarded.seller.id,
     });
   }
 
-  const copy = enrichListingCopy(listing, previous);
+  const copy = enrichListingCopy(guarded, previous);
 
   // Keep slug unique across rows — colliding slugs made seller cards and detail
   // pages resolve to different payloads for the "same" URL.
@@ -378,21 +382,21 @@ export async function upsertListing(listing: Listing): Promise<Listing> {
       slug,
       postedAt,
       escrowAvailable:
-        listing.escrowAvailable === false
+        guarded.escrowAvailable === false
           ? false
-          : listing.escrowAvailable === true
+          : guarded.escrowAvailable === true
             ? true
-            : isPurchasableCategory(listing.categoryId, listing.featureProfile),
+            : isPurchasableCategory(guarded.categoryId, guarded.featureProfile),
       expiresAt:
-        listing.expiresAt ??
+        guarded.expiresAt ??
         computeExpiresAt(postedAt, settings.listingActiveDays),
       statusHistory: history,
       rejectionReason:
-        listing.status === "rejected"
-          ? listing.rejectionReason ?? previous?.rejectionReason
-          : listing.status === "active"
+        guarded.status === "rejected"
+          ? guarded.rejectionReason ?? previous?.rejectionReason
+          : guarded.status === "active"
             ? undefined
-            : listing.rejectionReason ?? previous?.rejectionReason,
+            : guarded.rejectionReason ?? previous?.rejectionReason,
     }),
   );
   if (index >= 0) listings[index] = next;
@@ -632,7 +636,11 @@ export async function patchListingRecord(
       : {}),
     statusHistory: history,
   };
-  const saved = sanitizeListingMediaFields(enrichListingCopy(next, previous));
+  const guarded = await prepareListingForPersistence(
+    enrichListingCopy(next, previous),
+    { previousStatus: previous.status },
+  );
+  const saved = sanitizeListingMediaFields(guarded);
   await upsertListingRow(saved);
   if (cacheRows) {
     const cachedIndex = cacheRows.findIndex((item) => item.id === saved.id);
