@@ -22,6 +22,7 @@ import {
   UAE_MOBILE_ERROR,
 } from "@/shared/utils/phone";
 import { uploadListingImages } from "@/services/upload";
+import { isKeyboardMashTitle } from "@/services/listings/mock-catalog-policy";
 import { useAsyncAction } from "@/shared/hooks/useAsyncAction";
 import type { AddListingErrors, ListingPreview } from "./types";
 import { parseCategoryForm } from "./category-form-utils";
@@ -96,9 +97,22 @@ async function syncListingToServer(
             "أكمل التحقق من الشخص واعتماد الحساب قبل إضافة إعلان.",
         };
       }
+      if (
+        data.error === "LISTING_TITLE_INVALID" ||
+        data.error === "LISTING_IMAGES_REQUIRED"
+      ) {
+        return {
+          ok: false,
+          error:
+            data.message ??
+            "تعذر حفظ الإعلان — راجع العنوان أو الصور ثم حاول مرة أخرى.",
+        };
+      }
       return {
         ok: false,
-        error: "تعذر حفظ الإعلان على الخادم. حاول مرة أخرى.",
+        error:
+          data.message?.trim() ||
+          "تعذر حفظ الإعلان على الخادم. حاول مرة أخرى.",
       };
     }
 
@@ -383,6 +397,12 @@ export function useAddListingForm(categories: Category[]) {
         }
         if (profileMeta.imagesRequired && imageFiles.length === 0) {
           nextErrors.images = "أضف صورة حقيقية واحدة على الأقل للمنتج.";
+        }
+        const draftTitleCheck =
+          String(formData.get("title") ?? "").trim() || parsed.title;
+        if (isKeyboardMashTitle(draftTitleCheck)) {
+          nextErrors.title =
+            "العنوان غير مقبول — اكتب عنواناً واضحاً يصف المنتج (تجنب الأحرف العشوائية).";
         }
         if (wantsFeatured && featuredCheckoutAvailable === false) {
           nextErrors.package =

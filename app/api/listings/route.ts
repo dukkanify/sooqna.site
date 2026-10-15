@@ -5,6 +5,11 @@ import {
 import { isMarketplaceAccountReady } from "@/services/auth/account-access";
 import { notifyListingSubmitted } from "@/services/listings/listing-notifications";
 import { getListingById, upsertListing } from "@/services/listings/listing-store";
+import {
+  LISTING_IMAGES_REQUIRED,
+  LISTING_TITLE_INVALID,
+  publishGuardMessage,
+} from "@/services/listings/listing-publish-guards";
 import { sellerDisplayNameFromProfile } from "@/shared/listings/seller-display-name";
 import type { Listing } from "@/types";
 
@@ -59,7 +64,17 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ listing }, { status: 201 });
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (
+      message === LISTING_TITLE_INVALID ||
+      message === LISTING_IMAGES_REQUIRED
+    ) {
+      return NextResponse.json(
+        { error: message, message: publishGuardMessage(message) },
+        { status: 400 },
+      );
+    }
     return NextResponse.json({ error: "SAVE_FAILED" }, { status: 500 });
   }
 }

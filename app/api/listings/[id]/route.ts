@@ -9,6 +9,11 @@ import {
   getListingById,
   patchListingRecord,
 } from "@/services/listings/listing-store";
+import {
+  LISTING_IMAGES_REQUIRED,
+  LISTING_TITLE_INVALID,
+  publishGuardMessage,
+} from "@/services/listings/listing-publish-guards";
 import { bumpListingsCache } from "@/services/listings/listings-cache";
 import { MAX_LISTING_IMAGES } from "@/shared/constants/listing-media";
 import { SELLER_MARKETPLACE_STATUSES } from "@/shared/constants/listingStatuses";
@@ -124,7 +129,22 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     ...(data.videoUrl !== undefined ? { videoUrl: data.videoUrl } : {}),
   };
 
-  const updated = await patchListingRecord(id, patch);
+  let updated;
+  try {
+    updated = await patchListingRecord(id, patch);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (
+      message === LISTING_TITLE_INVALID ||
+      message === LISTING_IMAGES_REQUIRED
+    ) {
+      return NextResponse.json(
+        { error: message, message: publishGuardMessage(message) },
+        { status: 400 },
+      );
+    }
+    throw error;
+  }
   if (!updated) {
     return NextResponse.json({ error: "UPDATE_FAILED" }, { status: 500 });
   }
