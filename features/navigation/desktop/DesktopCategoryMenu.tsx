@@ -172,14 +172,14 @@ function DesktopCategoryMenuInner({
 
     const moreWidth =
       measure.querySelector<HTMLElement>("[data-nav-more-measure]")
-        ?.offsetWidth ?? 72;
+        ?.offsetWidth ?? 88;
     let used = 0;
     let fit = 0;
     for (let i = 0; i < nodes.length; i += 1) {
-      const next = used + nodes[i].offsetWidth + (i > 0 ? 22 : 0);
+      const next = used + nodes[i].offsetWidth;
       const remaining = nodes.length - (i + 1);
       const needMore = remaining > 0;
-      const limit = needMore ? available - moreWidth - 22 : available;
+      const limit = needMore ? available - moreWidth : available;
       if (next > limit) break;
       used = next;
       fit = i + 1;

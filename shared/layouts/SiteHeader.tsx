@@ -95,6 +95,9 @@ export function SiteHeader() {
             <div className="hidden lg:block">
               <EmirateLocationSelect variant="header" />
             </div>
+            <div className="hidden lg:block">
+              <DesktopUtilityNav />
+            </div>
           </div>
 
           <nav className="desktop-storefront-header__text-nav hidden items-center gap-0.5 lg:flex">
@@ -128,17 +131,11 @@ export function SiteHeader() {
             />
           </form>
 
-          <div className="hidden lg:block max-lg:hidden">
-            {/* kept for tablet mid-breakpoint location when needed */}
-          </div>
           <div className="hidden md:block lg:hidden">
             <EmirateLocationSelect variant="desktop" />
           </div>
 
-          <div className="desktop-storefront-header__end flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <div className="hidden lg:contents">
-              <DesktopUtilityNav />
-            </div>
+          <div className="desktop-storefront-header__end flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ms-auto">
             <div className="desktop-storefront-header__meta hidden items-center gap-2 lg:flex">
               <LanguageSwitch variant="compact" />
               <ThemeToggle className="shrink-0" />

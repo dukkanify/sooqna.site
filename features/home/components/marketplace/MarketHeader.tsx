@@ -89,6 +89,9 @@ export function MarketHeader() {
                 className="market-header__bar-control--desktop"
                 variant="header"
               />
+              <div className="hidden lg:block">
+                <DesktopUtilityNav />
+              </div>
             </div>
 
             <nav aria-label={copy.menu} className="market-header__nav desktop-storefront-header__text-nav">
@@ -108,10 +111,6 @@ export function MarketHeader() {
             </nav>
 
             <div className="market-header__actions desktop-storefront-header__end">
-              <div className="hidden lg:contents">
-                <DesktopUtilityNav />
-              </div>
-
               <div className="desktop-storefront-header__meta market-header__bar-control--desktop">
                 <LanguageSwitch
                   className="market-header__lang"

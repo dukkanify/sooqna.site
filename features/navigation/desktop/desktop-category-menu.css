@@ -32,8 +32,9 @@
 .desktop-category-nav__rail {
   display: flex;
   align-items: stretch;
-  gap: 0.15rem 1.55rem;
-  min-height: 2.45rem;
+  justify-content: flex-start;
+  gap: 0;
+  min-height: 2.55rem;
   overflow: hidden;
 }
 
@@ -43,7 +44,6 @@
   top: 0;
   z-index: -1;
   display: flex;
-  gap: 1.35rem;
   visibility: hidden;
   pointer-events: none;
   opacity: 0;
@@ -54,10 +54,10 @@
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 0.35rem;
-  max-width: 11rem;
-  min-height: 2.45rem;
-  padding: 0.3rem 0.05rem;
+  gap: 0.3rem;
+  max-width: 11.5rem;
+  min-height: 2.55rem;
+  padding: 0.35rem 0.85rem;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -85,7 +85,7 @@
 .desktop-category-nav__item[aria-expanded="true"]::after {
   content: "";
   position: absolute;
-  inset-inline: 0;
+  inset-inline: 0.85rem;
   bottom: 0;
   height: 3px;
   border-radius: 0;
@@ -142,14 +142,14 @@ html[data-theme="dark"] .desktop-category-nav__item[aria-expanded="true"]::after
   display: flex;
   flex-direction: column;
   width: max-content;
-  min-width: 14.5rem;
-  max-width: min(20rem, calc(100vw - 2rem));
+  min-width: 15rem;
+  max-width: min(19rem, calc(100vw - 2rem));
   max-height: min(72vh, 34rem);
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e8eaee;
   border-radius: 0;
   background: #fff;
-  box-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  box-shadow: 0 10px 28px rgb(15 23 42 / 14%);
   opacity: 0;
   transform: translateY(0);
   pointer-events: none;
@@ -170,23 +170,18 @@ html[data-theme="dark"] .desktop-category-nav__panel {
 .desktop-category-nav__panel-scroll {
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 0.65rem 0 0.55rem;
+  padding: 0.55rem 0 0.45rem;
   -webkit-overflow-scrolling: touch;
 }
 
 .desktop-category-nav__group + .desktop-category-nav__group {
-  margin-top: 0.55rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid #f3f4f6;
-}
-
-html[data-theme="dark"] .desktop-category-nav__group + .desktop-category-nav__group {
-  border-top-color: rgb(255 255 255 / 8%);
+  margin-top: 0.35rem;
+  padding-top: 0.2rem;
 }
 
 .desktop-category-nav__group-title {
   margin: 0;
-  padding: 0.35rem 1rem 0.45rem;
+  padding: 0.55rem 1.05rem 0.28rem;
   color: #111827;
   font-size: 0.9rem;
   font-weight: 800;
@@ -210,7 +205,7 @@ html[data-theme="dark"] .desktop-category-nav__group-title {
 
 .desktop-category-nav__link {
   display: block;
-  padding: 0.42rem 1rem;
+  padding: 0.38rem 1.05rem;
   border-radius: 0;
   color: #374151;
   font-size: 0.8125rem;
@@ -239,7 +234,7 @@ html[data-theme="dark"] .desktop-category-nav__link:focus-visible {
 
 .desktop-category-nav__empty {
   margin: 0;
-  padding: 0.35rem 1rem 0.55rem;
+  padding: 0.3rem 1.05rem 0.5rem;
   color: #6b7280;
   font-size: 0.8125rem;
   font-weight: 500;
