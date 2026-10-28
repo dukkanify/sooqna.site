@@ -70,7 +70,7 @@ describe("desktop category navigation", () => {
 
     assert.match(menu, /min-width: 1024px/);
     assert.match(css, /@media \(min-width: 1024px\)/);
-    assert.match(css, /rgb\(0 0 0 \/ 48%\)/);
+    assert.match(css, /rgb\(0 0 0 \/ 50%\)/);
     assert.match(css, /desktop-category-nav__group-title/);
     assert.match(nav, /getCategories/);
     assert.match(nav, /toDesktopCategoryNavItems/);

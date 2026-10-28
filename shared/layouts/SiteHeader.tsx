@@ -95,9 +95,6 @@ export function SiteHeader() {
             <div className="hidden lg:block">
               <EmirateLocationSelect variant="header" />
             </div>
-            <div className="hidden lg:block">
-              <DesktopUtilityNav />
-            </div>
           </div>
 
           <nav className="desktop-storefront-header__text-nav hidden items-center gap-0.5 lg:flex">
@@ -131,11 +128,15 @@ export function SiteHeader() {
             />
           </form>
 
+          <div className="desktop-storefront-header__mid hidden lg:flex">
+            <DesktopUtilityNav />
+          </div>
+
           <div className="hidden md:block lg:hidden">
             <EmirateLocationSelect variant="desktop" />
           </div>
 
-          <div className="desktop-storefront-header__end flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ms-auto">
+          <div className="desktop-storefront-header__end flex shrink-0 items-center gap-1.5 sm:gap-2">
             <div className="desktop-storefront-header__meta hidden items-center gap-2 lg:flex">
               <LanguageSwitch variant="compact" />
               <ThemeToggle className="shrink-0" />
@@ -156,23 +157,20 @@ export function SiteHeader() {
               </Link>
             ) : (
               <Link
-                className="desktop-storefront-header__join hidden rounded-[var(--radius-md)] px-3 py-2 text-sm font-semibold text-primary transition hover:bg-secondary-soft sm:inline-flex lg:rounded-none lg:px-0 lg:font-bold lg:text-[#374151] lg:hover:bg-transparent"
+                className="desktop-storefront-header__join hidden rounded-[var(--radius-md)] px-3 py-2 text-sm font-semibold text-primary transition hover:bg-secondary-soft sm:inline-flex lg:rounded-none lg:px-0 lg:font-medium lg:text-[#222] lg:hover:bg-transparent"
                 href="/login"
               >
-                {copy.login}
+                سجل الدخول أو انضم إلينا
               </Link>
             )}
             {!isComposeListing ? (
               <div className="hidden sm:block">
-                <Button
-                  className="sooqna-gold-gradient rounded-full desktop-storefront-header__cta lg:rounded-[0.35rem]"
+                <Link
+                  className="desktop-storefront-header__cta inline-flex"
                   href="/listings/new"
-                  size="md"
-                  variant="accent"
                 >
-                  <Icon className="shrink-0" name="plus" size={16} />
                   {copy.addListing}
-                </Button>
+                </Link>
               </div>
             ) : null}
             <button

@@ -20,6 +20,8 @@ import "./desktop-category-menu.css";
 
 const DESKTOP_MQ = "(min-width: 1024px)";
 const CLOSE_DELAY_MS = 140;
+/** Keep Dubizzle-like density: prefer fewer top-level items + More. */
+const MAX_VISIBLE_CATEGORIES = 8;
 
 type DesktopCategoryMenuProps = {
   categories: DesktopCategoryNavItem[];
@@ -184,7 +186,7 @@ function DesktopCategoryMenuInner({
       used = next;
       fit = i + 1;
     }
-    setVisibleCount(Math.max(1, fit));
+    setVisibleCount(Math.max(1, Math.min(fit, MAX_VISIBLE_CATEGORIES)));
   }, [categories.length, isDesktop]);
 
   useLayoutEffect(() => {
@@ -227,7 +229,7 @@ function DesktopCategoryMenuInner({
     const rawStart = isRtl
       ? shellBox.right - triggerBox.right
       : triggerBox.left - shellBox.left;
-    const maxStart = Math.max(0, shellBox.width - 232);
+    const maxStart = Math.max(0, shellBox.width - 264);
     const clamped = Math.min(Math.max(0, rawStart), maxStart);
     setPanelStyle({ insetInlineStart: `${clamped}px` });
   }, [openId, visibleCount, isDesktop]);

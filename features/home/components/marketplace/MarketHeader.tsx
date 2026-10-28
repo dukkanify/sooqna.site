@@ -89,9 +89,6 @@ export function MarketHeader() {
                 className="market-header__bar-control--desktop"
                 variant="header"
               />
-              <div className="hidden lg:block">
-                <DesktopUtilityNav />
-              </div>
             </div>
 
             <nav aria-label={copy.menu} className="market-header__nav desktop-storefront-header__text-nav">
@@ -109,6 +106,10 @@ export function MarketHeader() {
                 );
               })}
             </nav>
+
+            <div className="desktop-storefront-header__mid hidden lg:flex">
+              <DesktopUtilityNav />
+            </div>
 
             <div className="market-header__actions desktop-storefront-header__end">
               <div className="desktop-storefront-header__meta market-header__bar-control--desktop">
@@ -138,7 +139,7 @@ export function MarketHeader() {
                 </Link>
               ) : (
                 <Link className="market-header__join-link desktop-storefront-header__join" href="/login">
-                  {copy.login}
+                  سجل الدخول أو انضم إلينا
                 </Link>
               )}
 
@@ -147,7 +148,6 @@ export function MarketHeader() {
                   className="market-header__cta desktop-storefront-header__cta inline-flex"
                   href="/listings/new"
                 >
-                  <Icon name="plus" size={15} />
                   <span>{copy.addListing}</span>
                 </Link>
               </div>

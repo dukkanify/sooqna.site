@@ -25,7 +25,7 @@ export function DesktopUtilityNav() {
     {
       href: "/notifications",
       icon: "bell",
-      label: t("الإشعارات"),
+      label: t("إشعارات"),
       notify: true,
     },
     {
