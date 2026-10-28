@@ -56,8 +56,10 @@ export default async function Home() {
 
   return (
     <>
-      <MarketHeader />
-      <DesktopCategoryNav />
+      <div className="desktop-storefront-sticky sticky top-0 z-50 bg-surface">
+        <MarketHeader />
+        <DesktopCategoryNav />
+      </div>
       <LocalizedTree>
         <main>
           <MarketHero categories={categories} />

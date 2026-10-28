@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { BrandLogo } from "@/shared/components/BrandLogo";
 import { EmirateLocationSelect } from "@/shared/components/EmirateLocationSelect";
 import { VerifyAccountBanner } from "@/features/auth/components/VerifyAccountBanner";
+import { DesktopUtilityNav } from "@/features/navigation/desktop/DesktopUtilityNav";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { LanguageSwitch } from "@/shared/i18n/LanguageSwitch";
@@ -16,6 +17,7 @@ import { Button } from "@/shared/ui/Button";
 import { Icon } from "@/shared/ui/Icon";
 import { getSessionUser } from "@/services/storage";
 import type { UserProfile } from "@/types";
+import "@/features/navigation/desktop/desktop-storefront-header.css";
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -73,140 +75,161 @@ export function MarketHeader() {
 
   return (
     <LocalizedTree>
-    <header className="market-header sticky top-0 z-50">
-      <VerifyAccountBanner />
-      <div className="market-header__accent" aria-hidden />
-      <div className="app-container">
-        <div className="market-header__bar">
-          <BrandLogo showTagline={false} size="md" />
-
-          <nav aria-label={copy.menu} className="market-header__nav">
-            {nav.map((item) => {
-              const active = isActivePath(pathname, item.href);
-              return (
-                <Link
-                  key={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`market-header__nav-link${active ? " is-active" : ""}`}
-                  href={item.href}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="market-header__actions">
-            <EmirateLocationSelect className="market-header__bar-control--desktop" variant="desktop" />
-            <LanguageSwitch
-              className="market-header__lang market-header__bar-control--desktop"
-              variant="compact"
-            />
-            <ThemeToggle className="market-header__icon-btn market-header__bar-control--desktop" />
-            <NotificationBell
-              badgeClassName="notify-bell__badge"
-              className="market-header__icon-btn"
-              iconSize={18}
-            />
-
-            {user ? (
-              <Link
-                aria-label={copy.account}
-                className="market-header__icon-btn market-header__icon-btn--desktop"
-                href="/profile"
-              >
-                <Icon name="user" size={18} />
-              </Link>
-            ) : (
-              <Link className="market-header__join-link" href="/login">
-                {copy.login}
-              </Link>
-            )}
-
-            <div className="hidden sm:block">
-              <Link className="market-header__cta inline-flex" href="/listings/new">
-                <Icon name="plus" size={15} />
-                <span>{copy.addListing}</span>
-              </Link>
+      <header className="market-header desktop-storefront-header sticky top-0 z-50 lg:static lg:z-auto">
+        <VerifyAccountBanner />
+        <div
+          aria-hidden
+          className="market-header__accent desktop-storefront-header__accent"
+        />
+        <div className="app-container">
+          <div className="market-header__bar desktop-storefront-header__bar">
+            <div className="desktop-storefront-header__start">
+              <BrandLogo showTagline={false} size="md" />
+              <EmirateLocationSelect
+                className="market-header__bar-control--desktop"
+                variant="header"
+              />
             </div>
 
-            <button
-              aria-expanded={menuOpen}
-              aria-label={menuOpen ? copy.closeMenu : copy.menu}
-              className="market-header__menu-btn hidden"
-              hidden
-              onClick={() => setMenuOpen((open) => !open)}
-              type="button"
-            >
-              <Icon name={menuOpen ? "close" : "menu"} size={20} />
-            </button>
-          </div>
-        </div>
-
-        {menuOpen ? (
-          <nav aria-label={copy.menu} className="market-header__drawer lg:hidden">
-            <div className="market-header__drawer-top">
-              <p className="market-header__drawer-eyebrow">{copy.browse}</p>
-              <p className="market-header__drawer-title">{copy.browseTitle}</p>
-            </div>
-
-            <div className="market-header__drawer-grid">
+            <nav aria-label={copy.menu} className="market-header__nav desktop-storefront-header__text-nav">
               {nav.map((item) => {
                 const active = isActivePath(pathname, item.href);
                 return (
                   <Link
                     key={item.href}
-                    className={`market-header__drawer-link${active ? " is-active" : ""}`}
+                    aria-current={active ? "page" : undefined}
+                    className={`market-header__nav-link${active ? " is-active" : ""}`}
                     href={item.href}
-                    onClick={() => setMenuOpen(false)}
                   >
-                    <span className="market-header__drawer-icon">
-                      <Icon name={item.icon} size={17} />
-                    </span>
-                    <span className="flex-1 text-start">{item.label}</span>
-                    {active ? (
-                      <span className="market-header__drawer-now">{copy.current}</span>
-                    ) : (
-                      <Icon className="opacity-40" name="chevron-left" size={14} />
-                    )}
+                    {item.label}
                   </Link>
                 );
               })}
-            </div>
+            </nav>
 
-            <div className="market-header__drawer-settings">
-              <LanguageSwitch />
-              <div className="market-header__drawer-theme">
-                <span>{copy.nightMode}</span>
+            <div className="market-header__actions desktop-storefront-header__end">
+              <div className="hidden lg:contents">
+                <DesktopUtilityNav />
+              </div>
+
+              <div className="desktop-storefront-header__meta market-header__bar-control--desktop">
+                <LanguageSwitch
+                  className="market-header__lang"
+                  variant="compact"
+                />
                 <ThemeToggle className="market-header__icon-btn" />
               </div>
-            </div>
 
-            <div className="market-header__drawer-footer">
-              <Link
-                className="market-header__drawer-account"
-                href={user ? "/profile" : "/login"}
-                onClick={() => setMenuOpen(false)}
+              <div className="lg:hidden">
+                <NotificationBell
+                  badgeClassName="notify-bell__badge"
+                  className="market-header__icon-btn"
+                  iconSize={18}
+                />
+              </div>
+
+              {user ? (
+                <Link
+                  aria-label={copy.account}
+                  className="market-header__icon-btn market-header__icon-btn--desktop desktop-storefront-header__join"
+                  href="/profile"
+                >
+                  <span className="hidden lg:inline">{copy.account}</span>
+                  <Icon className="lg:hidden" name="user" size={18} />
+                </Link>
+              ) : (
+                <Link className="market-header__join-link desktop-storefront-header__join" href="/login">
+                  {copy.login}
+                </Link>
+              )}
+
+              <div className="hidden sm:block">
+                <Link
+                  className="market-header__cta desktop-storefront-header__cta inline-flex"
+                  href="/listings/new"
+                >
+                  <Icon name="plus" size={15} />
+                  <span>{copy.addListing}</span>
+                </Link>
+              </div>
+
+              <button
+                aria-expanded={menuOpen}
+                aria-label={menuOpen ? copy.closeMenu : copy.menu}
+                className="market-header__menu-btn hidden"
+                hidden
+                onClick={() => setMenuOpen((open) => !open)}
+                type="button"
               >
-                <Icon name="user" size={16} />
-                {user ? user.fullName.split(" ")[0] : copy.login}
-              </Link>
-              <Button
-                className="sooqna-gold-gradient rounded-full"
-                fullWidth
-                href="/listings/new"
-                onClick={() => setMenuOpen(false)}
-                size="md"
-                variant="accent"
-              >
-                <Icon name="plus" size={16} />
-                {copy.addListing}
-              </Button>
+                <Icon name={menuOpen ? "close" : "menu"} size={20} />
+              </button>
             </div>
-          </nav>
-        ) : null}
-      </div>
-    </header>
+          </div>
+
+          {menuOpen ? (
+            <nav aria-label={copy.menu} className="market-header__drawer lg:hidden">
+              <div className="market-header__drawer-top">
+                <p className="market-header__drawer-eyebrow">{copy.browse}</p>
+                <p className="market-header__drawer-title">{copy.browseTitle}</p>
+              </div>
+
+              <div className="market-header__drawer-grid">
+                {nav.map((item) => {
+                  const active = isActivePath(pathname, item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      className={`market-header__drawer-link${active ? " is-active" : ""}`}
+                      href={item.href}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      <span className="market-header__drawer-icon">
+                        <Icon name={item.icon} size={17} />
+                      </span>
+                      <span className="flex-1 text-start">{item.label}</span>
+                      {active ? (
+                        <span className="market-header__drawer-now">{copy.current}</span>
+                      ) : (
+                        <Icon className="opacity-40" name="chevron-left" size={14} />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="market-header__drawer-settings">
+                <LanguageSwitch />
+                <div className="market-header__drawer-theme">
+                  <span>{copy.nightMode}</span>
+                  <ThemeToggle className="market-header__icon-btn" />
+                </div>
+              </div>
+
+              <div className="market-header__drawer-footer">
+                <Link
+                  className="market-header__drawer-account"
+                  href={user ? "/profile" : "/login"}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <Icon name="user" size={16} />
+                  {user ? user.fullName.split(" ")[0] : copy.login}
+                </Link>
+                <Button
+                  className="sooqna-gold-gradient rounded-full"
+                  fullWidth
+                  href="/listings/new"
+                  onClick={() => setMenuOpen(false)}
+                  size="md"
+                  variant="accent"
+                >
+                  <Icon name="plus" size={16} />
+                  {copy.addListing}
+                </Button>
+              </div>
+            </nav>
+          ) : null}
+        </div>
+      </header>
     </LocalizedTree>
   );
 }

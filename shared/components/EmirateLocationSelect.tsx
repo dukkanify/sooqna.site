@@ -54,7 +54,7 @@ type EmirateLocationSelectProps = {
   className?: string;
   defaultCity?: string;
   onCityChange?: (city: string) => void;
-  variant?: "mobile" | "desktop";
+  variant?: "mobile" | "desktop" | "header";
 };
 
 export function EmirateLocationSelect({
@@ -82,6 +82,28 @@ export function EmirateLocationSelect({
     }
     router.push(
       isAllEmiratesSelection(next) ? "/search" : `/search?city=${encodeURIComponent(next)}`,
+    );
+  }
+
+  if (variant === "header") {
+    return (
+      <label
+        className={`emirate-select--header desktop-storefront-header__emirate ${className}`.trim()}
+      >
+        <span className="min-w-0 truncate">{t(city)}</span>
+        <select
+          aria-label={t("الإمارة")}
+          onChange={(event) => handleChange(event.target.value)}
+          value={city}
+        >
+          {options.map((item) => (
+            <option key={item.id} value={item.name}>
+              {t(item.name)}
+            </option>
+          ))}
+        </select>
+        <Icon className="shrink-0 opacity-70" name="chevron-left" size={11} />
+      </label>
     );
   }
 

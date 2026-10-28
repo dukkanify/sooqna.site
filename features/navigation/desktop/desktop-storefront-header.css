@@ -1,0 +1,267 @@
+/* Desktop (≥1024) storefront header — Dubizzle-like density, Sooqna brand. */
+
+.desktop-storefront-sticky {
+  background: #fff;
+}
+
+html[data-theme="dark"] .desktop-storefront-sticky {
+  background: var(--color-surface);
+}
+
+@media (min-width: 1024px) {
+  .desktop-storefront-sticky .market-header,
+  .desktop-storefront-sticky .desktop-storefront-header {
+    border-bottom: 0;
+    box-shadow: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-storefront-header__accent {
+    display: none !important;
+  }
+
+  .desktop-storefront-header__bar {
+    display: flex;
+    min-height: 3.65rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+  }
+
+  .desktop-storefront-header__start {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.85rem 1.15rem;
+  }
+
+  .desktop-storefront-header__end {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.75rem 1.1rem;
+  }
+
+  .desktop-storefront-header__text-nav {
+    display: none !important;
+  }
+
+  .desktop-storefront-header__search {
+    display: none !important;
+  }
+
+  .desktop-storefront-header__emirate.emirate-select--header {
+    position: relative;
+    display: inline-flex;
+    max-width: 13rem;
+    min-height: 2rem;
+    align-items: center;
+    gap: 0.35rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    color: #4b5563;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .desktop-storefront-header__emirate.emirate-select--header select {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .desktop-storefront-header__cta {
+    display: inline-flex !important;
+    min-height: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    border-radius: 0.35rem !important;
+    padding: 0.45rem 1rem;
+    background: linear-gradient(135deg, #e2c882 0%, #c9a962 52%, #9a7d4a 100%) !important;
+    box-shadow: none !important;
+    color: #0b1628 !important;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .desktop-storefront-header__cta:hover {
+    filter: brightness(1.04);
+  }
+
+  .desktop-storefront-header__join {
+    color: #374151;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .desktop-storefront-header__join:hover {
+    color: #0b1628;
+  }
+
+  .desktop-storefront-header__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .desktop-storefront-header__meta .theme-toggle,
+  .desktop-storefront-header__meta .language-switch {
+    opacity: 0.85;
+  }
+}
+
+.desktop-utility-nav {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktop-utility-nav {
+    display: flex;
+    align-items: stretch;
+    gap: 0.15rem 0.55rem;
+  }
+
+  .desktop-utility-nav__item {
+    position: relative;
+    display: inline-flex;
+    min-width: 3.4rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.2rem 0.35rem;
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .desktop-utility-nav__item:hover,
+  .desktop-utility-nav__item:focus-visible {
+    color: #111827;
+    outline: none;
+  }
+
+  .desktop-utility-nav__icon {
+    display: grid;
+    width: 1.35rem;
+    height: 1.35rem;
+    place-items: center;
+  }
+
+  .desktop-utility-nav__label {
+    max-width: 4.6rem;
+    overflow: hidden;
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .desktop-utility-nav__bell {
+    display: grid !important;
+    width: 1.35rem !important;
+    height: 1.35rem !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    place-items: center;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: inherit !important;
+  }
+
+  .desktop-utility-nav__bell-icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  .desktop-utility-nav__badge {
+    top: -0.15rem !important;
+    inset-inline-end: -0.25rem !important;
+    min-width: 0.95rem;
+    height: 0.95rem;
+    padding: 0 0.2rem;
+    font-size: 0.55rem;
+  }
+}
+
+/* Compact verify bar closer to reference density (desktop). */
+@media (min-width: 1024px) {
+  .verify-account-banner__inner {
+    min-height: 2.35rem;
+    padding-block: 0.35rem;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .verify-account-banner__copy {
+    flex: 0 1 auto;
+    justify-content: center;
+  }
+
+  .verify-account-banner__kicker {
+    display: none;
+  }
+
+  .verify-account-banner__mark {
+    width: 1.25rem;
+    height: 1.25rem;
+    box-shadow: none;
+  }
+
+  .verify-account-banner__message {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .verify-account-banner__action {
+    min-height: 1.7rem;
+    border: 1px solid rgb(255 255 255 / 45%);
+    border-radius: 0.25rem;
+    padding-inline: 0.75rem;
+    background: transparent;
+    box-shadow: none;
+    color: #f8fafc;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .verify-account-banner__action:hover {
+    background: rgb(255 255 255 / 10%);
+    filter: none;
+    box-shadow: none;
+  }
+
+  .verify-account-banner__dismiss {
+    display: inline-grid;
+    width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: rgb(248 250 252 / 75%);
+    cursor: pointer;
+  }
+
+  .verify-account-banner__dismiss:hover {
+    color: #fff;
+  }
+}
+
+.verify-account-banner__dismiss {
+  display: none;
+}

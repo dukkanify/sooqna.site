@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { BrandLogo } from "@/shared/components/BrandLogo";
 import { EmirateLocationSelect } from "@/shared/components/EmirateLocationSelect";
 import { VerifyAccountBanner } from "@/features/auth/components/VerifyAccountBanner";
+import { DesktopUtilityNav } from "@/features/navigation/desktop/DesktopUtilityNav";
 import { STORAGE_EVENTS } from "@/shared/constants/brand";
 import { SearchTypeahead } from "@/features/search/components/SearchTypeahead";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
@@ -22,6 +23,7 @@ import {
 } from "@/services/storage";
 import { removeSessionCookie } from "@/services/auth/session-sync";
 import type { UserProfile } from "@/types";
+import "@/features/navigation/desktop/desktop-storefront-header.css";
 
 const StickySearchDock = dynamic(
   () =>
@@ -83,16 +85,19 @@ export function SiteHeader() {
   return (
     <LocalizedTree>
     <>
-    <header className="sticky top-0 z-50 border-b border-border/80 bg-surface">
+    <header className="desktop-storefront-header sticky top-0 z-50 border-b border-border/80 bg-surface lg:static lg:z-auto lg:border-b-0">
       <VerifyAccountBanner />
-      <div className="sooqna-header-accent h-0.5" />
+      <div className="sooqna-header-accent desktop-storefront-header__accent h-0.5" />
       <div className="app-container min-w-0">
-        <div className="flex min-h-[4rem] min-w-0 items-center justify-between gap-2 sm:gap-3">
-          <div className="min-w-0 shrink">
+        <div className="desktop-storefront-header__bar flex min-h-[4rem] min-w-0 items-center justify-between gap-2 sm:gap-3 lg:min-h-[3.65rem]">
+          <div className="desktop-storefront-header__start min-w-0 shrink">
             <BrandLogo showTagline={false} size="sm" />
+            <div className="hidden lg:block">
+              <EmirateLocationSelect variant="header" />
+            </div>
           </div>
 
-          <nav className="hidden items-center gap-0.5 lg:flex">
+          <nav className="desktop-storefront-header__text-nav hidden items-center gap-0.5 lg:flex">
             {nav.map((item) => {
               const active = isActivePath(pathname, item.href);
               return (
@@ -113,7 +118,7 @@ export function SiteHeader() {
 
           <form
             action="/search"
-            className="relative hidden min-w-0 max-w-xs flex-1 md:block"
+            className="desktop-storefront-header__search relative hidden min-w-0 max-w-xs flex-1 md:block"
           >
             <SearchTypeahead
               compact
@@ -123,31 +128,38 @@ export function SiteHeader() {
             />
           </form>
 
-          {/* Wrapper avoids Tailwind conflict: component uses inline-flex which beats `hidden`. */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block max-lg:hidden">
+            {/* kept for tablet mid-breakpoint location when needed */}
+          </div>
+          <div className="hidden md:block lg:hidden">
             <EmirateLocationSelect variant="desktop" />
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <div className="hidden items-center gap-2 lg:flex">
+          <div className="desktop-storefront-header__end flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div className="hidden lg:contents">
+              <DesktopUtilityNav />
+            </div>
+            <div className="desktop-storefront-header__meta hidden items-center gap-2 lg:flex">
               <LanguageSwitch variant="compact" />
               <ThemeToggle className="shrink-0" />
             </div>
-            <NotificationBell
-              badgeClassName="notify-bell__badge"
-              className="notify-bell__site-trigger"
-              iconSize={18}
-            />
+            <div className="lg:hidden">
+              <NotificationBell
+                badgeClassName="notify-bell__badge"
+                className="notify-bell__site-trigger"
+                iconSize={18}
+              />
+            </div>
             {user ? (
               <Link
-                className="hidden rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium text-ink transition hover:bg-surface-muted sm:inline-flex"
+                className="desktop-storefront-header__join hidden rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium text-ink transition hover:bg-surface-muted sm:inline-flex lg:rounded-none lg:px-0 lg:hover:bg-transparent"
                 href="/profile"
               >
                 {copy.account}
               </Link>
             ) : (
               <Link
-                className="hidden rounded-[var(--radius-md)] px-3 py-2 text-sm font-semibold text-primary transition hover:bg-secondary-soft sm:inline-flex"
+                className="desktop-storefront-header__join hidden rounded-[var(--radius-md)] px-3 py-2 text-sm font-semibold text-primary transition hover:bg-secondary-soft sm:inline-flex lg:rounded-none lg:px-0 lg:font-bold lg:text-[#374151] lg:hover:bg-transparent"
                 href="/login"
               >
                 {copy.login}
@@ -156,7 +168,7 @@ export function SiteHeader() {
             {!isComposeListing ? (
               <div className="hidden sm:block">
                 <Button
-                  className="sooqna-gold-gradient rounded-full"
+                  className="sooqna-gold-gradient rounded-full desktop-storefront-header__cta lg:rounded-[0.35rem]"
                   href="/listings/new"
                   size="md"
                   variant="accent"
