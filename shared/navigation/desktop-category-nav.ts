@@ -67,11 +67,11 @@ export function groupCategorySubcategories(
   }
 
   const groups: DesktopCategoryNavGroup[] = [];
-  if (sale.length > 0) {
-    groups.push({ title: `${parentName} للبيع`, items: sale });
-  }
   if (rent.length > 0) {
     groups.push({ title: `${parentName} للإيجار`, items: rent });
+  }
+  if (sale.length > 0) {
+    groups.push({ title: `${parentName} للبيع`, items: sale });
   }
   if (rest.length > 0) {
     groups.push({ title: parentName, items: rest });

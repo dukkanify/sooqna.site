@@ -47,8 +47,8 @@ describe("desktop category navigation", () => {
       { name: "مكاتب", href: "/categories/real-estate?subcategory=c" },
     ]);
     assert.equal(groups.length, 3);
-    assert.equal(groups[0].title, "عقارات للبيع");
-    assert.equal(groups[1].title, "عقارات للإيجار");
+    assert.equal(groups[0].title, "عقارات للإيجار");
+    assert.equal(groups[1].title, "عقارات للبيع");
     assert.equal(groups[2].items[0].name, "مكاتب");
   });
 
