@@ -1,7 +1,7 @@
 import { ChatConversationView } from "@/features/chat/components/ChatConversationView";
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { requireCurrentUser } from "@/services/profile";
 
 type ChatConversationPageProps = {
@@ -15,7 +15,7 @@ export default async function ChatConversationPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <DashboardShell
           activePath="/chat"

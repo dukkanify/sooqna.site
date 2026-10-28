@@ -1,7 +1,7 @@
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
 import { MyListingsDashboard } from "@/features/dashboard/components/MyListingsDashboard";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getCategories } from "@/services/categories";
 import { getMyListings } from "@/services/listings";
 import { requireCurrentUser } from "@/services/profile";
@@ -15,7 +15,7 @@ export default async function DashboardListingsPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <DashboardShell
           activePath="/dashboard/listings"

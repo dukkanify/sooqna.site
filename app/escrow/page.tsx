@@ -3,7 +3,7 @@ import { CurrencyAmount } from "@/shared/components/CurrencyAmount";
 import { Badge } from "@/shared/ui/Badge";
 import { Card } from "@/shared/ui/Card";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getMarketEscrowSteps } from "@/services/content/homepage-marketplace.content";
 import { getEscrowSummary, getEscrowTransactions } from "@/services/escrowService";
 import { requireCurrentUser } from "@/services/profile";
@@ -27,7 +27,7 @@ export default async function EscrowPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <DashboardShell
           activePath="/escrow"

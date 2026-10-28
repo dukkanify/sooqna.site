@@ -12,7 +12,7 @@ import {
 import { toListingSearchFilters } from "@/features/search/lib/to-listing-filters";
 import { buildSearchSuggestions } from "@/features/search/components/search-suggestions";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getCategories } from "@/services/categories";
 import { getSearchSuggestionTitles } from "@/services/listings/home-feed";
 import {
@@ -98,7 +98,7 @@ export default async function SearchPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <RecordRecentSearch
         brand={selectedFilters.specs?.brand}
         category={selectedFilters.category}

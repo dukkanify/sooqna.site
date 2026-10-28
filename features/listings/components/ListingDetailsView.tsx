@@ -4,7 +4,6 @@ import type { Category, Listing } from "@/types";
 import { EscrowProtectionCard } from "@/features/listings/components/EscrowProtectionCard";
 import { ListingPlatformNotice } from "@/features/listings/components/ListingPlatformNotice";
 import { ListingDetailToolbar } from "@/features/listings/components/ListingDetailToolbar";
-import { MobileListingPrimaryCtas } from "@/features/listings/components/MobileListingPrimaryCtas";
 import { ListingGallery } from "@/features/listings/components/ListingGallery";
 import dynamic from "next/dynamic";
 import { ListingOwnerStatusBanner } from "@/features/listings/components/ListingOwnerStatusBanner";
@@ -141,7 +140,7 @@ export function ListingDetailsView({
       ) : null}
             </div>
 
-            <MobileListingPrimaryCtas listing={listing} />
+            {/* Contact/Buy CTAs live only in MobileStickyActionBar — no mid-page duplicate. */}
             <ListingDetailToolbar listing={listing} />
             <div className="mt-6 lg:hidden">
               <ShowcaseListingNotice listing={listing} />

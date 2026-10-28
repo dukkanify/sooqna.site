@@ -1,13 +1,13 @@
 import { Suspense } from "react";
 import { NewDisputePageClient } from "@/features/disputes/components/NewDisputePageClient";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { Card } from "@/shared/ui/Card";
 
 export default function NewDisputePage() {
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <Suspense
           fallback={

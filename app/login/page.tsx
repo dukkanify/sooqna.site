@@ -3,7 +3,7 @@ import { AdminLoginStage } from "@/features/auth/components/AdminLoginStage";
 import { AuthShell } from "@/features/auth/components/AuthShell";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 type LoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="auth-page">
         <AuthShell
           description="منصة إماراتية موثوقة لبيع وشراء المنتجات والخدمات مع نظام ضمان مالي يحمي حقوق المشتري والبائع."

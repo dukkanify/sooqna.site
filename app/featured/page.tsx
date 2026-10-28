@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { FeaturedListingsView } from "@/features/featured/FeaturedListingsView";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import { getCategories } from "@/services/categories";
 import { getFeaturedListings } from "@/services/listings";
@@ -28,7 +28,7 @@ export default async function FeaturedPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="bg-background">
         <FeaturedListingsView
           categories={categories}

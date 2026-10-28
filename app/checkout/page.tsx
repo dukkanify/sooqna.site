@@ -3,7 +3,7 @@ import { getAdminSettings } from "@/services/admin/admin-settings-store";
 import { resolveServerListing } from "@/services/payments/listing-resolver";
 import { resolveOrderFeeRates } from "@/shared/payments/order-fees";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <CheckoutWizard
           catalogListing={catalogListing}

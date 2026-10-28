@@ -1,6 +1,6 @@
 import { CheckoutSuccessContent } from "@/features/checkout/components/CheckoutSuccessContent";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 type CheckoutSuccessPageProps = {
   searchParams: Promise<{
@@ -18,7 +18,7 @@ export default async function CheckoutSuccessPage({
   if (!params.orderId && !params.session_id) {
     return (
       <>
-        <SiteHeader />
+        <SiteChrome />
         <main>
           <section className="app-container page-padding">
             <p className="text-sm text-muted">لم يتم العثور على رقم الطلب.</p>
@@ -31,7 +31,7 @@ export default async function CheckoutSuccessPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <CheckoutSuccessContent
           guestToken={params.token}

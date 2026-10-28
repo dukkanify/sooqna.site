@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { BRAND } from "@/shared/constants/brand";
 import { SupportTicketTrackForm } from "@/features/support/components/SupportTicketTrackForm";
 import { Card } from "@/shared/ui/Card";
@@ -21,7 +21,7 @@ export default async function SupportTrackPage({ searchParams }: TrackPageProps)
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <section className="app-container page-padding">
           <PageHero

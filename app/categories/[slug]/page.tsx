@@ -23,7 +23,7 @@ import { Badge } from "@/shared/ui/Badge";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { ChipLink } from "@/shared/ui/ChipLink";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import {
   getCategories,
   getCategoryBySlug,
@@ -138,7 +138,7 @@ export default async function CategoryPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <RecordRecentSearch query={selectedFilters.query} />
       <main>
         <section className="app-container page-padding pb-28 lg:pb-8">

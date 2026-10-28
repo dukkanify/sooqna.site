@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { BRAND } from "@/shared/constants/brand";
 import { SupportContactForm } from "@/features/support/components/SupportContactForm";
 import { Card } from "@/shared/ui/Card";
@@ -43,7 +43,7 @@ const shortcuts = [
 export default function SupportPage() {
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <section className="app-container page-padding">
           <PageHero

@@ -1,7 +1,7 @@
 import { AddListingForm } from "@/features/listings/components/AddListingForm.lazy";
 import { PageHero } from "@/shared/ui/PageHero";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getCategories } from "@/services/categories";
 
 export default async function NewListingPage() {
@@ -9,7 +9,7 @@ export default async function NewListingPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <section className="app-container px-3 pb-8 pt-4 md:page-padding">
           <PageHero

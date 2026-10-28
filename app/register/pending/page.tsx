@@ -1,12 +1,12 @@
 import { AuthShell } from "@/features/auth/components/AuthShell";
 import { RegisterPendingContent } from "@/features/auth/components/RegisterPendingContent";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 export default function RegisterPendingPage() {
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="auth-page">
         <AuthShell
           description="تحققنا منك أولاً. الاعتماد خطوة واحدة سهلة من الإدارة، وسنُعلمك فور تفعيل الحساب."

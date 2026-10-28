@@ -3,7 +3,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { PageHero } from "@/shared/ui/PageHero";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getListingBySlug } from "@/services/listings";
 import { getListingById } from "@/services/listings/listing-store";
 import { requireCurrentUser } from "@/services/profile";
@@ -31,7 +31,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="app-container page-padding section-padding">
         <PageHero
           description={

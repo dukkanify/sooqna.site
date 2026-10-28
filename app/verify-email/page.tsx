@@ -3,7 +3,7 @@ import { AuthShell } from "@/features/auth/components/AuthShell";
 import { VerifyEmailContent } from "@/features/auth/components/VerifyEmailContent";
 import { readOtpDisplayCookie } from "@/services/auth/otp-display-cookie";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 type VerifyEmailPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -26,7 +26,7 @@ export default async function VerifyEmailPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="auth-page">
         <AuthShell
           description="أدخل رمز التحقق المرسل إلى بريدك. بعد التحقق من الشخص يُعتمد حسابك بسهولة."

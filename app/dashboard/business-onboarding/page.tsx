@@ -2,14 +2,14 @@ import { BusinessOnboardingForm } from "@/features/auth/components/BusinessOnboa
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
 import { requireCurrentUser } from "@/services/profile";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 export default async function BusinessOnboardingPage() {
   const user = await requireCurrentUser("/dashboard/business-onboarding");
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <DashboardShell
           activePath="/dashboard/business-onboarding"

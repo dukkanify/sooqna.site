@@ -1,7 +1,7 @@
 import { OrderDetailContent } from "@/features/orders/components/OrderDetailContent";
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { requireCurrentUser } from "@/services/profile";
 
 type OrderPageProps = {
@@ -16,7 +16,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <DashboardShell
           activePath="/profile"

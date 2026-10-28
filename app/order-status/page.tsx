@@ -1,6 +1,6 @@
 import { OrderStatusContent } from "@/features/checkout/components/OrderStatusContent";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 type OrderStatusPageProps = {
   searchParams: Promise<{ token?: string }>;
@@ -11,7 +11,7 @@ export default async function OrderStatusPage({ searchParams }: OrderStatusPageP
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <OrderStatusContent token={params.token} />
       </main>

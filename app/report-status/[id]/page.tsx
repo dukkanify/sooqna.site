@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { Card } from "@/shared/ui/Card";
 import { getListingReportReceipt } from "@/services/listings/listing-report-store";
 import { LISTING_REPORT_REASON_LABELS } from "@/types/domain/listing-report";
@@ -29,7 +29,7 @@ export default async function ReportStatusPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="app-container page-padding py-10">
         <Card className="mx-auto max-w-lg p-6" variant="flat">
           <p className="text-xs font-bold tracking-wide text-secondary">ملخص البلاغ</p>

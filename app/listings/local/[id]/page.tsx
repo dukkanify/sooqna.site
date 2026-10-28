@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { LocalListingDetails } from "@/features/listings/components/LocalListingDetails";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getCategories } from "@/services/categories";
 import { getListingById } from "@/services/listings/listing-store";
 import { getValidSessionUser } from "@/services/auth/require-session";
@@ -52,7 +52,7 @@ export default async function LocalListingPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <section className="app-container page-padding">
           <LocalListingDetails categories={categories} listingId={id} />
