@@ -102,7 +102,7 @@ export function EmirateLocationSelect({
             </option>
           ))}
         </select>
-        <Icon className="shrink-0 opacity-70" name="chevron-left" size={11} />
+        <Icon className="desktop-storefront-header__emirate-caret shrink-0" name="chevron-down" size={12} />
       </label>
     );
   }

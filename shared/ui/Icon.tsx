@@ -33,6 +33,7 @@ type IconName =
   | "mail"
   | "chevron-left"
   | "chevron-right"
+  | "chevron-down"
   | "arrow-left"
   | "package"
   | "bell"
@@ -111,6 +112,7 @@ const paths: Partial<Record<IconName, string>> = {
   mail: "M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2 8 5 8-5",
   "chevron-left": "M15 6l-6 6 6 6",
   "chevron-right": "M9 6l6 6-6 6",
+  "chevron-down": "M6 9l6 6 6-6",
   "arrow-left": "M19 12H5M11 6l-6 6 6 6",
   package: "M12 3 20 7v10l-8 4-8-4V7l8-4Zm0 8 8-4M12 11 4 7M12 11v10",
   /** Standard notification bell (Lucide-style outline) */
