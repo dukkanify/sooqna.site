@@ -7,7 +7,7 @@ import {
 } from "@/features/listings/components/RecentlyViewedSection";
 import { RecordListingView } from "@/features/listings/components/RecordListingView";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getCategories } from "@/services/categories";
 import { getListingBySlug, getRelatedListings } from "@/services/listings";
 import { getValidSessionUser } from "@/services/auth/require-session";
@@ -107,7 +107,7 @@ export default async function ListingDetailsPage({ params }: ListingPageProps) {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <RecentlyViewedTracker listing={visible} />
       <RecordListingView
         enabled={!isPreview && !isOwner}

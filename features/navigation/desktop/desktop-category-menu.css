@@ -1,0 +1,276 @@
+/* Desktop category rail + dropdown — only active at ≥1024px. */
+
+.desktop-category-nav,
+.desktop-category-nav__overlay {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktop-category-nav {
+    display: block;
+    position: sticky;
+    top: 4.15rem;
+    z-index: 45;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 98%, #fff);
+  }
+
+  .desktop-category-nav__overlay {
+    display: block;
+  }
+
+  html[data-theme="dark"] .desktop-category-nav {
+    border-bottom-color: rgb(255 255 255 / 8%);
+    background: rgb(10 16 28 / 98%);
+  }
+}
+
+.desktop-category-nav__shell {
+  position: relative;
+}
+
+.desktop-category-nav__rail {
+  display: flex;
+  align-items: stretch;
+  gap: 0.15rem;
+  min-height: 2.85rem;
+  overflow: hidden;
+}
+
+.desktop-category-nav__measure {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  z-index: -1;
+  display: flex;
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.desktop-category-nav__item {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 11rem;
+  min-height: 2.85rem;
+  padding: 0.45rem 0.85rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.desktop-category-nav__item:hover,
+.desktop-category-nav__item:focus-visible,
+.desktop-category-nav__item[aria-expanded="true"],
+.desktop-category-nav__item.is-active {
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  outline: none;
+}
+
+.desktop-category-nav__item.is-active::after,
+.desktop-category-nav__item[aria-expanded="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.85rem;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #c9a962, transparent);
+}
+
+.desktop-category-nav__item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.desktop-category-nav__item-icon {
+  display: inline-grid;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  place-items: center;
+}
+
+.desktop-category-nav__item-icon .category-mark {
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0.35rem;
+  box-shadow: none;
+}
+
+.desktop-category-nav__item-icon .category-mark__image,
+.desktop-category-nav__item-icon .category-mark__glyph {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+.desktop-category-nav__more-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+}
+
+.desktop-category-nav__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: 0;
+  background: rgb(0 0 0 / 45%);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.desktop-category-nav__overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.desktop-category-nav__panel {
+  position: absolute;
+  inset-inline-start: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 46;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: min(18rem, calc(100vw - 2rem));
+  max-width: min(52rem, calc(100vw - 2rem));
+  max-height: min(70vh, 32rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow:
+    0 18px 48px rgb(15 23 42 / 14%),
+    0 2px 8px rgb(15 23 42 / 6%);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition:
+    opacity 170ms ease,
+    transform 170ms ease;
+}
+
+html[data-theme="dark"] .desktop-category-nav__panel {
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(14 20 34);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 45%);
+}
+
+.desktop-category-nav__panel.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.desktop-category-nav__panel-scroll {
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 1.1rem 0.85rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.desktop-category-nav__panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+}
+
+.desktop-category-nav__panel-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.desktop-category-nav__panel-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.desktop-category-nav__panel-all:hover,
+.desktop-category-nav__panel-all:focus-visible {
+  color: #a88642;
+  outline: none;
+}
+
+.desktop-category-nav__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.2rem 1rem;
+}
+
+.desktop-category-nav__link {
+  display: block;
+  padding: 0.45rem 0.35rem;
+  border-radius: 0.55rem;
+  color: var(--color-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.desktop-category-nav__link:hover,
+.desktop-category-nav__link:focus-visible {
+  background: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+  color: #8a7040;
+  outline: none;
+}
+
+.desktop-category-nav__empty {
+  margin: 0;
+  padding: 0.35rem 0 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.desktop-category-nav__more-list {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 14rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktop-category-nav__item,
+  .desktop-category-nav__overlay,
+  .desktop-category-nav__panel,
+  .desktop-category-nav__link {
+    transition: none !important;
+  }
+
+  .desktop-category-nav__panel {
+    transform: none;
+  }
+}

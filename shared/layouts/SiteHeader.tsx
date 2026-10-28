@@ -83,7 +83,7 @@ export function SiteHeader() {
   return (
     <LocalizedTree>
     <>
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-surface">
+    <header className="sticky top-0 z-50 border-b border-border/80 bg-surface">
       <VerifyAccountBanner />
       <div className="sooqna-header-accent h-0.5" />
       <div className="app-container min-w-0">

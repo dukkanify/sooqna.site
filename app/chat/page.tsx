@@ -1,7 +1,7 @@
 import { ChatInboxList } from "@/features/chat/components/ChatInboxList";
 import { DashboardShell } from "@/features/dashboard/components/DashboardShell";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { requireCurrentUser } from "@/services/profile";
 
 export default async function ChatPage() {
@@ -9,7 +9,7 @@ export default async function ChatPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <DashboardShell
           activePath="/chat"

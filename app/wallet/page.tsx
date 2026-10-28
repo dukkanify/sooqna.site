@@ -7,7 +7,7 @@ import { Card } from "@/shared/ui/Card";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { Icon } from "@/shared/ui/Icon";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { requireCurrentUser } from "@/services/profile";
 import { getConnectStatusForUser } from "@/services/payments/stripe-connect.service";
 import { getWalletSummary } from "@/services/walletService";
@@ -45,7 +45,7 @@ export default async function WalletPage({ searchParams }: WalletPageProps) {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <DashboardShell
           activePath="/wallet"

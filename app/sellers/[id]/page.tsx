@@ -11,7 +11,7 @@ import { getRequestLocale } from "@/shared/i18n/locale";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { tx } from "@/shared/i18n/tx";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { Icon } from "@/shared/ui/Icon";
@@ -83,7 +83,7 @@ export default async function SellerPage({ params }: SellerPageProps) {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <LocalizedTree>
         <main>
           <section className="app-container page-padding pb-28 lg:pb-8">

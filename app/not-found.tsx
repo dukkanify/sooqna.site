@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/shared/ui/Button";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 export default function NotFoundPage() {
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="app-container page-padding">
         <section className="mx-auto max-w-lg text-center">
           <p className="text-xs font-medium tracking-wide text-secondary uppercase">

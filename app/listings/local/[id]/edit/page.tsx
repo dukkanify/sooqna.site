@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { ListingEditForm } from "@/features/listings/components/LocalListingEdit";
 import { PageHero } from "@/shared/ui/PageHero";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getListingById } from "@/services/listings/listing-store";
 import { getListingEditPath } from "@/shared/listings/listing-url";
 import { requireCurrentUser } from "@/services/profile";
@@ -32,7 +32,7 @@ export default async function LocalListingEditPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="app-container page-padding">
         <PageHero
           description="عدّل بيانات إعلانك المحفوظ محلياً. التغييرات ستظهر فوراً في إعلاناتي ونتائج البحث."

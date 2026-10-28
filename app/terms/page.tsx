@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { BRAND } from "@/shared/constants/brand";
 import { Card } from "@/shared/ui/Card";
 import { PageHero } from "@/shared/ui/PageHero";
@@ -45,7 +45,7 @@ const sections = [
 export default function TermsPage() {
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <LocalizedTree>
       <main>
         <section className="app-container page-padding">

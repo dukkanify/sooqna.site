@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ActivityFeed } from "@/features/activity/components/ActivityFeed";
 import { ActivityDashboardSummary } from "@/features/activity/components/ActivityDashboardSummary";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { getValidSessionUser } from "@/services/auth/require-session";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { getRequestLocale } from "@/shared/i18n/locale";
@@ -29,7 +29,7 @@ export default async function ActivitiesPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <LocalizedTree>
           <section className="app-container page-padding">

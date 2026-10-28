@@ -15,6 +15,7 @@ import {
   MobilePromoBanner,
 } from "@/features/home/components/mobile";
 import { MobileHomeFeed } from "@/features/home/components/mobile/MobileHomeFeed";
+import { DesktopCategoryNav } from "@/features/navigation/desktop/DesktopCategoryNav";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { getCategories } from "@/services/categories";
@@ -56,6 +57,7 @@ export default async function Home() {
   return (
     <>
       <MarketHeader />
+      <DesktopCategoryNav />
       <LocalizedTree>
         <main>
           <MarketHero categories={categories} />

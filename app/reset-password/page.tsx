@@ -2,14 +2,14 @@ import { Suspense } from "react";
 import { AuthShell } from "@/features/auth/components/AuthShell";
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 
 export default function ResetPasswordPage() {
   return (
     <LocalizedTree>
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main className="auth-page">
         <AuthShell
           description="أدخل كلمة مرور جديدة لحسابك. الرابط صالح لمرة واحدة ولمدة 60 دقيقة."

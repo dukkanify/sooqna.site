@@ -1,6 +1,6 @@
 import { CompleteAccountContent } from "@/features/auth/components/CompleteAccountContent";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 
 type CompleteAccountPageProps = {
   searchParams: Promise<{ token?: string }>;
@@ -13,7 +13,7 @@ export default async function CompleteAccountPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <CompleteAccountContent token={params.token} />
       </main>

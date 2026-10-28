@@ -11,7 +11,7 @@ import { SupportTicketsPanel } from "@/features/profile/components/SupportTicket
 import { ViewingAvailabilityPanel } from "@/features/profile/components/ViewingAvailabilityPanel";
 import { Card } from "@/shared/ui/Card";
 import { SiteFooter } from "@/shared/layouts/SiteFooter";
-import { SiteHeader } from "@/shared/layouts/SiteHeader";
+import { SiteChrome } from "@/shared/layouts/SiteChrome";
 import { requireCurrentUser } from "@/services/profile";
 
 export default async function ProfilePage() {
@@ -19,7 +19,7 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteChrome />
       <main>
         <ProfileHashScroll />
         <DashboardShell
