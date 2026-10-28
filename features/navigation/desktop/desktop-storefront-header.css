@@ -39,7 +39,8 @@ html[data-theme="dark"] .desktop-storefront-sticky {
     min-width: 0;
     flex: 0 0 auto;
     align-items: center;
-    gap: 1rem 1.35rem;
+    /* Keep emirate clearly left of the logo (RTL: second flex item). */
+    gap: 1.5rem 2rem;
   }
 
   .desktop-storefront-header__mid {
@@ -75,8 +76,9 @@ html[data-theme="dark"] .desktop-storefront-sticky {
     border: 0;
     border-radius: 0;
     background: transparent;
-    /* Breath room on the physical left (chevron side in RTL). */
-    padding: 0 0 0 0.45rem;
+    padding: 0 0 0 0.35rem;
+    /* Push further left away from the logo (RTL inline-start = physical right). */
+    margin-inline-start: 0.65rem;
     color: #4a4a4a;
     font-size: 0.8125rem;
     font-weight: 500;
