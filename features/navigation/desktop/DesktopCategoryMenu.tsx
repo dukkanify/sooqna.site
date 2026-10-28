@@ -12,16 +12,16 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { CategoryMark } from "@/shared/components/CategoryMark";
 import { LocalizedTree } from "@/shared/i18n/LocalizedTree";
 import { useTx } from "@/shared/i18n/useTx";
 import type { DesktopCategoryNavItem } from "@/shared/navigation/desktop-category-nav";
-import type { CategoryIconName } from "@/types";
 import { Icon } from "@/shared/ui/Icon";
 import "./desktop-category-menu.css";
 
 const DESKTOP_MQ = "(min-width: 1024px)";
-const CLOSE_DELAY_MS = 160;
+const CLOSE_DELAY_MS = 140;
+/** Keep Dubizzle-like density: prefer fewer top-level items + More. */
+const MAX_VISIBLE_CATEGORIES = 8;
 
 type DesktopCategoryMenuProps = {
   categories: DesktopCategoryNavItem[];
@@ -47,7 +47,7 @@ function useIsDesktopNav() {
 }
 
 /**
- * Horizontal category rail + hover/click dropdown for desktop (≥1024px) only.
+ * Horizontal category rail + narrow vertical dropdown for desktop (≥1024px).
  * Markup is CSS-hidden below 1024px; interaction listeners stay gated to desktop.
  */
 export function DesktopCategoryMenu({ categories }: DesktopCategoryMenuProps) {
@@ -72,6 +72,7 @@ function DesktopCategoryMenuInner({
   const [openId, setOpenId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(categories.length);
   const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+
   const clearCloseTimer = useCallback(() => {
     if (closeTimer.current != null) {
       window.clearTimeout(closeTimer.current);
@@ -128,6 +129,34 @@ function DesktopCategoryMenuInner({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [openId, closeMenu, isDesktop]);
 
+  const syncHeaderOffset = useCallback(() => {
+    const sticky = rootRef.current?.closest(".desktop-storefront-sticky");
+    const height =
+      sticky instanceof HTMLElement
+        ? sticky.getBoundingClientRect().height
+        : rootRef.current?.getBoundingClientRect().bottom ?? 0;
+    document.documentElement.style.setProperty(
+      "--desktop-header-offset",
+      `${Math.max(0, Math.round(height))}px`,
+    );
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isDesktop) return;
+    syncHeaderOffset();
+    window.addEventListener("resize", syncHeaderOffset);
+    const sticky = rootRef.current?.closest(".desktop-storefront-sticky");
+    let observer: ResizeObserver | null = null;
+    if (sticky && typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(() => syncHeaderOffset());
+      observer.observe(sticky);
+    }
+    return () => {
+      window.removeEventListener("resize", syncHeaderOffset);
+      observer?.disconnect();
+    };
+  }, [isDesktop, syncHeaderOffset, openId]);
+
   const recomputeVisible = useCallback(() => {
     if (!isDesktop) return;
     const rail = railRef.current;
@@ -157,7 +186,7 @@ function DesktopCategoryMenuInner({
       used = next;
       fit = i + 1;
     }
-    setVisibleCount(Math.max(1, fit));
+    setVisibleCount(Math.max(1, Math.min(fit, MAX_VISIBLE_CATEGORIES)));
   }, [categories.length, isDesktop]);
 
   useLayoutEffect(() => {
@@ -200,7 +229,7 @@ function DesktopCategoryMenuInner({
     const rawStart = isRtl
       ? shellBox.right - triggerBox.right
       : triggerBox.left - shellBox.left;
-    const maxStart = Math.max(0, shellBox.width - 288);
+    const maxStart = Math.max(0, shellBox.width - 264);
     const clamped = Math.min(Math.max(0, rawStart), maxStart);
     setPanelStyle({ insetInlineStart: `${clamped}px` });
   }, [openId, visibleCount, isDesktop]);
@@ -215,7 +244,10 @@ function DesktopCategoryMenuInner({
         />
 
         <div className="desktop-category-nav" ref={rootRef}>
-          <div className="app-container desktop-category-nav__shell" ref={shellRef}>
+          <div
+            className="app-container desktop-category-nav__shell"
+            ref={shellRef}
+          >
             <div
               aria-hidden
               className="desktop-category-nav__measure"
@@ -227,17 +259,6 @@ function DesktopCategoryMenuInner({
                   data-nav-measure
                   key={`m-${category.id}`}
                 >
-                  <span className="desktop-category-nav__item-icon">
-                    <CategoryMark
-                      category={{
-                        id: category.id,
-                        icon: category.icon as CategoryIconName,
-                        name: category.name,
-                      }}
-                      compact
-                      iconSize={14}
-                    />
-                  </span>
                   <span className="desktop-category-nav__item-label">
                     {t(category.name)}
                   </span>
@@ -276,17 +297,6 @@ function DesktopCategoryMenuInner({
                     onMouseLeave={scheduleClose}
                     type="button"
                   >
-                    <span className="desktop-category-nav__item-icon">
-                      <CategoryMark
-                        category={{
-                          id: category.id,
-                          icon: category.icon as CategoryIconName,
-                          name: category.name,
-                        }}
-                        compact
-                        iconSize={14}
-                      />
-                    </span>
                     <span className="desktop-category-nav__item-label">
                       {t(category.name)}
                     </span>
@@ -329,65 +339,58 @@ function DesktopCategoryMenuInner({
             >
               {openId === "__more__" ? (
                 <div className="desktop-category-nav__panel-scroll">
-                  <div className="desktop-category-nav__panel-head">
-                    <p className="desktop-category-nav__panel-title">
+                  <div className="desktop-category-nav__group">
+                    <p className="desktop-category-nav__group-title">
                       {t("المزيد من التصنيفات")}
                     </p>
-                    <Link
-                      className="desktop-category-nav__panel-all"
-                      href="/categories"
-                      onClick={closeMenu}
-                    >
-                      {t("عرض الكل")}
-                      <Icon name="arrow-left" size={12} />
-                    </Link>
-                  </div>
-                  <div className="desktop-category-nav__more-list">
-                    {overflow.map((category) => (
-                      <Link
-                        className="desktop-category-nav__link"
-                        href={category.href}
-                        key={category.id}
-                        onClick={closeMenu}
-                      >
-                        {t(category.name)}
-                      </Link>
-                    ))}
+                    <div className="desktop-category-nav__more-list">
+                      {overflow.map((category) => (
+                        <Link
+                          className="desktop-category-nav__link"
+                          href={category.href}
+                          key={category.id}
+                          onClick={closeMenu}
+                        >
+                          {t(category.name)}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : openCategory ? (
                 <div className="desktop-category-nav__panel-scroll">
-                  <div className="desktop-category-nav__panel-head">
-                    <p className="desktop-category-nav__panel-title">
-                      {t(openCategory.name)}
-                    </p>
-                    <Link
-                      className="desktop-category-nav__panel-all"
-                      href={openCategory.href}
-                      onClick={closeMenu}
+                  {openCategory.groups.map((group) => (
+                    <div
+                      className="desktop-category-nav__group"
+                      key={`${openCategory.id}-${group.title}`}
                     >
-                      {t("عرض الكل")}
-                      <Icon name="arrow-left" size={12} />
-                    </Link>
-                  </div>
-                  {openCategory.subcategories.length > 0 ? (
-                    <div className="desktop-category-nav__grid">
-                      {openCategory.subcategories.map((sub) => (
+                      <p className="desktop-category-nav__group-title">
                         <Link
-                          className="desktop-category-nav__link"
-                          href={sub.href}
-                          key={sub.href}
+                          className="desktop-category-nav__group-title-link"
+                          href={openCategory.href}
                           onClick={closeMenu}
                         >
-                          {t(sub.name)}
+                          {t(group.title)}
                         </Link>
-                      ))}
+                      </p>
+                      {group.items.length > 0 ? (
+                        group.items.map((sub) => (
+                          <Link
+                            className="desktop-category-nav__link"
+                            href={sub.href}
+                            key={sub.href}
+                            onClick={closeMenu}
+                          >
+                            {t(sub.name)}
+                          </Link>
+                        ))
+                      ) : (
+                        <p className="desktop-category-nav__empty">
+                          {t("تصفح كل إعلانات هذا القسم")}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <p className="desktop-category-nav__empty">
-                      {t("تصفح كل إعلانات هذا القسم")}
-                    </p>
-                  )}
+                  ))}
                 </div>
               ) : null}
             </div>

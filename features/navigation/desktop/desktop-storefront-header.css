@@ -1,0 +1,301 @@
+/* Desktop (≥1024) — pixel-tight Dubizzle layout, Sooqna brand colors. */
+
+.desktop-storefront-sticky {
+  background: #fff;
+}
+
+html[data-theme="dark"] .desktop-storefront-sticky {
+  background: var(--color-surface);
+}
+
+@media (min-width: 1024px) {
+  .desktop-storefront-sticky .market-header,
+  .desktop-storefront-sticky .desktop-storefront-header {
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .desktop-storefront-sticky > header .app-container {
+    border-bottom: 1px solid #ebebeb;
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-storefront-header__accent {
+    display: none !important;
+  }
+
+  .desktop-storefront-header__bar {
+    display: flex;
+    min-height: 4rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding-block: 0.15rem;
+  }
+
+  .desktop-storefront-header__start {
+    display: flex;
+    min-width: 0;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.85rem 1.1rem;
+  }
+
+  .desktop-storefront-header__mid {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+    padding-inline-end: 1.25rem;
+  }
+
+  .desktop-storefront-header__end {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem 1rem;
+  }
+
+  .desktop-storefront-header__text-nav,
+  .desktop-storefront-header__search {
+    display: none !important;
+  }
+
+  .desktop-storefront-header__emirate.emirate-select--header {
+    position: relative;
+    display: inline-flex;
+    max-width: 12rem;
+    min-height: 1.75rem;
+    align-items: center;
+    gap: 0.28rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    color: #4a4a4a;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .desktop-storefront-header__emirate.emirate-select--header select {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .desktop-storefront-header__cta {
+    display: inline-flex !important;
+    min-height: 2.5rem !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    border: 0 !important;
+    border-radius: 0.25rem !important;
+    padding: 0.55rem 1.15rem !important;
+    background: #c9a962 !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap;
+  }
+
+  .desktop-storefront-header__cta:hover {
+    filter: brightness(0.96);
+  }
+
+  .desktop-storefront-header__cta svg {
+    color: #fff !important;
+  }
+
+  .desktop-storefront-header__join {
+    color: #222;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .desktop-storefront-header__join:hover {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  .desktop-storefront-header__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    opacity: 0.55;
+    transform: scale(0.86);
+    transform-origin: center;
+  }
+}
+
+.desktop-utility-nav {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktop-utility-nav {
+    display: flex;
+    align-items: stretch;
+    gap: 0.15rem 0.85rem;
+  }
+
+  .desktop-utility-nav__item {
+    position: relative;
+    display: inline-flex;
+    min-width: 3.25rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    padding: 0.2rem 0.15rem;
+    border: 0;
+    background: transparent;
+    color: #6f6f6f;
+    text-decoration: none;
+  }
+
+  .desktop-utility-nav__item:hover,
+  .desktop-utility-nav__item:focus-visible {
+    color: #111;
+    outline: none;
+  }
+
+  .desktop-utility-nav__icon {
+    display: grid;
+    width: 1.4rem;
+    height: 1.4rem;
+    place-items: center;
+  }
+
+  .desktop-utility-nav__label {
+    max-width: 4.8rem;
+    overflow: hidden;
+    font-size: 0.625rem;
+    font-weight: 500;
+    line-height: 1.15;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .desktop-utility-nav__bell {
+    display: grid !important;
+    width: 1.4rem !important;
+    height: 1.4rem !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    place-items: center;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: inherit !important;
+  }
+
+  .desktop-utility-nav__bell-icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  .desktop-utility-nav__badge {
+    top: -0.2rem !important;
+    inset-inline-end: -0.3rem !important;
+    min-width: 0.95rem;
+    height: 0.95rem;
+    padding: 0 0.2rem;
+    font-size: 0.55rem;
+  }
+}
+
+/* Verify bar — flat Dubizzle density on desktop */
+.verify-account-banner__dismiss {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .verify-account-banner {
+    border-bottom: 0 !important;
+    background: #2c3648 !important;
+  }
+
+  .verify-account-banner::before,
+  .verify-account-banner::after {
+    display: none !important;
+  }
+
+  .verify-account-banner__inner {
+    min-height: 2.5rem;
+    padding-block: 0.4rem;
+    justify-content: center;
+    gap: 0.85rem 1.25rem;
+  }
+
+  .verify-account-banner__copy {
+    flex: 0 1 auto;
+    justify-content: center;
+    gap: 0.55rem;
+  }
+
+  .verify-account-banner__kicker {
+    display: none !important;
+  }
+
+  .verify-account-banner__mark {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-color: rgb(255 255 255 / 35%);
+    border-radius: 999px;
+    background: #3d4d66;
+    box-shadow: none;
+    color: #fff;
+  }
+
+  .verify-account-banner__message {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .verify-account-banner__action {
+    min-height: 1.85rem !important;
+    border: 1px solid rgb(255 255 255 / 65%) !important;
+    border-radius: 0.2rem !important;
+    padding-inline: 0.85rem !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+  }
+
+  .verify-account-banner__action:hover {
+    background: rgb(255 255 255 / 8%) !important;
+    filter: none !important;
+    box-shadow: none !important;
+  }
+
+  .verify-account-banner__dismiss {
+    display: inline-grid;
+    width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: rgb(255 255 255 / 80%);
+    cursor: pointer;
+  }
+
+  .verify-account-banner__dismiss:hover {
+    color: #fff;
+  }
+}
